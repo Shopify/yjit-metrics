@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 
 # Clone the yjit-bench directory and run a variety of common comparison metrics.
-
-# TODO: simple way to turn off git pulls and repo rebuilding
+# Usage: specify benchmarks to run as command line arguments.
+#   You can also specify RUBY_CONFIG_OPTS to specify the arguments
+#   that should be passed to Ruby's configuration script.
 
 # General-purpose benchmark management routines
 require_relative "lib/yjit-metrics"
+
+# TODO: simple way to turn off git pulls and repo rebuilding for quick runs.
 
 extra_config_options = []
 if ENV["RUBY_CONFIG_OPTS"]
