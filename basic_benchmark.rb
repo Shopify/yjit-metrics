@@ -2,8 +2,18 @@
 
 # Clone the yjit-bench directory and run a variety of common comparison metrics.
 
+# TODO: simple way to turn off git pulls and repo rebuilding
+
 # General-purpose benchmark management routines
 require_relative "lib/yjit-metrics"
+
+extra_config_options = []
+if ENV["RUBY_CONFIG_OPTS"]
+	extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
+elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
+	# On Mac with homebrew, default to Homebrew's OpenSSL location if not otherwise specified
+	extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
+end
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 per_os_checks
@@ -23,8 +33,17 @@ DEBUG_YJIT_DIR = File.expand_path("#{__dir__}/../debug-yjit")
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
-make_ruby_repo_with path: PROD_YJIT_DIR, git_url: YJIT_GIT_URL, git_branch: YJIT_GIT_BRANCH, install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod", config_opts: BASE_CONFIG_OPTIONS
-make_ruby_repo_with path: DEBUG_YJIT_DIR, git_url: YJIT_GIT_URL, git_branch: YJIT_GIT_BRANCH, install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug", config_opts: BASE_CONFIG_OPTIONS, config_env: ["RUBY_DEBUG=1"]
+make_ruby_repo_with path: PROD_YJIT_DIR,
+    git_url: YJIT_GIT_URL,
+    git_branch: YJIT_GIT_BRANCH,
+    install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
+    config_opts: BASE_CONFIG_OPTIONS + extra_config_options
+make_ruby_repo_with path: DEBUG_YJIT_DIR,
+	git_url: YJIT_GIT_URL,
+	git_branch: YJIT_GIT_BRANCH,
+	install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
+	config_opts: BASE_CONFIG_OPTIONS + extra_config_options,
+	config_env: ["RUBY_DEBUG=1"]
 
 ### Second, ensure an up-to-date local yjit-bench checkout
 

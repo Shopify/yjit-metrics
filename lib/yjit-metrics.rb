@@ -5,7 +5,7 @@ require 'tempfile'
 require 'json'
 require 'csv'
 
-# TODO: re-add OS-specific args/prelude
+# TODO: repackage this as a class
 
 HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
@@ -39,7 +39,7 @@ def run_script_from_string(script)
     tf.write(script)
     tf.flush
 
-    status = system("bash", "-il", tf.path, out: :out, err: :err)
+    status = system("bash", tf.path, out: :out, err: :err)
 
     unless status
         STDERR.puts "Script failed in directory #{Dir.pwd}"
@@ -135,8 +135,6 @@ def make_ruby_repo_with(path:, git_url:, git_branch:, config_opts:, config_env: 
             desired_config = config_opts.sort
             if config_status_output != desired_config
                 should_configure = true
-                STDERR.puts "Stop and check: #{config_status_output.inspect} / #{desired_config.inspect}"
-                raise
             end
         end
 
