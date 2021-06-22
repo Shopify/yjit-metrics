@@ -6,6 +6,8 @@ require 'json'
 require 'csv'
 
 module YJITMetrics
+    extend self # Make methods callable as YJITMetrics.method_name
+
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
     # Checked system - error if the command fails

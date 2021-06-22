@@ -7,7 +7,6 @@
 
 # General-purpose benchmark management routines
 require_relative "lib/yjit-metrics"
-include YJITMetrics # Include YJITMetrics methods into the root namespace
 
 # TODO: simple way to turn off git pulls and repo rebuilding for quick runs.
 
@@ -20,7 +19,7 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
 end
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
-per_os_checks
+YJITMetrics.per_os_checks
 
 # This benchmark keeps multiple checkouts of YJIT so that we have debug and non-debug available.
 # It also keeps a yjit-bench repository
@@ -37,12 +36,12 @@ DEBUG_YJIT_DIR = File.expand_path("#{__dir__}/../debug-yjit")
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
-make_ruby_repo_with path: PROD_YJIT_DIR,
+YJITMetrics.make_ruby_repo_with path: PROD_YJIT_DIR,
     git_url: YJIT_GIT_URL,
     git_branch: YJIT_GIT_BRANCH,
     install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
     config_opts: BASE_CONFIG_OPTIONS + extra_config_options
-make_ruby_repo_with path: DEBUG_YJIT_DIR,
+YJITMetrics.make_ruby_repo_with path: DEBUG_YJIT_DIR,
 	git_url: YJIT_GIT_URL,
 	git_branch: YJIT_GIT_BRANCH,
 	install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
@@ -55,9 +54,9 @@ YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
 YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
-make_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+YJITMetrics.make_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 
-yjit_results = run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], warmup_itrs: 15, with_chruby: "ruby-yjit-metrics-debug")
+yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], warmup_itrs: 15, with_chruby: "ruby-yjit-metrics-debug")
 
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
