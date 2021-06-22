@@ -7,6 +7,7 @@
 
 # General-purpose benchmark management routines
 require_relative "lib/yjit-metrics"
+include YJITMetrics # Include YJITMetrics methods into the root namespace
 
 # TODO: simple way to turn off git pulls and repo rebuilding for quick runs.
 
