@@ -51,7 +51,7 @@ unless skip_git_updates
 		git_branch: YJIT_GIT_BRANCH,
 		install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
 		config_opts: BASE_CONFIG_OPTIONS + extra_config_options,
-		config_env: ["CPPFLAGS='-DRUBY_DEBUG=1'"]
+		config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
 end
 
 ### Second, ensure an up-to-date local yjit-bench checkout

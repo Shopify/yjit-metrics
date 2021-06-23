@@ -123,9 +123,14 @@ module YJITMetrics
             if !File.exist?("./config.status")
                 should_configure = true
             else
+                # Right now this config check is brittle - if you give it a config_env containing quotes, for
+                # instance, it will tend to believe it needs to reconfigure.
                 config_status_output = check_output("./config.status --conf").split(" ").sort
-                desired_config = config_opts.sort
+                desired_config = config_opts.sort + config_env
                 if config_status_output != desired_config
+                    puts "Configuration is wrong, reconfiguring..."
+                    puts "Desired: #{desired_config.inspect}"
+                    puts "Current: #{config_status_output.inspect}"
                     should_configure = true
                 end
             end
@@ -135,14 +140,13 @@ module YJITMetrics
                 check_call("make clean")
             end
 
-            check_call("make")
-            check_call("make install")
+            check_call("make -j16 install")
         end
     end
 
     # Run all the benchmarks and record execution times
     def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], warmup_itrs: 15, with_chruby: nil)
-        bench_data = { "times" => {}, "metadata" => {}, "yjit_stats" => {} }
+        bench_data = { "times" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
 
         Dir.chdir(benchmark_dir) do
             # Get the list of benchmark files/directories matching name filters
@@ -193,7 +197,7 @@ BENCH_SCRIPT
                 # Convert times to ms
                 single_bench_data = JSON.load(File.read json_path)
                 times = single_bench_data["times"].map { |v| 1000 * v.to_f }
-                single_metadata = single_bench_data["metadata"]
+                single_metadata = single_bench_data["benchmark_metadata"]
                 single_metadata.merge({
                     "benchmark_name" => entry,
                     "chruby_version" => with_chruby,
@@ -203,7 +207,13 @@ BENCH_SCRIPT
                 if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
                     bench_data["yjit_stats"][bench_name] = single_bench_data["yjit_stats"]
                 end
-                bench_data["metadata"][bench_name] = single_bench_data["metadata"]
+                bench_data["benchmark_metadata"][bench_name] = single_metadata
+                bench_data["ruby_metadata"] = single_bench_data["ruby_metadata"] if bench_data["ruby_metadata"].empty?
+                if bench_data["ruby_metadata"] != single_bench_data["ruby_metadata"]
+                    puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
+                    puts "Ruby metadata 2: #{single_bench_data["ruby_metadata"].inspect}"
+                    raise "Ruby benchmark metadata should not change across a single set of benchmark runs!"
+                end
             end
         end
 

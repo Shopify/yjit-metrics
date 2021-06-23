@@ -24,19 +24,15 @@ IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path" ]
 IS_YJIT = Object.const_defined?(:YJIT)
 HAS_YJIT_STATS = IS_YJIT && !!YJIT.runtime_stats
 
+# Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
+# It shouldn't include timestamps or other data that changes from run to run.
 def ruby_metadata
-    out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
-    out_env = {}
-    out_env_keys.each { |k| out_env[k] = ENV[k] }
-
     {
         "RUBY_VERSION" => RUBY_VERSION,
         "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
         "RUBY_ENGINE" => RUBY_ENGINE,
         "which ruby" => `which ruby`,
         "hostname" => `hostname`,
-        "env" => out_env,
-        "loaded gems" => Gem.loaded_specs.map { |name, spec| [ name, spec.version.to_s ] },
         # TODO: do we expect to combine or compare results across multiple hosts?
         #"ec2 instance id" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`,
         #"ec2 instance type" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-type`,
@@ -68,13 +64,19 @@ def run_benchmark(num_itrs_hint)
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
   yjit_stats = HAS_YJIT_STATS ? YJIT.runtime_stats : nil
 
+  out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
+  out_env = {}
+  out_env_keys.each { |k| out_env[k] = ENV[k] }
   out_data = {
     times: times,
-    metadata: ruby_metadata.merge({
+    benchmark_metadata: {
         warmup_itrs: WARMUP_ITRS,
         min_bench_itrs: MIN_BENCH_ITRS,
         min_bench_time: MIN_BENCH_TIME,
-    }),
+        env: out_env,
+        loaded_gems: Gem.loaded_specs.map { |name, spec| [ name, spec.version.to_s ] },
+    },
+    ruby_metadata: ruby_metadata,
   }
   out_data[:yjit_stats] = YJIT.runtime_stats if HAS_YJIT_STATS
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
