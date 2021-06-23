@@ -56,7 +56,11 @@ module YJITMetrics
     end
 
     def per_os_checks
-        return if RUBY_PLATFORM["darwin"]
+        if RUBY_PLATFORM["darwin"]
+            puts "Mac results are considered less stable for this benchmarking harness."
+            puts "Please assume you'll need more runs and more time for similar final quality."
+            return
+        end
 
         # Only available on intel systems
         if !File.exist?('/sys/devices/system/cpu/intel_pstate/no_turbo')
