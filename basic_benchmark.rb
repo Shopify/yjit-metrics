@@ -9,7 +9,24 @@
 # non-debug available. They are maintained at ../yjit-debug and ../yjit-prod.
 # It also keeps a yjit-bench repository at ../yjit-bench.
 
-skip_git_updates = ARGV.delete("--skip-git-updates")
+require "optparse"
+
+# Defaults
+skip_git_updates = false
+warmup_itrs = 15
+
+OptionParser.new do |opts|
+	opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
+
+	opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (omit on first run)") do
+		skip_git_updates = true
+	end
+
+	opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
+		warmup_itrs = n
+	end
+end.parse!
+
 benchmark_list = ARGV
 
 require_relative "lib/yjit-metrics"
@@ -21,8 +38,6 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
 	# On Mac with homebrew, default to Homebrew's OpenSSL location if not otherwise specified
 	extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
 end
-
-WARMUP_ITRS=ENV.fetch('WARMUP_ITRS', 15)
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -66,7 +81,7 @@ end
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
 # Now run the benchmarks for debug YJIT
-yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], benchmark_list: benchmark_list, warmup_itrs: WARMUP_ITRS, with_chruby: "ruby-yjit-metrics-debug")
+yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], benchmark_list: benchmark_list, warmup_itrs: warmup_itrs, with_chruby: "ruby-yjit-metrics-debug")
 
 json_path = OUTPUT_DATA_PATH + "/basic_benchmark_debug_#{timestamp}.json"
 puts "Writing to JSON output file #{json_path}."
