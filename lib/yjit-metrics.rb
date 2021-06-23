@@ -114,7 +114,7 @@ module YJITMetrics
         make_repo_with(path: path, git_url: git_url, git_branch: git_branch)
 
         Dir.chdir(path) do
-            config_opts += [ "--prefix=#{ENV['HOME']}/.rubies/#{install_to}" ]
+            config_opts += [ "--prefix=#{install_to}" ]
 
             unless File.exist?("./configure")
                 check_call("./autogen.sh")
