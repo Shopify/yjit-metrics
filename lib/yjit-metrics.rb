@@ -40,7 +40,9 @@ module YJITMetrics
         tf.write(script)
         tf.flush
 
-        status = system("bash", tf.path, out: :out, err: :err)
+        # Passing -il to bash makes sure to load .bashrc/.bash_profile
+        # for chruby.
+        status = system("bash", "-il", tf.path, out: :out, err: :err)
 
         unless status
             STDERR.puts "Script failed in directory #{Dir.pwd}"
@@ -112,7 +114,7 @@ module YJITMetrics
         make_repo_with(path: path, git_url: git_url, git_branch: git_branch)
 
         Dir.chdir(path) do
-            config_opts += [ "--prefix=#{install_to}" ]
+            config_opts += [ "--prefix=#{ENV['HOME']}/.rubies/#{install_to}" ]
 
             unless File.exist?("./configure")
                 check_call("./autogen.sh")
@@ -179,7 +181,7 @@ set -e
 
 export OUT_JSON_PATH=#{json_path}
 export WARMUP_ITRS=#{warmup_itrs}
-export YJIT_STATS=1 # Only for YJIT Rubies compiled with RUBY_DEBUG
+export YJIT_STATS=1 # Have YJIT Rubies compiled with RUBY_DEBUG collect statistics
 
 ruby -I#{HARNESS_PATH} #{per_os_ruby_opts.join(" ")} #{ruby_opts_section} #{script_path}
 BENCH_SCRIPT

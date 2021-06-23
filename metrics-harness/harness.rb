@@ -73,6 +73,5 @@ def run_benchmark(num_itrs_hint)
     }),
   }
   out_data[:yjit_stats] = YJIT.runtime_stats if HAS_YJIT_STATS
-  STDERR.puts "Writing to output JSON file: #{OUT_JSON_PATH.inspect}"
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
