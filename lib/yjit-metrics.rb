@@ -124,8 +124,9 @@ module YJITMetrics
                 should_configure = true
             else
                 # Right now this config check is brittle - if you give it a config_env containing quotes, for
-                # instance, it will tend to believe it needs to reconfigure.
-                config_status_output = check_output("./config.status --conf").split(" ").sort
+                # instance, it will tend to believe it needs to reconfigure. We cut out single-quotes
+                # because they've caused trouble, but a full fix might need to understand bash quoting.
+                config_status_output = check_output("./config.status --conf").gsub("'", "").split(" ").sort
                 desired_config = config_opts.sort + config_env
                 if config_status_output != desired_config
                     puts "Configuration is wrong, reconfiguring..."
