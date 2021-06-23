@@ -1,5 +1,6 @@
 require 'benchmark'
 require 'json'
+require 'rbconfig'
 
 # Warmup iterations
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
@@ -39,6 +40,9 @@ def ruby_metadata
         # TODO: do we expect to combine or compare results across multiple hosts?
         #"ec2 instance id" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`,
         #"ec2 instance type" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-type`,
+
+        # Ruby compile-time settings: do we want to record more of them?
+        "RbConfig configure_args" => RbConfig::CONFIG["configure_args"],
     }
 end
 

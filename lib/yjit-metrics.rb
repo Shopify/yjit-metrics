@@ -38,7 +38,7 @@ module YJITMetrics
     def run_script_from_string(script)
         tf = Tempfile.new("yjit-metrics-script")
         tf.write(script)
-        tf.flush
+        tf.flush # No flush can result in successfully running an empty script
 
         # Passing -il to bash makes sure to load .bashrc/.bash_profile
         # for chruby.
