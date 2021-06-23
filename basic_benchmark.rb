@@ -22,6 +22,8 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
 	extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
 end
 
+WARMUP_ITRS=ENV.fetch('WARMUP_ITRS', 15)
+
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
 
@@ -64,7 +66,7 @@ end
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
 # Now run the benchmarks for debug YJIT
-yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], benchmark_list: benchmark_list, warmup_itrs: 15, with_chruby: "ruby-yjit-metrics-debug")
+yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], benchmark_list: benchmark_list, warmup_itrs: WARMUP_ITRS, with_chruby: "ruby-yjit-metrics-debug")
 
 json_path = OUTPUT_DATA_PATH + "/basic_benchmark_debug_#{timestamp}.json"
 puts "Writing to JSON output file #{json_path}."
