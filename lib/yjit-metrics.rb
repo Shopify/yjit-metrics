@@ -195,15 +195,34 @@ BENCH_SCRIPT
                 run_script_from_string(bench_script)
 
                 # Read the benchmark data
-                # Convert times to ms
                 single_bench_data = JSON.load(File.read json_path)
+
+                # Convert times to ms
                 times = single_bench_data["times"].map { |v| 1000 * v.to_f }
+
                 single_metadata = single_bench_data["benchmark_metadata"]
+
+                # Add per-benchmark metadata from this script to the data returned from the harness.
                 single_metadata.merge({
                     "benchmark_name" => entry,
                     "chruby_version" => with_chruby,
                     "ruby_opts" => ruby_opts
                 })
+
+                # Each benchmark returns its data as a simple hash for that benchmark:
+                #
+                #    "times" => [ 2.3, 2.5, 2.7, 2.4, ...]
+                #
+                # For timings, YJIT stats and benchmark metadata, we add a hash inside
+                # each top-level key for each benchmark name, e.g.:
+                #
+                #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
+                #
+                # For Ruby metadata we don't save it for all benchmarks because it
+                # should be identical for all of them -- we use the same Ruby
+                # every time. Instead we save one copy of it, but we make sure
+                # on each subsequent benchmark that it returned exactly the same
+                # metadata about the Ruby version.
                 bench_data["times"][bench_name] = times
                 if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
                     bench_data["yjit_stats"][bench_name] = single_bench_data["yjit_stats"]
