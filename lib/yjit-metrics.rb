@@ -84,7 +84,7 @@ module YJITMetrics
         end
     end
 
-    def per_os_ruby_opts
+    def per_os_shell_prelude
       if RUBY_PLATFORM["darwin"]
         []
       elsif RUBY_PLATFORM["win"]
@@ -188,7 +188,7 @@ export OUT_JSON_PATH=#{json_path}
 export WARMUP_ITRS=#{warmup_itrs}
 export YJIT_STATS=1 # Have YJIT Rubies compiled with RUBY_DEBUG collect statistics
 
-ruby -I#{HARNESS_PATH} #{per_os_ruby_opts.join(" ")} #{ruby_opts_section} #{script_path}
+#{per_os_shell_prelude.join(" ")} ruby -I#{HARNESS_PATH} #{ruby_opts_section} #{script_path}
 BENCH_SCRIPT
 
                 # Do the benchmarking
