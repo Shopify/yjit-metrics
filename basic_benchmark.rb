@@ -56,12 +56,12 @@ YJIT_GIT_BRANCH = "main"
 PROD_YJIT_DIR = File.expand_path("#{__dir__}/../prod-yjit")
 DEBUG_YJIT_DIR = File.expand_path("#{__dir__}/../debug-yjit")
 unless skip_git_updates
-	YJITMetrics.make_ruby_repo_with path: PROD_YJIT_DIR,
+	YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
 	    git_url: YJIT_GIT_URL,
 	    git_branch: YJIT_GIT_BRANCH,
 	    install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
 	    config_opts: BASE_CONFIG_OPTIONS + extra_config_options
-	YJITMetrics.make_ruby_repo_with path: DEBUG_YJIT_DIR,
+	YJITMetrics.clone_ruby_repo_with path: DEBUG_YJIT_DIR,
 		git_url: YJIT_GIT_URL,
 		git_branch: YJIT_GIT_BRANCH,
 		install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
@@ -74,7 +74,7 @@ YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
 YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 unless skip_git_updates
-	YJITMetrics.make_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+	YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
 
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.

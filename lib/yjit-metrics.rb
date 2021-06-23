@@ -97,7 +97,7 @@ module YJITMetrics
       end
     end
 
-    def make_repo_with(path:, git_url:, git_branch:)
+    def clone_repo_with(path:, git_url:, git_branch:)
         unless File.exist?(path)
             check_call("git clone '#{git_url}' '#{path}'")
         end
@@ -110,8 +110,8 @@ module YJITMetrics
         end
     end
 
-    def make_ruby_repo_with(path:, git_url:, git_branch:, config_opts:, config_env: [], install_to:)
-        make_repo_with(path: path, git_url: git_url, git_branch: git_branch)
+    def clone_ruby_repo_with(path:, git_url:, git_branch:, config_opts:, config_env: [], install_to:)
+        clone_repo_with(path: path, git_url: git_url, git_branch: git_branch)
 
         Dir.chdir(path) do
             config_opts += [ "--prefix=#{install_to}" ]
