@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Run a benchmark using the specified Ruby (if any) and the yjit-metrics harness code
+
+set -e
+
+# Shopify-specific workaround
+if [[ -f /opt/dev/sh/chruby/chruby.sh ]]; then
+  source /opt/dev/sh/chruby/chruby.sh
+fi
+
+<%= with_chruby ? "chruby #{with_chruby}" : "" %>
+
+export OUT_JSON_PATH=<%= out_json_path %>
+export WARMUP_ITRS=<%= warmup_itrs %>
+export YJIT_STATS=1 # Have YJIT Rubies compiled with RUBY_DEBUG collect statistics
+
+<%= per_os_shell_prelude.join(" ") %> ruby -I<%= HARNESS_PATH %> <%= ruby_opts.map { |s| '"' + s + '"' }.join(" ") %> <%= script_path %>
