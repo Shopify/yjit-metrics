@@ -4,6 +4,7 @@ require 'fileutils'
 require 'tempfile'
 require 'json'
 require 'csv'
+require 'erb'
 
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
@@ -172,34 +173,18 @@ module YJITMetrics
                     script_path = File.join(script_path, 'benchmark.rb')
                 end
 
-                json_path = File.expand_path(File.join(out_path, 'temp.json'))
-                FileUtils.rm_f(json_path) # No stale data please
+                out_json_path = File.expand_path(File.join(out_path, 'temp.json'))
+                FileUtils.rm_f(out_json_path) # No stale data please
 
-                chruby_section = with_chruby ? "chruby #{with_chruby}" : ""
                 ruby_opts_section = ruby_opts.map { |s| '"' + s + '"' }.join(" ")
-                bench_script = <<BENCH_SCRIPT
-#!/bin/bash
-# Shopify-specific workaround
-if [[ -f /opt/dev/sh/chruby/chruby.sh ]]; then
-  source /opt/dev/sh/chruby/chruby.sh
-fi
-
-set -e
-
-#{chruby_section}
-
-export OUT_JSON_PATH=#{json_path}
-export WARMUP_ITRS=#{warmup_itrs}
-export YJIT_STATS=1 # Have YJIT Rubies compiled with RUBY_DEBUG collect statistics
-
-#{per_os_shell_prelude.join(" ")} ruby -I#{HARNESS_PATH} #{ruby_opts_section} #{script_path}
-BENCH_SCRIPT
+                script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
+                bench_script = script_template.result(binding) # Evaluate with the local variables right here
 
                 # Do the benchmarking
                 run_script_from_string(bench_script)
 
                 # Read the benchmark data
-                single_bench_data = JSON.load(File.read json_path)
+                single_bench_data = JSON.load(File.read out_json_path)
 
                 # Convert times to ms
                 times = single_bench_data["times"].map { |v| 1000 * v.to_f }
