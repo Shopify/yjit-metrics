@@ -152,7 +152,7 @@ module YJITMetrics
 
     # Run all the benchmarks and record execution times
     def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], warmup_itrs: 15, with_chruby: nil)
-        bench_data = { "times" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
+        bench_data = { "times" => {}, "warmups" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
 
         Dir.chdir(benchmark_dir) do
             # Get the list of benchmark files/directories matching name filters
@@ -188,6 +188,7 @@ module YJITMetrics
 
                 # Convert times to ms
                 times = single_bench_data["times"].map { |v| 1000 * v.to_f }
+                warmups = single_bench_data["warmups"].map { |v| 1000 * v.to_f }
 
                 single_metadata = single_bench_data["benchmark_metadata"]
 
@@ -200,7 +201,12 @@ module YJITMetrics
 
                 # Each benchmark returns its data as a simple hash for that benchmark:
                 #
-                #    "times" => [ 2.3, 2.5, 2.7, 2.4, ...]
+                #    {
+                #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],
+                #       "benchmark_metadata" => {...},
+                #       "ruby_metadata" => {...},
+                #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present
+                #    }
                 #
                 # For timings, YJIT stats and benchmark metadata, we add a hash inside
                 # each top-level key for each benchmark name, e.g.:
@@ -213,6 +219,7 @@ module YJITMetrics
                 # on each subsequent benchmark that it returned exactly the same
                 # metadata about the Ruby version.
                 bench_data["times"][bench_name] = times
+                bench_data["warmups"][bench_name] = warmups
                 if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
                     bench_data["yjit_stats"][bench_name] = single_bench_data["yjit_stats"]
                 end
