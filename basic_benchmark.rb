@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Clone the yjit-bench directory and run a variety of common comparison metrics.
+# Clone the yjit-bench directory and run benchmarks with various Rubies.
 # Usage: specify benchmarks to run as command line arguments.
 #   You can also specify RUBY_CONFIG_OPTS to specify the arguments
 #   that should be passed to Ruby's configuration script.
@@ -9,7 +9,12 @@
 # non-debug available. They are maintained at ../yjit-debug and ../yjit-prod.
 # It also keeps a yjit-bench repository at ../yjit-bench.
 
+# The intention is that basic_benchmark can be used to collect benchmark
+# results, and then basic_report can be used to show reports for those
+# benchmarks.
+
 require "optparse"
+require_relative "lib/yjit-metrics"
 
 # Defaults
 skip_git_updates = false
@@ -29,8 +34,6 @@ end.parse!
 
 benchmark_list = ARGV
 
-require_relative "lib/yjit-metrics"
-
 extra_config_options = []
 if ENV["RUBY_CONFIG_OPTS"]
 	extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
@@ -48,6 +51,11 @@ TEMP_DATA_PATH = File.expand_path(__dir__ + "/data")
 OUTPUT_DATA_PATH = TEMP_DATA_PATH
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
+
+installed_rubies = Dir[CHRUBY_RUBIES + "/*"].to_a
+unless installed_rubies.any? { |ruby_name| ruby_name.end_with?("/ruby-2.7.2") }
+	YJITMetrics.check_call("ruby-install ruby-2.7.2")
+end
 
 ### First, ensure up-to-date YJIT repos in debug configuration and prod configuration
 BASE_CONFIG_OPTIONS = [ "--disable-install-doc", "--disable-install-rdoc" ]
@@ -80,9 +88,17 @@ end
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
-# Now run the benchmarks for debug YJIT
-yjit_results = YJITMetrics.run_benchmarks(YJIT_BENCH_DIR, TEMP_DATA_PATH, ruby_opts: [], benchmark_list: benchmark_list, warmup_itrs: warmup_itrs, with_chruby: "ruby-yjit-metrics-debug")
+[ "ruby-yjit-metrics-debug", "ruby-yjit-metrics-prod", "2.7.2" ].each do |ruby|
+	yjit_results = YJITMetrics.run_benchmarks(
+		YJIT_BENCH_DIR,
+		TEMP_DATA_PATH,
+		ruby_opts: [],
+		benchmark_list: benchmark_list,
+		warmup_itrs: warmup_itrs,
+		with_chruby: ruby
+		)
 
-json_path = OUTPUT_DATA_PATH + "/basic_benchmark_debug_#{timestamp}.json"
-puts "Writing to JSON output file #{json_path}."
-File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
+	json_path = OUTPUT_DATA_PATH + "/basic_benchmark_#{ruby}_#{timestamp}.json"
+	puts "Writing to JSON output file #{json_path}."
+	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
+end

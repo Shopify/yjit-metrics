@@ -6,6 +6,8 @@ require 'json'
 require 'csv'
 require 'erb'
 
+require_relative "./yjit-metrics/bench-results"
+
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
@@ -41,9 +43,9 @@ module YJITMetrics
         tf.write(script)
         tf.flush # No flush can result in successfully running an empty script
 
-        # Passing -il to bash makes sure to load .bashrc/.bash_profile
+        # Passing -l to bash makes sure to load .bash_profile
         # for chruby.
-        status = system("bash", "-il", tf.path, out: :out, err: :err)
+        status = system("bash", "-l", tf.path, out: :out, err: :err)
 
         unless status
             STDERR.puts "Script failed in directory #{Dir.pwd}"
@@ -221,7 +223,7 @@ module YJITMetrics
                 bench_data["times"][bench_name] = times
                 bench_data["warmups"][bench_name] = warmups
                 if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
-                    bench_data["yjit_stats"][bench_name] = single_bench_data["yjit_stats"]
+                    bench_data["yjit_stats"][bench_name] = [ single_bench_data["yjit_stats"] ]
                 end
                 bench_data["benchmark_metadata"][bench_name] = single_metadata
                 bench_data["ruby_metadata"] = single_bench_data["ruby_metadata"] if bench_data["ruby_metadata"].empty?

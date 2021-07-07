@@ -29,8 +29,10 @@ class YJITMetrics::ResultSet
 
     def initialize
         @times = {}
+        @warmups = {}
         @benchmark_metadata = {}
         @ruby_metadata = {}
+        @yjit_stats = {}
     end
 
     # A ResultSet normally expects to see results with this structure:
@@ -57,10 +59,18 @@ class YJITMetrics::ResultSet
             @times[ruby_name][benchmark_name].concat(times)
         end
 
+        @warmups[ruby_name] ||= {}
+        (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
+            @times[ruby_name][benchmark_name] ||= []
+            @times[ruby_name][benchmark_name].concat(warmups)
+        end
+
         @benchmark_metadata[ruby_name] ||= {}
-        benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_array|
-            @benchmark_metadata[ruby_name][benchmark_name] ||= []
-            @benchmark_metadata[ruby_name][benchmark_name].concat(metadata_array)
+        benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
+            @benchmark_metadata[ruby_name][benchmark_name] ||= metadata_for_benchmark
+            if @benchmark_metadata[ruby_name][benchmark_name] != metadata_for_benchmark
+                STDERR.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{ruby_name} have different benchmark metadata!"
+            end
         end
 
         @ruby_metadata[ruby_name] ||= benchmark_results["ruby_metadata"]
@@ -79,8 +89,39 @@ class YJITMetrics::ResultSet
         end
     end
 
+    # This returns a hash-of-arrays by Ruby name
+    # containing benchmark results (times) per
+    # benchmark for the specified Ruby.
     def times_for_ruby_by_benchmark(ruby)
         @times[ruby]
+    end
+
+    # This returns a hash-of-arrays by Ruby name
+    # containing warmup results (times) per
+    # benchmark for the specified Ruby.
+    def times_for_ruby_by_benchmark(ruby)
+        @times[ruby]
+    end
+
+    # This returns a hash-of-hashes by Ruby name
+    # containing YJIT statistics, if gathered, per
+    # benchmark for the specified Ruby. For Rubies
+    # that don't collect YJIT statistics, the inner
+    # hash will be empty.
+    def yjit_stats_for_ruby_by_benchmark(ruby)
+        @yjit_stats[ruby]
+    end
+
+    # This returns a hash-of-hashes by Ruby name
+    # containing per-benchmark metadata (parameters) per
+    # benchmark for the specified Ruby.
+    def benchmark_metadata_for_ruby_by_benchmark(ruby)
+        @benchmark_metadata[ruby]
+    end
+
+    # This returns a hash of metadata for the given Ruby name
+    def metadata_for_ruby(ruby)
+        @ruby_metadata[ruby]
     end
 
     # Output a CSV file which contains metadata as key/value pairs, followed by a blank row, followed by the raw time data
@@ -113,7 +154,7 @@ class YJITMetrics::PerBenchRubyComparison
 
         @report_data = []
         times_by_ruby = ruby_names.map { |ruby| results.times_for_ruby_by_benchmark(ruby) }
-        benchmark_names = times_by_ruby[base_ruby].keys
+        benchmark_names = times_by_ruby[0].keys
 
         benchmark_names.each do |benchmark_name|
             row = [ benchmark_name ]
@@ -149,7 +190,7 @@ class YJITMetrics::PerBenchRubyComparison
         end
     end
 
-    def as_text_table
+    def to_s
         out = ""
 
         num_cols = @report_data[0].length
@@ -177,3 +218,126 @@ class YJITMetrics::PerBenchRubyComparison
         end
     end
 end
+
+class YJITMetrics::YJITStatsReport
+    def initialize(ruby_name, results)
+        @ruby = ruby_name
+        @result_set = results
+
+        bench_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark(ruby_name)
+        raise("This Ruby collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
+
+        @benchmark_names = bench_yjit_stats.keys
+    end
+
+    # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics and print an exit report.
+    # TODO: add a mechanism for a "zero" result set from an empty YJIT run, then subtract that from each result set before combining.
+    def combined_data_for_benchmarks(benchmark_names)
+        unless benchmark_names.all? { |benchmark_name| @benchmark_names.include?(benchmark_name) }
+            raise "No data found for benchmark #{benchmark_name.inspect}!"
+        end
+
+        all_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark[@ruby]
+        relevant_stats = benchmark_names.flat_map { |benchmark_name| all_yjit_stats[benchmark_name] }.select { |data| !data.empty? }
+
+        if relevant_stats.empty?
+            raise "No YJIT stats data found for benchmarks: #{benchmark_names.inspect}!"
+        end
+
+        # For each key in the YJIT statistics, add up the value for that key in all datasets.
+        yjit_stat_keys = relevant_stats[0].keys
+        yjit_data = {}
+        yjit_stats_keys.each do |stats_key|
+            # Unknown keys default to 0.
+            yjit_data[stats_key] = relevant_stats.map { |dataset| dataset[stats_key] || 0 }.sum
+        end
+        yjit_data
+    end
+end
+
+# This is intended to match the exit report printed by debug YJIT when stats are turned on.
+class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
+    def exit_report_for_benchmarks(benchmark_names)
+        yjit_stats = combined_data_for_benchmarks(benchmark_names)
+    end
+end
+
+class YJITMetrics::YJITStatsReport
+    attr_reader :ruby
+
+    # These counters aren't for "can't compile" or "side exit",
+    # they're for various other things.
+    COUNTERS_MISC = [
+        "exec_instruction",     # YJIT instructions that *start* to execute, even if they later side-exit
+        "leave_interp_return",  # Number of returns to the interpreter
+        "binding_allocations",  # Number of times Ruby allocates a binding (via proc.c:rb_binding_alloc)
+        "binding_set",          # Number of locals modified via a binding (via proc.c:bind_local_variable_set)
+    ]
+
+    COUNTERS_SIDE_EXITS = %w(
+        setivar_val_heapobject
+        setivar_frozen
+        setivar_idx_out_of_range
+        getivar_undef
+        getivar_idx_out_of_range
+        getivar_se_self_not_heap
+        setivar_se_self_not_heap
+        oaref_arg_not_fixnum
+        send_se_protected_check_failed
+        send_se_cf_overflow
+        leave_se_finish_frame
+        leave_se_interrupt
+        send_se_protected_check_failed
+        )
+
+    COUNTERS_CANT_COMPILE = %w(
+        send_callsite_not_simple
+        send_kw_splat
+        send_bmethod
+        send_zsuper_method
+        send_refined_method
+        send_ivar_set_method
+        send_undef_method
+        send_optimized_method
+        send_missing_method
+        send_cfunc_toomany_args
+        send_cfunc_argc_mismatch
+        send_cfunc_ruby_array_varg
+        send_iseq_tailcall
+        send_iseq_arity_error
+        send_iseq_only_keywords
+        send_iseq_complex_callee
+        send_not_implemented_method
+        send_getter_arity
+        getivar_name_not_mapped
+        setivar_name_not_mapped
+        setivar_not_object
+        oaref_argc_not_one
+        )
+
+    def initialize(ruby_name, results)
+        @ruby = ruby_name
+        @result_set = results
+
+        bench_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark(ruby_name)
+        raise("This Ruby collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
+
+        @benchmark_names = bench_yjit_stats.keys
+        @headings = [ "bench",  ]
+
+        @report_data = []
+    end
+
+    def as_text_table
+        out = ""
+
+        out
+    end
+
+end
+
+# Current YJIT stats as saved:
+# "exec_instruction": 202832371,  # YJIT instructions that *start* to execute, even if they later side-exit
+# "leave_interp_return": 4049518,   # Number of returns to the interpreter
+# "binding_allocations": 0,  # Number of times Ruby allocates a binding (via proc.c:rb_binding_alloc)
+# "binding_set": 0  # Number of locals modified through binding (via proc.c:bind_local_variable_set)
