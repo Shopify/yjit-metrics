@@ -153,26 +153,30 @@ module YJITMetrics
     end
 
     # Run all the benchmarks and record execution times
-    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], warmup_itrs: 15, with_chruby: nil)
+    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
+                        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
         bench_data = { "times" => {}, "warmups" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
 
         Dir.chdir(benchmark_dir) do
             # Get the list of benchmark files/directories matching name filters
             bench_files = Dir.children('benchmarks').sort
-            unknown_benchmarks = benchmark_list - bench_files
+            legal_bench_names = (bench_files + bench_files.map { |name| name.delete_suffix(".rb") }).uniq
+            benchmark_list.map! { |name| name.delete_suffix(".rb") }
+
+            unknown_benchmarks = benchmark_list - legal_bench_names
             raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
             bench_files = benchmark_list if benchmark_list.size > 0
 
-            bench_files.each_with_index do |entry, idx|
-                bench_name = entry.gsub('.rb', '')
-
+            bench_files.each_with_index do |bench_name, idx|
                 puts("Running benchmark \"#{bench_name}\" (#{idx+1}/#{bench_files.length})")
 
                 # Path to the benchmark runner script
-                script_path = File.join('benchmarks', entry)
+                script_path = File.join('benchmarks', bench_name)
 
-                if !script_path.end_with?('.rb')
+                if File.exist?(script_path + "/benchmark.rb")
                     script_path = File.join(script_path, 'benchmark.rb')
+                else
+                    script_path += ".rb"
                 end
 
                 out_json_path = File.expand_path(File.join(out_path, 'temp.json'))
@@ -196,7 +200,7 @@ module YJITMetrics
 
                 # Add per-benchmark metadata from this script to the data returned from the harness.
                 single_metadata.merge({
-                    "benchmark_name" => entry,
+                    "benchmark_name" => bench_name,
                     "chruby_version" => with_chruby,
                     "ruby_opts" => ruby_opts
                 })
