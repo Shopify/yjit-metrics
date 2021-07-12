@@ -93,6 +93,7 @@ class YJITMetrics::ResultSet
     # containing benchmark results (times) per
     # benchmark for the specified Ruby.
     def times_for_ruby_by_benchmark(ruby)
+        raise("No results for Ruby: #{ruby.inspect}!") if !@times.has_key?(ruby) || @times[ruby].empty?
         @times[ruby]
     end
 

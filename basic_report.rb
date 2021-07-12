@@ -74,6 +74,13 @@ else
     end
 end
 
+if relevant_results.size == 0
+    puts "No relevant data files found for directory #{data_dir.inspect} and specified arguments!"
+    exit -1
+end
+
+puts "Loading #{relevant_results.size} data files..."
+
 relevant_results.each do |filename, ruby_name, timestamp|
     benchmark_data = JSON.load(File.read(filename))
     begin
