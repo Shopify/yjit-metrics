@@ -4,6 +4,16 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
+REPORT_OBJ_BY_NAME = {
+    "per_bench_compare" => proc {
+        YJITMetrics::PerBenchRubyComparison.new(ruby_names, RESULT_SET)
+    },
+    "yjit_stats_default" => proc {
+        YJITMetrics::YJITStatsExitReport.new(ruby_names[0], RESULT_SET)
+    }
+}
+REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
+
 # Default settings
 use_all_in_dir = false
 reports = [ "per_bench_compare" ]
@@ -22,6 +32,8 @@ OptionParser.new do |opts|
 
     opts.on("--reports=REPORTS", "Run these reports on the specified data") do |str|
         reports = str.split(",")
+        bad_names = reports - REPORT_NAMES
+        raise("Unknown reports: #{bad_names.inspect}!") unless bad_names.empty?
     end
 
     opts.on("-d DIR", "--dir DIR", "Read data files from this directory") do |dir|
@@ -92,16 +104,6 @@ relevant_results.each do |filename, ruby_name, timestamp|
 end
 
 ruby_names = relevant_results.map { |filename, ruby_name, timestamp| ruby_name }.uniq
-
-# Okay, for now punt on doing something useful with random Ruby names
-REPORT_OBJ_BY_NAME = {
-    "per_bench_compare" => proc {
-        YJITMetrics::PerBenchRubyComparison.new(ruby_names, RESULT_SET)
-    },
-    "yjit_stats_default" => proc {
-        YJITMetrics::YJITStatsExitReport.new(ruby_names[0], RESULT_SET)
-    }
-}
 
 reports.each do |report_name|
     report = REPORT_OBJ_BY_NAME[report_name].call
