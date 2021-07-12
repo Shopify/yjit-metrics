@@ -9,14 +9,16 @@ YJIT's progress on a variety of Ruby metrics.
 
 ## Setup and Installation
 
-To run benchmarks on Linux, you'll need sudo access and to run the following commands:
+To run benchmarks on Linux, you'll need sudo access and to run the following command:
+
+    sudo ./setup.sh
+
+On Linux you'll need to do the same for each reboot, or do the following:
 
     sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
     sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'
 
-You'll also need to install gems for yjit-metrics:
-
-    bundle install
+On Mac you don't need to do that, but you should expect benchmark accuracy will be slightly lower as a result.
 
 ## How to Use this Repo
 
