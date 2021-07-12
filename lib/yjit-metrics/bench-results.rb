@@ -158,12 +158,21 @@ class YJITMetrics::PerBenchRubyComparison
         @col_formats = [ "%s" ] + ruby_names.flat_map { [ "%.1f", "%.1f" ] } + alt_rubies.map { "%.2f" }
 
         @report_data = []
-        times_by_ruby = ruby_names.map { |ruby| results.times_for_ruby_by_benchmark(ruby) }
-        benchmark_names = times_by_ruby[0].keys
+        times_by_ruby = {}
+        ruby_names.each { |ruby| times_by_ruby[ruby] = results.times_for_ruby_by_benchmark(ruby) }
+
+        benchmark_names = times_by_ruby[ruby_names[0]].keys
+
+        times_by_ruby.each do |ruby_name, results|
+            raise("No results for ruby #{ruby_name.inspect} in PerBenchRubyComparison!") if results.nil?
+        end
 
         benchmark_names.each do |benchmark_name|
             row = [ benchmark_name ]
             ruby_names.each do |ruby|
+                unless times_by_ruby[ruby][benchmark_name]
+                    raise("Ruby #{ruby.inspect} has no results for #{benchmark_name.inspect} even though #{ruby_names[0]} does in the same dataset!")
+                end
                 ruby_times = times_by_ruby[ruby][benchmark_name]
                 ruby_mean = mean(ruby_times)
                 row.push ruby_mean
@@ -200,27 +209,28 @@ class YJITMetrics::PerBenchRubyComparison
 
         num_cols = @report_data[0].length
 
-        col_widths = (0...num_cols).map do |col_num|
-            @report_data.map { |row| row[col_num].length }.max
+        row_data = @report_data.map.with_index do |row, idx|
+            @col_formats.zip(row).map { |fmt, data| fmt % data }
         end
+
+        col_widths = (0...num_cols).map { |col_num| row_data.map { |row| row[col_num].length }.max }
 
         separator = col_widths.map { |width| "-" * width }.join("  ")
-        out.concat(separator + "\n")
+        out.concat(separator, "\n")
 
-        @report_data.each do |row|
-            row_data = @col_formats.zip(row).map { |fmt, data| fmt % data }
-            out.concat(row_data.join("  ") + "\n")
+        row_data.each do |row|
+            out.concat (row.map.with_index { |item, idx| " " * (col_widths[idx] - item.size) + item }).join("  ")
         end
 
-        out.concat(separator + "\n")
+        out.concat("\n", separator, "\n")
         out.concat(ruby_legend_text)
     end
 
     def ruby_legend_text
-        "Legend:\n" +
+        "\nLegend:\n" +
         alt_rubies.map do |ruby|
             "- #{ruby}/#{base_ruby}: ratio of mean(#{ruby} times)/mean(#{base_ruby} times). >1 means #{base_ruby} is faster.\n"
-        end
+        end.join + "\n"
     end
 end
 

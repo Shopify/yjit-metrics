@@ -91,13 +91,15 @@ relevant_results.each do |filename, ruby_name, timestamp|
     end
 end
 
+ruby_names = relevant_results.map { |filename, ruby_name, timestamp| ruby_name }.uniq
+
 # Okay, for now punt on doing something useful with random Ruby names
 REPORT_OBJ_BY_NAME = {
     "per_bench_compare" => proc {
-        YJITMetrics::PerBenchRubyComparison.new([ "ruby-yjit-metrics-prod", "2.7.2" ], RESULT_SET)
+        YJITMetrics::PerBenchRubyComparison.new(ruby_names, RESULT_SET)
     },
     "yjit_stats_default" => proc {
-        YJITMetrics::YJITStatsExitReport.new("ruby-yjit-metrics-debug", RESULT_SET)
+        YJITMetrics::YJITStatsExitReport.new(ruby_names[0], RESULT_SET)
     }
 }
 
