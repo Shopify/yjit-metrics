@@ -7,7 +7,7 @@ require_relative "lib/yjit-metrics"
 # Default settings
 use_all_in_dir = false
 reports = [ "per_bench_compare" ]
-data_dir = "."
+data_dir = "data"
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER

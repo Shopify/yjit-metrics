@@ -100,8 +100,8 @@ class YJITMetrics::ResultSet
     # This returns a hash-of-arrays by Ruby name
     # containing warmup results (times) per
     # benchmark for the specified Ruby.
-    def times_for_ruby_by_benchmark(ruby)
-        @times[ruby]
+    def warmups_for_ruby_by_benchmark(ruby)
+        @warmups[ruby]
     end
 
     # This returns a hash-of-hashes by Ruby name
@@ -146,7 +146,11 @@ end
 # The first Ruby version given is assumed to be the baseline against
 # which the other Rubies are measured.
 class YJITMetrics::PerBenchRubyComparison
+    include YJITMetrics::Stats
+
     def initialize(ruby_names, results)
+        raise "No Rubies specified!" if ruby_names.empty?
+
         @ruby_names = ruby_names
         @result_set = results
 
