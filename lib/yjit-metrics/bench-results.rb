@@ -161,7 +161,7 @@ class YJITMetrics::Report
         out.concat(separator, "\n")
 
         formatted_data.each do |row|
-            out.concat (row.map.with_index { |item, idx| " " * (col_widths[idx] - item.size) + item }).join(column_spacer)
+            out.concat (row.map.with_index { |item, idx| " " * (col_widths[idx] - item.size) + item }).join(column_spacer), "\n"
         end
 
         out.concat("\n", separator, "\n")
