@@ -20,7 +20,10 @@ REPORT_OBJ_BY_NAME = {
         end
         raise "Can't find a configuration with non-empty YJIT stats in #{config_names.inspect}!" unless config
         YJITMetrics::YJITStatsExitReport.new(config, RESULT_SET)
-    }
+    },
+    "yjit_stats_multi" => proc { |config_names|
+        YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET)
+    },
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
 

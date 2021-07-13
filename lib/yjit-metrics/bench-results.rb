@@ -416,8 +416,73 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
     end
 end
 
-# Current YJIT stats as saved:
-# "exec_instruction": 202832371,  # YJIT instructions that *start* to execute, even if they later side-exit
-# "leave_interp_return": 4049518,   # Number of returns to the interpreter
-# "binding_allocations": 0,  # Number of times Ruby allocates a binding (via proc.c:rb_binding_alloc)
-# "binding_set": 0  # Number of locals modified through binding (via proc.c:bind_local_variable_set)
+# This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
+class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
+    def initialize(config_names, results)
+        stats_configs = config_names.select do |config_name|
+            stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
+
+            # Find the first configuration with non-empty stats results
+            !stats_by_bench.nil? && !stats_by_bench.empty? && !stats_by_bench.values.first.empty?
+        end
+        raise "We found more than one config with YJIT stats (#{stats_configs.inspect}) in this result set!" if stats_configs.size > 1
+        raise "We didn't find any config with YJIT stats among #{config_names.inspect}!" if stats_configs.empty?
+        @stats_config = stats_configs[0]
+
+        # Set up the YJIT stats parent class
+        super(@stats_config, results)
+
+        # We've figured out which config is the YJIT stats. Now which one is production stats with YJIT turned on?
+        # For now, let's assume it contains the string "with_yjit".
+        alt_configs = config_names - stats_configs
+        with_yjit_configs = alt_configs.select { |name| name["with_yjit"] }
+        raise "We found more than one candidate with-YJIT config (#{with_yjit_configs.inspect}) in this result set!" if with_yjit_configs.size > 1
+        raise "We didn't find any config that looked like a with-YJIT config among #{config_names.inspect}!" if with_yjit_configs.empty?
+        @with_yjit_config = with_yjit_configs[0]
+
+        # Now which one has no YJIT? Let's assume it contains the string "no_jit".
+        alt_configs -= with_yjit_configs
+        no_yjit_configs = alt_configs.select { |name| name["no_jit"] }
+        raise "We found more than one candidate no-YJIT config (#{no_yjit_configs.inspect}) in this result set!" if no_yjit_configs.size > 1
+        raise "We didn't find any config that looked like a no-YJIT config among #{config_names.inspect}!" if no_yjit_configs.empty?
+        @no_yjit_config = no_yjit_configs[0]
+
+        # Let's calculate some report data
+        times_by_config = {}
+        [ @with_yjit_config, @no_yjit_config ].each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
+        @benchmark_names = times_by_config[@no_yjit_config].keys
+        @headings = [ "bench", @with_yjit_config + " (ms)", "speedup (%)", "% in YJIT" ]
+        @col_formats = [ "%s", "%.1f", "%.2f", "%.2f" ]
+
+        times_by_config.each do |config_name, results|
+            raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
+        end
+
+        stats = results.yjit_stats_for_config_by_benchmark(@stats_config)
+
+        @report_data = @benchmark_names.map do |benchmark_name|
+            no_yjit_config_times = times_by_config[@no_yjit_config][benchmark_name]
+            no_yjit_mean = mean(no_yjit_config_times)
+            with_yjit_config_times = times_by_config[@with_yjit_config][benchmark_name]
+            with_yjit_mean = mean(with_yjit_config_times)
+            yjit_ratio = no_yjit_mean / with_yjit_mean
+            yjit_speedup_pct = (yjit_ratio - 1.0) * 100.0
+
+            # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
+            # For these calculations we just add all relevant counters together.
+            this_bench_stats = combined_stats_data_for_benchmarks([benchmark_name])
+
+            total_exits = total_exit_count(this_bench_stats)
+            retired_in_yjit = this_bench_stats["exec_instruction"] - total_exits
+            total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
+            yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
+
+            [ benchmark_name, with_yjit_mean, yjit_speedup_pct, yjit_ratio_pct ]
+        end
+    end
+
+    def to_s
+        format_as_table(@headings, @col_formats, @report_data)
+    end
+
+end
