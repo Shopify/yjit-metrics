@@ -4,12 +4,13 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
+RESULT_SET = YJITMetrics::ResultSet.new
 REPORT_OBJ_BY_NAME = {
-    "per_bench_compare" => proc {
-        YJITMetrics::PerBenchRubyComparison.new(ruby_names, RESULT_SET)
+    "per_bench_compare" => proc { |config_names|
+        YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET)
     },
-    "yjit_stats_default" => proc {
-        YJITMetrics::YJITStatsExitReport.new(ruby_names[0], RESULT_SET)
+    "yjit_stats_default" => proc { |config_names|
+        YJITMetrics::YJITStatsExitReport.new(config_names[0], RESULT_SET)
     }
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
@@ -42,7 +43,6 @@ OptionParser.new do |opts|
 end.parse!
 
 DATASET_FILENAME_RE = /^basic_benchmark_(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).json$/
-RESULT_SET = YJITMetrics::ResultSet.new
 
 def ts_string_to_date(ts)
     year, month, day, hms = ts.split("-")
@@ -57,9 +57,9 @@ file_data = files_in_dir.map do |filename|
     unless filename =~ DATASET_FILENAME_RE
         raise "Internal error! Filename #{filename.inspect} doesn't match expected naming of data files!"
     end
-    ruby_name = $1
+    config_name = $1
     timestamp = ts_string_to_date($2)
-    [ filename, ruby_name, timestamp ]
+    [ filename, config_name, timestamp ]
 end
 
 if use_all_in_dir
@@ -93,20 +93,20 @@ end
 
 puts "Loading #{relevant_results.size} data files..."
 
-relevant_results.each do |filename, ruby_name, timestamp|
+relevant_results.each do |filename, config_name, timestamp|
     benchmark_data = JSON.load(File.read(filename))
     begin
-        RESULT_SET.add_for_ruby(ruby_name, benchmark_data)
+        RESULT_SET.add_for_config(config_name, benchmark_data)
     rescue
         puts "Error adding data from #{filename.inspect}!"
         raise
     end
 end
 
-ruby_names = relevant_results.map { |filename, ruby_name, timestamp| ruby_name }.uniq
+config_names = relevant_results.map { |filename, config_name, timestamp| config_name }.uniq
 
 reports.each do |report_name|
-    report = REPORT_OBJ_BY_NAME[report_name].call
+    report = REPORT_OBJ_BY_NAME[report_name].call(config_names)
 
     print report.to_s
 end

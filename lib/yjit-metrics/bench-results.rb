@@ -17,7 +17,7 @@ module YJITMetrics::Stats
     end
 end
 
-# Encapsulate multiple benchmark runs across multiple Ruby versions.
+# Encapsulate multiple benchmark runs across multiple Ruby configurations.
 # Do simple calculations, reporting and file I/O.
 #
 # Note that a JSON file with many results can be quite large.
@@ -52,77 +52,77 @@ class YJITMetrics::ResultSet
     # Every benchmark run is assumed to come with a corresponding metadata hash
     # and (optional) hash of YJIT stats. However, there should normally only
     # be one set of Ruby metadata, not one per benchmark run.
-    def add_for_ruby(ruby_name, benchmark_results)
-        @times[ruby_name] ||= {}
+    def add_for_config(config_name, benchmark_results)
+        @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
-            @times[ruby_name][benchmark_name] ||= []
-            @times[ruby_name][benchmark_name].concat(times)
+            @times[config_name][benchmark_name] ||= []
+            @times[config_name][benchmark_name].concat(times)
         end
 
-        @warmups[ruby_name] ||= {}
+        @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
-            @times[ruby_name][benchmark_name] ||= []
-            @times[ruby_name][benchmark_name].concat(warmups)
+            @times[config_name][benchmark_name] ||= []
+            @times[config_name][benchmark_name].concat(warmups)
         end
 
-        @benchmark_metadata[ruby_name] ||= {}
+        @benchmark_metadata[config_name] ||= {}
         benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
-            @benchmark_metadata[ruby_name][benchmark_name] ||= metadata_for_benchmark
-            if @benchmark_metadata[ruby_name][benchmark_name] != metadata_for_benchmark
-                STDERR.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{ruby_name} have different benchmark metadata!"
+            @benchmark_metadata[config_name][benchmark_name] ||= metadata_for_benchmark
+            if @benchmark_metadata[config_name][benchmark_name] != metadata_for_benchmark
+                STDERR.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
             end
         end
 
-        @ruby_metadata[ruby_name] ||= benchmark_results["ruby_metadata"]
-        if @ruby_metadata[ruby_name] != benchmark_results["ruby_metadata"]
+        @ruby_metadata[config_name] ||= benchmark_results["ruby_metadata"]
+        if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"]
             print "Ruby metadata is meant to *only* include information that should always be\n" +
               "  the same for the same Ruby executable. Please verify that you have not added\n" +
               "  inappropriate Ruby metadata or accidentally used the same name for two\n"
               "  different Ruby executables.\n"
-            raise "Ruby metadata does not match for same Ruby name!"
+            raise "Ruby metadata does not match for same configuration name!"
         end
 
-        @yjit_stats[ruby_name] ||= {}
+        @yjit_stats[config_name] ||= {}
         benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
-            @yjit_stats[ruby_name][benchmark_name] ||= []
-            @yjit_stats[ruby_name][benchmark_name].concat(stats_array)
+            @yjit_stats[config_name][benchmark_name] ||= []
+            @yjit_stats[config_name][benchmark_name].concat(stats_array)
         end
     end
 
-    # This returns a hash-of-arrays by Ruby name
+    # This returns a hash-of-arrays by configuration name
     # containing benchmark results (times) per
-    # benchmark for the specified Ruby.
-    def times_for_ruby_by_benchmark(ruby)
-        raise("No results for Ruby: #{ruby.inspect}!") if !@times.has_key?(ruby) || @times[ruby].empty?
-        @times[ruby]
+    # benchmark for the specified config.
+    def times_for_config_by_benchmark(config)
+        raise("No results for configuration: #{config.inspect}!") if !@times.has_key?(config) || @times[config].empty?
+        @times[config]
     end
 
-    # This returns a hash-of-arrays by Ruby name
+    # This returns a hash-of-arrays by configuration name
     # containing warmup results (times) per
-    # benchmark for the specified Ruby.
-    def warmups_for_ruby_by_benchmark(ruby)
-        @warmups[ruby]
+    # benchmark for the specified config.
+    def warmups_for_config_by_benchmark(config)
+        @warmups[config]
     end
 
-    # This returns a hash-of-hashes by Ruby name
+    # This returns a hash-of-hashes by config name
     # containing YJIT statistics, if gathered, per
-    # benchmark for the specified Ruby. For Rubies
+    # benchmark for the specified config. For configs
     # that don't collect YJIT statistics, the inner
     # hash will be empty.
-    def yjit_stats_for_ruby_by_benchmark(ruby)
-        @yjit_stats[ruby]
+    def yjit_stats_for_config_by_benchmark(config)
+        @yjit_stats[config]
     end
 
-    # This returns a hash-of-hashes by Ruby name
+    # This returns a hash-of-hashes by config name
     # containing per-benchmark metadata (parameters) per
-    # benchmark for the specified Ruby.
-    def benchmark_metadata_for_ruby_by_benchmark(ruby)
-        @benchmark_metadata[ruby]
+    # benchmark for the specified config.
+    def benchmark_metadata_for_config_by_benchmark(config)
+        @benchmark_metadata[config]
     end
 
-    # This returns a hash of metadata for the given Ruby name
-    def metadata_for_ruby(ruby)
-        @ruby_metadata[ruby]
+    # This returns a hash of metadata for the given config name
+    def metadata_for_config(config)
+        @ruby_metadata[config]
     end
 
     # Output a CSV file which contains metadata as key/value pairs, followed by a blank row, followed by the raw time data
@@ -139,62 +139,62 @@ class YJITMetrics::ResultSet
 end
 
 # We'd like to be able to create a quick columnar report, often for one
-# Ruby versus another, and load/dump it as JSON or CSV. This isn't a
+# Ruby config versus another, and load/dump it as JSON or CSV. This isn't a
 # report class that is all things to all people -- it's specifically
-# a comparison of two or more Rubies per-benchmark for yjit-bench.
+# a comparison of two or more configurations per-benchmark for yjit-bench.
 #
-# The first Ruby version given is assumed to be the baseline against
-# which the other Rubies are measured.
+# The first configuration given is assumed to be the baseline against
+# which the other configs are measured.
 class YJITMetrics::PerBenchRubyComparison
     include YJITMetrics::Stats
 
-    def initialize(ruby_names, results)
-        raise "No Rubies specified!" if ruby_names.empty?
+    def initialize(config_names, results)
+        raise "No Rubies specified!" if config_names.empty?
 
-        @ruby_names = ruby_names
+        @config_names = config_names
         @result_set = results
 
-        @headings = [ "bench" ] + ruby_names.flat_map { |ruby| [ "#{ruby} (ms)", "rel stddev (%)" ] } + alt_rubies.map { |ruby| "#{ruby}/#{base_ruby}" }
-        @col_formats = [ "%s" ] + ruby_names.flat_map { [ "%.1f", "%.1f" ] } + alt_rubies.map { "%.2f" }
+        @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config} (ms)", "rel stddev (%)" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
+        @col_formats = [ "%s" ] + config_names.flat_map { [ "%.1f", "%.1f" ] } + alt_configs.map { "%.2f" }
 
         @report_data = []
-        times_by_ruby = {}
-        ruby_names.each { |ruby| times_by_ruby[ruby] = results.times_for_ruby_by_benchmark(ruby) }
+        times_by_config = {}
+        config_names.each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
 
-        benchmark_names = times_by_ruby[ruby_names[0]].keys
+        benchmark_names = times_by_config[config_names[0]].keys
 
-        times_by_ruby.each do |ruby_name, results|
-            raise("No results for ruby #{ruby_name.inspect} in PerBenchRubyComparison!") if results.nil?
+        times_by_config.each do |config_name, results|
+            raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil?
         end
 
         benchmark_names.each do |benchmark_name|
             row = [ benchmark_name ]
-            ruby_names.each do |ruby|
-                unless times_by_ruby[ruby][benchmark_name]
-                    raise("Ruby #{ruby.inspect} has no results for #{benchmark_name.inspect} even though #{ruby_names[0]} does in the same dataset!")
+            config_names.each do |config|
+                unless times_by_config[config][benchmark_name]
+                    raise("Configuration #{config.inspect} has no results for #{benchmark_name.inspect} even though #{config_names[0]} does in the same dataset!")
                 end
-                ruby_times = times_by_ruby[ruby][benchmark_name]
-                ruby_mean = mean(ruby_times)
-                row.push ruby_mean
-                row.push 100.0 * stddev(ruby_times) / ruby_mean
+                config_times = times_by_config[config][benchmark_name]
+                config_mean = mean(config_times)
+                row.push config_mean
+                row.push 100.0 * stddev(config_times) / config_mean
             end
 
-            base_ruby_mean = mean(times_by_ruby[base_ruby][benchmark_name])
-            alt_rubies.each do |ruby|
-                ruby_mean = mean(times_by_ruby[ruby][benchmark_name])
-                row.push ruby_mean / base_ruby_mean
+            base_config_mean = mean(times_by_config[base_config][benchmark_name])
+            alt_configs.each do |config|
+                config_mean = mean(times_by_config[config][benchmark_name])
+                row.push config_mean / base_config_mean
             end
 
             @report_data.push row
         end
     end
 
-    def base_ruby
-        @ruby_names[0]
+    def base_config
+        @config_names[0]
     end
 
-    def alt_rubies
-        @ruby_names[1..-1]
+    def alt_configs
+        @config_names[1..-1]
     end
 
     def write_to_csv(filename)
@@ -223,24 +223,24 @@ class YJITMetrics::PerBenchRubyComparison
         end
 
         out.concat("\n", separator, "\n")
-        out.concat(ruby_legend_text)
+        out.concat(config_legend_text)
     end
 
-    def ruby_legend_text
+    def config_legend_text
         "\nLegend:\n" +
-        alt_rubies.map do |ruby|
-            "- #{ruby}/#{base_ruby}: ratio of mean(#{ruby} times)/mean(#{base_ruby} times). >1 means #{base_ruby} is faster.\n"
+        alt_configs.map do |config|
+            "- #{config}/#{base_config}: ratio of mean(#{config} times)/mean(#{base_config} times). >1 means #{base_config} is faster.\n"
         end.join + "\n"
     end
 end
 
 class YJITMetrics::YJITStatsReport
-    def initialize(ruby_name, results)
-        @ruby = ruby_name
+    def initialize(config_name, results)
+        @config_name = config_name
         @result_set = results
 
-        bench_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark(ruby_name)
-        raise("This Ruby collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
+        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(config_name)
+        raise("This config collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
 
         @benchmark_names = bench_yjit_stats.keys
     end
@@ -252,7 +252,7 @@ class YJITMetrics::YJITStatsReport
             raise "No data found for benchmark #{benchmark_name.inspect}!"
         end
 
-        all_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark[@ruby]
+        all_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark[@config_name]
         relevant_stats = benchmark_names.flat_map { |benchmark_name| all_yjit_stats[benchmark_name] }.select { |data| !data.empty? }
 
         if relevant_stats.empty?
@@ -278,7 +278,7 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
 end
 
 class YJITMetrics::YJITStatsReport
-    attr_reader :ruby
+    attr_reader :config
 
     # These counters aren't for "can't compile" or "side exit",
     # they're for various other things.
@@ -330,12 +330,12 @@ class YJITMetrics::YJITStatsReport
         oaref_argc_not_one
         )
 
-    def initialize(ruby_name, results)
-        @ruby = ruby_name
+    def initialize(config_name, results)
+        @config_name = config_name
         @result_set = results
 
-        bench_yjit_stats = @result_set.yjit_stats_for_ruby_by_benchmark(ruby_name)
-        raise("This Ruby collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
+        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(config_name)
+        raise("This config collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
 
         @benchmark_names = bench_yjit_stats.keys
         @headings = [ "bench",  ]
