@@ -173,11 +173,10 @@ module YJITMetrics
                 # Path to the benchmark runner script
                 script_path = File.join('benchmarks', bench_name)
 
-                if File.exist?(script_path + "/benchmark.rb")
-                    script_path = File.join(script_path, 'benchmark.rb')
-                else
-                    script_path += ".rb"
-                end
+                # Choose the first of these that exists
+                real_script_path = [script_path, script_path + ".rb", script_path + "/benchmark.rb"].detect { |path| File.exist?(path) && !File.directory?(path) }
+                raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
+                script_path = real_script_path
 
                 out_json_path = File.expand_path(File.join(out_path, 'temp.json'))
                 FileUtils.rm_f(out_json_path) # No stale data please
