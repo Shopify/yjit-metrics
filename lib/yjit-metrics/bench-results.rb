@@ -138,6 +138,36 @@ class YJITMetrics::ResultSet
     end
 end
 
+# Shared utility methods for reports
+class YJITMetrics::Report
+    include YJITMetrics::Stats
+
+    # Take column headings, formats for the percent operator and data, and arrange it
+    # into a simple ASCII table returned as a string.
+    def format_as_table(headings, col_formats, data, separator_character: "-", column_spacer: "  ")
+        out = ""
+
+        num_cols = data[0].length
+
+        formatted_data = data.map.with_index do |row, idx|
+            col_formats.zip(row).map { |fmt, data| fmt % data }
+        end
+
+        col_widths = (0...num_cols).map { |col_num| (formatted_data.map { |row| row[col_num].length } + [ headings[col_num].length ]).max }
+
+        out.concat(headings.map.with_index { |h, idx| "%#{col_widths[idx]}s" % h }.join(column_spacer), "\n")
+
+        separator = col_widths.map { |width| separator_character * width }.join(column_spacer)
+        out.concat(separator, "\n")
+
+        formatted_data.each do |row|
+            out.concat (row.map.with_index { |item, idx| " " * (col_widths[idx] - item.size) + item }).join(column_spacer)
+        end
+
+        out.concat("\n", separator, "\n")
+    end
+end
+
 # We'd like to be able to create a quick columnar report, often for one
 # Ruby config versus another, and load/dump it as JSON or CSV. This isn't a
 # report class that is all things to all people -- it's specifically
@@ -145,9 +175,7 @@ end
 #
 # The first configuration given is assumed to be the baseline against
 # which the other configs are measured.
-class YJITMetrics::PerBenchRubyComparison
-    include YJITMetrics::Stats
-
+class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
     def initialize(config_names, results)
         raise "No Rubies specified!" if config_names.empty?
 
@@ -205,27 +233,7 @@ class YJITMetrics::PerBenchRubyComparison
     end
 
     def to_s
-        out = ""
-
-        num_cols = @report_data[0].length
-
-        row_data = @report_data.map.with_index do |row, idx|
-            @col_formats.zip(row).map { |fmt, data| fmt % data }
-        end
-
-        col_widths = (0...num_cols).map { |col_num| (row_data.map { |row| row[col_num].length } + [ @headings[col_num].length ]).max }
-
-        out.concat(@headings.map.with_index { |h, idx| "%#{col_widths[idx]}s" % h }.join("  "), "\n")
-
-        separator = col_widths.map { |width| "-" * width }.join("  ")
-        out.concat(separator, "\n")
-
-        row_data.each do |row|
-            out.concat (row.map.with_index { |item, idx| " " * (col_widths[idx] - item.size) + item }).join("  ")
-        end
-
-        out.concat("\n", separator, "\n")
-        out.concat(config_legend_text)
+        format_as_table(@headings, @col_formats, @report_data) + config_legend_text
     end
 
     def config_legend_text
@@ -236,7 +244,7 @@ class YJITMetrics::PerBenchRubyComparison
     end
 end
 
-class YJITMetrics::YJITStatsReport
+class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :stats_config
 
     def initialize(stats_config, results)
