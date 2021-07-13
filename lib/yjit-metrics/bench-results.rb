@@ -335,7 +335,7 @@ class YJITMetrics::YJITStatsReport
         @result_set = results
 
         bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(config_name)
-        raise("This config collected no YJIT stats!") if bench_yjit_stats.values.all?(&:empty?)
+        raise("This config collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
         @benchmark_names = bench_yjit_stats.keys
         @headings = [ "bench",  ]

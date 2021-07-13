@@ -10,7 +10,15 @@ REPORT_OBJ_BY_NAME = {
         YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET)
     },
     "yjit_stats_default" => proc { |config_names|
-        YJITMetrics::YJITStatsExitReport.new(config_names[0], RESULT_SET)
+        # Sets of recent results will often have only one Ruby that collects statistics.
+        config = config_names.select do |config_name|
+            stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
+
+            # Find the first configuration with non-empty stats results
+            !stats_by_bench.nil? && !stats_by_bench.empty? && !stats_by_bench.values.first.empty?
+        end
+        raise "Can't find a configuration with non-empty YJIT stats in #{config_names.inspect}!" unless config
+        YJITMetrics::YJITStatsExitReport.new(config, RESULT_SET)
     }
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
