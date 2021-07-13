@@ -199,7 +199,7 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
         benchmark_names.each do |benchmark_name|
             # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
             unless @only_benchmarks.empty?
-                continue unless @only_benchmarks.any? { |bench_spec| benchmark_name.start_with?(bench_spec) }
+                next unless @only_benchmarks.any? { |bench_spec| benchmark_name.start_with?(bench_spec) }
             end
             row = [ benchmark_name ]
             config_names.each do |config|
