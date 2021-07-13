@@ -6,12 +6,14 @@ require_relative "lib/yjit-metrics"
 
 RESULT_SET = YJITMetrics::ResultSet.new
 REPORT_OBJ_BY_NAME = {
-    "per_bench_compare" => proc { |config_names|
-        YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET)
+    "per_bench_compare" => proc { |config_names:, benchmarks: []|
+        STDERR.puts "Config_names: #{config_names.inspect}"
+        YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
-    "yjit_stats_default" => proc { |config_names|
+    "yjit_stats_default" => proc { |config_names:, benchmarks: []|
         # Sets of recent results will often have only one Ruby that collects statistics.
         # Certainly we only want to use one for this report.
+        # TODO: we do this in two different places. It should go in the YJIT stats parent report class.
         config = config_names.detect do |config_name|
             stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
 
@@ -19,10 +21,10 @@ REPORT_OBJ_BY_NAME = {
             !stats_by_bench.nil? && !stats_by_bench.empty? && !stats_by_bench.values.first.empty?
         end
         raise "Can't find a configuration with non-empty YJIT stats in #{config_names.inspect}!" unless config
-        YJITMetrics::YJITStatsExitReport.new(config, RESULT_SET)
+        YJITMetrics::YJITStatsExitReport.new(config, RESULT_SET, benchmarks: benchmarks)
     },
-    "yjit_stats_multi" => proc { |config_names|
-        YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET)
+    "yjit_stats_multi" => proc { |config_names:, benchmarks: []|
+        YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
@@ -31,6 +33,7 @@ REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
 use_all_in_dir = false
 reports = [ "per_bench_compare" ]
 data_dir = "data"
+only_benchmarks = []  # Empty list means use all benchmarks present in the data files
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -47,6 +50,10 @@ OptionParser.new do |opts|
         reports = str.split(",")
         bad_names = reports - REPORT_NAMES
         raise("Unknown reports: #{bad_names.inspect}! Known report types are: #{REPORT_NAMES.join(", ")}") unless bad_names.empty?
+    end
+
+    opts.on("--only-benchmarks=BENCHNAMES", "Use only benchmarks with names that match this/these comma-separated strings") do |benchnames|
+        only_benchmarks = benchnames.split(",")
     end
 
     opts.on("-d DIR", "--dir DIR", "Read data files from this directory") do |dir|
@@ -118,7 +125,8 @@ end
 config_names = relevant_results.map { |filename, config_name, timestamp| config_name }.uniq
 
 reports.each do |report_name|
-    report = REPORT_OBJ_BY_NAME[report_name].call(config_names)
+    report = REPORT_OBJ_BY_NAME[report_name].call(config_names: config_names, benchmarks: only_benchmarks)
 
     print report.to_s
+    puts
 end

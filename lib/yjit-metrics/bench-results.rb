@@ -176,10 +176,11 @@ end
 # The first configuration given is assumed to be the baseline against
 # which the other configs are measured.
 class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
-    def initialize(config_names, results)
+    def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 
         @config_names = config_names
+        @only_benchmarks = benchmarks
         @result_set = results
 
         @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config} (ms)", "rel stddev (%)" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
@@ -196,6 +197,10 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
         end
 
         benchmark_names.each do |benchmark_name|
+            # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
+            unless @only_benchmarks.empty?
+                continue unless @only_benchmarks.any? { |bench_spec| benchmark_name.start_with?(bench_spec) }
+            end
             row = [ benchmark_name ]
             config_names.each do |config|
                 unless times_by_config[config][benchmark_name]
@@ -247,14 +252,19 @@ end
 class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :stats_config
 
-    def initialize(stats_config, results)
+    def initialize(stats_config, results, benchmarks: [])
         @stats_config = stats_config
         @result_set = results
+        @only_benchmarks = benchmarks
 
         bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(stats_config)
         raise("Config #{stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
+        # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
         @benchmark_names = bench_yjit_stats.keys
+        unless benchmarks.empty?
+            @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) } }
+        end
     end
 
     # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics and print an exit report.
@@ -418,7 +428,7 @@ end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
-    def initialize(config_names, results)
+    def initialize(config_names, results, benchmarks: [])
         stats_configs = config_names.select do |config_name|
             stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
 
@@ -450,9 +460,14 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
         # Let's calculate some report data
         times_by_config = {}
         [ @with_yjit_config, @no_yjit_config ].each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
-        @benchmark_names = times_by_config[@no_yjit_config].keys
         @headings = [ "bench", @with_yjit_config + " (ms)", "speedup (%)", "% in YJIT" ]
         @col_formats = [ "%s", "%.1f", "%.2f", "%.2f" ]
+
+        # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
+        @benchmark_names = times_by_config[@no_yjit_config].keys
+        unless benchmarks.empty?
+            @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
+        end
 
         times_by_config.each do |config_name, results|
             raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
