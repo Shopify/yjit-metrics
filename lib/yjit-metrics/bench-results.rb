@@ -213,7 +213,9 @@ class YJITMetrics::PerBenchRubyComparison
             @col_formats.zip(row).map { |fmt, data| fmt % data }
         end
 
-        col_widths = (0...num_cols).map { |col_num| row_data.map { |row| row[col_num].length }.max }
+        col_widths = (0...num_cols).map { |col_num| (row_data.map { |row| row[col_num].length } + [ @headings[col_num].length ]).max }
+
+        out.concat(@headings.map.with_index { |h, idx| "%#{col_widths[idx]}s" % h }.join("  "), "\n")
 
         separator = col_widths.map { |width| "-" * width }.join("  ")
         out.concat(separator, "\n")
