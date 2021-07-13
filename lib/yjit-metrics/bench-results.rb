@@ -237,26 +237,25 @@ class YJITMetrics::PerBenchRubyComparison
 end
 
 class YJITMetrics::YJITStatsReport
-    attr_reader :config_name
+    attr_reader :stats_config
 
-    def initialize(config_name, results)
-        @config_name = config_name
+    def initialize(stats_config, results)
+        @stats_config = stats_config
         @result_set = results
 
-        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(config_name)
-        raise("Config #{config_name.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
+        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(stats_config)
+        raise("Config #{stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
         @benchmark_names = bench_yjit_stats.keys
     end
 
     # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics and print an exit report.
-    # TODO: add a mechanism for a "zero" result set from an empty YJIT run, then subtract that from each result set before combining.
-    def combined_data_for_benchmarks(benchmark_names)
+    def combined_stats_data_for_benchmarks(benchmark_names)
         unless benchmark_names.all? { |benchmark_name| @benchmark_names.include?(benchmark_name) }
             raise "No data found for benchmark #{benchmark_name.inspect}!"
         end
 
-        all_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@config_name)
+        all_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config)
         relevant_stats = benchmark_names.flat_map { |benchmark_name| all_yjit_stats[benchmark_name] }.select { |data| !data.empty? }
 
         if relevant_stats.empty?
@@ -273,7 +272,15 @@ class YJITMetrics::YJITStatsReport
         yjit_data
     end
 
-    # These counters aren't for "can't compile" or "side exit",
+    def total_exit_count(stats, prefix: "exit_")
+        total = 0
+        stats.each do |k,v|
+            total += v if k.start_with?(prefix)
+        end
+        total
+    end
+
+    # The "misc" counters aren't for "can't compile" or "side exit",
     # they're for various other things.
     COUNTERS_MISC = [
         "exec_instruction",     # YJIT instructions that *start* to execute, even if they later side-exit
@@ -329,7 +336,7 @@ end
 class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
     def to_s
         # Bindings for use inside ERB report template
-        stats = combined_data_for_benchmarks(@benchmark_names)
+        stats = combined_stats_data_for_benchmarks(@benchmark_names)
         total_exits = total_exit_count(stats)
 
         # Number of instructions that finish executing in YJIT
@@ -373,14 +380,6 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
             formatted_percent = "%.1f" % percent
             "#{padded_name}: #{padded_count} (#{formatted_percent})"
         end.join("\n")
-    end
-
-    def total_exit_count(stats, prefix: "exit_")
-        total = 0
-        stats.each do |k,v|
-            total += v if k.start_with?(prefix)
-        end
-        total
     end
 
     def counters_section(counters, prefix:, prompt:)
