@@ -11,7 +11,8 @@ REPORT_OBJ_BY_NAME = {
     },
     "yjit_stats_default" => proc { |config_names|
         # Sets of recent results will often have only one Ruby that collects statistics.
-        config = config_names.select do |config_name|
+        # Certainly we only want to use one for this report.
+        config = config_names.detect do |config_name|
             stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
 
             # Find the first configuration with non-empty stats results
