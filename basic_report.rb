@@ -51,7 +51,7 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-DATASET_FILENAME_RE = /^basic_benchmark_(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).json$/
+DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(.*).json$/
 
 def ts_string_to_date(ts)
     year, month, day, hms = ts.split("-")
@@ -66,8 +66,8 @@ file_data = files_in_dir.map do |filename|
     unless filename =~ DATASET_FILENAME_RE
         raise "Internal error! Filename #{filename.inspect} doesn't match expected naming of data files!"
     end
-    config_name = $1
-    timestamp = ts_string_to_date($2)
+    config_name = $2
+    timestamp = ts_string_to_date($1)
     [ filename, config_name, timestamp ]
 end
 

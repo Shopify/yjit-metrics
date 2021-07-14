@@ -169,7 +169,7 @@ configs_to_test.each do |config|
 		min_benchmark_time: min_bench_time
 		)
 
-	json_path = OUTPUT_DATA_PATH + "/basic_benchmark_#{config}_#{timestamp}.json"
+	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
 	puts "Writing to JSON output file #{json_path}."
 	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
 end
