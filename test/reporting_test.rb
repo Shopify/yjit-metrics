@@ -42,6 +42,16 @@ class TestBasicReporting < Minitest::Test
         report.to_s
     end
 
+    def test_creating_vmil_report
+        results = YJITMetrics::ResultSet.new
+        results.add_for_config "no_jit", JSON.load(File.read "test/data/basic_benchmark_prod_ruby_no_jit_2021-07-13-084249.json")
+        results.add_for_config "with_yjit", JSON.load(File.read "test/data/basic_benchmark_prod_ruby_with_yjit_2021-07-13-084249.json")
+        results.add_for_config "with_stats", JSON.load(File.read "test/data/basic_benchmark_yjit_stats_2021-07-13-084249.json")
+
+        report = YJITMetrics::VMILReport.new [ "no_jit", "with_yjit", "with_stats" ], results
+        report.to_s
+    end
+
     def test_calculation_with_synthetic_data
         results = YJITMetrics::ResultSet.new
         results.add_for_config "fake_ruby", JSON.load(File.read "test/data/synthetic_data.json")
