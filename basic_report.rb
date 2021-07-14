@@ -46,13 +46,13 @@ OptionParser.new do |opts|
         use_all_in_dir = true
     end
 
-    opts.on("--reports=REPORTS", "Run these reports on the specified data (known reports: #{REPORT_NAMES.join(", ")})") do |str|
+    opts.on("--reports=REPORTS", "Run these reports on the data (known reports: #{REPORT_NAMES.join(", ")})") do |str|
         reports = str.split(",")
         bad_names = reports - REPORT_NAMES
         raise("Unknown reports: #{bad_names.inspect}! Known report types are: #{REPORT_NAMES.join(", ")}") unless bad_names.empty?
     end
 
-    opts.on("--only-benchmarks=BENCHNAMES", "Use only benchmarks with names that match this/these comma-separated strings") do |benchnames|
+    opts.on("--benchmarks=BENCHNAMES", "Report only for benchmarks with names that match this/these comma-separated strings") do |benchnames|
         only_benchmarks = benchnames.split(",")
     end
 
