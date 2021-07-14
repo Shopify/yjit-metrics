@@ -150,6 +150,9 @@ class YJITMetrics::Report
         out = ""
 
         num_cols = data[0].length
+        raise "Mismatch between headings and first data row for number of columns!" unless headings.length == num_cols
+        raise "Data has variable number of columns!" unless data.all? { |row| row.length == num_cols }
+        raise "Column formats have wrong number of entries!" unless col_formats.length == num_cols
 
         formatted_data = data.map.with_index do |row, idx|
             col_formats.zip(row).map { |fmt, data| fmt % data }

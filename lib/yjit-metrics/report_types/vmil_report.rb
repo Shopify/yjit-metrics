@@ -84,7 +84,7 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
     end
 
     def write_file(filename)
-        write_to_csv(filename + ".csv", @headings + @report_data)
+        write_to_csv(filename + ".csv", [@headings] + @report_data)
     end
 
 end

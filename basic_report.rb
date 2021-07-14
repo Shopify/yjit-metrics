@@ -7,7 +7,6 @@ require_relative "lib/yjit-metrics"
 RESULT_SET = YJITMetrics::ResultSet.new
 REPORT_OBJ_BY_NAME = {
     "per_bench_compare" => proc { |config_names:, benchmarks: []|
-        STDERR.puts "Config_names: #{config_names.inspect}"
         YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
     "yjit_stats_default" => proc { |config_names:, benchmarks: []|
