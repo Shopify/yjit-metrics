@@ -138,18 +138,6 @@ class YJITMetrics::ResultSet
             !stats.nil? && !stats.empty? && !stats.values.all?(&:empty?)
         end
     end
-
-    # Output a CSV file which contains metadata as key/value pairs, followed by a blank row, followed by the raw time data
-    def to_csv
-        output_rows = @metadata.keys.zip(@metadata.values)
-        output_rows << []
-        output_rows.concat(@data)
-
-        csv_out = ""
-        csv = CSV.new(csv_out)
-        output_rows.each { |row| csv << row }
-        csv_out
-    end
 end
 
 # Shared utility methods for reports
@@ -180,4 +168,11 @@ class YJITMetrics::Report
 
         out.concat("\n", separator, "\n")
     end
+
+    def write_to_csv(filename, data)
+        CSV.open(filename, "wb") do |csv|
+            data.each { |row| csv << row }
+        end
+    end
+
 end

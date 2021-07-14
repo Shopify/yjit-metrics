@@ -2,50 +2,50 @@ require_relative "yjit_stats_reports"
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
+    def exactly_one_config_with_name(configs, substring, description)
+        matching_configs = configs.select { |name| name.include?(substring) }
+        raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
+        raise "We didn't find any #{description} config among #{configs.inspect}!" if matching_configs.empty?
+        matching_configs[0]
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super
 
-        # We've figured out which config is the YJIT stats. Now which one is production stats with YJIT turned on?
-        # For now, let's assume it contains the string "with_yjit".
-        alt_configs = config_names - [ @stats_config ]
-        with_yjit_configs = alt_configs.select { |name| name["with_yjit"] }
-        raise "We found more than one candidate with-YJIT config (#{with_yjit_configs.inspect}) in this result set!" if with_yjit_configs.size > 1
-        raise "We didn't find any config that looked like a with-YJIT config among #{config_names.inspect}!" if with_yjit_configs.empty?
-        @with_yjit_config = with_yjit_configs[0]
+        @with_yjit_config = exactly_one_config_with_name(config_names, "with_yjit", "with-YJIT")
+        @with_mjit_config = exactly_one_config_with_name(config_names, "with_mjit", "with-MJIT")
+        @no_jit_config    = exactly_one_config_with_name(config_names, "no_jit", "no-JIT")
 
-        # Now which one has no YJIT? Let's assume it contains the string "no_jit".
-        alt_configs -= with_yjit_configs
-        no_yjit_configs = alt_configs.select { |name| name["no_jit"] }
-        raise "We found more than one candidate no-YJIT config (#{no_yjit_configs.inspect}) in this result set!" if no_yjit_configs.size > 1
-        raise "We didn't find any config that looked like a no-YJIT config among #{config_names.inspect}!" if no_yjit_configs.empty?
-        @no_yjit_config = no_yjit_configs[0]
-
-        # Let's calculate some report data
+        # Grab relevant data from the ResultSet
         times_by_config = {}
-        [ @with_yjit_config, @no_yjit_config ].each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
-        @headings = [ "bench", @with_yjit_config + " (ms)", "speedup (%)", "% in YJIT" ]
-        @col_formats = [ "%s", "%.1f", "%.2f", "%.2f" ]
+        [ @with_yjit_config, @with_mjit_config, @no_jit_config ].each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
+        times_by_config.each do |config_name, results|
+            raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
+        end
+        stats = results.yjit_stats_for_config_by_benchmark(@stats_config)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = times_by_config[@no_yjit_config].keys
+        @benchmark_names = times_by_config[@no_jit_config].keys
         unless benchmarks.empty?
             @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
         end
 
-        times_by_config.each do |config_name, results|
-            raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
-        end
-
-        stats = results.yjit_stats_for_config_by_benchmark(@stats_config)
+        # Report contents
+        @headings = [ "bench", "YJIT (ms)", "MJIT (ms)", "No JIT (ms)", "YJIT speedup (%)", "MJIT speedup (%)", "% in YJIT" ]
+        @col_formats = [ "%s", "%.1f", "%.1f", "%.1f", "%.2f", "%.2f", "%.2f" ]
 
         @report_data = @benchmark_names.map do |benchmark_name|
-            no_yjit_config_times = times_by_config[@no_yjit_config][benchmark_name]
-            no_yjit_mean = mean(no_yjit_config_times)
+            no_jit_config_times = times_by_config[@no_jit_config][benchmark_name]
+            no_jit_mean = mean(no_jit_config_times)
+            with_mjit_config_times = times_by_config[@with_mjit_config][benchmark_name]
+            with_mjit_mean = mean(with_mjit_config_times)
             with_yjit_config_times = times_by_config[@with_yjit_config][benchmark_name]
             with_yjit_mean = mean(with_yjit_config_times)
-            yjit_ratio = no_yjit_mean / with_yjit_mean
-            yjit_speedup_pct = (yjit_ratio - 1.0) * 100.0
+            mjit_speedup_ratio = no_jit_mean / with_mjit_mean
+            mjit_speedup_pct = (mjit_speedup_ratio - 1.0) * 100.0
+            yjit_speedup_ratio = no_jit_mean / with_yjit_mean
+            yjit_speedup_pct = (yjit_speedup_ratio - 1.0) * 100.0
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
             # For these calculations we just add all relevant counters together.
@@ -56,12 +56,16 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
 
-            [ benchmark_name, with_yjit_mean, yjit_speedup_pct, yjit_ratio_pct ]
+            [ benchmark_name, with_yjit_mean, with_mjit_mean, no_jit_mean, yjit_speedup_pct, mjit_speedup_pct, yjit_ratio_pct ]
         end
     end
 
     def to_s
         format_as_table(@headings, @col_formats, @report_data)
+    end
+
+    def write_file(filename)
+        write_to_csv(filename + ".csv", @headings + @report_data)
     end
 
 end

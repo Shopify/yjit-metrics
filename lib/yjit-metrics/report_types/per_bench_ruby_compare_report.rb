@@ -63,13 +63,6 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
         @config_names[1..-1]
     end
 
-    def write_to_csv(filename)
-        CSV.open(filename, "wb") do |csv|
-            csv << @headings
-            @report_data.each { |row| csv << row }
-        end
-    end
-
     def to_s
         format_as_table(@headings, @col_formats, @report_data) + config_legend_text
     end
