@@ -20,7 +20,7 @@ class TestBasicReporting < Minitest::Test
         results.add_for_config "with_yjit", JSON.load(File.read "test/data/basic_benchmark_prod_ruby_with_yjit_2021-07-13-084249.json")
         results.add_for_config "with_stats", JSON.load(File.read "test/data/basic_benchmark_yjit_stats_2021-07-13-084249.json")
 
-        report = YJITMetrics::YJITStatsMultiRubyReport.new [ "no_jit", "with_yjit", "yjit_stats" ], results
+        report = YJITMetrics::YJITStatsMultiRubyReport.new [ "no_jit", "with_yjit", "with_stats" ], results
         report.to_s
     end
 
