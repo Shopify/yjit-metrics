@@ -48,7 +48,7 @@ TEST_RUBY_CONFIGS = {
 		opts: [ "--jit" ],
 	},
 }
-TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys.map(&:to_s)
+TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
 
 # Default settings for benchmark sampling
 DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
