@@ -31,21 +31,36 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
             @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
         end
 
+        # Sort benchmarks by compiled ISEQ count
+        @benchmark_names.sort_by! { |bench_name| stats[bench_name]["compiled_iseq_count"] }
+
         # Report contents
-        @headings = [ "bench", "YJIT (ms)", "MJIT (ms)", "No JIT (ms)", "YJIT speedup (%)", "MJIT speedup (%)", "% in YJIT" ]
-        @col_formats = [ "%s", "%.1f", "%.1f", "%.1f", "%.2f", "%.2f", "%.2f" ]
+        @headings = [ "bench", "YJIT (ms)", "YJIT rel stddev (%)" "MJIT (ms)", "MJIT rel stddev (%)", "No JIT (ms)", "No JIT rel stddev (%)" "YJIT speedup (%)", "MJIT speedup (%)", "% in YJIT" ]
+        @col_formats = [ "%s" ] + [ "%.1f", "%.2f" ] * 3 + [ "%.2f", "%.2f", "%.2f" ]
 
         @report_data = @benchmark_names.map do |benchmark_name|
             no_jit_config_times = times_by_config[@no_jit_config][benchmark_name]
             no_jit_mean = mean(no_jit_config_times)
+            no_jit_stddev = stddev(no_jit_config_times)
+            no_jit_rel_stddev = no_jit_stddev / no_jit_mean
+
             with_mjit_config_times = times_by_config[@with_mjit_config][benchmark_name]
             with_mjit_mean = mean(with_mjit_config_times)
+            with_mjit_stddev = stddev(with_mjit_config_times)
+            with_mjit_rel_stddev = with_mjit_stddev / with_mjit_mean
+
             with_yjit_config_times = times_by_config[@with_yjit_config][benchmark_name]
             with_yjit_mean = mean(with_yjit_config_times)
+            with_yjit_stddev = stddev(with_yjit_config_times)
+            with_yjit_rel_stddev = with_yjit_stddev / with_yjit_mean
+
             mjit_speedup_ratio = no_jit_mean / with_mjit_mean
             mjit_speedup_pct = (mjit_speedup_ratio - 1.0) * 100.0
+            mjit_speedup_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_mjit_rel_stddev * with_mjit_rel_stddev))
+
             yjit_speedup_ratio = no_jit_mean / with_yjit_mean
             yjit_speedup_pct = (yjit_speedup_ratio - 1.0) * 100.0
+            yjit_speedup_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_yjit_rel_stddev * with_yjit_rel_stddev))
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
             # For these calculations we just add all relevant counters together.
@@ -56,7 +71,11 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
 
-            [ benchmark_name, with_yjit_mean, with_mjit_mean, no_jit_mean, yjit_speedup_pct, mjit_speedup_pct, yjit_ratio_pct ]
+            [ benchmark_name,
+                with_yjit_mean, with_yjit_rel_stddev,
+                with_mjit_mean, with_mjit_rel_stddev,
+                no_jit_mean, no_jit_rel_stddev,
+                yjit_speedup_pct, mjit_speedup_pct, yjit_ratio_pct ]
         end
     end
 
