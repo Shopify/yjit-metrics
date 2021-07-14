@@ -44,8 +44,8 @@ class YJITMetrics::ResultSet
     #   "yjit_stats" => { "benchname1" => [{...}, {...}...], "benchname2" => [{...}, {...}, ...] }
     # }
     #
-    # Note that this doesn't track "batches" of runs, such as when restarting
-    # the benchmark and doing, say, 10 batches of 30. Instead, if they're added
+    # Note that this structure doesn't represent "batches" of runs, such as when restarting
+    # the benchmark and doing, say, 10 batches of 30. Instead they should be added
     # via 30 calls to the method below, they will be combined into a single
     # array of 300 measurements.
     #
