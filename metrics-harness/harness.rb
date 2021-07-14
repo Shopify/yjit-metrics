@@ -67,8 +67,13 @@ def run_benchmark(num_itrs_hint)
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
   out_env = {}
   out_env_keys.each { |k| out_env[k] = ENV[k] }
+
+  warmup_times = times[0...WARMUP_ITRS]
+  warmed_times = times[WARMUP_ITRS..-1]
+
   out_data = {
-    times: times,
+    times: warmed_times,
+    warmups: warmup_times,
     benchmark_metadata: {
         warmup_itrs: WARMUP_ITRS,
         min_bench_itrs: MIN_BENCH_ITRS,

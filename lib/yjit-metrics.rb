@@ -6,6 +6,8 @@ require 'json'
 require 'csv'
 require 'erb'
 
+require_relative "./yjit-metrics/bench-results"
+
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
@@ -41,9 +43,9 @@ module YJITMetrics
         tf.write(script)
         tf.flush # No flush can result in successfully running an empty script
 
-        # Passing -il to bash makes sure to load .bashrc/.bash_profile
+        # Passing -l to bash makes sure to load .bash_profile
         # for chruby.
-        status = system("bash", "-il", tf.path, out: :out, err: :err)
+        status = system("bash", "-l", tf.path, out: :out, err: :err)
 
         unless status
             STDERR.puts "Script failed in directory #{Dir.pwd}"
@@ -151,27 +153,30 @@ module YJITMetrics
     end
 
     # Run all the benchmarks and record execution times
-    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], warmup_itrs: 15, with_chruby: nil)
-        bench_data = { "times" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
+    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
+                        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
+        bench_data = { "times" => {}, "warmups" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
 
         Dir.chdir(benchmark_dir) do
             # Get the list of benchmark files/directories matching name filters
             bench_files = Dir.children('benchmarks').sort
-            unknown_benchmarks = benchmark_list - bench_files
+            legal_bench_names = (bench_files + bench_files.map { |name| name.delete_suffix(".rb") }).uniq
+            benchmark_list.map! { |name| name.delete_suffix(".rb") }
+
+            unknown_benchmarks = benchmark_list - legal_bench_names
             raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
             bench_files = benchmark_list if benchmark_list.size > 0
 
-            bench_files.each_with_index do |entry, idx|
-                bench_name = entry.gsub('.rb', '')
-
+            bench_files.each_with_index do |bench_name, idx|
                 puts("Running benchmark \"#{bench_name}\" (#{idx+1}/#{bench_files.length})")
 
                 # Path to the benchmark runner script
-                script_path = File.join('benchmarks', entry)
+                script_path = File.join('benchmarks', bench_name)
 
-                if !script_path.end_with?('.rb')
-                    script_path = File.join(script_path, 'benchmark.rb')
-                end
+                # Choose the first of these that exists
+                real_script_path = [script_path, script_path + ".rb", script_path + "/benchmark.rb"].detect { |path| File.exist?(path) && !File.directory?(path) }
+                raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
+                script_path = real_script_path
 
                 out_json_path = File.expand_path(File.join(out_path, 'temp.json'))
                 FileUtils.rm_f(out_json_path) # No stale data please
@@ -188,19 +193,25 @@ module YJITMetrics
 
                 # Convert times to ms
                 times = single_bench_data["times"].map { |v| 1000 * v.to_f }
+                warmups = single_bench_data["warmups"].map { |v| 1000 * v.to_f }
 
                 single_metadata = single_bench_data["benchmark_metadata"]
 
                 # Add per-benchmark metadata from this script to the data returned from the harness.
                 single_metadata.merge({
-                    "benchmark_name" => entry,
+                    "benchmark_name" => bench_name,
                     "chruby_version" => with_chruby,
                     "ruby_opts" => ruby_opts
                 })
 
                 # Each benchmark returns its data as a simple hash for that benchmark:
                 #
-                #    "times" => [ 2.3, 2.5, 2.7, 2.4, ...]
+                #    {
+                #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],
+                #       "benchmark_metadata" => {...},
+                #       "ruby_metadata" => {...},
+                #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present
+                #    }
                 #
                 # For timings, YJIT stats and benchmark metadata, we add a hash inside
                 # each top-level key for each benchmark name, e.g.:
@@ -213,8 +224,9 @@ module YJITMetrics
                 # on each subsequent benchmark that it returned exactly the same
                 # metadata about the Ruby version.
                 bench_data["times"][bench_name] = times
+                bench_data["warmups"][bench_name] = warmups
                 if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
-                    bench_data["yjit_stats"][bench_name] = single_bench_data["yjit_stats"]
+                    bench_data["yjit_stats"][bench_name] = [ single_bench_data["yjit_stats"] ]
                 end
                 bench_data["benchmark_metadata"][bench_name] = single_metadata
                 bench_data["ruby_metadata"] = single_bench_data["ruby_metadata"] if bench_data["ruby_metadata"].empty?
