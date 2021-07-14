@@ -11,17 +11,7 @@ REPORT_OBJ_BY_NAME = {
         YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
     "yjit_stats_default" => proc { |config_names:, benchmarks: []|
-        # Sets of recent results will often have only one Ruby that collects statistics.
-        # Certainly we only want to use one for this report.
-        # TODO: we do this in two different places. It should go in the YJIT stats parent report class.
-        config = config_names.detect do |config_name|
-            stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
-
-            # Find the first configuration with non-empty stats results
-            !stats_by_bench.nil? && !stats_by_bench.empty? && !stats_by_bench.values.first.empty?
-        end
-        raise "Can't find a configuration with non-empty YJIT stats in #{config_names.inspect}!" unless config
-        YJITMetrics::YJITStatsExitReport.new(config, RESULT_SET, benchmarks: benchmarks)
+        YJITMetrics::YJITStatsExitReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
     "yjit_stats_multi" => proc { |config_names:, benchmarks: []|
         YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET, benchmarks: benchmarks)

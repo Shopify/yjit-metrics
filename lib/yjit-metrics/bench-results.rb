@@ -273,7 +273,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     def initialize(stats_configs, results, benchmarks: [])
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
-        filtered_stats_configs = results.configs_containing_yjit_stats | stats_configs
+        filtered_stats_configs = results.configs_containing_yjit_stats & stats_configs
         raise "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!" if filtered_stats_configs.size > 1
         raise "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
         @stats_config = filtered_stats_configs[0]
@@ -455,17 +455,12 @@ end
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
     def initialize(config_names, results, benchmarks: [])
-        stats_configs = RESULT_SET.configs_containing_yjit_stats
-        raise "We found more than one config with YJIT stats (#{stats_configs.inspect}) in this result set!" if stats_configs.size > 1
-        raise "We didn't find any config with YJIT stats among #{config_names.inspect}!" if stats_configs.empty?
-        @stats_config = stats_configs[0]
-
         # Set up the YJIT stats parent class
-        super(@stats_config, results)
+        super
 
         # We've figured out which config is the YJIT stats. Now which one is production stats with YJIT turned on?
         # For now, let's assume it contains the string "with_yjit".
-        alt_configs = config_names - stats_configs
+        alt_configs = config_names - [ @stats_config ]
         with_yjit_configs = alt_configs.select { |name| name["with_yjit"] }
         raise "We found more than one candidate with-YJIT config (#{with_yjit_configs.inspect}) in this result set!" if with_yjit_configs.size > 1
         raise "We didn't find any config that looked like a with-YJIT config among #{config_names.inspect}!" if with_yjit_configs.empty?
