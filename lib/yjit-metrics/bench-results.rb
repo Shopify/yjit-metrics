@@ -292,7 +292,8 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         end
     end
 
-    # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics and print an exit report.
+    # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics, as though you were
+    # about to print an exit report.
     def combined_stats_data_for_benchmarks(benchmark_names)
         unless benchmark_names.all? { |benchmark_name| @benchmark_names.include?(benchmark_name) }
             raise "No data found for benchmark #{benchmark_name.inspect}!"
