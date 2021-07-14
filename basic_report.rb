@@ -94,7 +94,8 @@ else
         relevant_results = file_data.select { |_, _, timestamp| timestamp == latest_ts }
     else
         # One or more named files? Use that set of timestamps.
-        timestamps = ARGV.map do |filename|
+        timestamps = ARGV.map do |filepath|
+            filename = filepath.split("/")[-1]
             unless filename =~ DATASET_FILENAME_RE
                 raise "Error! Filename #{filename.inspect} doesn't match expected naming of data files!"
             end
