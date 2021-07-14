@@ -18,7 +18,11 @@ On Linux you'll need to do the same for each reboot, or do the following:
     sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
     sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'
 
-On Mac you don't need to do that, but you should expect benchmark accuracy will be slightly lower as a result. However, Mac timings of some operations are substantially different &mdash; not only will you need to run more iterations, but the result it converges to will in fact be different in many cases.
+On Mac you don't need to do that, but you should expect benchmark accuracy will be lower as a result. Anecdotally it's hard to measure differences less than 3% on a Mac for a number of reasons (ASLR, background processes, CPU turbo/speed settings).
+
+Also Mac timings of some operations are substantially different &mdash; not only will you need to run more iterations for accuracy, but the correct measurement will be different in many cases. CRuby has significant known performance problems on the Mac, and YJIT reflects that (e.g. the setivar microbenchmark.)
+
+For that reason, where we-the-authors provide official numbers they will usually be AWS c5.metal instances, often with dedicated tenancy.
 
 ## How to Use this Repo
 
