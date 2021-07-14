@@ -125,6 +125,20 @@ class YJITMetrics::ResultSet
         @ruby_metadata[config]
     end
 
+    # What Ruby configurations does this ResultSet contain data for?
+    def available_configs
+        @ruby_metadata.keys
+    end
+
+    # What Ruby configurations, if any, have YJIT statistics available?
+    def configs_containing_yjit_stats
+        @yjit_stats.keys.select do |config_name|
+            stats = @yjit_stats[config_name]
+
+            !stats.nil? && !stats.empty? && !stats.values.all?(&:empty?)
+        end
+    end
+
     # Output a CSV file which contains metadata as key/value pairs, followed by a blank row, followed by the raw time data
     def to_csv
         output_rows = @metadata.keys.zip(@metadata.values)
@@ -252,7 +266,18 @@ end
 class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :stats_config
 
-    def initialize(stats_config, results, benchmarks: [])
+    # The report only runs on benchmarks that match the ones specified *and* that are present in
+    # the data files. This is that final list of benchmarks.
+    attr_reader :benchmark_names
+
+    def initialize(stats_configs, results, benchmarks: [])
+        # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
+        # be a single configuration to report on.
+        filtered_stats_configs = results.configs_containing_yjit_stats | stats_configs
+        raise "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!" if filtered_stats_configs.size > 1
+        raise "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
+        @stats_config = filtered_stats_configs[0]
+
         @stats_config = stats_config
         @result_set = results
         @only_benchmarks = benchmarks
@@ -429,12 +454,7 @@ end
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
     def initialize(config_names, results, benchmarks: [])
-        stats_configs = config_names.select do |config_name|
-            stats_by_bench = RESULT_SET.yjit_stats_for_config_by_benchmark(config_name)
-
-            # Find the first configuration with non-empty stats results
-            !stats_by_bench.nil? && !stats_by_bench.empty? && !stats_by_bench.values.first.empty?
-        end
+        stats_configs = RESULT_SET.configs_containing_yjit_stats
         raise "We found more than one config with YJIT stats (#{stats_configs.inspect}) in this result set!" if stats_configs.size > 1
         raise "We didn't find any config with YJIT stats among #{config_names.inspect}!" if stats_configs.empty?
         @stats_config = stats_configs[0]
