@@ -118,6 +118,12 @@ config_names = relevant_results.map { |filename, config_name, timestamp| config_
 reports.each do |report_name|
     report = REPORT_OBJ_BY_NAME[report_name].call(config_names: config_names, benchmarks: only_benchmarks)
 
+    if report.respond_to?(:write_file)
+        timestamp = Time.now.getgm.strftime('%F-%H%M%S')
+
+        report.write_file("#{report_name}_#{timestamp}")
+    end
+
     print report.to_s
     puts
 end
