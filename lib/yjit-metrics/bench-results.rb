@@ -77,7 +77,7 @@ class YJITMetrics::ResultSet
         if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"]
             print "Ruby metadata is meant to *only* include information that should always be\n" +
               "  the same for the same Ruby executable. Please verify that you have not added\n" +
-              "  inappropriate Ruby metadata or accidentally used the same name for two\n"
+              "  inappropriate Ruby metadata or accidentally used the same name for two\n" +
               "  different Ruby executables.\n"
             raise "Ruby metadata does not match for same configuration name!"
         end
