@@ -77,7 +77,7 @@ class YJITMetrics::ResultSet
         if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"]
             print "Ruby metadata is meant to *only* include information that should always be\n" +
               "  the same for the same Ruby executable. Please verify that you have not added\n" +
-              "  inappropriate Ruby metadata or accidentally used the same name for two\n"
+              "  inappropriate Ruby metadata or accidentally used the same name for two\n" +
               "  different Ruby executables.\n"
             raise "Ruby metadata does not match for same configuration name!"
         end
@@ -193,6 +193,9 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
     def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 
+        bad_configs = config_names - results.available_configs
+        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
+
         @config_names = config_names
         @only_benchmarks = benchmarks
         @result_set = results
@@ -271,6 +274,9 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :benchmark_names
 
     def initialize(stats_configs, results, benchmarks: [])
+        bad_configs = stats_configs - results.available_configs
+        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
+
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
         filtered_stats_configs = results.configs_containing_yjit_stats & stats_configs
