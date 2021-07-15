@@ -85,22 +85,22 @@ OptionParser.new do |opts|
 
 	opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
 		warmup_itrs = n.to_i
-		raise "Number of warmup iterations must be zero or positive!" if n < 0
+		raise "Number of warmup iterations must be zero or positive!" if warmup_itrs < 0
 	end
 
 	opts.on("--min-bench-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
 		min_bench_time = t.to_f
-		raise "min-bench-time must be zero or positive!" if n < 0.0
+		raise "min-bench-time must be zero or positive!" if min_bench_time < 0.0
 	end
 
 	opts.on("--min-bench-itrs=n", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
 		min_bench_itrs = n.to_i
-		raise "min-bench-itrs must be zero or positive!" if n < 0
+		raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
 	end
 
 	opts.on("--batches=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
 		num_batches = n.to_i
-		raise "Number of batches must be positive!" if n <= 0
+		raise "Number of batches must be positive!" if num_batches <= 0
 	end
 
 	config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
