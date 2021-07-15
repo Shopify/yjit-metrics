@@ -8,6 +8,11 @@ require 'erb'
 
 require_relative "./yjit-metrics/bench-results"
 
+# Require all source files in yjit-metrics/report_types/*.rb
+Dir.glob("yjit-metrics/report_types/*.rb", base: __dir__).each do |report_type_file|
+    require_relative report_type_file
+end
+
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
