@@ -187,7 +187,7 @@ all_batches.each do |batch_num, config|
 		batch_string = ""
 	end
 
-	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{batch_string}_#{config}.json"
+	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{batch_string}#{config}.json"
 	puts "Writing to JSON output file #{json_path}."
 	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
 end
