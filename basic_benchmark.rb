@@ -17,7 +17,7 @@ require "optparse"
 require_relative "lib/yjit-metrics"
 
 # I prefer human-readable names for configs, where I can get them.
-# TODO: move Ruby config options here?
+# TODO: add more options for *building* Rubies, esp. YJIT-enabled Rubies
 TEST_RUBY_CONFIGS = {
 	debug_ruby_no_yjit: {
 		ruby: "ruby-yjit-metrics-debug",
@@ -42,11 +42,18 @@ TEST_RUBY_CONFIGS = {
 	ruby_27: {
 		ruby: "2.7.2",
 		opts: [],
+		install: "ruby-install",
 	},
 	ruby_27_with_mjit: {
 		ruby: "2.7.2",
 		opts: [ "--jit" ],
+		install: "ruby-install",
 	},
+    truffleruby: {
+        ruby: "truffleruby-21.1.0",
+        opts: [],
+	    install: "ruby-install",
+    },
 }
 TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
 
@@ -131,12 +138,17 @@ OUTPUT_DATA_PATH = TEMP_DATA_PATH
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
-installed_rubies = Dir[CHRUBY_RUBIES + "/*"].to_a
-unless installed_rubies.any? { |ruby_name| ruby_name.end_with?("/ruby-2.7.2") }
-	YJITMetrics.check_call("ruby-install ruby-2.7.2")
+# Ensure we have copies of any Rubies (that we're using) installed via ruby-install
+configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
+if !skip_git_updates && !configs_to_check_install.empty?
+	rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
+	installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
+	(rubies_to_check_install - installed_rubies).each do |ruby|
+		YJITMetrics.check_call("ruby-install #{ruby}")
+	end
 end
 
-### First, ensure up-to-date YJIT repos in debug configuration and prod configuration
+### Ensure up-to-date YJIT repos in debug configuration and prod configuration
 
 if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-prod" }
 	YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
@@ -155,8 +167,7 @@ if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config
 		config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
 end
 
-### Second, ensure an up-to-date local yjit-bench checkout
-
+### Ensure an up-to-date local yjit-bench checkout
 if !skip_git_updates
 	YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
