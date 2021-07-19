@@ -21,7 +21,7 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         times_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config ].each { |config| times_by_config[config] = results.times_for_config_by_benchmark(config) }
         times_by_config.each do |config_name, results|
-            raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
+            raise("No results for configuration #{config_name.inspect} in #{self.class}!") if results.nil? || results.empty?
         end
         stats = results.yjit_stats_for_config_by_benchmark(@stats_config)
 

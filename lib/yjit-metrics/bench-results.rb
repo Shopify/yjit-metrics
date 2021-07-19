@@ -46,23 +46,30 @@ class YJITMetrics::ResultSet
     #
     # Note that this structure doesn't represent "batches" of runs, such as when restarting
     # the benchmark and doing, say, 10 batches of 30. Instead they should be added
-    # via 30 calls to the method below, they will be combined into a single
-    # array of 300 measurements.
+    # via 10 calls to the method below. Batches will be kept separate internally, but
+    # are normally queried as a combined single array.
     #
     # Every benchmark run is assumed to come with a corresponding metadata hash
     # and (optional) hash of YJIT stats. However, there should normally only
-    # be one set of Ruby metadata, not one per benchmark run.
+    # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
+    # assumed to be constant for a specific compiled copy of Ruby over all runs.
     def add_for_config(config_name, benchmark_results)
         @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
             @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].concat(times)
+            @times[config_name][benchmark_name].push(times)
         end
 
         @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
             @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].concat(warmups)
+            @times[config_name][benchmark_name].push(warmups)
+        end
+
+        @yjit_stats[config_name] ||= {}
+        benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
+            @yjit_stats[config_name][benchmark_name] ||= []
+            @yjit_stats[config_name][benchmark_name].push(stats_array)
         end
 
         @benchmark_metadata[config_name] ||= {}
@@ -81,36 +88,57 @@ class YJITMetrics::ResultSet
               "  different Ruby executables.\n"
             raise "Ruby metadata does not match for same configuration name!"
         end
-
-        @yjit_stats[config_name] ||= {}
-        benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
-            @yjit_stats[config_name][benchmark_name] ||= []
-            @yjit_stats[config_name][benchmark_name].concat(stats_array)
-        end
     end
 
     # This returns a hash-of-arrays by configuration name
     # containing benchmark results (times) per
     # benchmark for the specified config.
-    def times_for_config_by_benchmark(config)
+    #
+    # If in_batches is specified, the array will contain
+    # arrays (batches) of samples. Otherwise all samples
+    # from all batches will be combined.
+    def times_for_config_by_benchmark(config, in_batches: false)
         raise("No results for configuration: #{config.inspect}!") if !@times.has_key?(config) || @times[config].empty?
-        @times[config]
+        return @times[config] if in_batches
+        data = {}
+        @times[config].each do |benchmark_name, batches|
+            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
     # This returns a hash-of-arrays by configuration name
     # containing warmup results (times) per
     # benchmark for the specified config.
-    def warmups_for_config_by_benchmark(config)
-        @warmups[config]
+    #
+    # If in_batches is specified, the array will contain
+    # arrays (batches) of samples. Otherwise all samples
+    # from all batches will be combined.
+    def warmups_for_config_by_benchmark(config, in_batches: false)
+        return @warmups[config] if in_batches
+        data = {}
+        @warmups[config].each do |benchmark_name, batches|
+            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
-    # This returns a hash-of-hashes by config name
+    # This returns a hash-of-arrays by config name
     # containing YJIT statistics, if gathered, per
-    # benchmark for the specified config. For configs
-    # that don't collect YJIT statistics, the inner
-    # hash will be empty.
-    def yjit_stats_for_config_by_benchmark(config)
-        @yjit_stats[config]
+    # benchmark run for the specified config. For configs
+    # that don't collect YJIT statistics, the array
+    # will be empty.
+    #
+    # If in_batches is specified, the array will contain
+    # arrays (batches) of samples. Otherwise all samples
+    # from all batches will be combined.
+    def yjit_stats_for_config_by_benchmark(config, in_batches: false)
+        return @yjit_stats[config] if in_batches
+        data = {}
+        @yjit_stats[config].each do |benchmark_name, batches|
+            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
     # This returns a hash-of-hashes by config name
