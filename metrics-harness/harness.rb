@@ -42,6 +42,9 @@ def ruby_metadata
     }
 end
 
+# We should flush output indicating progress even if we're not hooked up to a tty (e.g. nohup)
+STDOUT.sync = true
+
 # Takes a block as input
 def run_benchmark(num_itrs_hint)
   times = []
