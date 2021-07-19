@@ -33,9 +33,8 @@ def ruby_metadata
         "RUBY_ENGINE" => RUBY_ENGINE,
         "which ruby" => `which ruby`,
         "hostname" => `hostname`,
-        # TODO: do we expect to combine or compare results across multiple hosts?
-        #"ec2 instance id" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`,
-        #"ec2 instance type" => `wget -q -O - http://169.254.169.254/latest/meta-data/instance-type`,
+        "ec2 instance id" => `wget -q --timeout 1 --tries 2 -O - http://169.254.169.254/latest/meta-data/instance-id`,
+        "ec2 instance type" => `wget -q --timeout 1 --tries 2 -O - http://169.254.169.254/latest/meta-data/instance-type`,
 
         # Ruby compile-time settings: do we want to record more of them?
         "RbConfig configure_args" => RbConfig::CONFIG["configure_args"],
