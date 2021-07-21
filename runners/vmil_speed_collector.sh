@@ -25,6 +25,8 @@ YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-tim
 
 # These iteration counts are chosen to be in the neighbourhood of 30 seconds on un-JITted CRuby
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=12  psych-load
+./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=6   30k_methods
+./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=15  30k_ifelse
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=17  lee
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=150 liquid-render
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=180 activerecord
