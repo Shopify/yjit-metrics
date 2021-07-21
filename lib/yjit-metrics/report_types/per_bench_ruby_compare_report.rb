@@ -16,8 +16,8 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
         @only_benchmarks = benchmarks
         @result_set = results
 
-        @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config} (ms)", "rel stddev (%)" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
-        @col_formats = [ "%s" ] + config_names.flat_map { [ "%.1f", "%.1f" ] } + alt_configs.map { "%.2f" }
+        @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config}", "RSD" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
+        @col_formats = [ "%s" ] + config_names.flat_map { [ "%.1fms", "%.1f%%" ] } + alt_configs.map { "%.2f" }
 
         @report_data = []
         times_by_config = {}
@@ -68,9 +68,14 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
     end
 
     def config_legend_text
-        "\nLegend:\n" +
-        alt_configs.map do |config|
-            "- #{config}/#{base_config}: ratio of mean(#{config} times)/mean(#{base_config} times). >1 means #{base_config} is faster.\n"
-        end.join + "\n"
+        [
+            "",
+            "Legend:",
+            alt_configs.map do |config|
+                "- #{config}/#{base_config}: ratio of mean(#{config} times)/mean(#{base_config} times). >1 means #{base_config} is faster."
+            end,
+            "RSD is relative standard deviation (percent).",
+            ""
+        ].join("\n")
     end
 end
