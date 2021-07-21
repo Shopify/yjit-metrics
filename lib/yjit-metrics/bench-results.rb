@@ -15,6 +15,14 @@ module YJITMetrics::Stats
         variance = diff_sqrs.sum(0.0) / (values.length - 1)
         return Math.sqrt(variance)
     end
+
+    def rel_stddev(values)
+        stddev(values) / mean(values)
+    end
+
+    def rel_stddev_pct(values)
+        100.0 * stddev(values) / mean(values)
+    end
 end
 
 # Encapsulate multiple benchmark runs across multiple Ruby configurations.

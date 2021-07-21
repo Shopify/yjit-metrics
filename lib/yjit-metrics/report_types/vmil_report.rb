@@ -51,21 +51,23 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
             no_jit_config_times = @times_by_config[@no_jit_config][benchmark_name]
             no_jit_mean = mean(no_jit_config_times)
             no_jit_stddev = stddev(no_jit_config_times)
-            no_jit_rel_stddev = no_jit_stddev / no_jit_mean
-            no_jit_rel_stddev_pct = no_jit_rel_stddev * 100.0
+            no_jit_rel_stddev = rel_stddev(no_jit_config_times)
+            no_jit_rel_stddev_pct = rel_stddev_pct(no_jit_config_times)
 
             with_mjit_config_times = @times_by_config[@with_mjit_config][benchmark_name]
             with_mjit_mean = mean(with_mjit_config_times)
             with_mjit_stddev = stddev(with_mjit_config_times)
-            with_mjit_rel_stddev = with_mjit_stddev / with_mjit_mean
-            with_mjit_rel_stddev_pct = with_mjit_rel_stddev * 100.0
+            with_mjit_rel_stddev = rel_stddev(with_mjit_config_times)
+            with_mjit_rel_stddev_pct = rel_stddev_pct(with_mjit_config_times)
 
             with_yjit_config_times = @times_by_config[@with_yjit_config][benchmark_name]
             with_yjit_mean = mean(with_yjit_config_times)
             with_yjit_stddev = stddev(with_yjit_config_times)
-            with_yjit_rel_stddev = with_yjit_stddev / with_yjit_mean
-            with_yjit_rel_stddev_pct = with_yjit_rel_stddev * 100.0
+            with_yjit_rel_stddev = rel_stddev(with_yjit_config_times)
+            with_yjit_rel_stddev_pct = rel_stddev_pct(with_yjit_config_times)
 
+            # Note: these are currently using the standard "how to propagate stddev over division" calc for stddev.
+            # We've talked about expressing them as multiples of no_jit_mean.
             mjit_speedup_ratio = no_jit_mean / with_mjit_mean
             mjit_speedup_pct = (mjit_speedup_ratio - 1.0) * 100.0
             mjit_speedup_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_mjit_rel_stddev * with_mjit_rel_stddev))
@@ -172,7 +174,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                     series = config_data.map { |run| run[iter_idx] }
                     m = mean(series)
                     iter_N_mean.push m
-                    iter_N_rsd.push stddev(series) / m
+                    iter_N_rsd.push rel_stddev_pct(series)
                 end
                 iter_N_mean += end_nils
                 iter_N_rsd += end_nils
