@@ -15,14 +15,11 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
-        @warmups_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config ].each do|config|
             @times_by_config[config] = @results.times_for_config_by_benchmark(config, in_runs: in_runs)
-            @warmups_by_config[config] = @results.warmups_for_config_by_benchmark(config, in_runs: in_runs)
         end
         @times_by_config.each do |config_name, config_results|
             raise("No results for configuration #{config_name.inspect} in #{self.class}!") if config_results.nil? || config_results.empty?
-            # No warmups for a given configuration is fine, and quite normal for the VMIL warmups report.
         end
         @yjit_stats = @results.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
@@ -118,6 +115,9 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
         look_up_vmil_data(in_runs: true)
 
+        @truffle_config = exactly_one_config_with_name(@config_names, "truffle", "TruffleRuby")
+        @times_by_config[@truffle_config] = @results.times_for_config_by_benchmark(@truffle_config, in_runs: true)
+
         # TODO: TruffleRuby warmup
         @configs_with_human_names = [
             ["YJIT", @with_yjit_config],
@@ -159,12 +159,21 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
                 iter_N_mean = []
                 iter_N_rsd = []
-                showcased_iters.each do |iter|
+
+                # We have "showcased iters" for the number of columns for all benchmarks... But this benchmark
+                # may have fewer columns. So we see which columns to include and which to replace with nil based on
+                # our current number of iterations.
+                included_iters = showcased_iters.select { |i| i < num_iters }
+                end_nils = [ nil ] * (showcased_iters.size - included_iters.size)
+
+                included_iters.each do |iter|
                     series = config_data.map { |run| run[iter] }
                     m = mean(series)
                     iter_N_mean.push m
                     iter_N_rsd.push stddev(series) / m
                 end
+                iter_N_mean += end_nils
+                iter_N_rsd += end_nils
 
                 @report_data_by_config[config_name].push([ benchmark_name ] + iter_N_mean + iter_N_rsd)
             end
