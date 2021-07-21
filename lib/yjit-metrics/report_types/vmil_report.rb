@@ -108,8 +108,7 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
 
 end
 
-# This report intends to compare YJIT warmup vs CRuby (no JIT) vs MJIT
-# TODO: TruffleRuby warmup
+# This report intends to compare YJIT warmup vs CRuby (no JIT) vs MJIT vs TruffleRuby
 class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
     def initialize(config_names, results, benchmarks: [])
         require "victor" # This report uses the Victor SVG generator
