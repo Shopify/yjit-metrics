@@ -122,7 +122,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         @configs_with_human_names = [
             ["YJIT", @with_yjit_config],
             ["MJIT", @with_mjit_config],
-            ["No JIT", @no_jit_config],
+            ["No-JIT", @no_jit_config],
             ["Truffle", @truffle_config],
         ]
 
@@ -194,10 +194,18 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
             output.concat("Each iteration is a set of samples of that iteration in a series.\n")
             output.concat("RSD is relative standard deviation - the standard deviation divided by the mean of the series.\n")
-            output.concat("Samples is the number of runs (samples taken) for each specific iteration number.")
-            output.concat("\n")
+            output.concat("Samples is the number of runs (samples taken) for each specific iteration number.\n")
+            output.concat("\n\n")
         end
 
         output
+    end
+
+    def write_file(filename)
+        @configs_with_human_names.each do |human_name, config_name|
+            headings = @headings_by_config[config_name]
+            report_data = @report_data_by_config[config_name]
+            write_to_csv("#{filename}_#{human_name}.csv", [headings] + report_data)
+        end
     end
 end
