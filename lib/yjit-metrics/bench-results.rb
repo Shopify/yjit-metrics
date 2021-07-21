@@ -63,8 +63,8 @@ class YJITMetrics::ResultSet
 
         @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
-            @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].push(warmups)
+            @warmups[config_name][benchmark_name] ||= []
+            @warmups[config_name][benchmark_name].push(warmups)
         end
 
         @yjit_stats[config_name] ||= {}
