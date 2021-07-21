@@ -77,7 +77,7 @@ class YJITMetrics::ResultSet
         benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
             @benchmark_metadata[config_name][benchmark_name] ||= metadata_for_benchmark
             if @benchmark_metadata[config_name][benchmark_name] != metadata_for_benchmark
-                STDERR.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
+                $stderr.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
             end
         end
 
