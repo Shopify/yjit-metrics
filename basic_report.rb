@@ -5,6 +5,7 @@ require "optparse"
 require_relative "lib/yjit-metrics"
 
 RESULT_SET = YJITMetrics::ResultSet.new
+# TODO: this can just be a name-to-class hash at this point
 REPORT_OBJ_BY_NAME = {
     "per_bench_compare" => proc { |config_names:, benchmarks: []|
         YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET, benchmarks: benchmarks)
@@ -15,8 +16,11 @@ REPORT_OBJ_BY_NAME = {
     "yjit_stats_multi" => proc { |config_names:, benchmarks: []|
         YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
-    "vmil_table" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::VMILReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
+    "vmil_speed" => proc { |config_names:, benchmarks: []|
+        YJITMetrics::VMILSpeedReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
+    },
+    "vmil_warmup" => proc { |config_names:, benchmarks: []|
+        YJITMetrics::VMILWarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys

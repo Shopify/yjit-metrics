@@ -6,6 +6,10 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :benchmark_names
 
     def initialize(stats_configs, results, benchmarks: [])
+        @config_names = stats_configs
+        @results = results
+        @benchmarks = benchmarks
+
         bad_configs = stats_configs - results.available_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
 
