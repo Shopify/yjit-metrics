@@ -8,7 +8,7 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         matching_configs[0]
     end
 
-    def look_up_vmil_data(in_batches: false)
+    def look_up_vmil_data(in_runs: false)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
@@ -17,14 +17,14 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         @times_by_config = {}
         @warmups_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config ].each do|config|
-            @times_by_config[config] = @results.times_for_config_by_benchmark(config, in_batches: in_batches)
-            @warmups_by_config[config] = @results.warmups_for_config_by_benchmark(config, in_batches: in_batches)
+            @times_by_config[config] = @results.times_for_config_by_benchmark(config, in_runs: in_runs)
+            @warmups_by_config[config] = @results.warmups_for_config_by_benchmark(config, in_runs: in_runs)
         end
         @times_by_config.each do |config_name, config_results|
             raise("No results for configuration #{config_name.inspect} in #{self.class}!") if config_results.nil? || config_results.empty?
             # No warmups for a given configuration is fine, and quite normal for the VMIL warmups report.
         end
-        @yjit_stats = @results.yjit_stats_for_config_by_benchmark(@stats_config, in_batches: in_batches)
+        @yjit_stats = @results.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
         @benchmark_names = @times_by_config[@no_jit_config].keys
@@ -117,7 +117,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         # Set up the YJIT stats parent class
         super
 
-        look_up_vmil_data(in_batches: true)
+        look_up_vmil_data(in_runs: true)
 
         # Report contents
         @headings = [ "bench" ]
@@ -131,14 +131,14 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                 config_data = @times_by_config[config_name][benchmark_name].select { |run| !run.empty? }
 
                 # The warmup report assumes data uses no warmup iterations, only "real" iterations
-                num_batches = config_data.size
+                num_runs = config_data.size
                 num_iters = config_data[0].size
 
-                unless config_data.all? { |batch| batch.size == num_iters }
+                unless config_data.all? { |run| run.size == num_iters }
                     raise "Not all runs are #{num_iters} iterations for #{human_name}!"
                 end
 
-                STDERR.puts "#{num_batches} runs, #{num_iters} iters/run"
+                STDERR.puts "#{num_runs} runs, #{num_iters} iters/run"
             end
         end
     end

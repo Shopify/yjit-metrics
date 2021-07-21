@@ -2,10 +2,13 @@
 
 set -e
 
-WARMUPS=15
-BATCHES=10
+# TODO: rename batches to runs
+# TODO: add 30k_methods and 30k_ifelse
 
-BASE_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --batches=$BATCHES --min-bench-time=0.1 --configs=prod_ruby_with_yjit,prod_ruby_with_mjit,prod_ruby_no_jit,truffleruby"
+WARMUPS=15
+RUNS=10
+
+BASE_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --runs=$RUNS --min-bench-time=0.1 --configs=prod_ruby_with_yjit,prod_ruby_with_mjit,prod_ruby_no_jit,truffleruby"
 YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-time=0.1 --configs=yjit_stats"
 
 # Do a Git update on all the Rubies?

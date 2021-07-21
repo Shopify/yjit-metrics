@@ -76,7 +76,7 @@ YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 # Defaults
 skip_git_updates = false
-num_batches = 1   # For every batch, run the specified number of warmups and iterations in a new process
+num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
 warmup_itrs = DEFAULT_WARMUP_ITRS
 min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
 min_bench_time = DEFAULT_MIN_BENCH_TIME
@@ -105,9 +105,9 @@ OptionParser.new do |opts|
 		raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
 	end
 
-	opts.on("--batches=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
-		num_batches = n.to_i
-		raise "Number of batches must be positive!" if num_batches <= 0
+	opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
+		num_runs = n.to_i
+		raise "Number of runs must be positive!" if num_runs <= 0
 	end
 
 	config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
@@ -175,10 +175,10 @@ end
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
-all_batches = (0...num_batches).flat_map { |batch_num| configs_to_test.map { |config| [ batch_num, config ] } }
-all_batches = all_batches.sample(all_batches.size) # Randomise the order of the list of batches
+all_runs = (0...num_runs).flat_map { |run_num| configs_to_test.map { |config| [ run_num, config ] } }
+all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of runs
 
-all_batches.each do |batch_num, config|
+all_runs.each do |run_num, config|
 	ruby = TEST_RUBY_CONFIGS[config][:ruby]
 	ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
 	yjit_results = YJITMetrics.run_benchmarks(
@@ -192,13 +192,13 @@ all_batches.each do |batch_num, config|
 		min_benchmark_time: min_bench_time
 		)
 
-	if num_batches > 1
-		batch_string = "%04d" % batch_num + "_"
+	if num_runs > 1
+		run_string = "%04d" % run_num + "_"
 	else
-		batch_string = ""
+		run_string = ""
 	end
 
-	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{batch_string}#{config}.json"
+	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
 	puts "Writing to JSON output file #{json_path}."
 	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
 end

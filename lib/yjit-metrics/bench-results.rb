@@ -44,10 +44,11 @@ class YJITMetrics::ResultSet
     #   "yjit_stats" => { "benchname1" => [{...}, {...}...], "benchname2" => [{...}, {...}, ...] }
     # }
     #
-    # Note that this structure doesn't represent "batches" of runs, such as when restarting
-    # the benchmark and doing, say, 10 batches of 30. Instead they should be added
-    # via 10 calls to the method below. Batches will be kept separate internally, but
-    # are normally queried as a combined single array.
+    # Note that this input structure doesn't represent runs (subgroups of iterations),
+    # such as when restarting the benchmark and doing, say, 10 groups of 300
+    # niterations. To represent that, you would call this method 10 times, once per
+    # run. Runs will be kept separate internally, but by default are returned as a
+    # combined single array.
     #
     # Every benchmark run is assumed to come with a corresponding metadata hash
     # and (optional) hash of YJIT stats. However, there should normally only
@@ -94,15 +95,15 @@ class YJITMetrics::ResultSet
     # containing benchmark results (times) per
     # benchmark for the specified config.
     #
-    # If in_batches is specified, the array will contain
-    # arrays (batches) of samples. Otherwise all samples
-    # from all batches will be combined.
-    def times_for_config_by_benchmark(config, in_batches: false)
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def times_for_config_by_benchmark(config, in_runs: false)
         raise("No results for configuration: #{config.inspect}!") if !@times.has_key?(config) || @times[config].empty?
-        return @times[config] if in_batches
+        return @times[config] if in_runs
         data = {}
-        @times[config].each do |benchmark_name, batches|
-            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        @times[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
         end
         data
     end
@@ -111,14 +112,14 @@ class YJITMetrics::ResultSet
     # containing warmup results (times) per
     # benchmark for the specified config.
     #
-    # If in_batches is specified, the array will contain
-    # arrays (batches) of samples. Otherwise all samples
-    # from all batches will be combined.
-    def warmups_for_config_by_benchmark(config, in_batches: false)
-        return @warmups[config] if in_batches
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def warmups_for_config_by_benchmark(config, in_runs: false)
+        return @warmups[config] if in_runs
         data = {}
-        @warmups[config].each do |benchmark_name, batches|
-            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        @warmups[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
         end
         data
     end
@@ -129,14 +130,14 @@ class YJITMetrics::ResultSet
     # that don't collect YJIT statistics, the array
     # will be empty.
     #
-    # If in_batches is specified, the array will contain
-    # arrays (batches) of samples. Otherwise all samples
-    # from all batches will be combined.
-    def yjit_stats_for_config_by_benchmark(config, in_batches: false)
-        return @yjit_stats[config] if in_batches
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def yjit_stats_for_config_by_benchmark(config, in_runs: false)
+        return @yjit_stats[config] if in_runs
         data = {}
-        @yjit_stats[config].each do |benchmark_name, batches|
-            data[benchmark_name] = batches.inject([]) { |arr, piece| arr.concat(piece) }
+        @yjit_stats[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
         end
         data
     end

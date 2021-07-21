@@ -58,16 +58,16 @@ OptionParser.new do |opts|
 end.parse!
 
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
-# Return the information from the filename - batch_num is nil if the file isn't in batch format
+# Return the information from the filename - run_num is nil if the file isn't in multi-run format
 def parse_dataset_filename(filename)
     filename = filename.split("/")[-1]
     unless filename =~ DATASET_FILENAME_RE
         raise "Internal error! Filename #{filename.inspect} doesn't match expected naming of data files!"
     end
     config_name = $3
-    batch_num = $2 ? $2.chomp("_") : $2
+    run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    return [ filename, config_name, timestamp, batch_num ]
+    return [ filename, config_name, timestamp, run_num ]
 end
 
 def ts_string_to_date(ts)
@@ -106,7 +106,7 @@ end
 
 puts "Loading #{relevant_results.size} data files..."
 
-relevant_results.each do |filename, config_name, timestamp, batch_num|
+relevant_results.each do |filename, config_name, timestamp, run_num|
     benchmark_data = JSON.load(File.read(filename))
     begin
         RESULT_SET.add_for_config(config_name, benchmark_data)
