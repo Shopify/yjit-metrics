@@ -135,14 +135,14 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
             one_config = @times_by_config[config_name]
             max_num_runs = @benchmark_names.map { |bn| one_config[bn].size }.max
             max_num_iters = @benchmark_names.map { |bn| one_config[bn].map { |run| run.size }.max }.max
-            showcased_iters = [1, 5, 10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i < max_num_iters }
+            showcased_iters = [1, 5, 10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= max_num_iters }
 
             @col_formats_by_config[config_name] =
-                [ "%s" ] +
+                [ "%s", "%d" ] +
                 showcased_iters.map { "%.1fms" } +
                 showcased_iters.map { "%.2f%%" }
             @headings_by_config[config_name] =
-                [ "bench" ] +
+                [ "bench", "samples" ] +
                 showcased_iters.map { |iter| "iter ##{iter}" } +
                 showcased_iters.map { |iter| "RSD ##{iter}" }
             @report_data_by_config[config_name] = []
@@ -164,11 +164,12 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                 # We have "showcased iters" for the number of columns for all benchmarks... But this benchmark
                 # may have fewer columns. So we see which columns to include and which to replace with nil based on
                 # our current number of iterations.
-                included_iters = showcased_iters.select { |i| i < num_iters }
+                included_iters = showcased_iters.select { |i| i <= num_iters }
                 end_nils = [ nil ] * (showcased_iters.size - included_iters.size)
 
-                included_iters.each do |iter|
-                    series = config_data.map { |run| run[iter] }
+                included_iters.each do |iter_num|
+                    iter_idx = iter_num - 1  # Human-displayable iteration #7 is array index 6, right?
+                    series = config_data.map { |run| run[iter_idx] }
                     m = mean(series)
                     iter_N_mean.push m
                     iter_N_rsd.push stddev(series) / m
@@ -176,7 +177,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                 iter_N_mean += end_nils
                 iter_N_rsd += end_nils
 
-                @report_data_by_config[config_name].push([ benchmark_name ] + iter_N_mean + iter_N_rsd)
+                @report_data_by_config[config_name].push([ benchmark_name, num_runs ] + iter_N_mean + iter_N_rsd)
             end
         end
     end
@@ -193,6 +194,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
             output.concat("Each iteration is a set of samples of that iteration in a series.\n")
             output.concat("RSD is relative standard deviation - the standard deviation divided by the mean of the series.\n")
+            output.concat("Samples is the number of runs (samples taken) for each specific iteration number.")
             output.concat("\n")
         end
 
