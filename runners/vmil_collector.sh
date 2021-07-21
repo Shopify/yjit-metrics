@@ -2,7 +2,6 @@
 
 set -e
 
-# TODO: rename batches to runs
 # TODO: add 30k_methods and 30k_ifelse
 
 WARMUPS=15
