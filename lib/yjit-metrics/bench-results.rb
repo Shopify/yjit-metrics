@@ -184,7 +184,7 @@ class YJITMetrics::Report
         raise "Column formats have wrong number of entries!" unless col_formats.length == num_cols
 
         formatted_data = data.map.with_index do |row, idx|
-            col_formats.zip(row).map { |fmt, data| fmt % data }
+            col_formats.zip(row).map { |fmt, item| item ? fmt % item : "" }
         end
 
         col_widths = (0...num_cols).map { |col_num| (formatted_data.map { |row| row[col_num].length } + [ headings[col_num].length ]).max }
@@ -199,6 +199,9 @@ class YJITMetrics::Report
         end
 
         out.concat("\n", separator, "\n")
+    rescue
+        STDERR.puts "Error when trying to format table: #{headings.inspect} / #{col_formats.inspect} / #{data[0].inspect}"
+        raise
     end
 
     def write_to_csv(filename, data)
