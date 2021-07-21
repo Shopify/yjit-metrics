@@ -122,7 +122,8 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         @configs_with_human_names = [
             ["YJIT", @with_yjit_config],
             ["MJIT", @with_mjit_config],
-            ["No JIT", @no_jit_config]
+            ["No JIT", @no_jit_config],
+            ["Truffle", @truffle_config],
         ]
 
         # For each "by_config" hash, if we look up a top-level key and it doesn't exist, default it to a new empty hash.
