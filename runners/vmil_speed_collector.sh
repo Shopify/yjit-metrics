@@ -2,8 +2,6 @@
 
 set -e
 
-# TODO: add 30k_methods and 30k_ifelse
-
 WARMUPS=15
 RUNS=10
 
@@ -16,6 +14,8 @@ YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-tim
 
 # yjit_stats run with same warmup and iteration count will get accurate counter and coverage values
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=12  psych-load
+./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=6   30k_methods
+./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=15  30k_ifelse
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=17  lee
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=150 liquid-render
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=180 activerecord
