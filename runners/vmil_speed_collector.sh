@@ -13,7 +13,7 @@ YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-tim
 #./basic_benchmark.rb --min-bench-time=0.1 --min-bench-itrs=1 --warmup-itrs=0 --configs=yjit_stats,prod_ruby_with_yjit,prod_ruby_with_mjit,prod_ruby_no_jit activerecord
 
 # yjit_stats run with same warmup and iteration count will get accurate counter and coverage values
-./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=12  psych-load
+./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=10  psych-load
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=6   30k_methods
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=15  30k_ifelse
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=17  lee
@@ -23,8 +23,8 @@ YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-tim
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=3   jekyll
 ./basic_benchmark.rb $YJIT_STATS_BENCH_OPTS --min-bench-itrs=8   railsbench
 
-# These iteration counts are chosen to be in the neighbourhood of 30 seconds on un-JITted CRuby
-./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=12  psych-load
+# These iteration counts are chosen to be in the general neighbourhood of 30 seconds on un-JITted CRuby
+./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=10  psych-load
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=6   30k_methods
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=15  30k_ifelse
 ./basic_benchmark.rb $BASE_BENCH_OPTS --min-bench-itrs=17  lee
