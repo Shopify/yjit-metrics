@@ -118,30 +118,74 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
         look_up_vmil_data(in_runs: true)
 
-        # Report contents
-        @headings = [ "bench" ]
-        @col_formats = [ "%s" ]
+        # TODO: TruffleRuby warmup
+        @configs_with_human_names = [
+            ["YJIT", @with_yjit_config],
+            ["MJIT", @with_mjit_config],
+            ["No JIT", @no_jit_config]
+        ]
 
-        @benchmark_names.map do |benchmark_name|
-            [["YJIT", @with_yjit_config],
-             ["MJIT", @with_mjit_config],
-             ["No JIT", @no_jit_config]].each do |human_name, config_name|
+        # For each "by_config" hash, if we look up a top-level key and it doesn't exist, default it to a new empty hash.
+        @headings_by_config = Hash.new { {} }
+        @report_data_by_config = Hash.new { {} }
+        @col_formats_by_config = Hash.new { {} }
 
+        @configs_with_human_names.each do |human_name, config_name|
+            one_config = @times_by_config[config_name]
+            max_num_runs = @benchmark_names.map { |bn| one_config[bn].size }.max
+            max_num_iters = @benchmark_names.map { |bn| one_config[bn].map { |run| run.size }.max }.max
+            showcased_iters = [1, 5, 10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i < max_num_iters }
+
+            @col_formats_by_config[config_name] =
+                [ "%s" ] +
+                showcased_iters.map { "%.1fms" } +
+                showcased_iters.map { "%.2f%%" }
+            @headings_by_config[config_name] =
+                [ "bench" ] +
+                showcased_iters.map { |iter| "iter ##{iter}" } +
+                showcased_iters.map { |iter| "RSD ##{iter}" }
+            @report_data_by_config[config_name] = []
+
+            @benchmark_names.each do |benchmark_name|
                 config_data = @times_by_config[config_name][benchmark_name].select { |run| !run.empty? }
-
-                # The warmup report assumes data uses no warmup iterations, only "real" iterations
                 num_runs = config_data.size
                 num_iters = config_data[0].size
 
+                # The warmup report assumes each run uses no warmup iterations, only "real" iterations
+
                 unless config_data.all? { |run| run.size == num_iters }
-                    raise "Not all runs are #{num_iters} iterations for #{human_name}!"
+                    raise "Not all runs are #{num_iters} iterations for #{human_name} #{benchmark_name}! Iters: #{config_data.map { |run| run.size }.uniq }"
                 end
 
-                STDERR.puts "#{num_runs} runs, #{num_iters} iters/run"
+                iter_N_mean = []
+                iter_N_rsd = []
+                showcased_iters.each do |iter|
+                    series = config_data.map { |run| run[iter] }
+                    m = mean(series)
+                    iter_N_mean.push m
+                    iter_N_rsd.push stddev(series) / m
+                end
+
+                @report_data_by_config[config_name].push([ benchmark_name ] + iter_N_mean + iter_N_rsd)
             end
         end
     end
 
     def to_s
+        output = ""
+
+        @configs_with_human_names.each do |human_name, config_name|
+            output.concat("#{human_name} Warmup Report:\n\n")
+
+            output.concat(format_as_table(@headings_by_config[config_name],
+                @col_formats_by_config[config_name],
+                @report_data_by_config[config_name]))
+
+            output.concat("Each iteration is a set of samples of that iteration in a series.\n")
+            output.concat("RSD is relative standard deviation - the standard deviation divided by the mean of the series.\n")
+            output.concat("\n")
+        end
+
+        output
     end
 end
