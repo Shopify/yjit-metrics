@@ -8,14 +8,14 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         matching_configs[0]
     end
 
-    def look_up_vmil_data(in_runs: false)
+    def look_up_vmil_data(in_runs: false, no_jit: true)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
-        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
+        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if @no_jit
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
-        [ @with_yjit_config, @with_mjit_config, @no_jit_config ].each do|config|
+        [ @with_yjit_config, @with_mjit_config, @no_jit_config ].compact.each do|config|
             @times_by_config[config] = @results.times_for_config_by_benchmark(config, in_runs: in_runs)
         end
         @times_by_config.each do |config_name, config_results|
@@ -24,7 +24,7 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         @yjit_stats = @results.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = @times_by_config[@no_jit_config].keys
+        @benchmark_names = @times_by_config[@with_yjit_config].keys
         unless @benchmarks.empty?
             @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
         end
@@ -115,7 +115,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         # Set up the YJIT stats parent class
         super
 
-        look_up_vmil_data(in_runs: true)
+        look_up_vmil_data(in_runs: true, no_jit: false)
 
         @truffle_config = exactly_one_config_with_name(@config_names, "truffle", "TruffleRuby")
         @times_by_config[@truffle_config] = @results.times_for_config_by_benchmark(@truffle_config, in_runs: true)
@@ -124,7 +124,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         @configs_with_human_names = [
             ["YJIT", @with_yjit_config],
             ["MJIT", @with_mjit_config],
-            ["No-JIT", @no_jit_config],
+            #["No-JIT", @no_jit_config],
             ["Truffle", @truffle_config],
         ]
 
@@ -155,10 +155,6 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                 num_iters = config_data[0].size
 
                 # The warmup report assumes each run uses no warmup iterations, only "real" iterations
-
-                unless config_data.all? { |run| run.size == num_iters }
-                    raise "Not all runs are #{num_iters} iterations for #{human_name} #{benchmark_name}! Iters: #{config_data.map { |run| run.size }.uniq }"
-                end
 
                 iter_N_mean = []
                 iter_N_rsd = []
