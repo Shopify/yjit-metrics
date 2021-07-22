@@ -181,6 +181,7 @@ all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of r
 all_runs.each do |run_num, config|
 	ruby = TEST_RUBY_CONFIGS[config][:ruby]
 	ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+    puts "Preparing to run benchmarks: #{benchmark_list.inspect}  with chruby: #{ruby.inspect}"
 	yjit_results = YJITMetrics.run_benchmarks(
 		YJIT_BENCH_DIR,
 		TEMP_DATA_PATH,
