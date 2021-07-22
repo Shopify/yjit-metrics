@@ -17,7 +17,7 @@ require "optparse"
 require_relative "lib/yjit-metrics"
 
 # I prefer human-readable names for configs, where I can get them.
-# TODO: move Ruby config options here?
+# TODO: add more options for *building* Rubies, esp. YJIT-enabled Rubies
 TEST_RUBY_CONFIGS = {
 	debug_ruby_no_yjit: {
 		ruby: "ruby-yjit-metrics-debug",
@@ -42,11 +42,18 @@ TEST_RUBY_CONFIGS = {
 	ruby_27: {
 		ruby: "2.7.2",
 		opts: [],
+		install: "ruby-install",
 	},
 	ruby_27_with_mjit: {
 		ruby: "2.7.2",
 		opts: [ "--jit" ],
+		install: "ruby-install",
 	},
+    truffleruby: {
+        ruby: "truffleruby-21.1.0",
+        opts: [],
+	    install: "ruby-install",
+    },
 }
 TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
 
@@ -69,6 +76,7 @@ YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 # Defaults
 skip_git_updates = false
+num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
 warmup_itrs = DEFAULT_WARMUP_ITRS
 min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
 min_bench_time = DEFAULT_MIN_BENCH_TIME
@@ -83,15 +91,23 @@ OptionParser.new do |opts|
 	end
 
 	opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
-		warmup_itrs = n
+		warmup_itrs = n.to_i
+		raise "Number of warmup iterations must be zero or positive!" if warmup_itrs < 0
 	end
 
 	opts.on("--min-bench-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
 		min_bench_time = t.to_f
+		raise "min-bench-time must be zero or positive!" if min_bench_time < 0.0
 	end
 
 	opts.on("--min-bench-itrs=n", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
 		min_bench_itrs = n.to_i
+		raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
+	end
+
+	opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
+		num_runs = n.to_i
+		raise "Number of runs must be positive!" if num_runs <= 0
 	end
 
 	config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
@@ -122,12 +138,17 @@ OUTPUT_DATA_PATH = TEMP_DATA_PATH
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
-installed_rubies = Dir[CHRUBY_RUBIES + "/*"].to_a
-unless installed_rubies.any? { |ruby_name| ruby_name.end_with?("/ruby-2.7.2") }
-	YJITMetrics.check_call("ruby-install ruby-2.7.2")
+# Ensure we have copies of any Rubies (that we're using) installed via ruby-install
+configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
+if !skip_git_updates && !configs_to_check_install.empty?
+	rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
+	installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
+	(rubies_to_check_install - installed_rubies).each do |ruby|
+		YJITMetrics.check_call("ruby-install #{ruby}")
+	end
 end
 
-### First, ensure up-to-date YJIT repos in debug configuration and prod configuration
+### Ensure up-to-date YJIT repos in debug configuration and prod configuration
 
 if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-prod" }
 	YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
@@ -146,8 +167,7 @@ if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config
 		config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
 end
 
-### Second, ensure an up-to-date local yjit-bench checkout
-
+### Ensure an up-to-date local yjit-bench checkout
 if !skip_git_updates
 	YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
@@ -155,9 +175,13 @@ end
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
-configs_to_test.each do |config|
+all_runs = (0...num_runs).flat_map { |run_num| configs_to_test.map { |config| [ run_num, config ] } }
+all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of runs
+
+all_runs.each do |run_num, config|
 	ruby = TEST_RUBY_CONFIGS[config][:ruby]
 	ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+    puts "Preparing to run benchmarks: #{benchmark_list.inspect}  with chruby: #{ruby.inspect}"
 	yjit_results = YJITMetrics.run_benchmarks(
 		YJIT_BENCH_DIR,
 		TEMP_DATA_PATH,
@@ -169,7 +193,13 @@ configs_to_test.each do |config|
 		min_benchmark_time: min_bench_time
 		)
 
-	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
+	if num_runs > 1
+		run_string = "%04d" % run_num + "_"
+	else
+		run_string = ""
+	end
+
+	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
 	puts "Writing to JSON output file #{json_path}."
 	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
 end

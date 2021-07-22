@@ -15,6 +15,14 @@ module YJITMetrics::Stats
         variance = diff_sqrs.sum(0.0) / (values.length - 1)
         return Math.sqrt(variance)
     end
+
+    def rel_stddev(values)
+        stddev(values) / mean(values)
+    end
+
+    def rel_stddev_pct(values)
+        100.0 * stddev(values) / mean(values)
+    end
 end
 
 # Encapsulate multiple benchmark runs across multiple Ruby configurations.
@@ -44,32 +52,40 @@ class YJITMetrics::ResultSet
     #   "yjit_stats" => { "benchname1" => [{...}, {...}...], "benchname2" => [{...}, {...}, ...] }
     # }
     #
-    # Note that this structure doesn't represent "batches" of runs, such as when restarting
-    # the benchmark and doing, say, 10 batches of 30. Instead they should be added
-    # via 30 calls to the method below, they will be combined into a single
-    # array of 300 measurements.
+    # Note that this input structure doesn't represent runs (subgroups of iterations),
+    # such as when restarting the benchmark and doing, say, 10 groups of 300
+    # niterations. To represent that, you would call this method 10 times, once per
+    # run. Runs will be kept separate internally, but by default are returned as a
+    # combined single array.
     #
     # Every benchmark run is assumed to come with a corresponding metadata hash
     # and (optional) hash of YJIT stats. However, there should normally only
-    # be one set of Ruby metadata, not one per benchmark run.
+    # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
+    # assumed to be constant for a specific compiled copy of Ruby over all runs.
     def add_for_config(config_name, benchmark_results)
         @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
             @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].concat(times)
+            @times[config_name][benchmark_name].push(times)
         end
 
         @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
-            @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].concat(warmups)
+            @warmups[config_name][benchmark_name] ||= []
+            @warmups[config_name][benchmark_name].push(warmups)
+        end
+
+        @yjit_stats[config_name] ||= {}
+        benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
+            @yjit_stats[config_name][benchmark_name] ||= []
+            @yjit_stats[config_name][benchmark_name].push(stats_array)
         end
 
         @benchmark_metadata[config_name] ||= {}
         benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
             @benchmark_metadata[config_name][benchmark_name] ||= metadata_for_benchmark
             if @benchmark_metadata[config_name][benchmark_name] != metadata_for_benchmark
-                STDERR.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
+                $stderr.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
             end
         end
 
@@ -81,36 +97,57 @@ class YJITMetrics::ResultSet
               "  different Ruby executables.\n"
             raise "Ruby metadata does not match for same configuration name!"
         end
-
-        @yjit_stats[config_name] ||= {}
-        benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
-            @yjit_stats[config_name][benchmark_name] ||= []
-            @yjit_stats[config_name][benchmark_name].concat(stats_array)
-        end
     end
 
     # This returns a hash-of-arrays by configuration name
     # containing benchmark results (times) per
     # benchmark for the specified config.
-    def times_for_config_by_benchmark(config)
+    #
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def times_for_config_by_benchmark(config, in_runs: false)
         raise("No results for configuration: #{config.inspect}!") if !@times.has_key?(config) || @times[config].empty?
-        @times[config]
+        return @times[config] if in_runs
+        data = {}
+        @times[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
     # This returns a hash-of-arrays by configuration name
     # containing warmup results (times) per
     # benchmark for the specified config.
-    def warmups_for_config_by_benchmark(config)
-        @warmups[config]
+    #
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def warmups_for_config_by_benchmark(config, in_runs: false)
+        return @warmups[config] if in_runs
+        data = {}
+        @warmups[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
-    # This returns a hash-of-hashes by config name
+    # This returns a hash-of-arrays by config name
     # containing YJIT statistics, if gathered, per
-    # benchmark for the specified config. For configs
-    # that don't collect YJIT statistics, the inner
-    # hash will be empty.
-    def yjit_stats_for_config_by_benchmark(config)
-        @yjit_stats[config]
+    # benchmark run for the specified config. For configs
+    # that don't collect YJIT statistics, the array
+    # will be empty.
+    #
+    # If in_runs is specified, the array will contain
+    # arrays (runs) of samples. Otherwise all samples
+    # from all runs will be combined.
+    def yjit_stats_for_config_by_benchmark(config, in_runs: false)
+        return @yjit_stats[config] if in_runs
+        data = {}
+        @yjit_stats[config].each do |benchmark_name, runs|
+            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
+        end
+        data
     end
 
     # This returns a hash-of-hashes by config name
@@ -130,12 +167,19 @@ class YJITMetrics::ResultSet
         @ruby_metadata.keys
     end
 
-    # What Ruby configurations, if any, have YJIT statistics available?
-    def configs_containing_yjit_stats
+    # What Ruby configurations, if any, have full YJIT statistics available?
+    def configs_containing_full_yjit_stats
         @yjit_stats.keys.select do |config_name|
             stats = @yjit_stats[config_name]
 
-            !stats.nil? && !stats.empty? && !stats.values.all?(&:empty?)
+            # Every benchmark gets a key/value pair in stats, and every
+            # value is an array of arrays -- each run gets an array, and
+            # each measurement in the run gets an array (TODO: is this too complicated?)
+
+            # Even "non-stats" YJITs now have statistics, but not "full" statistics
+            !stats.nil? &&
+                !stats.empty? &&
+                !stats.values.all? { |val| val[0][0]["all_stats"].nil? }
         end
     end
 end
@@ -155,7 +199,7 @@ class YJITMetrics::Report
         raise "Column formats have wrong number of entries!" unless col_formats.length == num_cols
 
         formatted_data = data.map.with_index do |row, idx|
-            col_formats.zip(row).map { |fmt, data| fmt % data }
+            col_formats.zip(row).map { |fmt, item| item ? fmt % item : "" }
         end
 
         col_widths = (0...num_cols).map { |col_num| (formatted_data.map { |row| row[col_num].length } + [ headings[col_num].length ]).max }
@@ -170,6 +214,9 @@ class YJITMetrics::Report
         end
 
         out.concat("\n", separator, "\n")
+    rescue
+        STDERR.puts "Error when trying to format table: #{headings.inspect} / #{col_formats.inspect} / #{data[0].inspect}"
+        raise
     end
 
     def write_to_csv(filename, data)
