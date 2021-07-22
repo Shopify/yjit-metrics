@@ -15,7 +15,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
 
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
-        filtered_stats_configs = results.configs_containing_yjit_stats & stats_configs
+        filtered_stats_configs = results.configs_containing_full_yjit_stats & stats_configs
         raise "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!" if filtered_stats_configs.size > 1
         raise "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
         @stats_config = filtered_stats_configs[0]

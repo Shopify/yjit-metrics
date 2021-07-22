@@ -167,12 +167,19 @@ class YJITMetrics::ResultSet
         @ruby_metadata.keys
     end
 
-    # What Ruby configurations, if any, have YJIT statistics available?
-    def configs_containing_yjit_stats
+    # What Ruby configurations, if any, have full YJIT statistics available?
+    def configs_containing_full_yjit_stats
         @yjit_stats.keys.select do |config_name|
             stats = @yjit_stats[config_name]
 
-            !stats.nil? && !stats.empty? && !stats.values.all?(&:empty?)
+            # Every benchmark gets a key/value pair in stats, and every
+            # value is an array of arrays -- each run gets an array, and
+            # each measurement in the run gets an array (TODO: is this too complicated?)
+
+            # Even "non-stats" YJITs now have statistics, but not "full" statistics
+            !stats.nil? &&
+                !stats.empty? &&
+                !stats.values.all? { |val| val[0][0]["all_stats"].nil? }
         end
     end
 end

@@ -11,7 +11,7 @@ class TestBasicReporting < Minitest::Test
         results.add_for_config "with_stats", JSON.load(File.read "test/data/basic_benchmark_yjit_stats_2021-07-13-084249.json")
 
         assert_equal [ "no_jit", "with_jit", "with_stats" ], results.available_configs.sort
-        assert_equal [ "with_stats" ], results.configs_containing_yjit_stats
+        assert_equal [ "with_stats" ], results.configs_containing_full_yjit_stats
     end
 
     def test_creating_per_bench_report
