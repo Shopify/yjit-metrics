@@ -38,7 +38,7 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
         # Set up the YJIT stats parent class
         super
 
-        look_up_vmil_data
+        look_up_vmil_data(no_jit: true)
 
         # Sort benchmarks by compiled ISEQ count
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
@@ -168,9 +168,18 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
                 included_iters.each do |iter_num|
                     iter_idx = iter_num - 1  # Human-displayable iteration #7 is array index 6, right?
                     series = config_data.map { |run| run[iter_idx] }
-                    m = mean(series)
-                    iter_N_mean.push m
-                    iter_N_rsd.push rel_stddev_pct(series)
+
+                    # With variable numbers of iterations/run, it's possible to get nils mixed into the series,
+                    # which is bad. And we don't want to just use fewer samples and report it as full quality.
+                    # So if there are nils in the series we should push nils for the whole iteration.
+                    if series.any?(&:nil?)
+                        iter_N_mean.push(nil)
+                        iter_N_rsd.push(nil)
+                    else
+                        m = mean(series)
+                        iter_N_mean.push m
+                        iter_N_rsd.push rel_stddev_pct(series)
+                    end
                 end
                 iter_N_mean += end_nils
                 iter_N_rsd += end_nils
