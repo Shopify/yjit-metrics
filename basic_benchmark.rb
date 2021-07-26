@@ -82,6 +82,7 @@ min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
 min_bench_time = DEFAULT_MIN_BENCH_TIME
 DEFAULT_TEST_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_TEST_CONFIGS
+tolerate_errors = false
 
 OptionParser.new do |opts|
 	opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -109,6 +110,10 @@ OptionParser.new do |opts|
 		num_runs = n.to_i
 		raise "Number of runs must be positive!" if num_runs <= 0
 	end
+
+    opts.on("--tolerate-errors", "When a benchmark fails, skip only that one run and continue. Where possible, record the error's existence but not its data.") do
+        tolerate_errors = true
+    end
 
 	config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
 	opts.on("--configs=CONFIGS", config_desc) do |configs|
@@ -181,23 +186,44 @@ all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of r
 all_runs.each do |run_num, config|
 	ruby = TEST_RUBY_CONFIGS[config][:ruby]
 	ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
-    puts "Preparing to run benchmarks: #{benchmark_list.inspect}  with chruby: #{ruby.inspect}"
-	yjit_results = YJITMetrics.run_benchmarks(
-		YJIT_BENCH_DIR,
-		TEMP_DATA_PATH,
-		with_chruby: ruby,
-		ruby_opts: ruby_opts,
-		benchmark_list: benchmark_list,
-		warmup_itrs: warmup_itrs,
-		min_benchmark_itrs: min_bench_itrs,
-		min_benchmark_time: min_bench_time
-		)
+    puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 
-	if num_runs > 1
-		run_string = "%04d" % run_num + "_"
-	else
-		run_string = ""
-	end
+    if num_runs > 1
+        run_string = "%04d" % run_num + "_"
+    else
+        run_string = ""
+    end
+
+    begin
+        yjit_results = YJITMetrics.run_benchmarks(
+            YJIT_BENCH_DIR,
+            TEMP_DATA_PATH,
+            with_chruby: ruby,
+            ruby_opts: ruby_opts,
+            benchmark_list: benchmark_list,
+            warmup_itrs: warmup_itrs,
+            min_benchmark_itrs: min_bench_itrs,
+            min_benchmark_time: min_bench_time
+            )
+    rescue
+        puts "Error: #{$!.class} / #{$!.message.inspect}"
+        # If we got a runtime error, we're not going to record this run's data.
+        # Instead we'll record the fact that we got an error.
+
+        # This file won't be picked up by basic_report, but it's easy to locate it.
+        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}.txt"
+
+        File.open(error_json_path, "a") do |f|
+            f.puts $!.class
+            f.puts $!.message
+            f.puts $!.full_message  # Includes backtrace and any cause/nested errors
+        end
+
+        # If we tolerate errors, keep going. Otherwise re-raise the exception.
+        next if tolerate_errors
+
+        raise
+    end
 
 	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
 	puts "Writing to JSON output file #{json_path}."
