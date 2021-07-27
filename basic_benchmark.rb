@@ -19,40 +19,40 @@ require_relative "lib/yjit-metrics"
 # I prefer human-readable names for configs, where I can get them.
 # TODO: add more options for *building* Rubies, esp. YJIT-enabled Rubies
 TEST_RUBY_CONFIGS = {
-	debug_ruby_no_yjit: {
-		ruby: "ruby-yjit-metrics-debug",
-		opts: [ "--disable-yjit" ],
-	},
-	yjit_stats: {
-		ruby: "ruby-yjit-metrics-debug",
-		opts: [ "--yjit", "--yjit-stats" ],
-	},
-	prod_ruby_no_jit: {
-		ruby: "ruby-yjit-metrics-prod",
-		opts: [ "--disable-yjit" ],
-	},
-	prod_ruby_with_yjit: {
-		ruby: "ruby-yjit-metrics-prod",
-		opts: [ "--yjit" ],
-	},
-	prod_ruby_with_mjit: {
-		ruby: "ruby-yjit-metrics-prod",
-		opts: [ "--jit --disable-yjit" ],
-	},
-	ruby_27: {
-		ruby: "2.7.2",
-		opts: [],
-		install: "ruby-install",
-	},
-	ruby_27_with_mjit: {
-		ruby: "2.7.2",
-		opts: [ "--jit" ],
-		install: "ruby-install",
-	},
+    debug_ruby_no_yjit: {
+        ruby: "ruby-yjit-metrics-debug",
+        opts: [ "--disable-yjit" ],
+    },
+    yjit_stats: {
+        ruby: "ruby-yjit-metrics-debug",
+        opts: [ "--yjit", "--yjit-stats" ],
+    },
+    prod_ruby_no_jit: {
+        ruby: "ruby-yjit-metrics-prod",
+        opts: [ "--disable-yjit" ],
+    },
+    prod_ruby_with_yjit: {
+        ruby: "ruby-yjit-metrics-prod",
+        opts: [ "--yjit" ],
+    },
+    prod_ruby_with_mjit: {
+        ruby: "ruby-yjit-metrics-prod",
+        opts: [ "--jit --disable-yjit" ],
+    },
+    ruby_27: {
+        ruby: "2.7.2",
+        opts: [],
+        install: "ruby-install",
+    },
+    ruby_27_with_mjit: {
+        ruby: "2.7.2",
+        opts: [ "--jit" ],
+        install: "ruby-install",
+    },
     truffleruby: {
         ruby: "truffleruby-21.1.0",
         opts: [],
-	    install: "ruby-install",
+        install: "ruby-install",
     },
 }
 TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
@@ -85,52 +85,52 @@ configs_to_test = DEFAULT_TEST_CONFIGS
 tolerate_errors = false
 
 OptionParser.new do |opts|
-	opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
+    opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
 
-	opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (omit on first run)") do
-		skip_git_updates = true
-	end
+    opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (omit on first run)") do
+        skip_git_updates = true
+    end
 
-	opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
-		warmup_itrs = n.to_i
-		raise "Number of warmup iterations must be zero or positive!" if warmup_itrs < 0
-	end
+    opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
+        warmup_itrs = n.to_i
+        raise "Number of warmup iterations must be zero or positive!" if warmup_itrs < 0
+    end
 
-	opts.on("--min-bench-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
-		min_bench_time = t.to_f
-		raise "min-bench-time must be zero or positive!" if min_bench_time < 0.0
-	end
+    opts.on("--min-bench-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
+        min_bench_time = t.to_f
+        raise "min-bench-time must be zero or positive!" if min_bench_time < 0.0
+    end
 
-	opts.on("--min-bench-itrs=n", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
-		min_bench_itrs = n.to_i
-		raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
-	end
+    opts.on("--min-bench-itrs=n", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
+        min_bench_itrs = n.to_i
+        raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
+    end
 
-	opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
-		num_runs = n.to_i
-		raise "Number of runs must be positive!" if num_runs <= 0
-	end
+    opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
+        num_runs = n.to_i
+        raise "Number of runs must be positive!" if num_runs <= 0
+    end
 
     opts.on("--tolerate-errors", "When a benchmark fails, skip only that one run and continue. Where possible, record the error's existence but not its data.") do
         tolerate_errors = true
     end
 
-	config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
-	opts.on("--configs=CONFIGS", config_desc) do |configs|
-		configs_to_test = configs.split(",").map(&:strip).map(&:to_sym).uniq
-		bad_configs = configs_to_test - TEST_CONFIG_NAMES
-		raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
-	end
+    config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
+    opts.on("--configs=CONFIGS", config_desc) do |configs|
+        configs_to_test = configs.split(",").map(&:strip).map(&:to_sym).uniq
+        bad_configs = configs_to_test - TEST_CONFIG_NAMES
+        raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
+    end
 end.parse!
 
 benchmark_list = ARGV
 
 extra_config_options = []
 if ENV["RUBY_CONFIG_OPTS"]
-	extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
+    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
 elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-	# On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
-	extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
+    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
+    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
 end
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
@@ -146,35 +146,35 @@ CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 # Ensure we have copies of any Rubies (that we're using) installed via ruby-install
 configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
 if !skip_git_updates && !configs_to_check_install.empty?
-	rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
-	installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
-	(rubies_to_check_install - installed_rubies).each do |ruby|
-		YJITMetrics.check_call("ruby-install #{ruby}")
-	end
+    rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
+    installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
+    (rubies_to_check_install - installed_rubies).each do |ruby|
+        YJITMetrics.check_call("ruby-install #{ruby}")
+    end
 end
 
 ### Ensure up-to-date YJIT repos in debug configuration and prod configuration
 
 if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-prod" }
-	YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
-	    git_url: YJIT_GIT_URL,
-	    git_branch: YJIT_GIT_BRANCH,
-	    install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
-	    config_opts: BASE_CONFIG_OPTIONS + extra_config_options
+    YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
+        config_opts: BASE_CONFIG_OPTIONS + extra_config_options
 end
 
 if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-debug" }
-	YJITMetrics.clone_ruby_repo_with path: DEBUG_YJIT_DIR,
-		git_url: YJIT_GIT_URL,
-		git_branch: YJIT_GIT_BRANCH,
-		install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
-		config_opts: BASE_CONFIG_OPTIONS + extra_config_options,
-		config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
+    YJITMetrics.clone_ruby_repo_with path: DEBUG_YJIT_DIR,
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
+        config_opts: BASE_CONFIG_OPTIONS + extra_config_options,
+        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
 end
 
 ### Ensure an up-to-date local yjit-bench checkout
 if !skip_git_updates
-	YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+    YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
 
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
@@ -184,8 +184,8 @@ all_runs = (0...num_runs).flat_map { |run_num| configs_to_test.map { |config| [ 
 all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of runs
 
 all_runs.each do |run_num, config|
-	ruby = TEST_RUBY_CONFIGS[config][:ruby]
-	ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+    ruby = TEST_RUBY_CONFIGS[config][:ruby]
+    ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
     puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 
     if num_runs > 1
@@ -194,38 +194,45 @@ all_runs.each do |run_num, config|
         run_string = ""
     end
 
-    begin
-        yjit_results = YJITMetrics.run_benchmarks(
-            YJIT_BENCH_DIR,
-            TEMP_DATA_PATH,
-            with_chruby: ruby,
-            ruby_opts: ruby_opts,
-            benchmark_list: benchmark_list,
-            warmup_itrs: warmup_itrs,
-            min_benchmark_itrs: min_bench_itrs,
-            min_benchmark_time: min_bench_time
-            )
-    rescue
-        puts "Error: #{$!.class} / #{$!.message.inspect}"
-        # If we got a runtime error, we're not going to record this run's data.
+    on_error = proc do |error_info|
+        exc = error_info[:exception]
+        bench = error_info[:benchmark_name]
+        coredump_pid = error_info[:worker_pid]
+
+        puts "Error: #{exc.class} / #{exc.message.inspect}"
+
+        # If we get a runtime error, we're not going to record this run's data.
         # Instead we'll record the fact that we got an error.
 
         # This file won't be picked up by basic_report, but it's easy to locate it.
-        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}.txt"
+        # If we gather core dumps from the (OS-specific) dump directory, we can match them up
+        # by the core dump PID in the filename.
+        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}_#{bench}_#{coredump_pid}.txt"
 
         File.open(error_json_path, "a") do |f|
-            f.puts $!.class
-            f.puts $!.message
-            f.puts $!.full_message  # Includes backtrace and any cause/nested errors
+            f.print "Exception #{exc.class}: #{exc.message}\n"
+            f.puts exc.full_message  # Includes backtrace and any cause/nested errors
+
+            f.puts "\n\nOutput of failing process:\n\n#{error_info[:output]}"
         end
 
-        # If we tolerate errors, keep going. Otherwise re-raise the exception.
-        next if tolerate_errors
-
-        raise
+        # If we tolerate errors, keep going. If not, raise or re-raise the exception.
+        raise(exc) unless tolerate_errors
     end
 
-	json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
-	puts "Writing to JSON output file #{json_path}."
-	File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
+    yjit_results = YJITMetrics.run_benchmarks(
+        YJIT_BENCH_DIR,
+        TEMP_DATA_PATH,
+        with_chruby: ruby,
+        ruby_opts: ruby_opts,
+        benchmark_list: benchmark_list,
+        warmup_itrs: warmup_itrs,
+        min_benchmark_itrs: min_bench_itrs,
+        min_benchmark_time: min_bench_time,
+        on_error: on_error
+        )
+
+    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
+    puts "Writing to JSON output file #{json_path}."
+    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
 end

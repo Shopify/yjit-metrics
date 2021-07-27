@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 
 # Run a benchmark using the specified Ruby (if any) and the yjit-metrics harness code
 
@@ -10,6 +10,8 @@ if [[ -f /opt/dev/sh/chruby/chruby.sh ]]; then
 fi
 
 <%= with_chruby ? "chruby #{with_chruby}" : "" %>
+
+<%= pre_benchmark_code %>
 
 export OUT_JSON_PATH=<%= out_json_path %>
 export WARMUP_ITRS=<%= warmup_itrs %>
