@@ -47,16 +47,28 @@ module YJITMetrics
     def run_script_from_string(script)
         tf = Tempfile.new("yjit-metrics-script")
         tf.write(script)
-        tf.flush # No flush can result in successfully running an empty script
+        tf.flush # Not flushing can result in successfully running an empty script
 
-        # Passing -l to bash makes sure to load .bash_profile
-        # for chruby.
-        status = system("bash", "-l", tf.path, out: :out, err: :err)
+        script_output = nil
+        worker_pid = nil
 
-        unless status
-            STDERR.puts "Script failed in directory #{Dir.pwd}"
-            raise RuntimeError.new
+        # Passing -l to bash makes sure to load .bash_profile for chruby.
+        IO.popen(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
+            worker_pid = script_out_io.pid
+            script_output = ""
+            loop do
+                begin
+                    chunk = script_out_io.readpartial(1024)
+                    print chunk
+                    script_output += chunk
+                rescue EOFError
+                    # Cool, all done.
+                    break
+                end
+            end
         end
+
+        return { failed: !$?.success?, exitstatus: $?.exitstatus, worker_pid: worker_pid, output: script_output }
     ensure
         if(tf)
             tf.close
@@ -127,18 +139,61 @@ module YJITMetrics
     #
     # This method converts the seconds returned by the harness to milliseconds before
     # returning times and warmups.
+    #
+    # If on_error is specified it should be a proc that takes a hash. On error,
+    # that proc will be called with information about the error that occurred.
+    # If on_error raises (or re-raises) an exception then the benchmark run will
+    # stop. If it doesn't, benchmarking will continue but not log data for this run.
     def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
-        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
+        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil)
 
         out_json_path = File.expand_path(File.join(output_path, 'temp.json'))
         FileUtils.rm_f(out_json_path) # No stale data please
 
         ruby_opts_section = ruby_opts.map { |s| '"' + s + '"' }.join(" ")
+        pre_benchmark_code = enable_core_dumps ? "ulimit -c unlimited" : ""
         script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
         bench_script = script_template.result(binding) # Evaluate an Erb template with locals like warmup_itrs
 
+        failed = false
+        exc = nil
+
         # Do the benchmarking
-        run_script_from_string(bench_script)
+        begin
+            script_details = run_script_from_string(bench_script)
+            failed = script_details[:failed]
+            worker_pid = script_details[:worker_pid]
+            script_output = script_details[:output]
+            exit_status = script_details[:exitstatus]
+        rescue
+            failed = true
+            exc = $!
+        end
+
+        if failed
+            # Sometimes we'll get a Ruby exception. Sometimes the
+            # harness gets the exception, so no exception has
+            # happened in this process. If we don't have one,
+            # we'll create an exception for the handler to raise.
+            if exc.nil?
+                exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{exit_status.inspect}")
+            end
+
+            # What should go in here? What should the interface be? Many of these things will
+            # be unavailable, depending what stage of the script got an error.
+            on_error.call({
+                exception: exc,
+                output: script_output,
+                benchmark_name: bench_name,
+                benchmark_path: script_path,
+                ruby_opts: ruby_opts,
+                with_chruby: with_chruby,
+                json_file: out_json_path,
+                worker_pid: worker_pid, # This is how we can locate the core dump for the process later
+            })
+
+            return
+        end
 
         # Read the benchmark data
         single_bench_data = JSON.load(File.read out_json_path)
@@ -204,7 +259,7 @@ module YJITMetrics
 
                 times, warmups, yjit_stats, bench_metadata, ruby_metadata = run_benchmark_path_with_runner(
                     bench_name, script_path,
-                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby,
+                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby, on_error: on_error,
                     warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
 
                 # We don't save individual Ruby metadata for all benchmarks because it

@@ -194,36 +194,43 @@ all_runs.each do |run_num, config|
         run_string = ""
     end
 
-    begin
-        yjit_results = YJITMetrics.run_benchmarks(
-            YJIT_BENCH_DIR,
-            TEMP_DATA_PATH,
-            with_chruby: ruby,
-            ruby_opts: ruby_opts,
-            benchmark_list: benchmark_list,
-            warmup_itrs: warmup_itrs,
-            min_benchmark_itrs: min_bench_itrs,
-            min_benchmark_time: min_bench_time
-            )
-    rescue
-        puts "Error: #{$!.class} / #{$!.message.inspect}"
-        # If we got a runtime error, we're not going to record this run's data.
+    on_error = proc do |error_info|
+        exc = error_info[:exception]
+        bench = error_info[:benchmark_name]
+        coredump_pid = error_info[:worker_pid]
+
+        puts "Error: #{exc.class} / #{exc.message.inspect}"
+
+        # If we get a runtime error, we're not going to record this run's data.
         # Instead we'll record the fact that we got an error.
 
         # This file won't be picked up by basic_report, but it's easy to locate it.
-        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}.txt"
+        # If we gather core dumps from the (OS-specific) dump directory, we can match them up
+        # by the core dump PID in the filename.
+        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}_#{bench}_#{coredump_pid}.txt"
 
         File.open(error_json_path, "a") do |f|
-            f.puts $!.class
-            f.puts $!.message
-            f.puts $!.full_message  # Includes backtrace and any cause/nested errors
+            f.print "Exception #{exc.class}: #{exc.message}\n"
+            f.puts exc.full_message  # Includes backtrace and any cause/nested errors
+
+            f.puts "\n\nOutput of failing process:\n\n#{error_info[:output]}"
         end
 
-        # If we tolerate errors, keep going. Otherwise re-raise the exception.
-        next if tolerate_errors
-
-        raise
+        # If we tolerate errors, keep going. If not, raise or re-raise the exception.
+        raise(exc) unless tolerate_errors
     end
+
+    yjit_results = YJITMetrics.run_benchmarks(
+        YJIT_BENCH_DIR,
+        TEMP_DATA_PATH,
+        with_chruby: ruby,
+        ruby_opts: ruby_opts,
+        benchmark_list: benchmark_list,
+        warmup_itrs: warmup_itrs,
+        min_benchmark_itrs: min_bench_itrs,
+        min_benchmark_time: min_bench_time,
+        on_error: on_error
+        )
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
     puts "Writing to JSON output file #{json_path}."
