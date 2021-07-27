@@ -50,14 +50,16 @@ def run_benchmark(num_itrs_hint)
   total_time = 0
   num_itrs = 0
 
+  # Note: this harness records *one* set of YJIT stats for all iterations
+  # combined, including warmups. That's a good thing for our specific use
+  # case, but would be awful for many other use cases.
   YJIT.reset_stats! if HAS_YJIT_STATS
   begin
     time = Benchmark.realtime { yield }
     num_itrs += 1
 
-    # NOTE: we may want to avoid this as it could trigger GC?
     time_ms = (1000 * time).to_i
-    puts "itr \##{num_itrs}: #{time_ms}ms"
+    print "itr \#", num_itrs, ": ", time_ms, "ms", "\n" # Minimize string allocations to reduce GC
 
     # NOTE: we may want to preallocate an array and avoid append
     # We internally save the time in seconds to avoid loss of precision
