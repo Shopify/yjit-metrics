@@ -157,8 +157,74 @@ module YJITMetrics
         end
     end
 
-    # Run all the benchmarks and record execution times
-    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
+    # Each benchmark returns its data as a simple hash for that benchmark:
+    #
+    #    {
+    #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],
+    #       "benchmark_metadata" => {...},
+    #       "ruby_metadata" => {...},
+    #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present
+    #    }
+    #
+    # This method returns five separate objects for times, warmups, yjit stats,
+    # benchmark metadata and ruby metadata. Note that only a single yjit stats
+    # hash is returned for all iterations combined, while times and warmups are
+    # arrays with sizes equal to the number of 'real' and warmup iterations,
+    # respectively.
+    #
+    # This method converts the seconds returned by the harness to milliseconds before
+    # returning times and warmups.
+    def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
+        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
+
+        out_json_path = File.expand_path(File.join(output_path, 'temp.json'))
+        FileUtils.rm_f(out_json_path) # No stale data please
+
+        ruby_opts_section = ruby_opts.map { |s| '"' + s + '"' }.join(" ")
+        script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
+        bench_script = script_template.result(binding) # Evaluate an Erb template with locals like warmup_itrs
+
+        # Do the benchmarking
+        run_script_from_string(bench_script)
+
+        # Read the benchmark data
+        single_bench_data = JSON.load(File.read out_json_path)
+
+        # Convert times to ms
+        times = single_bench_data["times"].map { |v| 1000 * v.to_f }
+        warmups = single_bench_data["warmups"].map { |v| 1000 * v.to_f }
+
+        yjit_stats = {}
+        if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
+            yjit_stats = single_bench_data["yjit_stats"]
+        end
+
+        benchmark_metadata = single_bench_data["benchmark_metadata"]
+        ruby_metadata = single_bench_data["ruby_metadata"]
+
+        # Add per-benchmark metadata from this script to the data returned from the harness.
+        benchmark_metadata.merge({
+            "benchmark_name" => bench_name,
+            "chruby_version" => with_chruby,
+            "ruby_opts" => ruby_opts
+        })
+
+        return times, warmups, yjit_stats, benchmark_metadata, ruby_metadata
+    end
+
+    # Run all the benchmarks and record execution times.
+    # This method converts the benchmark_list to a set of benchmark names and paths.
+    # It also combines results from multiple worker subprocesses.
+    #
+    # This method returns a benchmark data array of the following form:
+
+
+    # For timings, YJIT stats and benchmark metadata, we add a hash inside
+    # each top-level key for each benchmark name, e.g.:
+    #
+    #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
+    #
+    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil, on_error: nil,
                         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
         bench_data = { "times" => {}, "warmups" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
 
@@ -183,61 +249,24 @@ module YJITMetrics
                 raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
                 script_path = real_script_path
 
-                out_json_path = File.expand_path(File.join(out_path, 'temp.json'))
-                FileUtils.rm_f(out_json_path) # No stale data please
+                times, warmups, yjit_stats, bench_metadata, ruby_metadata = run_benchmark_path_with_runner(
+                    bench_name, script_path,
+                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby,
+                    warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
 
-                ruby_opts_section = ruby_opts.map { |s| '"' + s + '"' }.join(" ")
-                script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
-                bench_script = script_template.result(binding) # Evaluate with the local variables right here
-
-                # Do the benchmarking
-                run_script_from_string(bench_script)
-
-                # Read the benchmark data
-                single_bench_data = JSON.load(File.read out_json_path)
-
-                # Convert times to ms
-                times = single_bench_data["times"].map { |v| 1000 * v.to_f }
-                warmups = single_bench_data["warmups"].map { |v| 1000 * v.to_f }
-
-                single_metadata = single_bench_data["benchmark_metadata"]
-
-                # Add per-benchmark metadata from this script to the data returned from the harness.
-                single_metadata.merge({
-                    "benchmark_name" => bench_name,
-                    "chruby_version" => with_chruby,
-                    "ruby_opts" => ruby_opts
-                })
-
-                # Each benchmark returns its data as a simple hash for that benchmark:
-                #
-                #    {
-                #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],
-                #       "benchmark_metadata" => {...},
-                #       "ruby_metadata" => {...},
-                #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present
-                #    }
-                #
-                # For timings, YJIT stats and benchmark metadata, we add a hash inside
-                # each top-level key for each benchmark name, e.g.:
-                #
-                #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
-                #
-                # For Ruby metadata we don't save it for all benchmarks because it
+                # We don't save individual Ruby metadata for all benchmarks because it
                 # should be identical for all of them -- we use the same Ruby
                 # every time. Instead we save one copy of it, but we make sure
                 # on each subsequent benchmark that it returned exactly the same
                 # metadata about the Ruby version.
                 bench_data["times"][bench_name] = times
                 bench_data["warmups"][bench_name] = warmups
-                if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
-                    bench_data["yjit_stats"][bench_name] = [ single_bench_data["yjit_stats"] ]
-                end
-                bench_data["benchmark_metadata"][bench_name] = single_metadata
-                bench_data["ruby_metadata"] = single_bench_data["ruby_metadata"] if bench_data["ruby_metadata"].empty?
-                if bench_data["ruby_metadata"] != single_bench_data["ruby_metadata"]
+                bench_data["yjit_stats"][bench_name] = [yjit_stats]
+                bench_data["benchmark_metadata"][bench_name] = bench_metadata
+                bench_data["ruby_metadata"] = ruby_metadata if bench_data["ruby_metadata"].empty?
+                if bench_data["ruby_metadata"] != ruby_metadata
                     puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
-                    puts "Ruby metadata 2: #{single_bench_data["ruby_metadata"].inspect}"
+                    puts "Ruby metadata 2: #{ruby_metadata.inspect}"
                     raise "Ruby benchmark metadata should not change across a single set of benchmark runs!"
                 end
             end
