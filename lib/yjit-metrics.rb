@@ -102,10 +102,10 @@ module YJITMetrics
       elsif RUBY_PLATFORM["win"]
         []
       else
-        # On Linux, disable address space randomization for determinism
-        ["setarch", "x86_64", "-R"] +
+        # On Linux, disable address space randomization for determinism unless YJIT_METRICS_USE_ASLR is specified
+        (ENV["YJIT_METRICS_USE_ASLR"] ? [] : ["setarch", "x86_64", "-R"]) +
         # And pin the process to one given core to improve caching
-        ["taskset", "-c", "11"]
+        (ENV["YJIT_METRICS_NO_PIN"] ? [] : ["taskset", "-c", "11"])
       end
     end
 

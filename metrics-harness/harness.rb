@@ -16,10 +16,10 @@ TIMESTAMP = Time.now.getgm
 default_path = "results-#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}-#{TIMESTAMP.strftime('%F-%H%M%S')}.json"
 OUT_JSON_PATH = File.expand_path(ENV.fetch('OUT_JSON_PATH', default_path))
 
-puts RUBY_DESCRIPTION
-
-# Save the value of any environment variable whose name contains a string in this list.
-IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path" ]
+# Save the value of any environment variable whose name contains a string in this case-insensitive list.
+# Note: this means you can store extra non-framework metadata about any run by setting an env var
+# starting with YJIT_METRICS before running it.
+IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" ]
 
 IS_YJIT = Object.const_defined?(:YJIT)
 HAS_YJIT_STATS = IS_YJIT && !!YJIT.runtime_stats
@@ -80,6 +80,7 @@ def run_benchmark(num_itrs_hint)
         warmup_itrs: WARMUP_ITRS,
         min_bench_itrs: MIN_BENCH_ITRS,
         min_bench_time: MIN_BENCH_TIME,
+        command_line: ARGV,
         env: out_env,
         loaded_gems: Gem.loaded_specs.map { |name, spec| [ name, spec.version.to_s ] },
     },
