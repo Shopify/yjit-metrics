@@ -122,28 +122,26 @@ module YJITMetrics
       end
     end
 
-    # Each benchmark returns its data as a simple hash for that benchmark:
+    # The yjit-metrics harness returns its data as a simple hash for that benchmark:
     #
     #    {
-    #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],
+    #       "times" => [ 2.3, 2.5, 2.7, 2.4, ...],  # The benchmark returns times in seconds, not milliseconds
     #       "benchmark_metadata" => {...},
     #       "ruby_metadata" => {...},
-    #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present
+    #       "yjit_stats" => {...},  # Note: yjit_stats may be empty, but is present. It's a hash, not an array.
     #    }
     #
-    # This method returns five separate objects for times, warmups, yjit stats,
-    # benchmark metadata and ruby metadata. Note that only a single yjit stats
+    # This method returns a RunData struct. Note that only a single yjit stats
     # hash is returned for all iterations combined, while times and warmups are
     # arrays with sizes equal to the number of 'real' and warmup iterations,
     # respectively.
     #
-    # This method converts the seconds returned by the harness to milliseconds before
-    # returning times and warmups.
-    #
-    # If on_error is specified it should be a proc that takes a hash. On error,
+    # If on_error is specified it should be a proc that takes a hash. In case of
+    # an exception or a failing status returned by the harness script,
     # that proc will be called with information about the error that occurred.
     # If on_error raises (or re-raises) an exception then the benchmark run will
-    # stop. If it doesn't, benchmarking will continue but not log data for this run.
+    # stop. If no exception is raised, benchmarking will continue but not collect samples
+    # for the failed run.
     def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil)
 
@@ -174,7 +172,7 @@ module YJITMetrics
             # Sometimes we'll get a Ruby exception. Sometimes the
             # harness gets the exception, so no exception has
             # happened in this process. If we don't have one,
-            # we'll create an exception for the handler to raise.
+            # we'll create an exception for on_error to raise.
             if exc.nil?
                 exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{exit_status.inspect}")
             end
@@ -225,8 +223,15 @@ module YJITMetrics
     # It also combines results from multiple worker subprocesses.
     #
     # This method returns a benchmark data array of the following form:
-
-
+    #
+    #    {
+    #       "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...], "psych" => [...] },
+    #       "benchmark_metadata" => { "yaml-load" => {...}, "psych" => { ... }, },
+    #       "ruby_metadata" => {...},
+    #       "yjit_stats" => { "yaml-load" => {...}, ... }, # Note: yjit_stats may be empty, but is present
+    #       "peak_mem_bytes" => { "yaml-load" => 2343423, "psych" => 112234, ... },
+    #    }
+    #
     # For timings, YJIT stats and benchmark metadata, we add a hash inside
     # each top-level key for each benchmark name, e.g.:
     #
