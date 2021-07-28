@@ -44,21 +44,33 @@ module YJITMetrics
         output
     end
 
-    def run_script_from_string(script)
+    def run_harness_script_from_string(script)
         tf = Tempfile.new("yjit-metrics-script")
         tf.write(script)
         tf.flush # Not flushing can result in successfully running an empty script
 
         script_output = nil
+        harness_script_pid = nil
         worker_pid = nil
 
         # Passing -l to bash makes sure to load .bash_profile for chruby.
         IO.popen(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
-            worker_pid = script_out_io.pid
+            harness_script_pid = script_out_io.pid
             script_output = ""
             loop do
                 begin
                     chunk = script_out_io.readpartial(1024)
+
+                    # The harness will print the harness PID before doing anything else.
+                    if (worker_pid.nil? && chunk.include?("HARNESS PID"))
+                        if chunk =~ /HARNESS PID: (\d+) -/
+                            worker_pid = $1.to_i
+                            puts "Read worker PID successfully: #{worker_pid.inspect}"
+                        else
+                            puts "Failed to read harness PID correctly from chunk: #{chunk.inspect}"
+                        end
+                    end
+
                     print chunk
                     script_output += chunk
                 rescue EOFError
@@ -68,7 +80,13 @@ module YJITMetrics
             end
         end
 
-        return { failed: !$?.success?, exitstatus: $?.exitstatus, worker_pid: worker_pid, output: script_output }
+        return({
+            failed: !$?.success?,
+            exitstatus: $?.exitstatus,
+            harness_script_pid: harness_script_pid,
+            worker_pid: worker_pid,
+            output: script_output
+        })
     ensure
         if(tf)
             tf.close
@@ -158,7 +176,7 @@ module YJITMetrics
 
         # Do the benchmarking
         begin
-            script_details = run_script_from_string(bench_script)
+            script_details = run_harness_script_from_string(bench_script)
             failed = script_details[:failed]
             worker_pid = script_details[:worker_pid]
             script_output = script_details[:output]
