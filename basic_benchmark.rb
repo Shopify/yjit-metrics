@@ -211,7 +211,7 @@ all_runs.each do |run_num, config|
         if when_error != :ignore
             # Instead we'll record the fact that we got an error.
 
-            crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}_#{coredump_pid}"
+            crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
             FileUtils.mkdir(crash_report_dir)
 
             error_text_path = "#{crash_report_dir}/output.txt"
