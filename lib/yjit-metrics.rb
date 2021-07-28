@@ -19,6 +19,17 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
+    JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes benchmark_metadata ruby_metadata)
+    RunData = Struct.new(*JSON_RUN_FIELDS) do
+        def times_ms
+            self.times.map { |v| 1000.0 * v }
+        end
+
+        def warmups_ms
+            self.warmups.map { |v| 1000.0 * v }
+        end
+    end
+
     # Checked system - error if the command fails
     def check_call(command, verbose: false)
         puts(command)
@@ -213,27 +224,17 @@ module YJITMetrics
 
         # Read the benchmark data
         single_bench_data = JSON.load(File.read out_json_path)
-
-        # Convert times to ms
-        times = single_bench_data["times"].map { |v| 1000 * v.to_f }
-        warmups = single_bench_data["warmups"].map { |v| 1000 * v.to_f }
-
-        yjit_stats = {}
-        if single_bench_data["yjit_stats"] && !single_bench_data["yjit_stats"].empty?
-            yjit_stats = single_bench_data["yjit_stats"]
-        end
-
-        benchmark_metadata = single_bench_data["benchmark_metadata"]
-        ruby_metadata = single_bench_data["ruby_metadata"]
+        obj = RunData.new *JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] }
+        obj.yjit_stats = nil if obj.yjit_stats.nil? || obj.yjit_stats.empty?
 
         # Add per-benchmark metadata from this script to the data returned from the harness.
-        benchmark_metadata.merge({
+        obj.benchmark_metadata.merge!({
             "benchmark_name" => bench_name,
             "chruby_version" => with_chruby,
             "ruby_opts" => ruby_opts
         })
 
-        return times, warmups, yjit_stats, benchmark_metadata, ruby_metadata
+        obj
     end
 
     # Run all the benchmarks and record execution times.
@@ -257,7 +258,8 @@ module YJITMetrics
     #
     def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil, on_error: nil,
                         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
-        bench_data = { "times" => {}, "warmups" => {}, "benchmark_metadata" => {}, "ruby_metadata" => {}, "yjit_stats" => {} }
+        bench_data = {}
+        JSON_RUN_FIELDS.each { |f| bench_data[f.to_s] = {} }
 
         Dir.chdir(benchmark_dir) do
             # Get the list of benchmark files/directories matching name filters
@@ -280,24 +282,28 @@ module YJITMetrics
                 raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
                 script_path = real_script_path
 
-                times, warmups, yjit_stats, bench_metadata, ruby_metadata = run_benchmark_path_with_runner(
+                run_data = run_benchmark_path_with_runner(
                     bench_name, script_path,
                     output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby, on_error: on_error,
                     warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
+
+                # Return times and warmups in milliseconds, not seconds
+                bench_data["times"][bench_name] = run_data.times_ms
+                bench_data["warmups"][bench_name] = run_data.warmups_ms
+
+                bench_data["yjit_stats"][bench_name] = [run_data.yjit_stats]
+                bench_data["benchmark_metadata"][bench_name] = run_data.benchmark_metadata
+                bench_data["peak_mem_bytes"][bench_name] = run_data.peak_mem_bytes
 
                 # We don't save individual Ruby metadata for all benchmarks because it
                 # should be identical for all of them -- we use the same Ruby
                 # every time. Instead we save one copy of it, but we make sure
                 # on each subsequent benchmark that it returned exactly the same
                 # metadata about the Ruby version.
-                bench_data["times"][bench_name] = times
-                bench_data["warmups"][bench_name] = warmups
-                bench_data["yjit_stats"][bench_name] = [yjit_stats]
-                bench_data["benchmark_metadata"][bench_name] = bench_metadata
-                bench_data["ruby_metadata"] = ruby_metadata if bench_data["ruby_metadata"].empty?
-                if bench_data["ruby_metadata"] != ruby_metadata
+                bench_data["ruby_metadata"] = run_data.ruby_metadata if bench_data["ruby_metadata"].empty?
+                if bench_data["ruby_metadata"] != run_data.ruby_metadata
                     puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
-                    puts "Ruby metadata 2: #{ruby_metadata.inspect}"
+                    puts "Ruby metadata 2: #{run_data.ruby_metadata.inspect}"
                     raise "Ruby benchmark metadata should not change across a single set of benchmark runs!"
                 end
             end
