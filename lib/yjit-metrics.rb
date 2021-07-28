@@ -76,7 +76,6 @@ module YJITMetrics
                     if (worker_pid.nil? && chunk.include?("HARNESS PID"))
                         if chunk =~ /HARNESS PID: (\d+) -/
                             worker_pid = $1.to_i
-                            puts "Read worker PID successfully: #{worker_pid.inspect}"
                         else
                             puts "Failed to read harness PID correctly from chunk: #{chunk.inspect}"
                         end
@@ -105,8 +104,23 @@ module YJITMetrics
         end
     end
 
-    def per_os_checks
+    def os_type
         if RUBY_PLATFORM["darwin"]
+            :mac
+        elsif RUBY_PLATFORM["win"]
+            :win
+        else
+            :linux
+        end
+    end
+
+    def per_os_checks
+        if os_type == :win
+            puts "Windows is not supported or tested yet. Best of luck!"
+            return
+        end
+
+        if os_type == :mac
             puts "Mac results are considered less stable for this benchmarking harness."
             puts "Please assume you'll need more runs and more time for similar final quality."
             return
@@ -139,16 +153,48 @@ module YJITMetrics
     end
 
     def per_os_shell_prelude
-      if RUBY_PLATFORM["darwin"]
-        []
-      elsif RUBY_PLATFORM["win"]
-        []
-      else
-        # On Linux, disable address space randomization for determinism unless YJIT_METRICS_USE_ASLR is specified
-        (ENV["YJIT_METRICS_USE_ASLR"] ? [] : ["setarch", "x86_64", "-R"]) +
-        # And pin the process to one given core to improve caching
-        (ENV["YJIT_METRICS_NO_PIN"] ? [] : ["taskset", "-c", "11"])
-      end
+        if os_type == :linux
+            # On Linux, disable address space randomization for determinism unless YJIT_METRICS_USE_ASLR is specified
+            (ENV["YJIT_METRICS_USE_ASLR"] ? [] : ["setarch", "x86_64", "-R"]) +
+            # And pin the process to one given core to improve caching
+            (ENV["YJIT_METRICS_NO_PIN"] ? [] : ["taskset", "-c", "11"])
+        else
+            []
+        end
+    end
+
+    # Run the inner block given, watching for crash files showing up.
+    # In some cases there may be multiple relevant files, so we return
+    # a list.
+    def with_crash_tracking
+        os = os_type
+        if os == :linux
+            FileUtils.rm_f("core")
+        elsif os == :mac
+            crash_pattern = "#{ENV['HOME']}/Library/Logs/DiagnosticReports/ruby_*.crash"
+            ruby_crash_files_before = Dir[crash_pattern].to_a
+        end
+
+        did_fail = false
+        begin
+            did_fail = yield
+        rescue
+            did_fail = true
+        ensure
+            if os == :linux
+                return ["core"] if File.exist?("core")
+                return nil
+            elsif os == :mac
+                # Horrifying realisation: it takes a short time after the segfault for the crash file to be written.
+                # Matching these up is really hard to do automatically, particularly when/if we're not sure if
+                # they'll be showing up at all.
+                sleep(1) if did_fail
+
+                ruby_crash_files = Dir[crash_pattern].to_a
+                # If any new ruby_* crash files have appeared, include them.
+                return (ruby_crash_files - ruby_crash_files_before).sort
+            end
+        end
     end
 
     # The yjit-metrics harness returns its data as a simple hash for that benchmark:
@@ -187,7 +233,12 @@ module YJITMetrics
 
         # Do the benchmarking
         begin
-            script_details = run_harness_script_from_string(bench_script)
+            script_details = nil
+            crash_files = with_crash_tracking do
+                script_details = run_harness_script_from_string(bench_script)
+                script_details[:failed]
+            end
+            crash_files ||= [] # Empty list is fine, nil is not
             failed = script_details[:failed]
             worker_pid = script_details[:worker_pid]
             script_output = script_details[:output]
@@ -210,6 +261,7 @@ module YJITMetrics
             # be unavailable, depending what stage of the script got an error.
             on_error.call({
                 exception: exc,
+                crash_files: crash_files, # Empty unless a core/crash was dumped
                 output: script_output,
                 benchmark_name: bench_name,
                 benchmark_path: script_path,
@@ -256,7 +308,8 @@ module YJITMetrics
     #
     #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
     #
-    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil, on_error: nil,
+    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
+                        enable_core_dumps: false, on_error: nil,
                         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
         bench_data = {}
         JSON_RUN_FIELDS.each { |f| bench_data[f.to_s] = {} }
@@ -284,7 +337,8 @@ module YJITMetrics
 
                 run_data = run_benchmark_path_with_runner(
                     bench_name, script_path,
-                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby, on_error: on_error,
+                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby,
+                    enable_core_dumps: enable_core_dumps, on_error: on_error,
                     warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
 
                 # Return times and warmups in milliseconds, not seconds

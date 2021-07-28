@@ -14,6 +14,7 @@
 # benchmarks.
 
 require "optparse"
+require "fileutils"
 require_relative "lib/yjit-metrics"
 
 # I prefer human-readable names for configs, where I can get them.
@@ -74,6 +75,8 @@ YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
 YJIT_BENCH_GIT_BRANCH = "main" #"bench_setup_fixes"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
+ERROR_BEHAVIOURS = %i(die report ignore)
+
 # Defaults
 skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
@@ -82,7 +85,7 @@ min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
 min_bench_time = DEFAULT_MIN_BENCH_TIME
 DEFAULT_TEST_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_TEST_CONFIGS
-tolerate_errors = false
+when_error = :die
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -111,8 +114,11 @@ OptionParser.new do |opts|
         raise "Number of runs must be positive!" if num_runs <= 0
     end
 
-    opts.on("--tolerate-errors", "When a benchmark fails, skip only that one run and continue. Where possible, record the error's existence but not its data.") do
-        tolerate_errors = true
+    opts.on("--on-errors=BEHAVIOUR", "When a benchmark fails, how do we respond? Options: #{ERROR_BEHAVIOURS.map(&:to_s).join(",")}") do |choice|
+        when_error = choice.to_sym
+        unless ERROR_BEHAVIOURS.include?(when_error)
+            raise "Unknown behaviour on error: #{choice.inspect}!"
+        end
     end
 
     config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
@@ -199,25 +205,29 @@ all_runs.each do |run_num, config|
         bench = error_info[:benchmark_name]
         coredump_pid = error_info[:worker_pid]
 
-        puts "Error: #{exc.class} / #{exc.message.inspect}"
+        puts "Benchmark: #{bench}, Error: #{exc.class} / #{exc.message.inspect}"
 
         # If we get a runtime error, we're not going to record this run's data.
-        # Instead we'll record the fact that we got an error.
+        if when_error != :ignore
+            # Instead we'll record the fact that we got an error.
 
-        # This file won't be picked up by basic_report, but it's easy to locate it.
-        # If we gather core dumps from the (OS-specific) dump directory, we can match them up
-        # by the core dump PID in the filename.
-        error_json_path = OUTPUT_DATA_PATH + "/#{timestamp}_error_bb_#{run_string}#{config}_#{bench}_#{coredump_pid}.txt"
+            crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}_#{coredump_pid}"
+            FileUtils.mkdir(crash_report_dir)
 
-        File.open(error_json_path, "a") do |f|
-            f.print "Exception #{exc.class}: #{exc.message}\n"
-            f.puts exc.full_message  # Includes backtrace and any cause/nested errors
+            error_text_path = "#{crash_report_dir}/output.txt"
+            File.open(error_text_path, "w") do |f|
+                f.print "Exception #{exc.class}: #{exc.message}\n"
+                f.puts exc.full_message  # Includes backtrace and any cause/nested errors
 
-            f.puts "\n\nOutput of failing process:\n\n#{error_info[:output]}"
+                f.puts "\n\nOutput of failing process:\n\n#{error_info[:output]}"
+            end
+
+            # Move any crash-related files into the crash report dir
+            error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
         end
 
-        # If we tolerate errors, keep going. If not, raise or re-raise the exception.
-        raise(exc) unless tolerate_errors
+        # If we die on errors, raise or re-raise the exception.
+        raise(exc) if when_error == :die
     end
 
     yjit_results = YJITMetrics.run_benchmarks(
