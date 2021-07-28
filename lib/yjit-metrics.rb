@@ -271,7 +271,7 @@ module YJITMetrics
                 worker_pid: worker_pid, # This is how we can locate the core dump for the process later
             })
 
-            return
+            return nil
         end
 
         # Read the benchmark data
@@ -340,6 +340,14 @@ module YJITMetrics
                     output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby,
                     enable_core_dumps: enable_core_dumps, on_error: on_error,
                     warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
+
+                unless run_data
+                    # An error occurred. The error handler was specified and called,
+                    # but didn't throw an exception.
+                    # No usable data was collected for this benchmark and Ruby config,
+                    # so we'll move on with our day.
+                    next
+                end
 
                 # Return times and warmups in milliseconds, not seconds
                 bench_data["times"][bench_name] = run_data.times_ms
