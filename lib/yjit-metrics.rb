@@ -17,6 +17,8 @@ end
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
+    include YJITMetrics::RepoManagement
+
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes benchmark_metadata ruby_metadata)
