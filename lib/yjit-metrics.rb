@@ -178,10 +178,13 @@ module YJITMetrics
         end
 
         did_fail = false
+        exc = nil
+
         begin
             did_fail = yield
         rescue
             did_fail = true
+            puts "Exception inside crash tracker...\n#{$!.full_message}"
         ensure
             if os == :linux
                 return ["core"] if File.exist?("core")
