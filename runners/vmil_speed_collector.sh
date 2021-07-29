@@ -9,6 +9,7 @@ BASE_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --runs=$RUNS --min-be
 #YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-time=0.1 --configs=yjit_stats"
 
 # Running on Linux? Need to disable the appropriate things...
+# Since we're only doing 10 runs, I won't turn off ASLR.
 sudo ./setup.sh
 
 # Do a Git update on all the Rubies?
