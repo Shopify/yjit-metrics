@@ -5,7 +5,7 @@ set -e
 WARMUPS=500
 RUNS=10
 
-BASE_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --runs=$RUNS --min-bench-time=0.1 --configs=prod_ruby_with_yjit,prod_ruby_with_mjit,prod_ruby_no_jit,truffleruby"
+BASE_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --runs=$RUNS --min-bench-time=0.1 --configs=prod_ruby_with_yjit,prod_ruby_with_mjit,prod_ruby_no_jit"
 #YJIT_STATS_BENCH_OPTS="--skip-git-updates --warmup-itrs=$WARMUPS --min-bench-time=0.1 --configs=yjit_stats"
 
 # Running on Linux? Need to disable the appropriate things...
