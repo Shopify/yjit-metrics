@@ -239,7 +239,8 @@ all_runs.each do |run_num, config|
         warmup_itrs: warmup_itrs,
         min_benchmark_itrs: min_bench_itrs,
         min_benchmark_time: min_bench_time,
-        on_error: on_error
+        on_error: on_error,
+        enable_core_dumps: (when_error == :report ? true : false)
         )
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
