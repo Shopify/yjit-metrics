@@ -38,7 +38,7 @@ TEST_RUBY_CONFIGS = {
     },
     prod_ruby_with_mjit: {
         ruby: "ruby-yjit-metrics-prod",
-        opts: [ "--jit --disable-yjit" ],
+        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
     ruby_27: {
         ruby: "2.7.2",
