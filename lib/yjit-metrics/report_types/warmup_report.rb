@@ -20,7 +20,7 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
 
             most_cols_of_benchmarks = min_iters_per_benchmark.max
 
-            showcased_iters = [1, 5, 10, 50, 100, 150, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= most_cols_of_benchmarks }
+            showcased_iters = [1, 5, 10, 50, 100, 200, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= most_cols_of_benchmarks }
 
             @headings_by_config[config] =
                 [ "bench", "samples" ] +
@@ -45,7 +45,7 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
                 iter_N_rsd = []
 
                 iters_present.each do |iter_num|
-                    iter_series = all_runs.map { |run| run[iter_num] }
+                    iter_series = all_runs.map { |run| run[iter_num - 1] } # Human-readable "iteration #10" is array index 9
                     iter_N_mean.push mean(iter_series)
                     iter_N_rsd.push rel_stddev_pct(iter_series)
                 end
