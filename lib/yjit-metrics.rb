@@ -329,6 +329,7 @@ module YJITMetrics
             raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
             bench_files = benchmark_list if benchmark_list.size > 0
 
+            raise "No testable benchmarks found!" if bench_files.empty?
             bench_files.each_with_index do |bench_name, idx|
                 puts("Running benchmark \"#{bench_name}\" (#{idx+1}/#{bench_files.length})")
 
