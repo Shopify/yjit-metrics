@@ -77,6 +77,9 @@ class YJITMetrics::ResultSet
 
         @yjit_stats[config_name] ||= {}
         benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
+            next if stats_array.nil?
+            stats_array.compact!
+            next if stats_array.empty?
             @yjit_stats[config_name][benchmark_name] ||= []
             @yjit_stats[config_name][benchmark_name].push(stats_array)
         end
