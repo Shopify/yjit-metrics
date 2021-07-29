@@ -77,6 +77,9 @@ class YJITMetrics::ResultSet
 
         @yjit_stats[config_name] ||= {}
         benchmark_results["yjit_stats"].each do |benchmark_name, stats_array|
+            next if stats_array.nil?
+            stats_array.compact!
+            next if stats_array.empty?
             @yjit_stats[config_name][benchmark_name] ||= []
             @yjit_stats[config_name][benchmark_name].push(stats_array)
         end
@@ -90,12 +93,14 @@ class YJITMetrics::ResultSet
         end
 
         @ruby_metadata[config_name] ||= benchmark_results["ruby_metadata"]
-        if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"]
+        if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"] && !@printed_ruby_metadata_warning
             print "Ruby metadata is meant to *only* include information that should always be\n" +
               "  the same for the same Ruby executable. Please verify that you have not added\n" +
               "  inappropriate Ruby metadata or accidentally used the same name for two\n" +
-              "  different Ruby executables.\n"
-            raise "Ruby metadata does not match for same configuration name!"
+              "  different Ruby executables. (Additional mismatches in this result set won't show warnings.)\n"
+            puts "Metadata 1: #{@ruby_metadata[config_name].inspect}"
+            puts "Metadata 2: #{benchmark_results["ruby_metadata"].inspect}"
+            @printed_ruby_metadata_warning = true
         end
     end
 
@@ -187,6 +192,22 @@ end
 # Shared utility methods for reports
 class YJITMetrics::Report
     include YJITMetrics::Stats
+
+    def initialize(config_names, results, benchmarks: [])
+        raise "No Rubies specified!" if config_names.empty?
+
+        bad_configs = config_names - results.available_configs
+        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
+
+        @config_names = config_names
+        @only_benchmarks = benchmarks
+        @result_set = results
+    end
+
+    def filter_benchmark_names(names)
+        return names if @only_benchmarks.empty?
+        names.select { |bench_name| @only_benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) } }
+    end
 
     # Take column headings, formats for the percent operator and data, and arrange it
     # into a simple ASCII table returned as a string.

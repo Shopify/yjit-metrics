@@ -22,6 +22,9 @@ REPORT_OBJ_BY_NAME = {
     "vmil_warmup" => proc { |config_names:, benchmarks: []|
         YJITMetrics::VMILWarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
     },
+    "warmup" => proc { |config_names:, benchmarks: []|
+        YJITMetrics::WarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
+    }
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
 

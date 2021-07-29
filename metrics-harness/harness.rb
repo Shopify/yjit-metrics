@@ -1,3 +1,12 @@
+# We should flush output indicating progress even if we're not hooked up to a tty (e.g. nohup).
+# As a side effect, the HARNESS PID print will flush immediately.
+STDOUT.sync = true
+
+# This will be read from yjit-metrics.rb to track the PID later.
+# The space-dash at the end is to make sure we got the whole thing
+# rather than readpartial stopping midway.
+print "HARNESS PID: #{Process.pid} -\n"
+
 require 'benchmark'
 require 'json'
 require 'rbconfig'
@@ -41,9 +50,6 @@ def ruby_metadata
     }
 end
 
-# We should flush output indicating progress even if we're not hooked up to a tty (e.g. nohup)
-STDOUT.sync = true
-
 # Takes a block as input
 def run_benchmark(num_itrs_hint)
   times = []
@@ -66,6 +72,13 @@ def run_benchmark(num_itrs_hint)
     times << time
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
+
+  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
+  # This method is only accurate to kilobytes, but is nicely portable to Mac and Linux
+  # and doesn't require any extra gems/dependencies.
+  mem = `ps -o rss= -p #{Process.pid}`
+  peak_mem_bytes = 1024 * mem.to_i
+
   yjit_stats = HAS_YJIT_STATS ? YJIT.runtime_stats : nil
 
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
@@ -87,6 +100,7 @@ def run_benchmark(num_itrs_hint)
         loaded_gems: Gem.loaded_specs.map { |name, spec| [ name, spec.version.to_s ] },
     },
     ruby_metadata: ruby_metadata,
+    peak_mem_bytes: peak_mem_bytes,
   }
   out_data[:yjit_stats] = YJIT.runtime_stats if HAS_YJIT_STATS
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }

@@ -6,9 +6,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :benchmark_names
 
     def initialize(stats_configs, results, benchmarks: [])
-        @config_names = stats_configs
-        @results = results
-        @benchmarks = benchmarks
+        super
 
         bad_configs = stats_configs - results.available_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
@@ -28,10 +26,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         raise("Config #{stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = bench_yjit_stats.keys
-        unless benchmarks.empty?
-            @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) } }
-        end
+        @benchmark_names = filter_benchmark_names(bench_yjit_stats.keys)
     end
 
     # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics, as though you were
@@ -221,11 +216,7 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
         @headings = [ "bench", @with_yjit_config + " (ms)", "speedup (%)", "% in YJIT" ]
         @col_formats = [ "%s", "%.1f", "%.2f", "%.2f" ]
 
-        # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = times_by_config[@no_yjit_config].keys
-        unless benchmarks.empty?
-            @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
-        end
+        @benchmark_names = filter_benchmark_names(times_by_config[@no_yjit_config].keys)
 
         times_by_config.each do |config_name, results|
             raise("No results for configuration #{config_name.inspect} in PerBenchRubyComparison!") if results.nil? || results.empty?
