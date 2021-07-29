@@ -243,6 +243,14 @@ all_runs.each do |run_num, config|
         enable_core_dumps: (when_error == :report ? true : false)
         )
 
+    if yjit_results.nil?
+        if when_error == :die
+            raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
+        end
+        puts "No data collected for this run, presumably due to errors. On we go."
+        next
+    end
+
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
     puts "Writing to JSON output file #{json_path}."
     File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }

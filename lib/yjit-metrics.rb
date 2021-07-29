@@ -220,8 +220,8 @@ module YJITMetrics
     # an exception or a failing status returned by the harness script,
     # that proc will be called with information about the error that occurred.
     # If on_error raises (or re-raises) an exception then the benchmark run will
-    # stop. If no exception is raised, benchmarking will continue but not collect samples
-    # for the failed run.
+    # stop. If no exception is raised, this method will collect no samples and
+    # will return nil.
     def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil)
 
@@ -313,6 +313,8 @@ module YJITMetrics
     #
     #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
     #
+    # If no valid data was successfully collected (e.g. a single benchmark was to run, but failed)
+    # then this method will return nil.
     def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
                         enable_core_dumps: false, on_error: nil,
                         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
@@ -376,6 +378,9 @@ module YJITMetrics
                 end
             end
         end
+
+        # With error handlers, it's possible that every benchmark had an error so there's no data to return.
+        return nil if bench_data["times"].empty?
 
         return bench_data
     end
