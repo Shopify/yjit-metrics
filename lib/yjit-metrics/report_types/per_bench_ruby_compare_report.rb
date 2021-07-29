@@ -7,14 +7,7 @@
 # which the other configs are measured.
 class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
     def initialize(config_names, results, benchmarks: [])
-        raise "No Rubies specified!" if config_names.empty?
-
-        bad_configs = config_names - results.available_configs
-        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
-
-        @config_names = config_names
-        @only_benchmarks = benchmarks
-        @result_set = results
+        super
 
         @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config}", "RSD" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
         @col_formats = [ "%s" ] + config_names.flat_map { [ "%.1fms", "%.1f%%" ] } + alt_configs.map { "%.2f" }
