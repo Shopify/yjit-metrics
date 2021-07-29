@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# This is an example of turning a CSV file into a simple LaTeX table.
+# This one works with the CSV output of the warmup report.
+
 if ARGV.size != 1
     $stderr.puts "Usage: #{$0} <csv file from warmup report>"
     exit 1
