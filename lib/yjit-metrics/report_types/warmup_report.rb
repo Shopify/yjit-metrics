@@ -2,72 +2,56 @@
 # one or more Ruby implementations to reach full performance, per-benchmark.
 class YJITMetrics::WarmupReport < YJITMetrics::Report
     def initialize(config_names, results, benchmarks: [])
-        raise "No Rubies specified!" if config_names.empty?
-
-        bad_configs = config_names - results.available_configs
-        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
-
-        @config_names = config_names
-        @only_benchmarks = benchmarks
-        @result_set = results
-
-        # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = @times_by_config[@with_yjit_config].keys
-        unless @only_benchmarks.empty?
-            @benchmark_names.select! { |bench_name| @only_benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
-        end
+        super
 
         @headings_by_config = {}
         @col_formats_by_config = {}
         @report_data_by_config = {}
 
         @config_names.each do |config|
-            times = @results.times_for_config_by_benchmark(config, in_runs: in_runs)
-            max_num_runs = @benchmark_names.map { |bn| times[bn].size }.max
+            times = @result_set.times_for_config_by_benchmark(config, in_runs: true)
+            warmups = @result_set.warmups_for_config_by_benchmark(config, in_runs: true)
+            benchmark_names = filter_benchmark_names(times.keys)
+            raise "No benchmarks found for config #{config.inspect}!" if benchmark_names.empty?
+            max_num_runs = benchmark_names.map { |bn| times[bn].size }.max
 
             # For every benchmark, check the fewest iterations/run.
-            min_iters_per_benchmark = @benchmark_names.map { |bn| times[bn].map { |run| run.size }.min }
+            min_iters_per_benchmark = benchmark_names.map { |bn| times[bn].map { |run| run.size }.min }
 
             most_cols_of_benchmarks = min_iters_per_benchmark.max
 
-        	showcased_iters = [1, 5, 10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= most_cols_of_benchmarks }
+            showcased_iters = [1, 5, 10, 50, 100, 150, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= most_cols_of_benchmarks }
 
-            @headings_by_config[config_name] =
+            @headings_by_config[config] =
                 [ "bench", "samples" ] +
                 showcased_iters.map { |iter| "iter ##{iter}" } +
                 showcased_iters.map { |iter| "RSD ##{iter}" }
-            @col_formats_by_config[config_name] =
+            @col_formats_by_config[config] =
                 [ "%s", "%d" ] +
                 showcased_iters.map { "%.1fms" } +
                 showcased_iters.map { "%.2f%%" }
-            @report_data_by_config[config_name] = []
+            @report_data_by_config[config] = []
 
-        end
+            benchmark_names.each do |benchmark_name|
+                # We assume that for each config/benchmark combo we have the same number of warmup runs as timed runs
+                all_runs = warmups[benchmark_name].zip(times[benchmark_name]).map { |warmups, real_iters| warmups + real_iters }
+                num_runs = all_runs.size
+                min_iters = all_runs.map { |run| run.size }.min
 
+                iters_present = showcased_iters.select { |i| i <= min_iters }
+                end_nils = [nil] * (showcased_iters.size - iters_present.size)
 
-        benchmark_names.each do |benchmark_name|
-            # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-            unless @only_benchmarks.empty?
-                next unless @only_benchmarks.any? { |bench_spec| benchmark_name.start_with?(bench_spec) }
-            end
-            row = [ benchmark_name ]
-            config_names.each do |config|
-                unless times_by_config[config][benchmark_name]
-                    raise("Configuration #{config.inspect} has no results for #{benchmark_name.inspect} even though #{config_names[0]} does in the same dataset!")
+                iter_N_mean = []
+                iter_N_rsd = []
+
+                iters_present.each do |iter_num|
+                    iter_series = all_runs.map { |run| run[iter_num] }
+                    iter_N_mean.push mean(iter_series)
+                    iter_N_rsd.push rel_stddev_pct(iter_series)
                 end
-                config_times = times_by_config[config][benchmark_name]
-                config_mean = mean(config_times)
-                row.push config_mean
-                row.push 100.0 * stddev(config_times) / config_mean
-            end
 
-            base_config_mean = mean(times_by_config[base_config][benchmark_name])
-            alt_configs.each do |config|
-                config_mean = mean(times_by_config[config][benchmark_name])
-                row.push config_mean / base_config_mean
+                @report_data_by_config[config].push([benchmark_name, num_runs] + iter_N_mean + end_nils + iter_N_rsd + end_nils)
             end
-
-            @report_data.push row
         end
     end
 

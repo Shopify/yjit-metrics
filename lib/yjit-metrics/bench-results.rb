@@ -193,6 +193,22 @@ end
 class YJITMetrics::Report
     include YJITMetrics::Stats
 
+    def initialize(config_names, results, benchmarks: [])
+        raise "No Rubies specified!" if config_names.empty?
+
+        bad_configs = config_names - results.available_configs
+        raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
+
+        @config_names = config_names
+        @only_benchmarks = benchmarks
+        @result_set = results
+    end
+
+    def filter_benchmark_names(names)
+        return names if @only_benchmarks.empty?
+        names.select { |bench_name| @only_benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) } }
+    end
+
     # Take column headings, formats for the percent operator and data, and arrange it
     # into a simple ASCII table returned as a string.
     def format_as_table(headings, col_formats, data, separator_character: "-", column_spacer: "  ")
