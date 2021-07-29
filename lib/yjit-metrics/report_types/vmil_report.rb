@@ -16,18 +16,14 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
         # Grab relevant data from the ResultSet
         @times_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config ].compact.each do|config|
-            @times_by_config[config] = @results.times_for_config_by_benchmark(config, in_runs: in_runs)
+            @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
         end
         @times_by_config.each do |config_name, config_results|
             raise("No results for configuration #{config_name.inspect} in #{self.class}!") if config_results.nil? || config_results.empty?
         end
-        @yjit_stats = @results.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
+        @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
-        # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
-        @benchmark_names = @times_by_config[@with_yjit_config].keys
-        unless @benchmarks.empty?
-            @benchmark_names.select! { |bench_name| benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) }}
-        end
+        @benchmark_names = filter_benchmark_names(@times_by_config[@with_yjit_config].keys)
     end
 
 end
@@ -118,7 +114,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         look_up_vmil_data(in_runs: true, no_jit: false)
 
         @truffle_config = exactly_one_config_with_name(@config_names, "truffle", "TruffleRuby")
-        @times_by_config[@truffle_config] = @results.times_for_config_by_benchmark(@truffle_config, in_runs: true)
+        @times_by_config[@truffle_config] = @result_set.times_for_config_by_benchmark(@truffle_config, in_runs: true)
 
         # TODO: TruffleRuby warmup
         @configs_with_human_names = [
