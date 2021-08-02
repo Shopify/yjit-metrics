@@ -40,13 +40,13 @@ TEST_RUBY_CONFIGS = {
         ruby: "ruby-yjit-metrics-prod",
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
-    ruby_27: {
-        ruby: "2.7.2",
+    ruby_30: {
+        ruby: "3.0.2",
         opts: [],
         install: "ruby-install",
     },
-    ruby_27_with_mjit: {
-        ruby: "2.7.2",
+    ruby_30_with_mjit: {
+        ruby: "3.0.2",
         opts: [ "--jit" ],
         install: "ruby-install",
     },
