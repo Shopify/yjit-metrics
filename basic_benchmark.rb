@@ -151,7 +151,7 @@ CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
 # Ensure we have copies of any Rubies (that we're using) installed via ruby-install
 configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
-if !skip_git_updates && !configs_to_check_install.empty?
+unless configs_to_check_install.empty?
     rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
     installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
     (rubies_to_check_install - installed_rubies).each do |ruby|
