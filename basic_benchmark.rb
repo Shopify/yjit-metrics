@@ -155,6 +155,7 @@ if !skip_git_updates && !configs_to_check_install.empty?
     rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
     installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
     (rubies_to_check_install - installed_rubies).each do |ruby|
+        puts "Automatically installing Ruby: #{ruby.inspect}"
         YJITMetrics.check_call("ruby-install #{ruby}")
     end
 end
