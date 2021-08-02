@@ -47,7 +47,7 @@ TEST_RUBY_CONFIGS = {
     },
     ruby_30_with_mjit: {
         ruby: "3.0.2",
-        opts: [ "--jit" ],
+        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
         install: "ruby-install",
     },
     truffleruby: {
