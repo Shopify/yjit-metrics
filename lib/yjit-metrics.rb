@@ -66,6 +66,11 @@ module YJITMetrics
         harness_script_pid = nil
         worker_pid = nil
 
+        # We basically always want this to sync immediately to console or logfile.
+        # If the library was run with nohup (or otherwise not connected to a tty)
+        # that won't happen by default.
+        $stdout.sync = true
+
         # Passing -l to bash makes sure to load .bash_profile for chruby.
         IO.popen(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
             harness_script_pid = script_out_io.pid

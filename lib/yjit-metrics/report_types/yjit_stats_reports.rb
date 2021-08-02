@@ -43,8 +43,8 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
             raise "No YJIT stats data found for benchmarks: #{benchmark_names.inspect}!"
         end
 
-        # For each key in the YJIT statistics, add up the value for that key in all datasets.
-        yjit_stats_keys = relevant_stats[0].keys
+        # For each key in the YJIT statistics, add up the value for that key in all datasets. Note: all_stats is a non-numeric key.
+        yjit_stats_keys = relevant_stats[0].keys - ["all_stats"]
         yjit_data = {}
         yjit_stats_keys.each do |stats_key|
             # Unknown keys default to 0

@@ -38,7 +38,7 @@ TEST_RUBY_CONFIGS = {
     },
     prod_ruby_with_mjit: {
         ruby: "ruby-yjit-metrics-prod",
-        opts: [ "--jit --disable-yjit" ],
+        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
     ruby_27: {
         ruby: "2.7.2",
@@ -216,10 +216,13 @@ all_runs.each do |run_num, config|
 
             error_text_path = "#{crash_report_dir}/output.txt"
             File.open(error_text_path, "w") do |f|
+                f.print "Error in benchmark #{bench}...\n"
                 f.print "Exception #{exc.class}: #{exc.message}\n"
-                f.puts exc.full_message  # Includes backtrace and any cause/nested errors
+                f.print exc.full_message  # Includes backtrace and any cause/nested errors
 
-                f.puts "\n\nOutput of failing process:\n\n#{error_info[:output]}"
+                f.print "\n\n\nBenchmark harness information:\n\n"
+                pp error_info[:output], f
+                f.print "\n\n\nOutput of failing process:\n\n#{error_info[:output]}\n"
             end
 
             # Move any crash-related files into the crash report dir
