@@ -41,12 +41,12 @@ TEST_RUBY_CONFIGS = {
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
     ruby_30: {
-        ruby: "3.0.2",
+        ruby: "ruby-3.0.2",
         opts: [],
         install: "ruby-install",
     },
     ruby_30_with_mjit: {
-        ruby: "3.0.2",
+        ruby: "ruby-3.0.2",
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
         install: "ruby-install",
     },
