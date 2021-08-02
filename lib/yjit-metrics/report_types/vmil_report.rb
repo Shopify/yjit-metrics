@@ -40,7 +40,7 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
         # Report contents
-        @headings = [ "bench", "YJIT (ms)", "YJIT rel stddev (%)", "MJIT (ms)", "MJIT rel stddev (%)", "No JIT (ms)", "No JIT rel stddev (%)", "YJIT speedup (%)", "YJIT speedup stddev (%)", "MJIT speedup (%)", "MJIT speedup stddev (%)", "% in YJIT" ]
+        @headings = [ "bench", "YJIT (ms)", "YJIT RSD (%)", "MJIT (ms)", "MJIT RSD (%)", "No JIT (ms)", "No JIT RSD (%)", "YJIT speedup (%)", "YJIT speedup RSD (%)", "MJIT speedup (%)", "MJIT speedup RSD (%)", "% in YJIT" ]
         @col_formats = [ "%s" ] + [ "%.1f", "%.2f" ] * 3 + [ "%.2f", "%.2f", "%.2f", "%.2f", "%.2f" ]
 
         @report_data = @benchmark_names.map do |benchmark_name|
@@ -94,7 +94,8 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
     end
 
     def to_s
-        format_as_table(@headings, @col_formats, @report_data)
+        format_as_table(@headings, @col_formats, @report_data) +
+            "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n"
     end
 
     def write_file(filename)
