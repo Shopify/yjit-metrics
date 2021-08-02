@@ -11,7 +11,7 @@ class YJITMetrics::VMILReport < YJITMetrics::YJITStatsReport
     def look_up_vmil_data(in_runs: false, no_jit: true)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
-        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if @no_jit
+        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if no_jit
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
