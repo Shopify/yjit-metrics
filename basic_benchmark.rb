@@ -77,6 +77,10 @@ YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 ERROR_BEHAVIOURS = %i(die report ignore)
 
+# TODO: add back the ability to toggle ASLR, CPU affinity, etc.
+# shell_opts += [ "setarch", "x86_64", "-R" ] if YJITMetrics.os_type == :linux
+# shell_opts += [ "taskset", "-c", "11" ] if YJITMetrics.os_type == :linux
+
 # Defaults
 skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
@@ -193,6 +197,7 @@ all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of r
 all_runs.each do |run_num, config|
     ruby = TEST_RUBY_CONFIGS[config][:ruby]
     ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+
     puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 
     if num_runs > 1
