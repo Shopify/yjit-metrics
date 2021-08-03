@@ -11,12 +11,19 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
         @config_names.each do |config|
             times = @result_set.times_for_config_by_benchmark(config, in_runs: true)
             warmups = @result_set.warmups_for_config_by_benchmark(config, in_runs: true)
+
+            # Combine times and warmups for each run, for each benchmark
+            all_iters = {}
+            times.keys.each do |benchmark_name|
+                all_iters[benchmark_name] = warmups[benchmark_name].zip(times[benchmark_name]).map { |warmups, real_iters| warmups + real_iters }
+            end
+
             benchmark_names = filter_benchmark_names(times.keys)
             raise "No benchmarks found for config #{config.inspect}!" if benchmark_names.empty?
             max_num_runs = benchmark_names.map { |bn| times[bn].size }.max
 
             # For every benchmark, check the fewest iterations/run.
-            min_iters_per_benchmark = benchmark_names.map { |bn| times[bn].map { |run| run.size }.min }
+            min_iters_per_benchmark = benchmark_names.map { |bn| all_iters[bn].map { |run| run.size }.min }
 
             most_cols_of_benchmarks = min_iters_per_benchmark.max
 
@@ -34,7 +41,7 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
 
             benchmark_names.each do |benchmark_name|
                 # We assume that for each config/benchmark combo we have the same number of warmup runs as timed runs
-                all_runs = warmups[benchmark_name].zip(times[benchmark_name]).map { |warmups, real_iters| warmups + real_iters }
+                all_runs = all_iters[benchmark_name]
                 num_runs = all_runs.size
                 min_iters = all_runs.map { |run| run.size }.min
 
