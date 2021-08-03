@@ -59,6 +59,18 @@ for filename in args.input_files:
         engine_results[engine] = engine_result_times
         bench_name_to_engine_results[bench_name] = engine_results
 
+# Array of benchmark names
+#benchmark_names = list(bench_name_to_engine_results.keys())
+benchmark_names = [
+        '30k_methods',
+        '30k_ifelse',
+        'optcarrot',
+        'lee',
+        'psych-load',
+        'activerecord',
+        'liquid-render',
+        ]
+
 # Make sure all benchmarks have the same number of samples
 for bench_name, engine_results in bench_name_to_engine_results.items():
     sample_lengths = [len(l) for l in engine_results.values()]
@@ -75,25 +87,25 @@ stddev_per_engine = {}
 
 
 # Normalize samples and add to the yvalues / stddev maps
-for bench_name, engine_results in bench_name_to_engine_results.items():
+for bench_name in benchmark_names:
+    engine_results = bench_name_to_engine_results[bench_name]
+
     interp_mean = np.mean(engine_results["Interpreter"], axis=0)
 
     for engine_name, results in engine_results.items():
         mean = np.mean(results, axis=0)
+        scaled_results = [r / interp_mean for r in results]
+        scaled_stddev = np.std(scaled_results, axis=0)
 
         # Normalize results based on the interpreter mean
         val_list = yvalues_per_engine.get(engine_name, [])
         val_list.append(mean / interp_mean)
         yvalues_per_engine[engine_name] = val_list
 
-        # FIXME: not sure what to do for stddev
         val_list = stddev_per_engine.get(engine_name, [])
-        val_list.append(0.1)
+        val_list.append(scaled_stddev)
         stddev_per_engine[engine_name] = val_list
 
-
-# Array of benchmark names
-benchmark_names = list(bench_name_to_engine_results.keys())
 
 # Generate the plot
 fig = plt.figure()
@@ -115,8 +127,7 @@ for engine_idx, engine in enumerate(yvalues_per_engine.keys()):
     y = yvalues_per_engine[engine]
     yerr = stddev_per_engine[engine]
 
-    #ax.bar(np.arange(len(y)) + engine_idx * bar_width, y, yerr=yerr, capsize=5, width=bar_width, label=engine)
-    ax.bar(np.arange(len(y)) + engine_idx * bar_width, y, capsize=5, width=bar_width, label=engine)
+    ax.bar(np.arange(len(y)) + engine_idx * bar_width, y, yerr=yerr, capsize=5, width=bar_width, label=engine)
 
 
 plt.legend(loc='upper right')
