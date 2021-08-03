@@ -36,6 +36,11 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
 
         look_up_vmil_data(no_jit: true)
 
+        no_stats_benchmarks = @benchmark_names.select { |bench_name| !@yjit_stats[bench_name] || !@yjit_stats[bench_name][0] || @yjit_stats[bench_name][0].empty? }
+        unless no_stats_benchmarks.empty?
+            raise "No YJIT stats found for benchmarks: #{no_stats_benchmarks.inspect}"
+        end
+
         # Sort benchmarks by compiled ISEQ count
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
