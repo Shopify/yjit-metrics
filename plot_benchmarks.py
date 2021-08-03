@@ -15,12 +15,8 @@ parser.add_argument('--out_file', default='benchmarks.png')
 parser.add_argument('input_files', nargs='*')
 args = parser.parse_args()
 
-
-
-
-
 # Mapping of Ruby engines to data for
-data_per_engine = {}
+bench_name_to_engine_results = {}
 
 for filename in args.input_files:
     if 'yjit_stats' in filename:
@@ -43,33 +39,46 @@ for filename in args.input_files:
         engine = 'Interpreter'
     assert engine != None
 
-    print(filename)
-    print(engine)
-    print(times)
+    # Times is a single key / value pair.  The key is the benchmark name,
+    # the value is an array with the amount of time spent for each run.  We
+    # want a data structure that looks like this:
+    # data = {  "psych-load" => {
+    #               "YJIT"        => [x, x, x,],
+    #               "MJIT"        => [x, x, x,],
+    #               "Interpreter" => [x, x, x,],
+    #           },
+    #           "30k ifs" => ...
+    #        }
+    for bench_name, bench_values in times.items():
+        engine_results = bench_name_to_engine_results.get(bench_name, {})
 
+        # Find the results for this particular engine
+        engine_result_times = engine_results.get(engine, [])
+        engine_result_times += bench_values
 
-
-    # NOTE: we may have to cut out the warmup iterations
-
-
-
-
-    """
-    series = series_per_engine.get(engine, [])
-
-    # Each line should have the same number of iterations
-    if len(series) > 0:
-        prev_times = series[-1]
-    assert len(times) >= 2
-
-    series.append(times)
-    series_per_engine[engine] = series
-    """
-
-
+        engine_results[engine] = engine_result_times
+        bench_name_to_engine_results[bench_name] = engine_results
 
 # Array of benchmark names
-benchmark_names = []
+#benchmark_names = list(bench_name_to_engine_results.keys())
+benchmark_names = [
+        '30k_methods',
+        '30k_ifelse',
+        'optcarrot',
+        'lee',
+        'psych-load',
+        'activerecord',
+        'liquid-render',
+        ]
+
+# Make sure all benchmarks have the same number of samples
+for bench_name, engine_results in bench_name_to_engine_results.items():
+    sample_lengths = [len(l) for l in engine_results.values()]
+
+    if len(np.unique(sample_lengths)) != 1:
+        min_len = sorted(sample_lengths)[0]
+        for results in engine_results.values():
+            del results[min_len:]
 
 # Arrays of yvalues and stddev for each engine
 # One yvalue per benchmark
@@ -77,39 +86,25 @@ yvalues_per_engine = {}
 stddev_per_engine = {}
 
 
+# Normalize samples and add to the yvalues / stddev maps
+for bench_name in benchmark_names:
+    engine_results = bench_name_to_engine_results[bench_name]
 
+    interp_mean = np.mean(engine_results["Interpreter"], axis=0)
 
+    for engine_name, results in engine_results.items():
+        mean = np.mean(results, axis=0)
+        scaled_results = [r / interp_mean for r in results]
+        scaled_stddev = np.std(scaled_results, axis=0)
 
-"""
-for engine, series in series_per_engine.items():
-    num_series = len(series)
-    max_itrs = max(map(lambda s: len(s), series))
-    min_itrs = min(map(lambda s: len(s), series))
-    print("engine {}, min_itrs {}, max_itrs {}".format(engine, min_itrs, max_itrs))
+        # Normalize results based on the interpreter mean
+        val_list = yvalues_per_engine.get(engine_name, [])
+        val_list.append(mean / interp_mean)
+        yvalues_per_engine[engine_name] = val_list
 
-    # Limit series to the minimum length encountered
-    series = map(lambda s: s[:min_itrs], series)
-
-    tensor = np.zeros((num_series, min_itrs))
-
-    for run_no, series in enumerate(series):
-        tensor[run_no] = series
-
-    # Compute the mean and stddev per iteration over all the runs
-    mean = np.mean(tensor, axis=0)
-    std = np.std(tensor, axis=0)
-
-    yvalues_per_engine[engine] = mean
-    stddev_per_engine[engine] = std
-"""
-
-
-
-
-
-
-
-
+        val_list = stddev_per_engine.get(engine_name, [])
+        val_list.append(scaled_stddev)
+        stddev_per_engine[engine_name] = val_list
 
 
 # Generate the plot
@@ -120,6 +115,7 @@ fig = plt.figure()
 fig, ax = plt.subplots()
 
 x = np.arange(len(benchmark_names)) # the label locations
+plt.xticks(rotation=45)
 ax.set_xticks(x)
 ax.set_xticklabels(benchmark_names)
 
@@ -134,15 +130,7 @@ for engine_idx, engine in enumerate(yvalues_per_engine.keys()):
     ax.bar(np.arange(len(y)) + engine_idx * bar_width, y, yerr=yerr, capsize=5, width=bar_width, label=engine)
 
 
-
-
-
-
-
-
-
 plt.legend(loc='upper right')
 
 fig.tight_layout()
 plt.savefig(args.out_file, dpi=300)
-plt.show()
