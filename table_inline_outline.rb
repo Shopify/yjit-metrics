@@ -10,7 +10,7 @@ require "erb"
 require "json"
 
 size = -> (value) {
-  units = ["B", "kB", "MB", "GB"]
+  units = ["B", "KiB", "MiB", "GiB"]
   unit = units.shift
 
   while value > 1024
