@@ -45,8 +45,8 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
         # Report contents
-        @headings = [ "bench", "YJIT (ms)", "YJIT RSD (%)", "MJIT (ms)", "MJIT RSD (%)", "No JIT (ms)", "No JIT RSD (%)", "YJIT opt (%)", "YJIT opt RSD (%)", "MJIT opt (%)", "MJIT opt RSD (%)", "% in YJIT" ]
-        @col_formats = [ "%s" ] + [ "%.1f", "%.2f" ] * 3 + [ "%.2f", "%.2f", "%.2f", "%.2f", "%.2f" ]
+        @headings = [ "bench", "YJIT (ms)", "YJIT RSD", "MJIT (ms)", "MJIT RSD", "No JIT (ms)", "No JIT RSD", "YJIT spd", "YJIT spd RSD", "MJIT spd", "MJIT spd RSD", "% in YJIT" ]
+        @col_formats = [ "%s" ] + [ "%.1f", "%.2f%%" ] * 3 + [ "%.2fx", "%.2f%%", "%.2fx", "%.2f%%", "%.2f%%" ]
 
         @report_data = @benchmark_names.map do |benchmark_name|
             no_jit_config_times = @times_by_config[@no_jit_config][benchmark_name]
@@ -69,15 +69,13 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
 
             # Note: these are currently using the standard "how to propagate stddev over division" calc for stddev.
             # We've talked about expressing them as multiples of no_jit_mean.
-            mjit_speedup_ratio = no_jit_mean / with_mjit_mean
-            mjit_speedup_pct = (mjit_speedup_ratio - 1.0) * 100.0
-            mjit_speedup_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_mjit_rel_stddev * with_mjit_rel_stddev))
-            mjit_speedup_rel_stddev_pct = mjit_speedup_rel_stddev * 100.0
+            mjit_speed_ratio = (no_jit_mean - with_mjit_mean) / no_jit_mean + 1
+            mjit_speed_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_mjit_rel_stddev * with_mjit_rel_stddev))
+            mjit_speed_rel_stddev_pct = mjit_speed_rel_stddev * 100.0
 
-            yjit_speedup_ratio = no_jit_mean / with_yjit_mean
-            yjit_speedup_pct = (yjit_speedup_ratio - 1.0) * 100.0
-            yjit_speedup_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_yjit_rel_stddev * with_yjit_rel_stddev))
-            yjit_speedup_rel_stddev_pct = yjit_speedup_rel_stddev * 100.0
+            yjit_speed_ratio = (no_jit_mean - with_yjit_mean) / no_jit_mean + 1
+            yjit_speed_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_yjit_rel_stddev * with_yjit_rel_stddev))
+            yjit_speed_rel_stddev_pct = yjit_speed_rel_stddev * 100.0
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
             # For these calculations we just add all relevant counters together.
@@ -92,8 +90,8 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
                 with_yjit_mean, with_yjit_rel_stddev_pct,
                 with_mjit_mean, with_mjit_rel_stddev_pct,
                 no_jit_mean, no_jit_rel_stddev_pct,
-                yjit_speedup_pct, yjit_speedup_rel_stddev_pct,
-                mjit_speedup_pct, mjit_speedup_rel_stddev_pct,
+                yjit_speed_ratio, yjit_speed_rel_stddev_pct,
+                mjit_speed_ratio, mjit_speed_rel_stddev_pct,
                 yjit_ratio_pct ]
         end
     end
@@ -101,7 +99,7 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
     def to_s
         format_as_table(@headings, @col_formats, @report_data) +
             "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n" +
-            "Opt is optimization (speedup) expressed as % faster.\n"
+            "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
     end
 
     def write_file(filename)
