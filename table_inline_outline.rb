@@ -18,7 +18,7 @@ size = -> (value) {
     unit = units.shift
   end
 
-  "#{value.round(2)} #{unit}"
+  "%.3g %s" % [value, unit]
 }
 
 data =
