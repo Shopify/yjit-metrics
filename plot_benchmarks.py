@@ -62,14 +62,15 @@ for filename in args.input_files:
 # Array of benchmark names
 #benchmark_names = list(bench_name_to_engine_results.keys())
 benchmark_names = [
-        '30k_methods',
-        '30k_ifelse',
-        'optcarrot',
-        'lee',
-        'psych-load',
-        'activerecord',
-        'liquid-render',
-        ]
+    '30k_methods',
+    '30k_ifelse',
+    'optcarrot',
+    'lee',
+    'psych-load',
+    'liquid-render',
+    'activerecord',
+    'railsbench'
+]
 
 # Make sure all benchmarks have the same number of samples
 for bench_name, engine_results in bench_name_to_engine_results.items():
@@ -109,8 +110,6 @@ for bench_name in benchmark_names:
 
 # Generate the plot
 fig = plt.figure()
-#plt.xlabel("Iteration number")
-#plt.ylabel("Iteration time (s)")
 
 fig, ax = plt.subplots()
 
@@ -120,7 +119,7 @@ ax.set_xticks(x)
 ax.set_xticklabels(benchmark_names)
 
 
-bar_width = 0.3
+bar_width = 0.2
 
 for engine_idx, engine in enumerate(yvalues_per_engine.keys()):
 
