@@ -36,11 +36,16 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
 
         look_up_vmil_data(no_jit: true)
 
+        no_stats_benchmarks = @benchmark_names.select { |bench_name| !@yjit_stats[bench_name] || !@yjit_stats[bench_name][0] || @yjit_stats[bench_name][0].empty? }
+        unless no_stats_benchmarks.empty?
+            raise "No YJIT stats found for benchmarks: #{no_stats_benchmarks.inspect}"
+        end
+
         # Sort benchmarks by compiled ISEQ count
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
         # Report contents
-        @headings = [ "bench", "YJIT (ms)", "YJIT RSD (%)", "MJIT (ms)", "MJIT RSD (%)", "No JIT (ms)", "No JIT RSD (%)", "YJIT speedup (%)", "YJIT speedup RSD (%)", "MJIT speedup (%)", "MJIT speedup RSD (%)", "% in YJIT" ]
+        @headings = [ "bench", "YJIT (ms)", "YJIT RSD (%)", "MJIT (ms)", "MJIT RSD (%)", "No JIT (ms)", "No JIT RSD (%)", "YJIT opt (%)", "YJIT opt RSD (%)", "MJIT opt (%)", "MJIT opt RSD (%)", "% in YJIT" ]
         @col_formats = [ "%s" ] + [ "%.1f", "%.2f" ] * 3 + [ "%.2f", "%.2f", "%.2f", "%.2f", "%.2f" ]
 
         @report_data = @benchmark_names.map do |benchmark_name|
@@ -95,7 +100,8 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
 
     def to_s
         format_as_table(@headings, @col_formats, @report_data) +
-            "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n"
+            "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n" +
+            "Opt is optimization (speedup) expressed as % faster.\n"
     end
 
     def write_file(filename)
