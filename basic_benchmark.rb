@@ -40,20 +40,20 @@ TEST_RUBY_CONFIGS = {
         ruby: "ruby-yjit-metrics-prod",
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
-    ruby_27: {
-        ruby: "2.7.2",
+    ruby_30: {
+        ruby: "ruby-3.0.2",
         opts: [],
         install: "ruby-install",
     },
-    ruby_27_with_mjit: {
-        ruby: "2.7.2",
-        opts: [ "--jit" ],
+    ruby_30_with_mjit: {
+        ruby: "ruby-3.0.2",
+        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
         install: "ruby-install",
     },
     truffleruby: {
-        ruby: "truffleruby-21.2.0",
-        opts: [],
-        install: "ruby-install",
+        ruby: "truffleruby+graalvm-21.2.0",
+        opts: [ "--jvm" ],
+        install: "ruby-build", # TODO: automatic ruby-build installation
     },
 }
 TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
@@ -76,6 +76,10 @@ YJIT_BENCH_GIT_BRANCH = "main" #"bench_setup_fixes"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 ERROR_BEHAVIOURS = %i(die report ignore)
+
+# TODO: add back the ability to toggle ASLR, CPU affinity, etc.
+# shell_opts += [ "setarch", "x86_64", "-R" ] if YJITMetrics.os_type == :linux
+# shell_opts += [ "taskset", "-c", "11" ] if YJITMetrics.os_type == :linux
 
 # Defaults
 skip_git_updates = false
@@ -151,10 +155,11 @@ CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
 # Ensure we have copies of any Rubies (that we're using) installed via ruby-install
 configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
-if !skip_git_updates && !configs_to_check_install.empty?
+unless configs_to_check_install.empty?
     rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
     installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
     (rubies_to_check_install - installed_rubies).each do |ruby|
+        puts "Automatically installing Ruby: #{ruby.inspect}"
         YJITMetrics.check_call("ruby-install #{ruby}")
     end
 end
@@ -192,6 +197,7 @@ all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of r
 all_runs.each do |run_num, config|
     ruby = TEST_RUBY_CONFIGS[config][:ruby]
     ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+
     puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 
     if num_runs > 1

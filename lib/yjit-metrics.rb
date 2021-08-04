@@ -160,14 +160,7 @@ module YJITMetrics
     end
 
     def per_os_shell_prelude
-        if os_type == :linux
-            # On Linux, disable address space randomization for determinism unless YJIT_METRICS_USE_ASLR is specified
-            (ENV["YJIT_METRICS_USE_ASLR"] ? [] : ["setarch", "x86_64", "-R"]) +
-            # And pin the process to one given core to improve caching
-            (ENV["YJIT_METRICS_NO_PIN"] ? [] : ["taskset", "-c", "11"])
-        else
-            []
-        end
+        []
     end
 
     # Run the inner block given, watching for crash files showing up.
