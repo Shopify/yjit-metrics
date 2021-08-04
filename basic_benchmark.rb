@@ -53,7 +53,7 @@ TEST_RUBY_CONFIGS = {
     truffleruby: {
         ruby: "truffleruby+graalvm-21.2.0",
         opts: [ "--jvm" ],
-        install: "ruby-install",
+        install: "ruby-build", # TODO: automatic ruby-build installation
     },
 }
 TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
