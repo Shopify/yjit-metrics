@@ -214,6 +214,14 @@ class YJITMetrics::Report
     def format_as_table(headings, col_formats, data, separator_character: "-", column_spacer: "  ")
         out = ""
 
+        unless data && data[0] && col_formats && col_formats[0] && headings && headings[0]
+            $stderr.puts "Error in format_as_table..."
+            $stderr.puts "Headings: #{headings.inspect}"
+            $stderr.puts "Col formats: #{col_formats.inspect}"
+            $stderr.puts "Data: #{data.inspect}"
+            raise "Invalid data sent to format_as_table"
+        end
+
         num_cols = data[0].length
         raise "Mismatch between headings and first data row for number of columns!" unless headings.length == num_cols
         raise "Data has variable number of columns!" unless data.all? { |row| row.length == num_cols }

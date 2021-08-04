@@ -51,7 +51,7 @@ TEST_RUBY_CONFIGS = {
         install: "ruby-install",
     },
     truffleruby: {
-        ruby: "truffleruby-21.1.0",
+        ruby: "truffleruby-21.2.0",
         opts: [],
         install: "ruby-install",
     },
