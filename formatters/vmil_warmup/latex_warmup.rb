@@ -15,7 +15,19 @@ def escape_latex(s)
 end
 
 def time_and_rsdp_to_latex(time_ms, rsdp)
-    format("%2.f \\pm %.2f\\%%", time_ms, rsdp)
+    # Are these actually minutes?
+    if time_ms > 60_000.0
+        unit = "min"
+        quantity = time_ms / 60_000.0
+    elsif time_ms > 1_000.0
+        unit = "s"
+        quantity = time_ms / 1_000.0
+    else
+        unit = "ms"
+        quantity = time_ms
+    end
+
+    format("%.1f#{unit} \\pm %.2f\\%%", quantity, rsdp)
 end
 
 configs = {
