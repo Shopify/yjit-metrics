@@ -115,7 +115,7 @@ top_header_row = [ "No-JIT", "YJIT", "MJIT", "Truffle"].flat_map do |config|
 end.join(" & ")
 latex_header = <<~LATEX_HEADER
     \\begin{center}
-    \\begin{tabular}{| #{ (["m{1.75cm}"] * 9).join(" | ") } |}
+    \\begin{tabular}{| #{ (["c"] * 9).join(" | ") } |}
     \\hline
     Iter \\# & #{top_header_row} \\\\ [0.5ex]
     \\hline\\hline
