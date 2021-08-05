@@ -27,7 +27,7 @@ def time_and_rsdp_to_latex(time_ms, rsdp)
         quantity = time_ms
     end
 
-    format("%.1f#{unit} \\pm %.2f\\%%", quantity, rsdp)
+    format("$%.1f#{unit} \\pm %.1f\\%%$", quantity, rsdp)
 end
 
 configs = {
@@ -95,7 +95,7 @@ latex_header = <<~LATEX_HEADER
     \\begin{center}
     \\begin{tabular}{||#{ (["c"] * 9).join(" ") }||}
     \\hline
-    #{ (["Iter"] + ["AR & RB"] * 4).join(" & ") } \\\\ [0.5ex]
+    Iter & Int AR & Int RB & YJIT AR & YJIT RB & MJIT AR & MJIT RB & Truf AR & Truf RB \\\\ [0.5ex]
     \\hline\\hline
 LATEX_HEADER
 
