@@ -66,6 +66,7 @@ configs.each do |human_name, filename_section|
 
         formatted_output[filename_section][bench_name] = {}
         iter_names.each_with_index do |iter_name, idx|
+            #$stderr.puts "Writing #{iter_name.inspect}: #{latex_cols[idx].inspect}"
             formatted_output[filename_section][bench_name][iter_name] = latex_cols[idx]
         end
     end
@@ -74,19 +75,15 @@ end
 # Cols: 4 rubies * 2 benchmarks
 # Rows: iter numbers
 
+# \\documentclass{article}
+# \\usepackage{multirow}
+
 # LaTeX output
 latex_header = <<~LATEX_HEADER
-    \\documentclass{article}
-    \\usepackage{multirow}
-    \\begin{document}
-    \\begin{tabular}{||#{ (["c"] * 8).join(" ") }||}
+    \\begin{center}
+    \\begin{tabular}{||#{ (["c"] * 9).join(" ") }||}
     \\hline
-    \\multicolumn{2}{|c|}{Int}
-    \\multicolumn{2}{|c|}{MJIT}
-    \\multicolumn{2}{|c|}{YJIT}
-    \\multicolumn{2}{|c|}{Truf}
-    \\hline
-    #{ (["AR & RB"] * 4).join(" & ") } \\\\ [0.5ex]
+    #{ (["Iter"] + ["AR & RB"] * 4).join(" & ") } \\\\ [0.5ex]
     \\hline\\hline
 LATEX_HEADER
 
@@ -102,10 +99,13 @@ cols = [
 ]
 
 latex_middle = iter_names.map do |iter_name|
-    cols.map { |config, bench| formatted_output[config][bench][iter_name] }.join(" & ") + " \\\\\n"
-end.join("\\hline\n")
+    formatted_cols = cols.map do |config, bench|
+        formatted_output[config][bench][iter_name]
+    end
 
-latex_middle = formatted_output.map { |line| line.join(" & ") + " \\\\\n" }.join("\\hline\n")
+    row = iter_name + " & " + formatted_cols.join(" & ") + " \\\\\n"
+    row
+end.join("\\hline\n")
 
 latex_footer = <<~LATEX_FOOTER
     \\hline
