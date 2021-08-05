@@ -15,8 +15,9 @@ class FakePopen
 
         # For now ignore the value of err but require that it be passed in.
 
-        # We need to set $?, so we'll run a trivial script to say "success"
-        system("echo success")
+        # We need to set $?, so we'll run a trivial script to say "success".
+        # On error, we'll run another one that fails.
+        system("true")
 
         # This object is both the IO object in popen's block and the object that's called.
         yield(self)
@@ -28,8 +29,13 @@ class FakePopen
 
     def readpartial(size)
         val = @readpartial_results.shift
-        raise(EOFError.new) if val == :eof
-        raise "Some bad thing raised an intentional exception in FakePopen!" if val == :die
+
+        # We want $? set to "process got an error code"
+        system("false") if val == :die
+
+        # On :die or :eof, raise an EOFError
+        raise(EOFError.new) if val == :eof || val == :die
+
         assert(false, "Not enough readpartial_results in FakePopen!") if val.nil?
         val
     end
@@ -50,7 +56,19 @@ class TestBenchmarkingWithFakePopen < Minitest::Test
         assert_equal 54321, run_info[:harness_script_pid]
         assert_equal 12345, run_info[:worker_pid]
         assert run_info[:output].include?("chunk1"), "First chunk isn't in script output!"
-        assert run_info[:output].include?("chunk2"), "First chunk isn't in script output!"
+        assert run_info[:output].include?("chunk2"), "Second chunk isn't in script output!"
+    end
+
+    def test_harness_runner_with_exception
+        fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", :die ]
+
+        run_info = YJITMetrics.run_harness_script_from_string("fake script", popen = fake_popen, crash_file_check: false, do_echo: false)
+
+        assert_equal true, run_info[:failed]
+        assert_equal [], run_info[:crash_files] # We're raising an exception, but that shouldn't generate a new core file
+        assert_equal 54321, run_info[:harness_script_pid] # PIDs should be passed even on exception
+        assert_equal 12345, run_info[:worker_pid]
+        assert run_info[:output].include?("chunk1"), "First chunk isn't in script output!"
     end
 
 end
