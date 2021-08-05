@@ -15,19 +15,38 @@ def escape_latex(s)
 end
 
 def time_and_rsdp_to_latex(time_ms, rsdp)
-    # Are these actually minutes?
-    if time_ms > 60_000.0
+    # More than 100 minutes? 100 * 60 * 1_000
+    if time_ms > 6_000_000
         unit = "min"
         quantity = time_ms / 60_000.0
+        fmt = "%.0f"
+    # More than 1 minute?
+    elsif time_ms > 60_000
+        unit = "min"
+        quantity = time_ms / 60_000.0
+        fmt = "%.1f"
+    # More than 100 seconds?
+    elsif time_ms > 100_000
+        unit = "s"
+        quantity = time_ms / 1_000.0
+        fmt = "%.0f"
+    # More than 1 second?
     elsif time_ms > 1_000.0
         unit = "s"
         quantity = time_ms / 1_000.0
+        fmt = "%.1f"
+    # More than 100 ms?
+    elsif time_ms > 100
+        unit = "ms"
+        quantity = time_ms
+        fmt = "%.0f"
     else
         unit = "ms"
         quantity = time_ms
+        fmt = "%.1f"
     end
 
-    format("$%.1f#{unit} \\pm %.1f\\%%$", quantity, rsdp)
+    format("$#{fmt}#{unit} \\pm %.1f\\%%$", quantity, rsdp)
 end
 
 configs = {
@@ -65,7 +84,7 @@ configs.each do |human_name, filename_section|
     num_iters = (num_cols - 2) / 2
 
     # Escape the hash sign in strings like "iter #50"
-    iter_names = header_cols[2..(num_iters+1)].map { |name| escape_latex(name) }
+    iter_names = header_cols[2..(num_iters+1)].map { |name| name.split("#")[-1] }
 
     # Escaping and formatting the individual table entries for LaTeX
     data.each do |line|
@@ -95,7 +114,7 @@ latex_header = <<~LATEX_HEADER
     \\begin{center}
     \\begin{tabular}{||#{ (["c"] * 9).join(" ") }||}
     \\hline
-    Iter & Int AR & Int RB & YJIT AR & YJIT RB & MJIT AR & MJIT RB & Truf AR & Truf RB \\\\ [0.5ex]
+    Iter \\# & Int AR & Int RB & YJIT AR & YJIT RB & MJIT AR & MJIT RB & Truf AR & Truf RB \\\\ [0.5ex]
     \\hline\\hline
 LATEX_HEADER
 
