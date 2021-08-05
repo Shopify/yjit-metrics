@@ -41,15 +41,15 @@ class FakePopen
     end
 end
 
-class TestBenchmarkingWithFakePopen < Minitest::Test
+class TestBenchmarkingWithMocking < Minitest::Test
     def setup
     end
 
-    # "Basic success" test of the harness runner
+    # "Basic success" test of the harness runner using a fake IO.popen() to impersonate a harness child process
     def test_harness_runner
         fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", "chunk2\n", :eof ]
 
-        run_info = YJITMetrics.run_harness_script_from_string("fake script contents", popen = fake_popen, crash_file_check: false, do_echo: false)
+        run_info = YJITMetrics.run_harness_script_from_string("fake script contents", local_popen: fake_popen, crash_file_check: false, do_echo: false)
 
         assert_equal false, run_info[:failed]
         assert_equal [], run_info[:crash_files]
@@ -69,6 +69,45 @@ class TestBenchmarkingWithFakePopen < Minitest::Test
         assert_equal 54321, run_info[:harness_script_pid] # PIDs should be passed even on exception
         assert_equal 12345, run_info[:worker_pid]
         assert run_info[:output].include?("chunk1"), "First chunk isn't in script output!"
+    end
+
+    # "Basic success" test using a fake script runner to impersonate a successful benchmark
+    def test_single_benchmark
+        test_data_dir = "#{__dir__}/data"
+
+        # A script-runner expects to receive a bash script as a parameter,
+        # and to return the details of that script's success or failure.
+        # It's also supposed to write results to temp.json.
+        fake_runner = proc do |script_contents|
+            FileUtils.cp("#{test_data_dir}/synthetic_data.json", "#{test_data_dir}/temp.json")
+
+            {}
+        end
+
+        # This method has way too much surface area -- too many different things passed in.
+        # One reason for this test is to apply leverage for a refactor.
+        YJITMetrics.run_benchmark_path_with_runner(
+            # Information about the yjit-bench benchmark
+            "single_bench",
+            "/path/to/single_bench.rb",
+
+            # How to run Ruby
+            ruby_opts: [ "--with-fake-jit" ],
+
+            # Bash/shell modifiers
+            with_chruby: nil,
+            enable_core_dumps: false,
+            # Missing: additional non-Ruby command-line params
+
+            # Harness params
+            warmup_itrs: 15,
+            min_benchmark_itrs: 10,
+            min_benchmark_time: 10.0,
+
+            # Settings for this one specific method
+            output_path: test_data_dir,
+            on_error: nil,
+            run_script: fake_runner)
     end
 
 end

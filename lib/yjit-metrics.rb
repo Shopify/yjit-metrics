@@ -222,7 +222,7 @@ module YJITMetrics
     # If on_error raises (or re-raises) an exception then the benchmark run will
     # stop. If no exception is raised, this method will collect no samples and
     # will return nil.
-    def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
+    def run_benchmark_path_with_runner(bench_name, script_path, output_path: ".", ruby_opts: [], with_chruby: nil,
         warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil,
         run_script: proc { |s| run_harness_script_from_string(s) })
 
