@@ -279,7 +279,7 @@ module YJITMetrics
 
         # Read the benchmark data
         single_bench_data = JSON.load(File.read out_json_path)
-        obj = RunData.new *JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] }
+        obj = RunData.new(*JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] })
         obj.yjit_stats = nil if obj.yjit_stats.nil? || obj.yjit_stats.empty?
 
         # Add per-benchmark metadata from this script to the data returned from the harness.

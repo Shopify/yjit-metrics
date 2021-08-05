@@ -51,19 +51,16 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
         @report_data = @benchmark_names.map do |benchmark_name|
             no_jit_config_times = @times_by_config[@no_jit_config][benchmark_name]
             no_jit_mean = mean(no_jit_config_times)
-            no_jit_stddev = stddev(no_jit_config_times)
             no_jit_rel_stddev = rel_stddev(no_jit_config_times)
             no_jit_rel_stddev_pct = rel_stddev_pct(no_jit_config_times)
 
             with_mjit_config_times = @times_by_config[@with_mjit_config][benchmark_name]
             with_mjit_mean = mean(with_mjit_config_times)
-            with_mjit_stddev = stddev(with_mjit_config_times)
             with_mjit_rel_stddev = rel_stddev(with_mjit_config_times)
             with_mjit_rel_stddev_pct = rel_stddev_pct(with_mjit_config_times)
 
             with_yjit_config_times = @times_by_config[@with_yjit_config][benchmark_name]
             with_yjit_mean = mean(with_yjit_config_times)
-            with_yjit_stddev = stddev(with_yjit_config_times)
             with_yjit_rel_stddev = rel_stddev(with_yjit_config_times)
             with_yjit_rel_stddev_pct = rel_stddev_pct(with_yjit_config_times)
 
@@ -134,7 +131,6 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
 
         @configs_with_human_names.each do |human_name, config_name|
             one_config = @times_by_config[config_name]
-            max_num_runs = @benchmark_names.map { |bn| one_config[bn].size }.max
             max_num_iters = @benchmark_names.map { |bn| one_config[bn].map { |run| run.size }.max }.max
             showcased_iters = [1, 5, 10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000].select { |i| i <= max_num_iters }
 

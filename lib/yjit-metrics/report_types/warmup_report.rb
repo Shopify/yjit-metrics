@@ -20,7 +20,6 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
 
             benchmark_names = filter_benchmark_names(times.keys)
             raise "No benchmarks found for config #{config.inspect}!" if benchmark_names.empty?
-            max_num_runs = benchmark_names.map { |bn| times[bn].size }.max
 
             # For every benchmark, check the fewest iterations/run.
             min_iters_per_benchmark = benchmark_names.map { |bn| all_iters[bn].map { |run| run.size }.min }
