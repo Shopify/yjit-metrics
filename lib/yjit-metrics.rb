@@ -21,6 +21,7 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
+    # This structure is returned by the benchmarking harness from a run.
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes benchmark_metadata ruby_metadata)
     RunData = Struct.new(*JSON_RUN_FIELDS) do
         def times_ms
@@ -57,7 +58,20 @@ module YJITMetrics
         output
     end
 
-    def run_harness_script_from_string(script)
+    def run_harness_script_from_string(script, popen = proc { |*args| IO.popen(*args) }, crash_file_check: true, do_echo: true)
+        run_info = {}
+
+        os = os_type
+
+        if crash_file_check
+            if os == :linux
+                FileUtils.rm_f("core")
+            elsif os == :mac
+                crash_pattern = "#{ENV['HOME']}/Library/Logs/DiagnosticReports/ruby_*.crash"
+                ruby_crash_files_before = Dir[crash_pattern].to_a
+            end
+        end
+
         tf = Tempfile.new("yjit-metrics-script")
         tf.write(script)
         tf.flush # Not flushing can result in successfully running an empty script
@@ -72,14 +86,14 @@ module YJITMetrics
         $stdout.sync = true
 
         # Passing -l to bash makes sure to load .bash_profile for chruby.
-        IO.popen(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
+        popen.call(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
             harness_script_pid = script_out_io.pid
             script_output = ""
             loop do
                 begin
                     chunk = script_out_io.readpartial(1024)
 
-                    # The harness will print the harness PID before doing anything else.
+                    # The harness will print the worker PID before doing anything else.
                     if (worker_pid.nil? && chunk.include?("HARNESS PID"))
                         if chunk =~ /HARNESS PID: (\d+) -/
                             worker_pid = $1.to_i
@@ -88,7 +102,7 @@ module YJITMetrics
                         end
                     end
 
-                    print chunk
+                    print chunk if do_echo
                     script_output += chunk
                 rescue EOFError
                     # Cool, all done.
@@ -97,17 +111,37 @@ module YJITMetrics
             end
         end
 
-        return({
+        # This code and the ensure handler need to point to the same
+        # status structure so that both can make changes (e.g. to crash_files)
+        run_info.merge!({
             failed: !$?.success?,
+            crash_files: [],
             exitstatus: $?.exitstatus,
             harness_script_pid: harness_script_pid,
             worker_pid: worker_pid,
             output: script_output
         })
+
+        return run_info
     ensure
         if(tf)
             tf.close
             tf.unlink
+        end
+
+        if crash_file_check
+            if os == :linux
+                run_info[:crash_files] = [ "core" ] if File.exist?("core")
+            elsif os == :mac
+                # Horrifying realisation: it takes a short time after the segfault for the crash file to be written.
+                # Matching these up is really hard to do automatically, particularly when/if we're not sure if
+                # they'll be showing up at all.
+                sleep(1) if run_info[:failed]
+
+                ruby_crash_files = Dir[crash_pattern].to_a
+                # If any new ruby_* crash files have appeared, include them.
+                run_info[:crash_files] = (ruby_crash_files - ruby_crash_files_before).sort
+            end
         end
     end
 
@@ -163,43 +197,6 @@ module YJITMetrics
         []
     end
 
-    # Run the inner block given, watching for crash files showing up.
-    # In some cases there may be multiple relevant files, so we return
-    # a list.
-    def with_crash_tracking
-        os = os_type
-        if os == :linux
-            FileUtils.rm_f("core")
-        elsif os == :mac
-            crash_pattern = "#{ENV['HOME']}/Library/Logs/DiagnosticReports/ruby_*.crash"
-            ruby_crash_files_before = Dir[crash_pattern].to_a
-        end
-
-        did_fail = false
-        exc = nil
-
-        begin
-            did_fail = yield
-        rescue
-            did_fail = true
-            puts "Exception inside crash tracker...\n#{$!.full_message}"
-        ensure
-            if os == :linux
-                return ["core"] if File.exist?("core")
-                return nil
-            elsif os == :mac
-                # Horrifying realisation: it takes a short time after the segfault for the crash file to be written.
-                # Matching these up is really hard to do automatically, particularly when/if we're not sure if
-                # they'll be showing up at all.
-                sleep(1) if did_fail
-
-                ruby_crash_files = Dir[crash_pattern].to_a
-                # If any new ruby_* crash files have appeared, include them.
-                return (ruby_crash_files - ruby_crash_files_before).sort
-            end
-        end
-    end
-
     # The yjit-metrics harness returns its data as a simple hash for that benchmark:
     #
     #    {
@@ -236,11 +233,7 @@ module YJITMetrics
 
         # Do the benchmarking
         begin
-            script_details = nil
-            crash_files = with_crash_tracking do
-                script_details = run_harness_script_from_string(bench_script)
-                script_details[:failed]
-            end
+            script_details = run_harness_script_from_string(bench_script)
             crash_files ||= [] # Empty list is fine, nil is not
             failed = script_details[:failed]
             worker_pid = script_details[:worker_pid]
