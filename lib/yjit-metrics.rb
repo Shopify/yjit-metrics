@@ -58,7 +58,10 @@ module YJITMetrics
         output
     end
 
-    def run_harness_script_from_string(script, popen = proc { |*args| IO.popen(*args) }, crash_file_check: true, do_echo: true)
+    def run_harness_script_from_string(script,
+            local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
+            crash_file_check: true,
+            do_echo: true)
         run_info = {}
 
         os = os_type
@@ -86,7 +89,7 @@ module YJITMetrics
         $stdout.sync = true
 
         # Passing -l to bash makes sure to load .bash_profile for chruby.
-        popen.call(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
+        local_popen.call(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
             harness_script_pid = script_out_io.pid
             script_output = ""
             loop do
@@ -112,11 +115,13 @@ module YJITMetrics
         end
 
         # This code and the ensure handler need to point to the same
-        # status structure so that both can make changes (e.g. to crash_files)
+        # status structure so that both can make changes (e.g. to crash_files).
+        # We'd like this structure to be simple and serialisable -- it's
+        # passed back from the framework, more or less intact.
         run_info.merge!({
             failed: !$?.success?,
             crash_files: [],
-            exitstatus: $?.exitstatus,
+            exit_status: $?.exitstatus,
             harness_script_pid: harness_script_pid,
             worker_pid: worker_pid,
             output: script_output
@@ -218,7 +223,8 @@ module YJITMetrics
     # stop. If no exception is raised, this method will collect no samples and
     # will return nil.
     def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
-        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil)
+        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil,
+        run_script: proc { |s| run_harness_script_from_string(s) })
 
         out_json_path = File.expand_path(File.join(output_path, 'temp.json'))
         FileUtils.rm_f(out_json_path) # No stale data please
@@ -228,44 +234,25 @@ module YJITMetrics
         script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
         bench_script = script_template.result(binding) # Evaluate an Erb template with locals like warmup_itrs
 
-        failed = false
-        exc = nil
-
         # Do the benchmarking
-        begin
-            script_details = run_harness_script_from_string(bench_script)
-            crash_files ||= [] # Empty list is fine, nil is not
-            failed = script_details[:failed]
-            worker_pid = script_details[:worker_pid]
-            script_output = script_details[:output]
-            exit_status = script_details[:exitstatus]
-        rescue
-            failed = true
-            exc = $!
-        end
+        script_details = run_script.call(bench_script)
 
-        if failed
-            # Sometimes we'll get a Ruby exception. Sometimes the
-            # harness gets the exception, so no exception has
-            # happened in this process. If we don't have one,
-            # we'll create an exception for on_error to raise.
-            if exc.nil?
-                exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{exit_status.inspect}")
-            end
+        # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
+        # process fails and returns an exit status. We'll create an exception for the error
+        # handler to raise if it decides this is a fatal error.
+        exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
 
-            # What should go in here? What should the interface be? Many of these things will
+        if script_details[:failed]
+            # What should go in here? What should the interface be? Some things will
             # be unavailable, depending what stage of the script got an error.
-            on_error.call({
+            on_error.call(script_details.merge({
                 exception: exc,
-                crash_files: crash_files, # Empty unless a core/crash was dumped
-                output: script_output,
                 benchmark_name: bench_name,
                 benchmark_path: script_path,
                 ruby_opts: ruby_opts,
                 with_chruby: with_chruby,
                 json_file: out_json_path,
-                worker_pid: worker_pid, # This is how we can locate the core dump for the process later
-            })
+            }))
 
             return nil
         end

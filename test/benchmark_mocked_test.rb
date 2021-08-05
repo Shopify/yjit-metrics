@@ -62,7 +62,7 @@ class TestBenchmarkingWithFakePopen < Minitest::Test
     def test_harness_runner_with_exception
         fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", :die ]
 
-        run_info = YJITMetrics.run_harness_script_from_string("fake script", popen = fake_popen, crash_file_check: false, do_echo: false)
+        run_info = YJITMetrics.run_harness_script_from_string("fake script", local_popen: fake_popen, crash_file_check: false, do_echo: false)
 
         assert_equal true, run_info[:failed]
         assert_equal [], run_info[:crash_files] # We're raising an exception, but that shouldn't generate a new core file
