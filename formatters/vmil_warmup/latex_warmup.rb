@@ -119,8 +119,8 @@ latex_header = <<~LATEX_HEADER
     \\begin{center}
     \\begin{tabular}{| #{ (["c"] * 9).join(" | ") } |}
     \\hline
-     &  No-JIT & No-JIT & YJIT & YJIT & MJIT & MJIT & Truffle & Truffle \\\\ [0.5ex]
-    Iter \\# & ActiveRecord & Railsbench & ActiveRecord & Railsbench & ActiveRecord & Railsbench & ActiveRecord & Railsbench \\\\ [0.5ex]
+     &  No-JIT & YJIT & MJIT & Truffle &  No-JIT & YJIT & MJIT & Truffle \\\\ [0.5ex]
+    Iter \\# & ActiveRecord & ActiveRecord & ActiveRecord & ActiveRecord & Railsbench & Railsbench & Railsbench & Railsbench \\\\ [0.5ex]
     \\hline\\hline
 LATEX_HEADER
 
