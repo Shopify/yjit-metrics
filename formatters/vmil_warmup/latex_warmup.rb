@@ -110,11 +110,14 @@ end
 # \\usepackage{multirow}
 
 # LaTeX output
+top_header_row = [ "No-JIT", "YJIT", "MJIT", "Truffle"].flat_map do |config|
+    [ "#{config} ActiveRecord", "#{config} \\newline Railsbench" ]
+end.join(" & ")
 latex_header = <<~LATEX_HEADER
     \\begin{center}
-    \\begin{tabular}{||#{ (["c"] * 9).join(" ") }||}
+    \\begin{tabular}{| #{ (["m{1.75cm}"] * 9).join(" | ") } |}
     \\hline
-    Iter \\# & Int AR & Int RB & YJIT AR & YJIT RB & MJIT AR & MJIT RB & Truf AR & Truf RB \\\\ [0.5ex]
+    Iter \\# & #{top_header_row} \\\\ [0.5ex]
     \\hline\\hline
 LATEX_HEADER
 
