@@ -110,8 +110,10 @@ end
 # \\usepackage{multirow}
 
 # LaTeX output
-top_header_row = [ "No-JIT", "YJIT", "MJIT", "Truffle"].flat_map do |config|
-    [ "#{config} ActiveRecord", "#{config} \\newline Railsbench" ]
+top_header_row = [ "activerecord", "railsbench" ].flat_map do |bench|
+    [ "No-JIT", "YJIT", "MJIT", "Truffle"].map do |config|
+        "#{config} #{bench}"
+    end
 end.join(" & ")
 latex_header = <<~LATEX_HEADER
     \\begin{center}
@@ -122,18 +124,18 @@ latex_header = <<~LATEX_HEADER
 LATEX_HEADER
 
 cols = [
-    [ "no_jit", "activerecord" ],
-    [ "no_jit", "railsbench" ],
-    [ "with_yjit", "activerecord" ],
-    [ "with_yjit", "railsbench" ],
-    [ "with_mjit", "activerecord" ],
-    [ "with_mjit", "railsbench" ],
-    [ "truffleruby", "activerecord" ],
-    [ "truffleruby", "railsbench" ],
+    [ "activerecord", "no_jit" ],
+    [ "activerecord", "with_yjit" ],
+    [ "activerecord", "with_mjit" ],
+    [ "activerecord", "truffleruby" ],
+    [ "railsbench", "no_jit" ],
+    [ "railsbench", "with_yjit" ],
+    [ "railsbench", "with_mjit" ],
+    [ "railsbench", "truffleruby" ],
 ]
 
 latex_middle = iter_names.map do |iter_name|
-    formatted_cols = cols.map do |config, bench|
+    formatted_cols = cols.map do |bench, config|
         formatted_output[config][bench][iter_name]
     end
 
