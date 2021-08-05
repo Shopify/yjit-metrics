@@ -115,6 +115,7 @@ fig, ax = plt.subplots()
 
 x = np.arange(len(benchmark_names)) # the label locations
 plt.xticks(rotation=45)
+plt.ylabel("Execution time (s)")
 ax.set_xticks(x)
 ax.set_xticklabels(benchmark_names)
 
