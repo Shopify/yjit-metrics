@@ -62,8 +62,10 @@ plt.xlim(right=750)
 
 for engine, series in series_per_engine.items():
     num_series = len(series)
-    assert (num_series == 1)
-    y = series[0]
+
+    y = np.array(series)
+    print(y.shape)
+    y = y.mean(0)
 
     total_time = 0
     x = []
@@ -71,14 +73,7 @@ for engine, series in series_per_engine.items():
         total_time += y[i] / 1000
         x.append(total_time)
 
-    print(x[:10])
-
-    #x = range(1, len(y) + 1)
-
     plt.plot(x, y, label=engine)
-
-
-
 
 
 fig.tight_layout()

@@ -24,7 +24,7 @@ puts ERB.new(DATA.read).result_with_hash(data: data)
 __END__
 \begin{table*}
 \begin{center}
-\begin{tabular}{||c c c||}
+\begin{tabular}{|sc c c|}
 \hline
 Benchmark & Description & Compiled iseqs \\ [0.5ex]
 \hline\hline

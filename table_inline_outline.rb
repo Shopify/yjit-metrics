@@ -34,7 +34,7 @@ puts ERB.new(DATA.read).result_with_hash(data: data)
 __END__
 \begin{table*}
 \begin{center}
-\begin{tabular}{||c c c||}
+\begin{tabular}{|c c c|}
 \hline
 Benchmark & Inline code size & Outlined code size \\ [0.5ex]
 \hline\hline
