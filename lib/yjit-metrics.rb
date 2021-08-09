@@ -237,12 +237,12 @@ module YJITMetrics
         # Do the benchmarking
         script_details = run_script.call(bench_script)
 
-        # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
-        # process fails and returns an exit status. We'll create an exception for the error
-        # handler to raise if it decides this is a fatal error.
-        exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
-
         if script_details[:failed]
+            # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
+            # process fails and returns an exit status. We'll create an exception for the error
+            # handler to raise if it decides this is a fatal error.
+            exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
+
             # What should go in here? What should the interface be? Some things will
             # be unavailable, depending what stage of the script got an error.
             on_error.call(script_details.merge({

@@ -110,4 +110,60 @@ class TestBenchmarkingWithMocking < Minitest::Test
             run_script: fake_runner)
     end
 
+    # Test failure of a benchmark, as though the subprocess returned error
+    def test_single_benchmark_failure
+        test_data_dir = "#{__dir__}/data"
+
+        fake_runner_details = {
+            failed: true,
+            exit_status: -1,
+            crash_files: [],
+            harness_script_pid: 12345,
+            worker_pid: 54321,
+            output: "Process failed!",
+        }
+
+        # A script-runner expects to receive a bash script as a parameter,
+        # and to return the details of that script's success or failure.
+        # It's also supposed to write results to temp.json.
+        fake_runner = proc { |script_contents| fake_runner_details }
+
+        on_err_proc = proc do |err_info|
+            fake_runner_details.each do |key, val|
+                assert_equal val, err_info[key], "On_errer callback should match runner fail info for field #{key}!"
+            end
+            assert err_info[:exception], "On_error handler should set up an exception to re-throw!"
+            assert_equal "single_bench", err_info[:benchmark_name], "On_error callback should receive the correct benchmark name!"
+            assert_equal "/path/to/single_bench.rb", err_info[:benchmark_path], "On_error callback should receive the correct benchmark path!"
+            assert_equal [ "--with-fake-jit" ], err_info[:ruby_opts], "On_error callback should receive the correct ruby_opts!"
+            assert_equal "fakeruby-1.2.3", err_info[:with_chruby], "On_error callback should receive the correct with_chruby!"
+        end
+
+        # This method has way too much surface area -- too many different things passed in.
+        # One reason for this test is to apply leverage for a refactor.
+        YJITMetrics.run_benchmark_path_with_runner(
+            # Information about the yjit-bench benchmark
+            "single_bench",
+            "/path/to/single_bench.rb",
+
+            # How to run Ruby
+            ruby_opts: [ "--with-fake-jit" ],
+
+            # Bash/shell modifiers
+            with_chruby: "fakeruby-1.2.3",
+            enable_core_dumps: false,
+            # Missing: additional non-Ruby command-line params
+
+            # Harness params
+            warmup_itrs: 15,
+            min_benchmark_itrs: 10,
+            min_benchmark_time: 10.0,
+
+            # Settings for this one specific method
+            output_path: test_data_dir,
+            on_error: on_err_proc,
+            run_script: fake_runner)
+
+    end
+
 end
