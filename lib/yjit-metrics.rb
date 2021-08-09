@@ -198,10 +198,6 @@ module YJITMetrics
         end
     end
 
-    def per_os_shell_prelude
-        []
-    end
-
     # The yjit-metrics harness returns its data as a simple hash for that benchmark:
     #
     #    {
