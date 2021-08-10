@@ -244,7 +244,7 @@ class YJITMetrics::Report
 
         out.concat("\n", separator, "\n")
     rescue
-        STDERR.puts "Error when trying to format table: #{headings.inspect} / #{col_formats.inspect} / #{data[0].inspect}"
+        $stderr.puts "Error when trying to format table: #{headings.inspect} / #{col_formats.inspect} / #{data[0].inspect}"
         raise
     end
 
