@@ -435,7 +435,7 @@ module YJITMetrics
             bench_data["times"][bench_name].push run_data.times_ms
             bench_data["warmups"][bench_name].push run_data.warmups_ms
 
-            bench_data["yjit_stats"][bench_name].push run_data.yjit_stats
+            bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats]
             bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
 
             # Benchmark metadata should be unique per-benchmark. In other words,
