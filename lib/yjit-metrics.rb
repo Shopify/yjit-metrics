@@ -43,7 +43,7 @@ module YJITMetrics
                 raise "This looks like out-of-date single-run data!"
             end
 
-            RunData.new *JSON_RUN_FIELDS.map { |f| json[f.to_s] }
+            RunData.new(*JSON_RUN_FIELDS.map { |f| json[f.to_s] })
         end
     end
 
