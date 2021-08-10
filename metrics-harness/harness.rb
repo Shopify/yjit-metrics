@@ -82,6 +82,10 @@ def run_benchmark(num_itrs_hint)
   yjit_stats = HAS_YJIT_STATS ? YJIT.runtime_stats : nil
 
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
+
+  # As a tempfile, this changes constantly but doesn't mean the benchmark results shouldn't be combined
+  out_env_keys -= ["OUT_JSON_PATH"]
+
   out_env = {}
   out_env_keys.each { |k| out_env[k] = ENV[k] }
 

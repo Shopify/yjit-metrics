@@ -31,6 +31,20 @@ module YJITMetrics
         def warmups_ms
             self.warmups.map { |v| 1000.0 * v }
         end
+
+        def to_json
+            out = { "version": 2 } # Current version of the single-run data file format
+            JSON_RUN_FIELDS.each { |f| out[f.to_s] = self.send(f) }
+            out
+        end
+
+        def self.from_json(json)
+            unless json["version"] == 2
+                raise "This looks like out-of-date single-run data!"
+            end
+
+            RunData.new *JSON_RUN_FIELDS.map { |f| json[f.to_s] }
+        end
     end
 
     # Checked system - error if the command fails
@@ -205,18 +219,17 @@ module YJITMetrics
             @name_list = name_list
             @yjit_bench_path = File.expand_path(yjit_bench_path)
 
-            bench_files = Dir["#{@yjit_bench_path}/benchmarks/*"]
-            legal_bench_names = (bench_files + bench_files.map { |name| name.delete_suffix(".rb") }).uniq
+            bench_names = Dir.glob("*", base: "#{@yjit_bench_path}/benchmarks")
+            legal_bench_names = (bench_names + bench_names.map { |name| name.delete_suffix(".rb") }).uniq
             @name_list.map! { |name| name.delete_suffix(".rb") }
 
             unknown_benchmarks = name_list - legal_bench_names
             raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
-            bench_files = name_list if name_list.size > 0
-            raise "No testable benchmarks found!" if benchmark_files.empty?
+            bench_names = @name_list if @name_list.size > 0
+            raise "No testable benchmarks found!" if bench_names.empty? # This should presumably not happen after the "unknown" check
 
             @benchmark_script_by_name = {}
-            bench_files.each_with_index do |bench_name, idx|
-                # Path to the benchmark runner script
+            bench_names.each do |bench_name|
                 script_path = "#{@yjit_bench_path}/benchmarks/#{bench_name}"
 
                 # Choose the first of these that exists
@@ -235,10 +248,9 @@ module YJITMetrics
             }
         end
 
-        # If we call .each, we'll get an array of benchmark_info entries suitable for the
-        # single-benchmark script.
-        def each
-            @benchmark_script_by_name.keys.each do |name|
+        # If we call .map, we'll pretend to be an array of benchmark_info hashes
+        def map
+            @benchmark_script_by_name.keys.map do |name|
                 yield benchmark_info(name)
             end
         end
@@ -387,22 +399,28 @@ module YJITMetrics
     # It returns a benchmark data array of the following form:
     #
     #    {
-    #       "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...], "psych" => [...] },
-    #       "benchmark_metadata" => { "yaml-load" => {...}, "psych" => { ... }, },
+    #       "times" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...],[...]] "psych" => [...] },
+    #       "warmups" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...],[...]] "psych" => [...] },
+    #       "benchmark_metadata" => { "yaml-load" => {}, "psych" => { ... }, },
     #       "ruby_metadata" => {...},
-    #       "yjit_stats" => { "yaml-load" => {...}, ... }, # Note: yjit_stats may be empty, but is present
-    #       "peak_mem_bytes" => { "yaml-load" => 2343423, "psych" => 112234, ... },
+    #       "yjit_stats" => { "yaml-load" => [{...}, {...}, ...] },
+    #       "peak_mem_bytes" => { "yaml-load" => [2343423, 2349341, ...], "psych" => [112234, ...], ... },
     #    }
     #
-    # For timings, YJIT stats and benchmark metadata, we add a hash inside
+    # For times, warmups, YJIT stats and benchmark metadata, that means there is a hash inside
     # each top-level key for each benchmark name, e.g.:
     #
-    #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
+    #    "times" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...], [...], ...] }
+    #
+    # For times, warmups and YJIT stats that means the value of each hash value is an array.
+    # For times and warmups, the top-level array is the runs, and the sub-arrays are iterations
+    # in a single run. For YJIT stats, the top-level array is runs and the hash is the gathered
+    # YJIT stats for that run.
     #
     # If no valid data was successfully collected (e.g. a single benchmark was to run, but failed)
     # then this method will return nil.
     def merge_benchmark_data(all_run_data)
-        bench_data = {}
+        bench_data = { "version": 2 }
         JSON_RUN_FIELDS.each { |f| bench_data[f.to_s] = {} }
 
         all_run_data.each do |run_data|
@@ -413,8 +431,17 @@ module YJITMetrics
             bench_data["warmups"][bench_name] = run_data.warmups_ms
 
             bench_data["yjit_stats"][bench_name] = [run_data.yjit_stats]
-            bench_data["benchmark_metadata"][bench_name] = run_data.benchmark_metadata
             bench_data["peak_mem_bytes"][bench_name] = run_data.peak_mem_bytes
+
+            # Benchmark metadata should be unique per-benchmark. In other words,
+            # we do *not* want to combine runs with different amounts of warmup,
+            # iterations, etc, into the same dataset.
+            bench_data["benchmark_metadata"][bench_name] ||= run_data.benchmark_metadata
+            if bench_data["benchmark_metadata"][bench_name] != run_data.benchmark_metadata
+                puts "#{bench_name} metadata 1: #{bench_data["benchmark_metadata"][bench_name].inspect}"
+                puts "#{bench_name} metadata 2: #{run_data.benchmark_metadata.inspect}"
+                puts "Benchmark metadata should not change for benchmark #{bench_name} in the same configuration!"
+            end
 
             # We don't save individual Ruby metadata for all benchmarks because it
             # should be identical for all of them -- we use the same Ruby
@@ -425,7 +452,7 @@ module YJITMetrics
             if bench_data["ruby_metadata"] != run_data.ruby_metadata
                 puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
                 puts "Ruby metadata 2: #{run_data.ruby_metadata.inspect}"
-                raise "Ruby benchmark metadata should not change across a single set of benchmark runs!"
+                raise "Ruby metadata should not change across a single set of benchmark runs in the same Ruby config!"
             end
         end
 

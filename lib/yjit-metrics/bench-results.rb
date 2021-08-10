@@ -63,16 +63,20 @@ class YJITMetrics::ResultSet
     # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
     # assumed to be constant for a specific compiled copy of Ruby over all runs.
     def add_for_config(config_name, benchmark_results)
+        if benchmark_results["version"] != 2
+            raise "Getting data from older version-1 data file or JSON in bad format!"
+        end
+
         @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
             @times[config_name][benchmark_name] ||= []
-            @times[config_name][benchmark_name].push(times)
+            @times[config_name][benchmark_name].concat(times)
         end
 
         @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
             @warmups[config_name][benchmark_name] ||= []
-            @warmups[config_name][benchmark_name].push(warmups)
+            @warmups[config_name][benchmark_name].concat(warmups)
         end
 
         @yjit_stats[config_name] ||= {}
@@ -81,13 +85,16 @@ class YJITMetrics::ResultSet
             stats_array.compact!
             next if stats_array.empty?
             @yjit_stats[config_name][benchmark_name] ||= []
-            @yjit_stats[config_name][benchmark_name].push(stats_array)
+            @yjit_stats[config_name][benchmark_name].concat(stats_array)
         end
 
         @benchmark_metadata[config_name] ||= {}
         benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
             @benchmark_metadata[config_name][benchmark_name] ||= metadata_for_benchmark
             if @benchmark_metadata[config_name][benchmark_name] != metadata_for_benchmark
+                # We don't print this warning only once because it's really bad, and because we'd like to show it for all
+                # relevant problem benchmarks. But mostly because it's really bad: don't combine benchmark runs with
+                # different settings into one result set.
                 $stderr.puts "WARNING: multiple benchmark runs of #{benchmark_name} in #{config_name} have different benchmark metadata!"
             end
         end
