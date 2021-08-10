@@ -426,12 +426,17 @@ module YJITMetrics
         all_run_data.each do |run_data|
             bench_name = run_data.benchmark_metadata["benchmark_name"]
 
-            # Return times and warmups in milliseconds, not seconds
-            bench_data["times"][bench_name] = run_data.times_ms
-            bench_data["warmups"][bench_name] = run_data.warmups_ms
+            bench_data["times"][bench_name] ||= []
+            bench_data["warmups"][bench_name] ||= []
+            bench_data["yjit_stats"][bench_name] ||= []
+            bench_data["peak_mem_bytes"][bench_name] ||= []
 
-            bench_data["yjit_stats"][bench_name] = [run_data.yjit_stats]
-            bench_data["peak_mem_bytes"][bench_name] = run_data.peak_mem_bytes
+            # Return times and warmups in milliseconds, not seconds
+            bench_data["times"][bench_name].push run_data.times_ms
+            bench_data["warmups"][bench_name].push run_data.warmups_ms
+
+            bench_data["yjit_stats"][bench_name].push run_data.yjit_stats
+            bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
 
             # Benchmark metadata should be unique per-benchmark. In other words,
             # we do *not* want to combine runs with different amounts of warmup,
