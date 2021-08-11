@@ -17,33 +17,64 @@ require "optparse"
 require "fileutils"
 require_relative "lib/yjit-metrics"
 
-# I prefer human-readable names for configs, where I can get them.
-# TODO: add more options for *building* Rubies, esp. YJIT-enabled Rubies
-TEST_RUBY_CONFIGS = {
+extra_config_options = []
+if ENV["RUBY_CONFIG_OPTS"]
+    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
+elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
+    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
+    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
+end
+
+# The same build of Ruby (e.g. current prerelease Ruby 3.1) can
+# have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
+RUBY_BUILDS = {
+    "ruby-yjit-metrics-debug" => {
+        install: "repo",
+        git_url: "https://github.com/Shopify/yjit",
+        git_branch: "main",
+        repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
+    },
+    "ruby-yjit-metrics-prod" => {
+        install: "repo",
+        git_url: "https://github.com/Shopify/yjit",
+        git_branch: "main",
+        repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+    },
+    "ruby-3.0.2" => {
+        install: "ruby-install",
+    },
+    "truffleruby+graalvm-21.2.0" => {
+        install: "ruby-build",
+    },
+}
+
+RUBY_CONFIGS = {
     debug_ruby_no_yjit: {
-        ruby: "ruby-yjit-metrics-debug",
+        build: "ruby-yjit-metrics-debug",
         opts: [ "--disable-yjit" ],
     },
     yjit_stats: {
-        ruby: "ruby-yjit-metrics-debug",
+        build: "ruby-yjit-metrics-debug",
         opts: [ "--yjit", "--yjit-stats" ],
     },
     prod_ruby_no_jit: {
-        ruby: "ruby-yjit-metrics-prod",
+        build: "ruby-yjit-metrics-prod",
         opts: [ "--disable-yjit" ],
     },
     prod_ruby_with_yjit: {
-        ruby: "ruby-yjit-metrics-prod",
+        build: "ruby-yjit-metrics-prod",
         opts: [ "--yjit" ],
     },
     prod_ruby_with_mjit: {
-        ruby: "ruby-yjit-metrics-prod",
+        build: "ruby-yjit-metrics-prod",
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
     ruby_30: {
-        ruby: "ruby-3.0.2",
+        build: "ruby-3.0.2",
         opts: [],
-        install: "ruby-install",
     },
     ruby_30_with_mjit: {
         ruby: "ruby-3.0.2",
@@ -51,35 +82,28 @@ TEST_RUBY_CONFIGS = {
         install: "ruby-install",
     },
     truffleruby: {
-        ruby: "truffleruby+graalvm-21.2.0",
+        build: "truffleruby+graalvm-21.2.0",
         opts: [ "--jvm" ],
-        install: "ruby-build", # TODO: automatic ruby-build installation
     },
 }
-TEST_CONFIG_NAMES = TEST_RUBY_CONFIGS.keys
+CONFIG_NAMES = RUBY_CONFIGS.keys
 
 # Default settings for benchmark sampling
 DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
 DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
 DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
-# Configuration for YJIT Rubies, debug and prod
-BASE_CONFIG_OPTIONS = [ "--disable-install-doc", "--disable-install-rdoc" ]
-YJIT_GIT_URL = "https://github.com/Shopify/yjit"
-YJIT_GIT_BRANCH = "main"
-PROD_YJIT_DIR = File.expand_path("#{__dir__}/../prod-yjit")
-DEBUG_YJIT_DIR = File.expand_path("#{__dir__}/../debug-yjit")
-
 # Configuration for yjit-bench
 YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
-YJIT_BENCH_GIT_BRANCH = "main" #"bench_setup_fixes"
+YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
-ERROR_BEHAVIOURS = %i(die report ignore)
+# Configuration for ruby-build
+RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
+RUBY_BUILD_GIT_BRANCH = "main"
+RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
 
-# TODO: add back the ability to toggle ASLR, CPU affinity, etc.
-# shell_opts += [ "setarch", "x86_64", "-R" ] if YJITMetrics.os_type == :linux
-# shell_opts += [ "taskset", "-c", "11" ] if YJITMetrics.os_type == :linux
+ERROR_BEHAVIOURS = %i(die report ignore)
 
 # Defaults
 skip_git_updates = false
@@ -87,8 +111,8 @@ num_runs = 1   # For every run, execute the specified number of warmups and iter
 warmup_itrs = DEFAULT_WARMUP_ITRS
 min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
 min_bench_time = DEFAULT_MIN_BENCH_TIME
-DEFAULT_TEST_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
-configs_to_test = DEFAULT_TEST_CONFIGS
+DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
+configs_to_test = DEFAULT_CONFIGS
 when_error = :die
 
 OptionParser.new do |opts|
@@ -125,23 +149,15 @@ OptionParser.new do |opts|
         end
     end
 
-    config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{TEST_CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_TEST_CONFIGS.join(",")}"
+    config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
     opts.on("--configs=CONFIGS", config_desc) do |configs|
         configs_to_test = configs.split(",").map(&:strip).map(&:to_sym).uniq
-        bad_configs = configs_to_test - TEST_CONFIG_NAMES
+        bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
     end
 end.parse!
 
 benchmark_list = ARGV
-
-extra_config_options = []
-if ENV["RUBY_CONFIG_OPTS"]
-    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
-elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
-    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
-end
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -153,38 +169,48 @@ OUTPUT_DATA_PATH = TEMP_DATA_PATH
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
-# Ensure we have copies of any Rubies (that we're using) installed via ruby-install
-configs_to_check_install = configs_to_test.select { |config| TEST_RUBY_CONFIGS[config][:install] == "ruby-install" }
-unless configs_to_check_install.empty?
-    rubies_to_check_install = configs_to_check_install.map { |config| TEST_RUBY_CONFIGS[config][:ruby] }.uniq
-    installed_rubies = Dir[CHRUBY_RUBIES + "/*"].map { |p| p.split("/")[-1] }
-    (rubies_to_check_install - installed_rubies).each do |ruby|
-        puts "Automatically installing Ruby: #{ruby.inspect}"
-        YJITMetrics.check_call("ruby-install #{ruby}")
+unless skip_git_updates
+    builds_to_check = configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq
+
+    need_ruby_build = builds_to_check.any? { |build| RUBY_BUILDS[build][:install] == "ruby-build" }
+    if need_ruby_build
+        # ruby-build needs to be installed via sudo...
+        if `which ruby-build`.strip == ""
+            # No ruby-build installed. Make sure the repo is cloned and up to date, then tell the user to install it.
+            YJITMetrics.clone_repo_with path: RUBY_BUILD_DIR, git_url: RUBY_BUILD_GIT_URL, git_branch: RUBY_BUILD_GIT_BRANCH
+
+            puts "Ruby-build has been cloned to #{File.expand_path(RUBY_BUILD_DIR)}... From that directory, run 'sudo ./install.sh'."
+            exit -1
+        end
     end
-end
 
-### Ensure up-to-date YJIT repos in debug configuration and prod configuration
+    installed_rubies = Dir.glob("*", base: CHRUBY_RUBIES)
 
-if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-prod" }
-    YJITMetrics.clone_ruby_repo_with path: PROD_YJIT_DIR,
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-prod",
-        config_opts: BASE_CONFIG_OPTIONS + extra_config_options
-end
+    builds_to_check.each do |ruby_build|
+        build_info = RUBY_BUILDS[ruby_build]
+        case build_info[:install]
+        when "ruby-install"
+            next if installed_rubies.include?(ruby_build)
+            puts "Installing Ruby #{ruby_build} via ruby-install..."
+            YJITMetrics.check_call("ruby-install #{ruby_build}")
+        when "ruby-build"
+            next if installed_rubies.include?(ruby_build)
+            puts "Installing Ruby #{ruby_build} via ruby-build..."
+            YJITMetrics.check_call("ruby-build #{ruby_build} ~/.rubies/#{ruby-build}")
+        when "repo"
+            YJITMetrics.clone_ruby_repo_with \
+                path: build_info[:repo_path],
+                git_url: build_info[:git_url],
+                git_branch: build_info[:git_branch] || "main",
+                install_to: CHRUBY_RUBIES + "/" + ruby_build,
+                config_opts: build_info[:config_opts],
+                config_env: build_info[:config_env] || []
+        else
+            raise "Unrecognized installation method: #{RUBY_BUILDS[ruby_build][:install].inspect}!"
+        end
+    end
 
-if !skip_git_updates && configs_to_test.any? { |config| TEST_RUBY_CONFIGS[config][:ruby] == "ruby-yjit-metrics-debug" }
-    YJITMetrics.clone_ruby_repo_with path: DEBUG_YJIT_DIR,
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        install_to: CHRUBY_RUBIES + "/ruby-yjit-metrics-debug",
-        config_opts: BASE_CONFIG_OPTIONS + extra_config_options,
-        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"]
-end
-
-### Ensure an up-to-date local yjit-bench checkout
-if !skip_git_updates
+    ### Ensure an up-to-date local yjit-bench checkout
     YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
 
@@ -195,8 +221,8 @@ all_runs = (0...num_runs).flat_map { |run_num| configs_to_test.map { |config| [ 
 all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of runs
 
 all_runs.each do |run_num, config|
-    ruby = TEST_RUBY_CONFIGS[config][:ruby]
-    ruby_opts = TEST_RUBY_CONFIGS[config][:opts]
+    ruby = RUBY_CONFIGS[config][:build]
+    ruby_opts = RUBY_CONFIGS[config][:opts]
 
     puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 

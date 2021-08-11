@@ -1,3 +1,6 @@
+# For yjit-metrics, we often want to clone various repositories, Ruby and non-Ruby.
+# This file is about cloning and managing those repositories, and installing Rubies.
+
 module YJITMetrics; end
 module YJITMetrics::RepoManagement
     def clone_repo_with(path:, git_url:, git_branch:)
