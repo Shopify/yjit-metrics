@@ -23,6 +23,7 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
+    # This structure is returned by the benchmarking harness from a run.
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes benchmark_metadata ruby_metadata)
     RunData = Struct.new(*JSON_RUN_FIELDS) do
         def times_ms
@@ -59,7 +60,23 @@ module YJITMetrics
         output
     end
 
-    def run_harness_script_from_string(script)
+    def run_harness_script_from_string(script,
+            local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
+            crash_file_check: true,
+            do_echo: true)
+        run_info = {}
+
+        os = os_type
+
+        if crash_file_check
+            if os == :linux
+                FileUtils.rm_f("core")
+            elsif os == :mac
+                crash_pattern = "#{ENV['HOME']}/Library/Logs/DiagnosticReports/ruby_*.crash"
+                ruby_crash_files_before = Dir[crash_pattern].to_a
+            end
+        end
+
         tf = Tempfile.new("yjit-metrics-script")
         tf.write(script)
         tf.flush # Not flushing can result in successfully running an empty script
@@ -74,14 +91,14 @@ module YJITMetrics
         $stdout.sync = true
 
         # Passing -l to bash makes sure to load .bash_profile for chruby.
-        IO.popen(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
+        local_popen.call(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
             harness_script_pid = script_out_io.pid
             script_output = ""
             loop do
                 begin
                     chunk = script_out_io.readpartial(1024)
 
-                    # The harness will print the harness PID before doing anything else.
+                    # The harness will print the worker PID before doing anything else.
                     if (worker_pid.nil? && chunk.include?("HARNESS PID"))
                         if chunk =~ /HARNESS PID: (\d+) -/
                             worker_pid = $1.to_i
@@ -90,7 +107,7 @@ module YJITMetrics
                         end
                     end
 
-                    print chunk
+                    print chunk if do_echo
                     script_output += chunk
                 rescue EOFError
                     # Cool, all done.
@@ -99,17 +116,39 @@ module YJITMetrics
             end
         end
 
-        return({
+        # This code and the ensure handler need to point to the same
+        # status structure so that both can make changes (e.g. to crash_files).
+        # We'd like this structure to be simple and serialisable -- it's
+        # passed back from the framework, more or less intact.
+        run_info.merge!({
             failed: !$?.success?,
-            exitstatus: $?.exitstatus,
+            crash_files: [],
+            exit_status: $?.exitstatus,
             harness_script_pid: harness_script_pid,
             worker_pid: worker_pid,
             output: script_output
         })
+
+        return run_info
     ensure
         if(tf)
             tf.close
             tf.unlink
+        end
+
+        if crash_file_check
+            if os == :linux
+                run_info[:crash_files] = [ "core" ] if File.exist?("core")
+            elsif os == :mac
+                # Horrifying realisation: it takes a short time after the segfault for the crash file to be written.
+                # Matching these up is really hard to do automatically, particularly when/if we're not sure if
+                # they'll be showing up at all.
+                sleep(1) if run_info[:failed]
+
+                ruby_crash_files = Dir[crash_pattern].to_a
+                # If any new ruby_* crash files have appeared, include them.
+                run_info[:crash_files] = (ruby_crash_files - ruby_crash_files_before).sort
+            end
         end
     end
 
@@ -165,43 +204,6 @@ module YJITMetrics
         []
     end
 
-    # Run the inner block given, watching for crash files showing up.
-    # In some cases there may be multiple relevant files, so we return
-    # a list.
-    def with_crash_tracking
-        os = os_type
-        if os == :linux
-            FileUtils.rm_f("core")
-        elsif os == :mac
-            crash_pattern = "#{ENV['HOME']}/Library/Logs/DiagnosticReports/ruby_*.crash"
-            ruby_crash_files_before = Dir[crash_pattern].to_a
-        end
-
-        did_fail = false
-        exc = nil
-
-        begin
-            did_fail = yield
-        rescue
-            did_fail = true
-            puts "Exception inside crash tracker...\n#{$!.full_message}"
-        ensure
-            if os == :linux
-                return ["core"] if File.exist?("core")
-                return nil
-            elsif os == :mac
-                # Horrifying realisation: it takes a short time after the segfault for the crash file to be written.
-                # Matching these up is really hard to do automatically, particularly when/if we're not sure if
-                # they'll be showing up at all.
-                sleep(1) if did_fail
-
-                ruby_crash_files = Dir[crash_pattern].to_a
-                # If any new ruby_* crash files have appeared, include them.
-                return (ruby_crash_files - ruby_crash_files_before).sort
-            end
-        end
-    end
-
     # The yjit-metrics harness returns its data as a simple hash for that benchmark:
     #
     #    {
@@ -222,8 +224,9 @@ module YJITMetrics
     # If on_error raises (or re-raises) an exception then the benchmark run will
     # stop. If no exception is raised, this method will collect no samples and
     # will return nil.
-    def run_benchmark_path_with_runner(bench_name, script_path, output_path:".", ruby_opts: [], with_chruby: nil,
-        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil)
+    def run_benchmark_path_with_runner(bench_name, script_path, output_path: ".", ruby_opts: [], with_chruby: nil,
+        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil,
+        run_script: proc { |s| run_harness_script_from_string(s) })
 
         out_json_path = File.expand_path(File.join(output_path, 'temp.json'))
         FileUtils.rm_f(out_json_path) # No stale data please
@@ -233,55 +236,32 @@ module YJITMetrics
         script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
         bench_script = script_template.result(binding) # Evaluate an Erb template with locals like warmup_itrs
 
-        failed = false
-        exc = nil
-
         # Do the benchmarking
-        begin
-            script_details = nil
-            crash_files = with_crash_tracking do
-                script_details = run_harness_script_from_string(bench_script)
-                script_details[:failed]
-            end
-            crash_files ||= [] # Empty list is fine, nil is not
-            failed = script_details[:failed]
-            worker_pid = script_details[:worker_pid]
-            script_output = script_details[:output]
-            exit_status = script_details[:exitstatus]
-        rescue
-            failed = true
-            exc = $!
-        end
+        script_details = run_script.call(bench_script)
 
-        if failed
-            # Sometimes we'll get a Ruby exception. Sometimes the
-            # harness gets the exception, so no exception has
-            # happened in this process. If we don't have one,
-            # we'll create an exception for on_error to raise.
-            if exc.nil?
-                exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{exit_status.inspect}")
-            end
+        if script_details[:failed]
+            # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
+            # process fails and returns an exit status. We'll create an exception for the error
+            # handler to raise if it decides this is a fatal error.
+            exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
 
-            # What should go in here? What should the interface be? Many of these things will
+            # What should go in here? What should the interface be? Some things will
             # be unavailable, depending what stage of the script got an error.
-            on_error.call({
+            on_error.call(script_details.merge({
                 exception: exc,
-                crash_files: crash_files, # Empty unless a core/crash was dumped
-                output: script_output,
                 benchmark_name: bench_name,
                 benchmark_path: script_path,
                 ruby_opts: ruby_opts,
                 with_chruby: with_chruby,
                 json_file: out_json_path,
-                worker_pid: worker_pid, # This is how we can locate the core dump for the process later
-            })
+            }))
 
             return nil
         end
 
         # Read the benchmark data
         single_bench_data = JSON.load(File.read out_json_path)
-        obj = RunData.new *JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] }
+        obj = RunData.new(*JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] })
         obj.yjit_stats = nil if obj.yjit_stats.nil? || obj.yjit_stats.empty?
 
         # Add per-benchmark metadata from this script to the data returned from the harness.
