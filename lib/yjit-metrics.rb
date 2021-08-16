@@ -18,6 +18,8 @@ module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
     include YJITMetrics::RepoManagement
+    # In Ruby 2.7.2, having extend self doesn't seem to extend YJITMetrics-the-object with the RepoManagement methods.
+    extend YJITMetrics::RepoManagement
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
