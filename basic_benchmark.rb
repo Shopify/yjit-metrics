@@ -100,7 +100,7 @@ YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 # Configuration for ruby-build
 RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
-RUBY_BUILD_GIT_BRANCH = "main"
+RUBY_BUILD_GIT_BRANCH = "master"
 RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
 
 ERROR_BEHAVIOURS = %i(die report ignore)
