@@ -103,8 +103,6 @@ class TestBenchmarkingWithMocking < Minitest::Test
             on_error: nil,
         })
 
-        # This method has way too much surface area -- too many different things passed in.
-        # One reason for this test is to apply leverage for a refactor.
         YJITMetrics.run_single_benchmark(
             # Information about the yjit-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
@@ -154,8 +152,6 @@ class TestBenchmarkingWithMocking < Minitest::Test
             # Missing: additional non-Ruby command-line params
         })
 
-        # This method has way too much surface area -- too many different things passed in.
-        # One reason for this test is to apply leverage for a refactor.
         YJITMetrics.run_single_benchmark(
             # Information about the yjit-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
