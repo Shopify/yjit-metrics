@@ -203,7 +203,7 @@ all_runs = (0...num_runs).flat_map do |run_num|
 end
 all_runs = all_runs.sample(all_runs.size)
 
-hs = YJITMetrics::HarnessSettings.new({
+harness_settings = YJITMetrics::HarnessSettings.new({
     warmup_itrs: warmup_itrs,
     min_benchmark_itrs: min_bench_itrs,
     min_benchmark_time: min_bench_time,
@@ -266,14 +266,14 @@ all_runs.each do |run_num, config, bench_info|
         raise(exc) if when_error == :die
     end
 
-    ss = YJITMetrics::ShellSettings.new({
+    shell_settings = YJITMetrics::ShellSettings.new({
         ruby_opts: ruby_opts,
         chruby: ruby,
         on_error: on_error,
         enable_core_dumps: (when_error == :report ? true : false),
     })
 
-    single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: hs, shell_settings: ss)
+    single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
 
     if single_run_results.nil?
         if when_error == :die
