@@ -33,6 +33,20 @@ module YJITMetrics
         def warmups_ms
             self.warmups.map { |v| 1000.0 * v }
         end
+
+        def to_json
+            out = { "version": 2 } # Current version of the single-run data file format
+            JSON_RUN_FIELDS.each { |f| out[f.to_s] = self.send(f) }
+            out
+        end
+
+        def self.from_json(json)
+            unless json["version"] == 2
+                raise "This looks like out-of-date single-run data!"
+            end
+
+            RunData.new(*JSON_RUN_FIELDS.map { |f| json[f.to_s] })
+        end
     end
 
     # Checked system - error if the command fails
@@ -200,8 +214,93 @@ module YJITMetrics
         end
     end
 
-    def per_os_shell_prelude
-        []
+    class BenchmarkList
+        attr_reader :yjit_bench_path
+
+        def initialize(name_list:, yjit_bench_path:)
+            @name_list = name_list
+            @yjit_bench_path = File.expand_path(yjit_bench_path)
+
+            bench_names = Dir.glob("*", base: "#{@yjit_bench_path}/benchmarks")
+            legal_bench_names = (bench_names + bench_names.map { |name| name.delete_suffix(".rb") }).uniq
+            @name_list.map! { |name| name.delete_suffix(".rb") }
+
+            unknown_benchmarks = name_list - legal_bench_names
+            raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
+            bench_names = @name_list if @name_list.size > 0
+            raise "No testable benchmarks found!" if bench_names.empty? # This should presumably not happen after the "unknown" check
+
+            @benchmark_script_by_name = {}
+            bench_names.each do |bench_name|
+                script_path = "#{@yjit_bench_path}/benchmarks/#{bench_name}"
+
+                # Choose the first of these that exists
+                real_script_path = [script_path, script_path + ".rb", script_path + "/benchmark.rb"].detect { |path| File.exist?(path) && !File.directory?(path) }
+                raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
+                @benchmark_script_by_name[bench_name] = real_script_path
+            end
+        end
+
+        # For now, benchmark_info returns a Hash. At some point it may want to get fancier.
+        def benchmark_info(name)
+            raise "Querying unknown benchmark name #{name.inspect}!" unless @benchmark_script_by_name[name]
+            {
+                name: name,
+                script_path: @benchmark_script_by_name[name],
+            }
+        end
+
+        # If we call .map, we'll pretend to be an array of benchmark_info hashes
+        def map
+            @benchmark_script_by_name.keys.map do |name|
+                yield benchmark_info(name)
+            end
+        end
+    end
+
+    # Eventually we'd like to do fancy things with interesting settings.
+    # Before that, let's encapsulate the settings in a simple object so
+    # we can pass them around easily.
+    #
+    # Harness Settings are about how to sample the benchmark repeatedly -
+    # iteration counts, thresholds, etc.
+    class HarnessSettings
+        LEGAL_SETTINGS = [ :warmup_itrs, :min_benchmark_itrs, :min_benchmark_time ]
+
+        def initialize(settings)
+            illegal_keys = settings.keys - LEGAL_SETTINGS
+            raise "Illegal settings given to HarnessSettings: #{illegal_keys.inspect}!" unless illegal_keys.empty?
+            @settings = settings
+        end
+
+        def [](key)
+            @settings[key]
+        end
+
+        def to_h
+            @settings
+        end
+    end
+
+    # Shell Settings encapsulate how we run Ruby and the appropriate shellscript
+    # for each sampling run. That means which Ruby, which Ruby and shell options,
+    # what env vars to set, whether core dumps are enabled, what to do on error and more.
+    class ShellSettings
+        LEGAL_SETTINGS = [ :ruby_opts, :chruby, :enable_core_dumps, :on_error ]
+
+        def initialize(settings)
+            illegal_keys = settings.keys - LEGAL_SETTINGS
+            raise "Illegal settings given to ShellSettings: #{illegal_keys.inspect}!" unless illegal_keys.empty?
+            @settings = settings
+        end
+
+        def [](key)
+            @settings[key]
+        end
+
+        def to_h
+            @settings
+        end
     end
 
     # The yjit-metrics harness returns its data as a simple hash for that benchmark:
@@ -224,17 +323,30 @@ module YJITMetrics
     # If on_error raises (or re-raises) an exception then the benchmark run will
     # stop. If no exception is raised, this method will collect no samples and
     # will return nil.
-    def run_benchmark_path_with_runner(bench_name, script_path, output_path: ".", ruby_opts: [], with_chruby: nil,
-        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0, enable_core_dumps: false, on_error: nil,
+    def run_single_benchmark(benchmark_info, harness_settings:, shell_settings:,
         run_script: proc { |s| run_harness_script_from_string(s) })
 
-        out_json_path = File.expand_path(File.join(output_path, 'temp.json'))
-        FileUtils.rm_f(out_json_path) # No stale data please
+        out_tempfile = Tempfile.new("yjit-metrics-single-run")
 
-        ruby_opts_section = ruby_opts.map { |s| '"' + s + '"' }.join(" ")
-        pre_benchmark_code = enable_core_dumps ? "ulimit -c unlimited" : ""
+        env_vars = {
+            OUT_JSON_PATH:  out_tempfile.path,
+            WARMUP_ITRS:    harness_settings[:warmup_itrs],
+            MIN_BENCH_ITRS: harness_settings[:min_benchmark_itrs],
+            MIN_BENCH_TIME: harness_settings[:min_benchmark_time],
+        }
+
+        with_chruby = shell_settings[:chruby]
+
         script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
-        bench_script = script_template.result(binding) # Evaluate an Erb template with locals like warmup_itrs
+        # These are used in the ERB template
+        template_settings = {
+            pre_benchmark_code: (with_chruby ? "chruby #{with_chruby}" : "") +
+                (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
+            env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
+            ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
+            script_path: benchmark_info[:script_path],
+        }
+        bench_script = script_template.result(binding) # Evaluate an Erb template with template_settings
 
         # Do the benchmarking
         script_details = run_script.call(bench_script)
@@ -245,121 +357,113 @@ module YJITMetrics
             # handler to raise if it decides this is a fatal error.
             exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
 
+            raise exc unless shell_settings[:on_error]
+
             # What should go in here? What should the interface be? Some things will
             # be unavailable, depending what stage of the script got an error.
-            on_error.call(script_details.merge({
+            shell_settings[:on_error].call(script_details.merge({
                 exception: exc,
-                benchmark_name: bench_name,
-                benchmark_path: script_path,
-                ruby_opts: ruby_opts,
-                with_chruby: with_chruby,
-                json_file: out_json_path,
+                benchmark_name: benchmark_info[:name],
+                benchmark_path: benchmark_info[:script_path],
+                harness_settings: harness_settings.to_h,
+                shell_settings: shell_settings.to_h,
             }))
 
             return nil
         end
 
         # Read the benchmark data
-        single_bench_data = JSON.load(File.read out_json_path)
+        json_string_data = File.read out_tempfile.path
+        if json_string_data == ""
+            # The tempfile exists, so no read error... But no data returned.
+            raise "No error from benchmark, but no data was returned!"
+        end
+        single_bench_data = JSON.load(json_string_data)
         obj = RunData.new(*JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] })
         obj.yjit_stats = nil if obj.yjit_stats.nil? || obj.yjit_stats.empty?
 
         # Add per-benchmark metadata from this script to the data returned from the harness.
         obj.benchmark_metadata.merge!({
-            "benchmark_name" => bench_name,
-            "chruby_version" => with_chruby,
-            "ruby_opts" => ruby_opts
+            "benchmark_name" => benchmark_info[:name],
+            "benchmark_path" => benchmark_info[:script_path],
         })
 
         obj
+    ensure
+        if out_tempfile
+            out_tempfile.close
+            out_tempfile.unlink
+        end
     end
 
-    # Run all the benchmarks and record execution times.
-    # This method converts the benchmark_list to a set of benchmark names and paths.
-    # It also combines results from multiple worker subprocesses.
+    # This method combines run_data objects from multiple benchmark runs.
     #
-    # This method returns a benchmark data array of the following form:
+    # It returns a benchmark data array of the following form:
     #
     #    {
-    #       "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...], "psych" => [...] },
-    #       "benchmark_metadata" => { "yaml-load" => {...}, "psych" => { ... }, },
+    #       "times" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...],[...]] "psych" => [...] },
+    #       "warmups" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...],[...]] "psych" => [...] },
+    #       "benchmark_metadata" => { "yaml-load" => {}, "psych" => { ... }, },
     #       "ruby_metadata" => {...},
-    #       "yjit_stats" => { "yaml-load" => {...}, ... }, # Note: yjit_stats may be empty, but is present
-    #       "peak_mem_bytes" => { "yaml-load" => 2343423, "psych" => 112234, ... },
+    #       "yjit_stats" => { "yaml-load" => [{...}, {...}, ...] },
+    #       "peak_mem_bytes" => { "yaml-load" => [2343423, 2349341, ...], "psych" => [112234, ...], ... },
     #    }
     #
-    # For timings, YJIT stats and benchmark metadata, we add a hash inside
+    # For times, warmups, YJIT stats and benchmark metadata, that means there is a hash inside
     # each top-level key for each benchmark name, e.g.:
     #
-    #    "times" => { "yaml-load" => [ 2.3, 2.5, 2.7, 2.4, ...] }
+    #    "times" => { "yaml-load" => [[ 2.3, 2.5, 2.7, 2.4, ...], [...], ...] }
+    #
+    # For times, warmups and YJIT stats that means the value of each hash value is an array.
+    # For times and warmups, the top-level array is the runs, and the sub-arrays are iterations
+    # in a single run. For YJIT stats, the top-level array is runs and the hash is the gathered
+    # YJIT stats for that run.
     #
     # If no valid data was successfully collected (e.g. a single benchmark was to run, but failed)
     # then this method will return nil.
-    def run_benchmarks(benchmark_dir, out_path, ruby_opts: [], benchmark_list: [], with_chruby: nil,
-                        enable_core_dumps: false, on_error: nil,
-                        warmup_itrs: 15, min_benchmark_itrs: 10, min_benchmark_time: 10.0)
-        bench_data = {}
+    def merge_benchmark_data(all_run_data)
+        bench_data = { "version": 2 }
         JSON_RUN_FIELDS.each { |f| bench_data[f.to_s] = {} }
 
-        Dir.chdir(benchmark_dir) do
-            # Get the list of benchmark files/directories matching name filters
-            bench_files = Dir.children('benchmarks').sort
-            legal_bench_names = (bench_files + bench_files.map { |name| name.delete_suffix(".rb") }).uniq
-            benchmark_list.map! { |name| name.delete_suffix(".rb") }
+        all_run_data.each do |run_data|
+            bench_name = run_data.benchmark_metadata["benchmark_name"]
 
-            unknown_benchmarks = benchmark_list - legal_bench_names
-            raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
-            bench_files = benchmark_list if benchmark_list.size > 0
+            bench_data["times"][bench_name] ||= []
+            bench_data["warmups"][bench_name] ||= []
+            bench_data["yjit_stats"][bench_name] ||= []
+            bench_data["peak_mem_bytes"][bench_name] ||= []
 
-            raise "No testable benchmarks found!" if bench_files.empty?
-            bench_files.each_with_index do |bench_name, idx|
-                puts("Running benchmark \"#{bench_name}\" (#{idx+1}/#{bench_files.length})")
+            # Return times and warmups in milliseconds, not seconds
+            bench_data["times"][bench_name].push run_data.times_ms
+            bench_data["warmups"][bench_name].push run_data.warmups_ms
 
-                # Path to the benchmark runner script
-                script_path = File.join('benchmarks', bench_name)
+            bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats]
+            bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
 
-                # Choose the first of these that exists
-                real_script_path = [script_path, script_path + ".rb", script_path + "/benchmark.rb"].detect { |path| File.exist?(path) && !File.directory?(path) }
-                raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
-                script_path = real_script_path
+            # Benchmark metadata should be unique per-benchmark. In other words,
+            # we do *not* want to combine runs with different amounts of warmup,
+            # iterations, etc, into the same dataset.
+            bench_data["benchmark_metadata"][bench_name] ||= run_data.benchmark_metadata
+            if bench_data["benchmark_metadata"][bench_name] != run_data.benchmark_metadata
+                puts "#{bench_name} metadata 1: #{bench_data["benchmark_metadata"][bench_name].inspect}"
+                puts "#{bench_name} metadata 2: #{run_data.benchmark_metadata.inspect}"
+                puts "Benchmark metadata should not change for benchmark #{bench_name} in the same configuration!"
+            end
 
-                run_data = run_benchmark_path_with_runner(
-                    bench_name, script_path,
-                    output_path: out_path, ruby_opts: ruby_opts, with_chruby: with_chruby,
-                    enable_core_dumps: enable_core_dumps, on_error: on_error,
-                    warmup_itrs: warmup_itrs, min_benchmark_itrs: min_benchmark_itrs, min_benchmark_time: min_benchmark_time)
-
-                unless run_data
-                    # An error occurred. The error handler was specified and called,
-                    # but didn't throw an exception.
-                    # No usable data was collected for this benchmark and Ruby config,
-                    # so we'll move on with our day.
-                    next
-                end
-
-                # Return times and warmups in milliseconds, not seconds
-                bench_data["times"][bench_name] = run_data.times_ms
-                bench_data["warmups"][bench_name] = run_data.warmups_ms
-
-                bench_data["yjit_stats"][bench_name] = [run_data.yjit_stats]
-                bench_data["benchmark_metadata"][bench_name] = run_data.benchmark_metadata
-                bench_data["peak_mem_bytes"][bench_name] = run_data.peak_mem_bytes
-
-                # We don't save individual Ruby metadata for all benchmarks because it
-                # should be identical for all of them -- we use the same Ruby
-                # every time. Instead we save one copy of it, but we make sure
-                # on each subsequent benchmark that it returned exactly the same
-                # metadata about the Ruby version.
-                bench_data["ruby_metadata"] = run_data.ruby_metadata if bench_data["ruby_metadata"].empty?
-                if bench_data["ruby_metadata"] != run_data.ruby_metadata
-                    puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
-                    puts "Ruby metadata 2: #{run_data.ruby_metadata.inspect}"
-                    raise "Ruby benchmark metadata should not change across a single set of benchmark runs!"
-                end
+            # We don't save individual Ruby metadata for all benchmarks because it
+            # should be identical for all of them -- we use the same Ruby
+            # every time. Instead we save one copy of it, but we make sure
+            # on each subsequent benchmark that it returned exactly the same
+            # metadata about the Ruby version.
+            bench_data["ruby_metadata"] = run_data.ruby_metadata if bench_data["ruby_metadata"].empty?
+            if bench_data["ruby_metadata"] != run_data.ruby_metadata
+                puts "Ruby metadata 1: #{bench_data["ruby_metadata"].inspect}"
+                puts "Ruby metadata 2: #{run_data.ruby_metadata.inspect}"
+                raise "Ruby metadata should not change across a single set of benchmark runs in the same Ruby config!"
             end
         end
 
-        # With error handlers, it's possible that every benchmark had an error so there's no data to return.
+        # With error handlers it's possible that every benchmark had an error so there's no data to return.
         return nil if bench_data["times"].empty?
 
         return bench_data
