@@ -157,7 +157,13 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-benchmark_list = ARGV
+extra_config_options = []
+if ENV["RUBY_CONFIG_OPTS"]
+    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
+elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
+    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
+    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
+end
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -214,17 +220,62 @@ unless skip_git_updates
     YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
 
+# This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
+# It needs to happen *after* yjit-bench is cloned and updated.
+benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: YJIT_BENCH_DIR
+
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
-all_runs = (0...num_runs).flat_map { |run_num| configs_to_test.map { |config| [ run_num, config ] } }
-all_runs = all_runs.sample(all_runs.size) # Randomise the order of the list of runs
+# Create an "all_runs" entry for every tested combination of config/benchmark/run-number, then randomize the order.
+all_runs = (0...num_runs).flat_map do |run_num|
+    configs_to_test.flat_map do |config|
+        benchmark_list.map do |bench_info|
+            [ run_num, config, bench_info ]
+        end
+    end
+end
+all_runs = all_runs.sample(all_runs.size)
 
-all_runs.each do |run_num, config|
+harness_settings = YJITMetrics::HarnessSettings.new({
+    warmup_itrs: warmup_itrs,
+    min_benchmark_itrs: min_bench_itrs,
+    min_benchmark_time: min_bench_time,
+})
+
+# We write out intermediate files, allowing us to free data belonging to
+# runs that have finished. That way if we do really massive runs, we're
+# not holding onto a lot of memory for their results.
+intermediate_by_config = {}
+configs_to_test.each { |config| intermediate_by_config[config] = [] }
+
+def write_crash_file(error_info, crash_report_dir)
+    exc = error_info[:exception]
+    bench = error_info[:benchmark_name]
+    ruby = error_info[:shell_settings][:chruby]
+
+    FileUtils.mkdir_p(crash_report_dir)
+
+    error_text_path = "#{crash_report_dir}/output.txt"
+    File.open(error_text_path, "w") do |f|
+        f.print "Error in benchmark #{bench.inspect} with Ruby #{ruby.inspect}...\n"
+        f.print "Exception #{exc.class}: #{exc.message}\n"
+        f.print exc.full_message  # Includes backtrace and any cause/nested errors
+
+        f.print "\n\n\nBenchmark harness information:\n\n"
+        pp error_info[:output], f
+        f.print "\n\n\nOutput of failing process:\n\n#{error_info[:output]}\n"
+    end
+
+    # Move any crash-related files into the crash report dir
+    error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
+end
+
+all_runs.each do |run_num, config, bench_info|
+    puts "Next run: config #{config}  benchmark: #{bench_info[:name]}    run idx: #{run_num}"
+
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
-
-    puts "Preparing to run benchmarks: #{benchmark_list.inspect} run: #{run_num.inspect} with config: #{config.inspect}"
 
     if num_runs > 1
         run_string = "%04d" % run_num + "_"
@@ -235,50 +286,30 @@ all_runs.each do |run_num, config|
     on_error = proc do |error_info|
         exc = error_info[:exception]
         bench = error_info[:benchmark_name]
-        coredump_pid = error_info[:worker_pid]
 
-        puts "Benchmark: #{bench}, Error: #{exc.class} / #{exc.message.inspect}"
+        puts "Exception in benchmark: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
 
         # If we get a runtime error, we're not going to record this run's data.
         if when_error != :ignore
             # Instead we'll record the fact that we got an error.
-
             crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
-            FileUtils.mkdir(crash_report_dir)
-
-            error_text_path = "#{crash_report_dir}/output.txt"
-            File.open(error_text_path, "w") do |f|
-                f.print "Error in benchmark #{bench}...\n"
-                f.print "Exception #{exc.class}: #{exc.message}\n"
-                f.print exc.full_message  # Includes backtrace and any cause/nested errors
-
-                f.print "\n\n\nBenchmark harness information:\n\n"
-                pp error_info[:output], f
-                f.print "\n\n\nOutput of failing process:\n\n#{error_info[:output]}\n"
-            end
-
-            # Move any crash-related files into the crash report dir
-            error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
+            write_crash_file(error_info, crash_report_dir)
         end
 
         # If we die on errors, raise or re-raise the exception.
         raise(exc) if when_error == :die
     end
 
-    yjit_results = YJITMetrics.run_benchmarks(
-        YJIT_BENCH_DIR,
-        TEMP_DATA_PATH,
-        with_chruby: ruby,
+    shell_settings = YJITMetrics::ShellSettings.new({
         ruby_opts: ruby_opts,
-        benchmark_list: benchmark_list,
-        warmup_itrs: warmup_itrs,
-        min_benchmark_itrs: min_bench_itrs,
-        min_benchmark_time: min_bench_time,
+        chruby: ruby,
         on_error: on_error,
-        enable_core_dumps: (when_error == :report ? true : false)
-        )
+        enable_core_dumps: (when_error == :report ? true : false),
+    })
 
-    if yjit_results.nil?
+    single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
+
+    if single_run_results.nil?
         if when_error == :die
             raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
         end
@@ -286,7 +317,22 @@ all_runs.each do |run_num, config|
         next
     end
 
-    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{run_string}#{config}.json"
+    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
     puts "Writing to JSON output file #{json_path}."
-    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(yjit_results) }
+    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
+
+    intermediate_by_config[config].push json_path
 end
+
+puts "All intermediate runs finished, merging to final files..."
+intermediate_by_config.each do |config, int_files|
+    run_data = int_files.map { |file| YJITMetrics::RunData.from_json JSON.load(File.read(file)) }
+    merged_data = YJITMetrics.merge_benchmark_data(run_data)
+    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
+    puts "Writing to JSON output file #{json_path}, removing intermediate files."
+    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(merged_data) }
+
+    int_files.each { |f| FileUtils.rm_f f }
+end
+
+puts "All done."

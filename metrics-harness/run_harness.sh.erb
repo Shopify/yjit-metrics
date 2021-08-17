@@ -9,13 +9,8 @@ if [[ -f /opt/dev/sh/chruby/chruby.sh ]]; then
   source /opt/dev/sh/chruby/chruby.sh
 fi
 
-<%= with_chruby ? "chruby #{with_chruby}" : "" %>
+<%= template_settings[:pre_benchmark_code] %>
 
-<%= pre_benchmark_code %>
+<%= template_settings[:env_var_exports] %>
 
-export OUT_JSON_PATH=<%= out_json_path %>
-export WARMUP_ITRS=<%= warmup_itrs %>
-export MIN_BENCH_ITRS=<%= min_benchmark_itrs %>
-export MIN_BENCH_TIME=<%= min_benchmark_time %>
-
-<%= per_os_shell_prelude.join(" ") %> ruby -I<%= HARNESS_PATH %> <%= ruby_opts.map { |s| '"' + s + '"' }.join(" ") %> <%= script_path %>
+ruby <%= template_settings[:ruby_opts] %> <%= template_settings[:script_path] %>

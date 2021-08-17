@@ -24,7 +24,10 @@ REPORT_OBJ_BY_NAME = {
     },
     "warmup" => proc { |config_names:, benchmarks: []|
         YJITMetrics::WarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    }
+    },
+    "total_to_iter" => proc { |config_names:, benchmarks: []|
+        YJITMetrics::TotalToIterReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
+    },
 }
 REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
 
