@@ -115,6 +115,10 @@ end
 
 # This is intended to match the exit report printed by debug YJIT when stats are turned on.
 class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
+    def self.report_name
+        "yjit_stats_default"
+    end
+
     def to_s
         # Bindings for use inside ERB report template
         stats = combined_stats_data_for_benchmarks(@benchmark_names)
@@ -191,6 +195,10 @@ end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
+    def self.report_name
+        "yjit_stats_multi"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super

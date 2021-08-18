@@ -1,6 +1,10 @@
 # This is intended to be a simple warmup report, showing how long it takes
 # one or more Ruby implementations to reach full performance, per-benchmark.
 class YJITMetrics::WarmupReport < YJITMetrics::Report
+    def self.report_name
+        "warmup"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         super
 
@@ -95,6 +99,10 @@ end
 # This is intended to show the total time taken to get to
 # a particular iteration, to help understand warmup
 class YJITMetrics::TotalToIterReport < YJITMetrics::Report
+    def self.report_name
+        "total_to_iter"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         super
 

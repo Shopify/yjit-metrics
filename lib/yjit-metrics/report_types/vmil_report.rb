@@ -30,6 +30,10 @@ end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
+    def self.report_name
+        "vmil_speed"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super
@@ -107,6 +111,10 @@ end
 
 # This report intends to compare YJIT warmup vs CRuby (no JIT) vs MJIT vs TruffleRuby
 class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
+    def self.report_name
+        "vmil_warmup"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super
