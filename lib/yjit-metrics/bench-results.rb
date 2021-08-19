@@ -85,7 +85,7 @@ class YJITMetrics::ResultSet
             stats_array.compact!
             next if stats_array.empty?
             @yjit_stats[config_name][benchmark_name] ||= []
-            @yjit_stats[config_name][benchmark_name].push(stats_array)
+            @yjit_stats[config_name][benchmark_name].concat(stats_array)
         end
 
         @benchmark_metadata[config_name] ||= {}
@@ -189,6 +189,16 @@ class YJITMetrics::ResultSet
             # each measurement in the run gets an array.
 
             # Even "non-stats" YJITs now have statistics, but not "full" statistics
+
+            # If stats is nil or empty, this isn't a full-yjit-stats config
+            if stats.nil? || stats.empty?
+                false
+            else
+                # For each benchmark, grab its array of runs
+                vals = stats.values
+
+                vals.all? { |run_values| }
+            end
 
             # Stats is a hash of the form { "30_ifelse" => [ { "all_stats" => true, "inline_code_size" => 5572282, ...}, {...} ], "30k_methods" => [ {}, {} ]}
             !stats.nil? &&
