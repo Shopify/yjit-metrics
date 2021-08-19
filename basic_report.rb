@@ -5,31 +5,10 @@ require "optparse"
 require_relative "lib/yjit-metrics"
 
 RESULT_SET = YJITMetrics::ResultSet.new
-# TODO: this can just be a name-to-class hash at this point
-REPORT_OBJ_BY_NAME = {
-    "per_bench_compare" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::PerBenchRubyComparison.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "yjit_stats_default" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::YJITStatsExitReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "yjit_stats_multi" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::YJITStatsMultiRubyReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "vmil_speed" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::VMILSpeedReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "vmil_warmup" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::VMILWarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "warmup" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::WarmupReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-    "total_to_iter" => proc { |config_names:, benchmarks: []|
-        YJITMetrics::TotalToIterReport.new(config_names, RESULT_SET, benchmarks: benchmarks)
-    },
-}
-REPORT_NAMES = REPORT_OBJ_BY_NAME.keys
+
+report_class_by_name = YJITMetrics::Report.report_name_hash
+# By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
+all_report_names = report_class_by_name.keys.sort
 
 # Default settings
 use_all_in_dir = false
@@ -48,10 +27,13 @@ OptionParser.new do |opts|
         use_all_in_dir = true
     end
 
-    opts.on("--reports=REPORTS", "Run these reports on the data (known reports: #{REPORT_NAMES.join(", ")})") do |str|
-        reports = str.split(",")
-        bad_names = reports - REPORT_NAMES
-        raise("Unknown reports: #{bad_names.inspect}! Known report types are: #{REPORT_NAMES.join(", ")}") unless bad_names.empty?
+    opts.on("--reports=REPORTS", "Run these reports on the data (known reports: #{all_report_names.join(", ")})") do |str|
+        report_strings = str.split(",")
+
+        # Just as OptionParser lets us abbreviate long arg names, we'll let the user abbreviate report names.
+        reports = report_strings.map { |report_string| all_report_names.detect { |name| name.start_with?(report_string) } }
+        bad_indices = reports.map.with_index { |entry, idx| entry.nil? ? idx : nil }.compact
+        raise("Unknown reports: #{bad_indices.map { |idx| report_strings[idx] }.inspect}! Known report types are: #{all_report_names.join(", ")}") unless bad_indices.empty?
     end
 
     opts.on("--benchmarks=BENCHNAMES", "Report only for benchmarks with names that match this/these comma-separated strings") do |benchnames|
@@ -125,7 +107,8 @@ end
 config_names = relevant_results.map { |_, config_name, _, _| config_name }.uniq
 
 reports.each do |report_name|
-    report = REPORT_OBJ_BY_NAME[report_name].call(config_names: config_names, benchmarks: only_benchmarks)
+    report_type = report_class_by_name[report_name]
+    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
     if report.respond_to?(:write_file)
         timestamp = Time.now.getgm.strftime('%F-%H%M%S')

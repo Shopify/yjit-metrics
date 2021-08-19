@@ -202,6 +202,27 @@ end
 class YJITMetrics::Report
     include YJITMetrics::Stats
 
+    def self.subclasses
+        @subclasses ||= []
+        @subclasses
+    end
+
+    def self.inherited(subclass)
+        YJITMetrics::Report.subclasses.push(subclass)
+    end
+
+    def self.report_name_hash
+        out = {}
+
+        @subclasses.select { |s| s.respond_to?(:report_name) }.each do |subclass|
+            name = subclass.report_name
+            raise "Duplicated report name: #{name.inspect}!" if out[name]
+            out[name] = subclass
+        end
+
+        out
+    end
+
     def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 

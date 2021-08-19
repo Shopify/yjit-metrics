@@ -6,6 +6,10 @@
 # The first configuration given is assumed to be the baseline against
 # which the other configs are measured.
 class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
+    def self.report_name
+        "per_bench_compare"
+    end
+
     def initialize(config_names, results, benchmarks: [])
         super
 
