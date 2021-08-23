@@ -12,7 +12,14 @@ class YJITMetrics::CompareReport < YJITMetrics::YJITStatsReport
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if no_jit
-        @truffle_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if truffle
+        @truffle_config    = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle") if truffle
+
+        @configs_with_human_names = [
+            ["YJIT", @with_yjit_config],
+            ["MJIT", @with_mjit_config],
+            ["No-JIT", @no_jit_config],
+            #["Truffle", @truffle_config],
+        ]
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
@@ -56,35 +63,57 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         # Sort benchmarks by compiled ISEQ count
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
-        # Report contents
         @headings = [ "bench", "YJIT (ms)", "YJIT RSD", "MJIT (ms)", "MJIT RSD", "No JIT (ms)", "No JIT RSD", "YJIT spd", "YJIT spd RSD", "MJIT spd", "MJIT spd RSD", "% in YJIT" ]
-        @col_formats = [ "%s" ] + [ "%.1f", "%.2f%%" ] * 3 + [ "%.2fx", "%.2f%%", "%.2fx", "%.2f%%", "%.2f%%" ]
 
-        @report_data = @benchmark_names.map do |benchmark_name|
+        @mean_by_config = {
+            @no_jit_config => [],
+            @with_mjit_config => [],
+            @with_yjit_config => [],
+            @truffle_config => [],
+        }
+        @rsd_by_config = {
+            @no_jit_config => [],
+            @with_mjit_config => [],
+            @with_yjit_config => [],
+            @truffle_config => [],
+        }
+        @yjit_speed = []
+        @mjit_speed = []
+        @yjit_ratio = []
+
+        @benchmark_names.each do |benchmark_name|
             no_jit_config_times = @times_by_config[@no_jit_config][benchmark_name]
             no_jit_mean = mean(no_jit_config_times)
+            @mean_by_config[@no_jit_config].push no_jit_mean
             no_jit_rel_stddev = rel_stddev(no_jit_config_times)
             no_jit_rel_stddev_pct = rel_stddev_pct(no_jit_config_times)
+            @rsd_by_config[@no_jit_config].push no_jit_rel_stddev_pct
 
             with_mjit_config_times = @times_by_config[@with_mjit_config][benchmark_name]
             with_mjit_mean = mean(with_mjit_config_times)
+            @mean_by_config[@with_mjit_config].push with_mjit_mean
             with_mjit_rel_stddev = rel_stddev(with_mjit_config_times)
             with_mjit_rel_stddev_pct = rel_stddev_pct(with_mjit_config_times)
+            @rsd_by_config[@with_mjit_config].push with_mjit_rel_stddev_pct
 
             with_yjit_config_times = @times_by_config[@with_yjit_config][benchmark_name]
             with_yjit_mean = mean(with_yjit_config_times)
+            @mean_by_config[@with_yjit_config].push with_yjit_mean
             with_yjit_rel_stddev = rel_stddev(with_yjit_config_times)
             with_yjit_rel_stddev_pct = rel_stddev_pct(with_yjit_config_times)
+            @rsd_by_config[@with_yjit_config].push with_yjit_rel_stddev_pct
 
             # Note: these are currently using the standard "how to propagate stddev over division" calc for stddev.
-            # We've talked about expressing them as multiples of no_jit_mean.
+            # We've talked about expressing them as multiples of no_jit_mean and not using stddev at all.
             mjit_speed_ratio = (no_jit_mean - with_mjit_mean) / no_jit_mean + 1
             mjit_speed_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_mjit_rel_stddev * with_mjit_rel_stddev))
             mjit_speed_rel_stddev_pct = mjit_speed_rel_stddev * 100.0
+            @mjit_speed.push [ mjit_speed_ratio, mjit_speed_rel_stddev_pct ]
 
             yjit_speed_ratio = (no_jit_mean - with_yjit_mean) / no_jit_mean + 1
             yjit_speed_rel_stddev = Math.sqrt((no_jit_rel_stddev * no_jit_rel_stddev) + (with_yjit_rel_stddev * with_yjit_rel_stddev))
             yjit_speed_rel_stddev_pct = yjit_speed_rel_stddev * 100.0
+            @yjit_speed.push [ yjit_speed_ratio, yjit_speed_rel_stddev_pct ]
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
             # For these calculations we just add all relevant counters together.
@@ -94,25 +123,46 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
             retired_in_yjit = this_bench_stats["exec_instruction"] - total_exits
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
+            @yjit_ratio.push yjit_ratio_pct
+        end
+    end
 
-            [ benchmark_name,
-                with_yjit_mean, with_yjit_rel_stddev_pct,
-                with_mjit_mean, with_mjit_rel_stddev_pct,
-                no_jit_mean, no_jit_rel_stddev_pct,
-                yjit_speed_ratio, yjit_speed_rel_stddev_pct,
-                mjit_speed_ratio, mjit_speed_rel_stddev_pct,
-                yjit_ratio_pct ]
+    def report_table_data
+        @benchmark_names.map.with_index do |bench_name, idx|
+            [ bench_name,
+                @mean_by_config[@with_yjit_config][idx], @rsd_by_config[@with_yjit_config][idx],
+                @mean_by_config[@with_mjit_config][idx], @rsd_by_config[@with_mjit_config][idx],
+                @mean_by_config[@no_jit_config][idx],    @rsd_by_config[@no_jit_config][idx],
+                *@yjit_speed[idx],
+                *@mjit_speed[idx],
+                @yjit_ratio[idx]
+            ]
         end
     end
 
     def to_s
-        format_as_table(@headings, @col_formats, @report_data) +
+        col_formats = [ "%s" ] + [ "%.1f", "%.2f%%" ] * 3 + [ "%.2fx", "%.2f%%", "%.2fx", "%.2f%%", "%.2f%%" ]
+
+        configs = @configs_with_human_names.map { |name, config| config }
+
+        format_as_table(@headings, col_formats, report_table_data) +
             "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n" +
             "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
     end
 
     def write_file(filename)
-        write_to_csv(filename + ".csv", [@headings] + @report_data)
+        # If we ever actually render a comparative report to file, we'll need victor for SVG output.
+        require "victor"
+
+        svg = Victor::SVG.new
+        # ...
+        @svg_body = svg.render(template: "minimal")
+
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/compare_speed.html.erb")
+        html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+
+        write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
 
 end
@@ -128,13 +178,6 @@ class YJITMetrics::CompareWarmupReport < YJITMetrics::CompareReport
         super
 
         look_up_data_by_ruby(in_runs: true, no_jit: true, truffle: false)
-
-        @configs_with_human_names = [
-            ["YJIT", @with_yjit_config],
-            ["MJIT", @with_mjit_config],
-            ["No-JIT", @no_jit_config],
-            #["Truffle", @truffle_config],
-        ]
 
         # For each "by_config" hash, if we look up a top-level key and it doesn't exist, default it to a new empty hash.
         @headings_by_config = Hash.new { {} }
