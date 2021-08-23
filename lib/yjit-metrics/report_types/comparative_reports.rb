@@ -154,9 +154,9 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         # If we ever actually render a comparative report to file, we'll need victor for SVG output.
         require "victor"
 
-        svg = Victor::SVG.new
+        svg = Victor::SVG.new template: :minimal
         # ...
-        @svg_body = svg.render(template: "minimal")
+        @svg_body = svg.render
 
         script_template = ERB.new File.read(__dir__ + "/../report_templates/compare_speed.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
