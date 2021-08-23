@@ -14,6 +14,8 @@ all_report_names = report_class_by_name.keys.sort
 use_all_in_dir = false
 reports = [ "per_bench_compare" ]
 data_dir = "data"
+output_dir = "."
+write_output_files = false
 only_benchmarks = []  # Empty list means use all benchmarks present in the data files
 
 OptionParser.new do |opts|
@@ -36,12 +38,20 @@ OptionParser.new do |opts|
         raise("Unknown reports: #{bad_indices.map { |idx| report_strings[idx] }.inspect}! Known report types are: #{all_report_names.join(", ")}") unless bad_indices.empty?
     end
 
-    opts.on("--benchmarks=BENCHNAMES", "Report only for benchmarks with names that match this/these comma-separated strings") do |benchnames|
+    opts.on("--benchmarks=BENCHNAMES", "Report only for benchmarks with names that match this/these comma-separated string(s)") do |benchnames|
         only_benchmarks = benchnames.split(",")
     end
 
     opts.on("-d DIR", "--dir DIR", "Read data files from this directory") do |dir|
         data_dir = dir
+    end
+
+    opts.on("-o DIR", "--output-dir DIR", "Directory for writing output files (default: current dir)") do |dir|
+        output_dir = dir
+    end
+
+    opts.on("-w", "--write-files", "Write out files, including HTML and CSV files, if supported by report type") do
+        write_output_files = true
     end
 end.parse!
 
@@ -110,10 +120,10 @@ reports.each do |report_name|
     report_type = report_class_by_name[report_name]
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
-    if report.respond_to?(:write_file)
+    if write_output_files && report.respond_to?(:write_file)
         timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
-        report.write_file("#{report_name}_#{timestamp}")
+        report.write_file("#{output_dir}/#{report_name}_#{timestamp}")
     end
 
     print report.to_s
