@@ -329,6 +329,12 @@ intermediate_by_config.each do |config, int_files|
     run_data = int_files.map { |file| YJITMetrics::RunData.from_json JSON.load(File.read(file)) }
     merged_data = YJITMetrics.merge_benchmark_data(run_data)
     next if merged_data.nil?  # No non-error results? Skip it.
+
+    # We should include how many runs we tried to do in each benchmark's metadata.
+    merged_data["benchmark_metadata"].each do |bench_name, metadata|
+        metadata["runs"] = num_runs
+    end
+
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
     puts "Writing to JSON output file #{json_path}, removing intermediate files."
     File.open(json_path, "w") { |f| f.write JSON.pretty_generate(merged_data) }
