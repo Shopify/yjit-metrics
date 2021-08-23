@@ -55,6 +55,9 @@ OptionParser.new do |opts|
     end
 end.parse!
 
+# Expand relative paths *before* we change into the data directory
+output_dir = File.expand_path(output_dir)
+
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
 # Return the information from the filename - run_num is nil if the file isn't in multi-run format
 def parse_dataset_filename(filename)
