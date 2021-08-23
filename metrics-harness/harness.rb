@@ -18,7 +18,7 @@ WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
 
 # Minimum benchmarking time in seconds
-MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_i
+MIN_BENCH_TIME = ENV.fetch('MIN_BENCH_TIME', 10).to_f
 
 TIMESTAMP = Time.now.getgm
 
