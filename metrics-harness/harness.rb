@@ -99,7 +99,6 @@ def run_benchmark(num_itrs_hint)
         warmup_itrs: WARMUP_ITRS,
         min_bench_itrs: MIN_BENCH_ITRS,
         min_bench_time: MIN_BENCH_TIME,
-        command_line: ARGV,
         env: out_env,
         loaded_gems: Gem.loaded_specs.map { |name, spec| [ name, spec.version.to_s ] },
     },
