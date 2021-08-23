@@ -77,8 +77,8 @@ RUBY_CONFIGS = {
         opts: [],
     },
     ruby_30_with_mjit: {
-        ruby: "ruby-3.0.2",
-        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
+        build: "ruby-3.0.2",
+        opts: [ "--jit --jit-max-cache=10000 --jit-min-calls=10" ],
         install: "ruby-install",
     },
     truffleruby: {
