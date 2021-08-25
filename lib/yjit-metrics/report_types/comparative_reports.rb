@@ -146,7 +146,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
     end
 
     # These will be assigned in order to each Ruby
-    RUBY_BAR_COLOURS = [ "blue", "orange", "green", "red" ]
+    RUBY_BAR_COLOURS = [ "#7070f8", "orange", "green", "red" ]
 
     def svg_object
         # If we render a comparative report to file, we need victor for SVG output.
@@ -168,6 +168,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
         plot_left_edge = left_axis_width
         plot_top_edge = top_whitespace
+        plot_bottom_edge = 1.0 - bottom_key_height
         plot_width = 1.0 - left_axis_width - right_whitespace
         plot_height = 1.0 - bottom_key_height - top_whitespace
 
@@ -202,20 +203,59 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
 
         # And some heights...
-        plot_top_whitespace = 0.05 * plot_height
+        plot_top_whitespace = 0.07 * plot_height
         plot_effective_top = plot_top_edge + plot_top_whitespace
         plot_effective_height = plot_height - plot_top_whitespace
 
 
+        # Add axis markers down the left side
+        tick_length = 0.008
+        font_size = "small"
+        # This is the largest power-of-10 multiple of the no-JIT mean that we'd see on the axis. Often it's 1 (ten to the zero.)
+        largest_power_of_10 = 10.0 ** Math.log10(max_speedup_ratio).to_i
+        # Let's get some nice even numbers for possible distances between ticks
+        candidate_division_values =
+            [ largest_power_of_10 * 5, largest_power_of_10 * 2, largest_power_of_10, largest_power_of_10 / 2, largest_power_of_10 / 5,
+                largest_power_of_10 / 10, largest_power_of_10 / 20 ]
+        # We'll try to show between about 4 and 10 ticks along the axis, at nice even-numbered spots.
+        division_value = candidate_division_values.detect do |div_value|
+            divs_shown = (max_speedup_ratio / div_value).to_i
+            divs_shown > 4 && divs_shown < 10
+        end
+        division_ratio_per_value = plot_effective_height / max_speedup_ratio
+
+        # Now find all the tick locations
+        divisions = []
+        cur_div = 0.0
+        loop do
+            divisions.push cur_div
+            cur_div += division_value
+            break if cur_div > max_speedup_ratio
+        end
+
+        divisions.each do |div_value|
+            tick_distance_from_zero = div_value / max_speedup_ratio
+            tick_y = plot_effective_top + (1.0 - tick_distance_from_zero) * plot_effective_height
+            svg.line x1: to_pct(plot_left_edge - tick_length), y1: to_pct(tick_y),
+                x2: to_pct(plot_left_edge), y2: to_pct(tick_y),
+                stroke: axis_colour
+            svg.text ("%.1f" % div_value),
+                x: to_pct(plot_left_edge - 3 * tick_length), y: to_pct(tick_y),
+                text_anchor: "end",
+                font_weight: "bold",
+                font_size: font_size,
+                fill: text_colour
+        end
+
         # Set up the top legend with coloured boxes and Ruby config names
-        top_legend_box_height = 0.04
+        top_legend_box_height = 0.03
         top_legend_box_width = 0.08
-        top_legend_text_height = 0.03
+        top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
         top_legend_item_width = plot_effective_width / n_configs
         n_configs.times do |config_idx|
             item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
-            item_center_y = plot_effective_top + 0.025
+            item_center_y = plot_top_edge + 0.025
             svg.rect \
                 x: to_pct(item_center_x - 0.5 * top_legend_box_width),
                 y: to_pct(item_center_y - 0.5 * top_legend_box_height),
@@ -225,7 +265,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                 stroke: legend_box_stroke_colour
             svg.text @configs_with_human_names[config_idx][0],
                 x: to_pct(item_center_x), y: to_pct(item_center_y + 0.5 * top_legend_text_height),
-                height: top_legend_text_height,
+                font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
                 fill: text_colour
@@ -253,6 +293,21 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                     height: to_pct(bar_height_ratio * plot_effective_height),
                     fill: ruby_config_bar_colour[config]
             end
+
+            # Below all the bars, we'll want a tick on the bottom axis and a name of the benchmark
+            bars_width_middle = bars_width_start + 0.5 * each_bench_width
+            svg.line x1: to_pct(bars_width_middle), y1: to_pct(plot_bottom_edge),
+                x2: to_pct(bars_width_middle), y2: to_pct(plot_bottom_edge + tick_length),
+                stroke: axis_colour
+
+            text_end_x = bars_width_middle
+            text_end_y = plot_bottom_edge + tick_length * 3
+            svg.text bench_name,
+                x: to_pct(text_end_x), y: to_pct(text_end_y),
+                fill: text_colour,
+                font_size: font_size,
+                font_weight: "bold",
+                text_anchor: "end"
         end
 
         svg
