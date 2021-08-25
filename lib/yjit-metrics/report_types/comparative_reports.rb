@@ -12,14 +12,14 @@ class YJITMetrics::CompareReport < YJITMetrics::YJITStatsReport
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT") if no_jit
-        @truffle_config    = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle") if truffle
+        @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle") if truffle
 
         @configs_with_human_names = [
             ["YJIT", @with_yjit_config],
             ["MJIT", @with_mjit_config],
-            ["No-JIT", @no_jit_config],
-            ["Truffle", @truffle_config],
         ]
+        @configs_with_human_names.push(["Truffle", @truffle_config]) if truffle
+        @configs_with_human_names.push(["No JIT", @no_jit_config]) if no_jit
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
@@ -63,15 +63,15 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         # Sort benchmarks by compiled ISEQ count
         @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
 
-        @headings = [ "bench",
-            "YJIT (ms)", "YJIT RSD", "MJIT (ms)", "MJIT RSD", "No JIT (ms)", "No JIT RSD",
-            "YJIT spd", "YJIT spd RSD", "MJIT spd", "MJIT spd RSD",
-            "% in YJIT" ]
+        @headings = [ "bench" ] +
+            @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
+            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
+            [ "% in YJIT" ]
         # Col formats are only used when formatting a text table, not for HTML or CSV
-        @col_formats = [ "%s" ] +        # Benchmark name
-            [ "%.1f", "%.2f%%" ] * 3 +   # Mean and RSD per-Ruby
-            [ "%.2fx", "%.2f%%" ] * 2 +  # Speedups
-            [ "%.2f%%" ]                 # YJIT ratio
+        @col_formats = [ "%s" ] +                                           # Benchmark name
+            [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
+            [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
+            [ "%.2f%%" ]                                                    # YJIT ratio
 
         @mean_by_config = {
             @no_jit_config => [],
@@ -108,7 +108,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
                 this_config_mean = @mean_by_config[config][-1]
                 this_config_rel_stddev = @rsd_by_config[config][-1]
-                speed_ratio = (no_jit_mean - this_config_mean) / no_jit_mean + 1
+                speed_ratio = no_jit_mean / this_config_mean
                 speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
                 @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev ]
             end
@@ -127,20 +127,14 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
     def report_table_data
         @benchmark_names.map.with_index do |bench_name, idx|
-            [ bench_name,
-                @mean_by_config[@with_yjit_config][idx], @rsd_by_config[@with_yjit_config][idx],
-                @mean_by_config[@with_mjit_config][idx], @rsd_by_config[@with_mjit_config][idx],
-                @mean_by_config[@no_jit_config][idx],    @rsd_by_config[@no_jit_config][idx],
-                *@speedup_by_config[@with_yjit_config][idx],
-                *@speedup_by_config[@with_mjit_config][idx],
-                @yjit_ratio[idx]
-            ]
+            [ bench_name ] +
+                @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_by_config[config][idx] ] } +
+                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @speedup_by_config[config][idx] } +
+                [ @yjit_ratio[idx] ]
         end
     end
 
     def to_s
-        configs = @configs_with_human_names.map { |name, config| config }
-
         format_as_table(@headings, @col_formats, report_table_data) +
             "\nRSD is relative standard deviation (stddev / mean), expressed as a percent.\n" +
             "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
