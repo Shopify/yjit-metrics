@@ -156,6 +156,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
         axis_colour = "#000"
         background_colour = "#EEE"
+        text_colour = "#111"
 
         # Reserve the left 15% of the width for the axis scale numbers. Right 5% is whitespace.
         left_axis_width = 0.15
@@ -191,7 +192,9 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         # Within each benchmark's horizontal span we'll want 3 or 4 bars plus a bit of whitespace.
         # And we'll reserve 5% of the plot's width for whitespace on the far left and again on the far right.
         plot_padding_ratio = 0.05
-        each_bench_width = (plot_width * (1.0 - 2 * plot_padding_ratio)) / n_benchmarks
+        plot_effective_width = plot_width * (1.0 - 2 * plot_padding_ratio)
+        plot_effective_left = plot_left_edge + plot_width * plot_padding_ratio
+        each_bench_width = plot_effective_width / n_benchmarks
         bar_width = each_bench_width / (n_configs + 1)
 
         first_bench_left_edge = plot_left_edge + (plot_width * plot_padding_ratio)
@@ -202,6 +205,31 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         plot_top_whitespace = 0.05 * plot_height
         plot_effective_top = plot_top_edge + plot_top_whitespace
         plot_effective_height = plot_height - plot_top_whitespace
+
+
+        # Set up the top legend with coloured boxes and Ruby config names
+        top_legend_box_height = 0.04
+        top_legend_box_width = 0.08
+        top_legend_text_height = 0.03
+        legend_box_stroke_colour = "#888"
+        top_legend_item_width = plot_effective_width / n_configs
+        n_configs.times do |config_idx|
+            item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
+            item_center_y = plot_effective_top + 0.025
+            svg.rect \
+                x: to_pct(item_center_x - 0.5 * top_legend_box_width),
+                y: to_pct(item_center_y - 0.5 * top_legend_box_height),
+                width: to_pct(top_legend_box_width),
+                height: to_pct(top_legend_box_height),
+                fill: ruby_config_bar_colour[ruby_configs[config_idx]],
+                stroke: legend_box_stroke_colour
+            svg.text @configs_with_human_names[config_idx][0],
+                x: to_pct(item_center_x), y: to_pct(item_center_y + 0.5 * top_legend_text_height),
+                height: top_legend_text_height,
+                text_anchor: "middle",
+                font_weight: "bold",
+                fill: text_colour
+        end
 
 
         # Okay. Now let's plot a lot of boxes and whiskers.
