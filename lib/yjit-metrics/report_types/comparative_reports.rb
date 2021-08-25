@@ -141,8 +141,12 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
             "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
     end
 
-    def to_pct(ratio)
-        (ratio * 100.0).to_s + "%"
+    def ratio_to_x(ratio)
+        (ratio * 1000).to_s
+    end
+
+    def ratio_to_y(ratio)
+        (ratio * 600.0).to_s
     end
 
     # These will be assigned in order to each Ruby
@@ -152,7 +156,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         # If we render a comparative report to file, we need victor for SVG output.
         require "victor"
 
-        svg = Victor::SVG.new template: :minimal, style: { }  # background: '#ddd'
+        svg = Victor::SVG.new template: :minimal, viewbox: "0 0 1000 600", style: { }  # background: '#ddd'
 
         axis_colour = "#000"
         background_colour = "#EEE"
@@ -172,8 +176,8 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         plot_width = 1.0 - left_axis_width - right_whitespace
         plot_height = 1.0 - bottom_key_height - top_whitespace
 
-        svg.rect x: to_pct(plot_left_edge), y: to_pct(plot_top_edge),
-            width: to_pct(plot_width), height: to_pct(plot_height),
+        svg.rect x: ratio_to_x(plot_left_edge), y: ratio_to_y(plot_top_edge),
+            width: ratio_to_x(plot_width), height: ratio_to_y(plot_height),
             stroke: axis_colour, fill: background_colour
 
 
@@ -236,11 +240,11 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         divisions.each do |div_value|
             tick_distance_from_zero = div_value / max_speedup_ratio
             tick_y = plot_effective_top + (1.0 - tick_distance_from_zero) * plot_effective_height
-            svg.line x1: to_pct(plot_left_edge - tick_length), y1: to_pct(tick_y),
-                x2: to_pct(plot_left_edge), y2: to_pct(tick_y),
+            svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
+                x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
                 stroke: axis_colour
             svg.text ("%.1f" % div_value),
-                x: to_pct(plot_left_edge - 3 * tick_length), y: to_pct(tick_y),
+                x: ratio_to_x(plot_left_edge - 3 * tick_length), y: ratio_to_y(tick_y),
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
@@ -257,14 +261,14 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
             item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
             item_center_y = plot_top_edge + 0.025
             svg.rect \
-                x: to_pct(item_center_x - 0.5 * top_legend_box_width),
-                y: to_pct(item_center_y - 0.5 * top_legend_box_height),
-                width: to_pct(top_legend_box_width),
-                height: to_pct(top_legend_box_height),
+                x: ratio_to_x(item_center_x - 0.5 * top_legend_box_width),
+                y: ratio_to_y(item_center_y - 0.5 * top_legend_box_height),
+                width: ratio_to_x(top_legend_box_width),
+                height: ratio_to_y(top_legend_box_height),
                 fill: ruby_config_bar_colour[ruby_configs[config_idx]],
                 stroke: legend_box_stroke_colour
             svg.text @configs_with_human_names[config_idx][0],
-                x: to_pct(item_center_x), y: to_pct(item_center_y + 0.5 * top_legend_text_height),
+                x: ratio_to_x(item_center_x), y: ratio_to_y(item_center_y + 0.5 * top_legend_text_height),
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
@@ -287,27 +291,28 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                 bar_height_ratio = speedup / max_speedup_ratio;
 
                 svg.rect \
-                    x: to_pct(bars_width_start + config_idx * bar_width),
-                    y: to_pct(plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height),
-                    width: to_pct(bar_width),
-                    height: to_pct(bar_height_ratio * plot_effective_height),
+                    x: ratio_to_x(bars_width_start + config_idx * bar_width),
+                    y: ratio_to_y(plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height),
+                    width: ratio_to_x(bar_width),
+                    height: ratio_to_y(bar_height_ratio * plot_effective_height),
                     fill: ruby_config_bar_colour[config]
             end
 
             # Below all the bars, we'll want a tick on the bottom axis and a name of the benchmark
             bars_width_middle = bars_width_start + 0.5 * each_bench_width
-            svg.line x1: to_pct(bars_width_middle), y1: to_pct(plot_bottom_edge),
-                x2: to_pct(bars_width_middle), y2: to_pct(plot_bottom_edge + tick_length),
+            svg.line x1: ratio_to_x(bars_width_middle), y1: ratio_to_y(plot_bottom_edge),
+                x2: ratio_to_x(bars_width_middle), y2: ratio_to_y(plot_bottom_edge + tick_length),
                 stroke: axis_colour
 
             text_end_x = bars_width_middle
             text_end_y = plot_bottom_edge + tick_length * 3
             svg.text bench_name,
-                x: to_pct(text_end_x), y: to_pct(text_end_y),
+                x: ratio_to_x(text_end_x), y: ratio_to_y(text_end_y),
                 fill: text_colour,
                 font_size: font_size,
                 font_weight: "bold",
-                text_anchor: "end"
+                text_anchor: "end",
+                transform: "rotate(-90, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
         end
 
         svg
