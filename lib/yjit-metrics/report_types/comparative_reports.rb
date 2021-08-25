@@ -312,7 +312,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                 font_size: font_size,
                 font_weight: "bold",
                 text_anchor: "end",
-                transform: "rotate(-90, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
+                transform: "rotate(-60, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
         end
 
         svg
