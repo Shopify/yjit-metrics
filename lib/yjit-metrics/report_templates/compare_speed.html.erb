@@ -1,6 +1,12 @@
-<!-- HTML headers? Probably not. We want maximum cut-and-paste potential and browsers do well even without them. -->
+<!-- HTML header tags? Probably not. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
-<div>
+<h2>YJIT Benchmark Speed Comparison</h2>
+
+<div style="width: 95%; height: 600px;">
+  <%= @svg.render %>
 </div>
 
-<%= @svg_body %>
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
+</p>
