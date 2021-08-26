@@ -62,7 +62,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
         end
 
         # Sort benchmarks by compiled ISEQ count
-        @benchmark_names.sort_by! { |bench_name| @yjit_stats[bench_name][0]["compiled_iseq_count"] }
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"]] }
 
         @headings = [ "bench" ] +
             @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
@@ -306,10 +306,11 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
             text_end_x = bars_width_middle
             text_end_y = plot_bottom_edge + tick_length * 3
-            svg.text bench_name,
+            svg.text bench_name.gsub(/\.rb$/, ""),
                 x: ratio_to_x(text_end_x), y: ratio_to_y(text_end_y),
                 fill: text_colour,
                 font_size: font_size,
+                font_family: "monospace",
                 font_weight: "bold",
                 text_anchor: "end",
                 transform: "rotate(-60, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
