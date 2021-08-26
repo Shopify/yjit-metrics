@@ -82,7 +82,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
             @with_yjit_config => [],
             @truffle_config => [],
         }
-        @rsd_by_config = {
+        @rsd_pct_by_config = {
             @no_jit_config => [],
             @with_mjit_config => [],
             @with_yjit_config => [],
@@ -101,19 +101,21 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                 this_config_mean = mean(this_config_times)
                 @mean_by_config[config].push this_config_mean
                 this_config_rel_stddev_pct = rel_stddev_pct(this_config_times)
-                @rsd_by_config[config].push this_config_rel_stddev_pct
+                @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
 
             no_jit_mean = @mean_by_config[@no_jit_config][-1] # Last pushed -- the one for this benchmark
-            no_jit_rel_stddev = @rsd_by_config[@no_jit_config][-1]
+            no_jit_rel_stddev_pct = @rsd_pct_by_config[@no_jit_config][-1]
+            no_jit_rel_stddev = no_jit_rel_stddev_pct / 100.0  # Get ratio, not percent
             @configs_with_human_names.each do |name, config|
                 next if config == @no_jit_config
 
                 this_config_mean = @mean_by_config[config][-1]
-                this_config_rel_stddev = @rsd_by_config[config][-1]
+                this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
+                this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
                 speed_ratio = this_config_mean / no_jit_mean
                 speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
-                @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev ]
+                @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
             end
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
@@ -131,7 +133,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
     def report_table_data
         @benchmark_names.map.with_index do |bench_name, idx|
             [ bench_name ] +
-                @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_by_config[config][idx] ] } +
+                @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_pct_by_config[config][idx] ] } +
                 @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @speedup_by_config[config][idx] } +
                 [ @yjit_ratio[idx] ]
         end
@@ -286,14 +288,15 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
             ruby_configs.each.with_index do |config, config_idx|
                 if config == @no_jit_config
                     speedup = 1.0 # No-JIT is always exactly 1x No-JIT
-                    rsd = @rsd_by_config[@no_jit_config][bench_idx]
+                    rsd_pct = @rsd_pct_by_config[@no_jit_config][bench_idx]
                 else
-                    speedup, rsd = @speedup_by_config[config][bench_idx]
+                    speedup, rsd_pct = @speedup_by_config[config][bench_idx]
                 end
+                rsd_ratio = rsd_pct / 100.0
                 bar_height_ratio = speedup / max_speedup_ratio
 
                 # The calculated number is rel stddev and is scaled by bar height.
-                stddev_ratio = bar_height_ratio * rsd
+                stddev_ratio = bar_height_ratio * rsd_ratio
 
                 bar_left = bars_width_start + config_idx * bar_width
                 bar_right = bar_left + bar_width
