@@ -24,8 +24,10 @@ class YJITMetrics::CompareReport < YJITMetrics::YJITStatsReport
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
+        @ruby_metadata_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config, @truffle_config ].compact.each do|config|
             @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
+            @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
         end
         @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
@@ -288,14 +290,34 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
                 else
                     speedup, rsd = @speedup_by_config[config][bench_idx]
                 end
-                bar_height_ratio = speedup / max_speedup_ratio;
+                bar_height_ratio = speedup / max_speedup_ratio
 
+                # The calculated number is rel stddev and is scaled by bar height.
+                stddev_ratio = bar_height_ratio * rsd
+
+                bar_left = bars_width_start + config_idx * bar_width
+                bar_right = bar_left + bar_width
+                bar_lr_center = bar_left + 0.5 * bar_width
+                bar_top = plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height
                 svg.rect \
-                    x: ratio_to_x(bars_width_start + config_idx * bar_width),
-                    y: ratio_to_y(plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height),
+                    x: ratio_to_x(bar_left),
+                    y: ratio_to_y(bar_top),
                     width: ratio_to_x(bar_width),
                     height: ratio_to_y(bar_height_ratio * plot_effective_height),
                     fill: ruby_config_bar_colour[config]
+
+                # Whiskers should be centered around the top of the bar, at a distance of one stddev.
+                top_whisker_y = bar_top - stddev_ratio * plot_effective_height
+                svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
+                    x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
+                    stroke: axis_colour
+                bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
+                svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
+                    x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
+                    stroke: axis_colour
+                svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
+                    x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
+                    stroke: axis_colour
             end
 
             # Below all the bars, we'll want a tick on the bottom axis and a name of the benchmark
