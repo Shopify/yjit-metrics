@@ -63,8 +63,21 @@ class YJITMetrics::ResultSet
     # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
     # assumed to be constant for a specific compiled copy of Ruby over all runs.
     def add_for_config(config_name, benchmark_results)
-        if benchmark_results["version"] != 2
-            raise "Getting data from older version-1 data file or JSON in bad format!"
+        if !benchmark_results.has_key?("version")
+            puts "No version entry in benchmark results - falling back to version 1 file format."
+
+            benchmark_results["times"].keys.each do |benchmark_name|
+                # v1 JSON files are always single-run, so wrap them in a one-element array.
+                benchmark_results["times"][benchmark_name] = [ benchmark_results["times"][benchmark_name] ]
+                benchmark_results["warmups"][benchmark_name] = [ benchmark_results["warmups"][benchmark_name] ]
+                benchmark_results["yjit_stats"][benchmark_name] = [ benchmark_results["yjit_stats"][benchmark_name] ]
+
+                # Various metadata is still in the same format for v2.
+            end
+        elsif benchmark_results["version"] != 2
+            raise "Getting data from JSON in bad format!"
+        else
+            # JSON file is marked as version 2, so all's well.
         end
 
         @times[config_name] ||= {}
@@ -201,9 +214,10 @@ class YJITMetrics::ResultSet
             end
 
             # Stats is a hash of the form { "30_ifelse" => [ { "all_stats" => true, "inline_code_size" => 5572282, ...}, {...} ], "30k_methods" => [ {}, {} ]}
+            # We want to make sure every run has an all_stats hash key.
             !stats.nil? &&
                 !stats.empty? &&
-                !stats.values.all? { |val| val[0][0]["all_stats"].nil? }
+                !stats.values.all? { |val| val.nil? || val[0].nil? || val[0][0].nil? || val[0][0]["all_stats"].nil? }
         end
     end
 end
