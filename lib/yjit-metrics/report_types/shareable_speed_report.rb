@@ -1,6 +1,6 @@
 require_relative "yjit_stats_reports"
 
-class YJITMetrics::CompareReport < YJITMetrics::YJITStatsReport
+class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
     def exactly_one_config_with_name(configs, substring, description)
         matching_configs = configs.select { |name| name.include?(substring) }
         raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
@@ -47,9 +47,9 @@ class YJITMetrics::CompareReport < YJITMetrics::YJITStatsReport
 end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
-class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
+class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
     def self.report_name
-        "compare_speed"
+        "share_speed"
     end
 
     def initialize(config_names, results, benchmarks: [])
@@ -349,7 +349,7 @@ class YJITMetrics::CompareSpeedReport < YJITMetrics::CompareReport
 
         @svg = svg_object
 
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/compare_speed.html.erb")
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/shareable_speed.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
 
