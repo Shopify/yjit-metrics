@@ -105,6 +105,7 @@ if relevant_results.size == 0
     exit -1
 end
 
+latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 relevant_results.each do |filename, config_name, timestamp, run_num|
@@ -124,9 +125,7 @@ reports.each do |report_name|
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
     if write_output_files && report.respond_to?(:write_file)
-        timestamp = Time.now.getgm.strftime('%F-%H%M%S')
-
-        report.write_file("#{output_dir}/#{report_name}_#{timestamp}")
+        report.write_file("#{output_dir}/#{report_name}_#{latest_ts}")
     end
 
     print report.to_s
