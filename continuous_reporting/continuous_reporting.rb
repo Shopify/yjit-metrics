@@ -6,7 +6,7 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-# Fun subtlety: this repo is currently not public, so we need a token or something to pull or clone it.
+# Slight subtlety: this repo is currently not public, so we need a token to pull or clone it.
 raise "Please set YJIT_METRICS_GITHUB_TOKEN to an appropriate GitHub token!" unless ENV["YJIT_METRICS_GITHUB_TOKEN"]
 GITHUB_TOKEN = ENV["YJIT_METRICS_GITHUB_TOKEN"].chomp
 YJIT_METRICS_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
@@ -46,37 +46,50 @@ Dir.chdir(YJIT_METRICS_DIR)
 starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 
 # Turn JSON files into reports where outdated - first, find out what test results we have
+json_timestamps = {}
+Dir["*_basic_benchmark_*.json", base: "reports"].each do |filename|
+    unless filename =~ /^(.*)_basic_benchmark_/
+        raise "Problem parsing test-result filename #{filename.inspect}!"
+    end
+    ts = $1
+    json_timestamps[ts] ||= []
+    json_timestamps[ts] << filename
+end
+
 report_timestamps = {}
-Dir.chdir(YJIT_METRICS_DIR) do
-    Dir["*_basic_benchmark_*.json", base: "reports"].each do |filename|
-        unless filename =~ /^(.*)_basic_benchmark_/
-            raise "Problem parsing filename #{filename.inspect}!"
-        end
-        ts = $1
-        report_timestamps[ts] ||= []
-        report_timestamps[ts] << filename
+Dir["share_speed_*.html", base: "reports"].each do |filename|
+    unless filename =~ /share_speed_(.*)\.html$/
+        raise "Problem parsing report filename #{filename.inspect}!"
+    end
+
+    ts = $1
+    report_timestamps[ts] ||= []
+    report_timestamps[ts] << filename
+end
+
+# For now we only have one kind of report (share_speed), and we check for that.
+json_timestamps.each do |ts, test_files|
+    if report_timestamps[ts] && !report_timestamps[ts].empty?
+        # Great! We *should* have this report, and we *do* have this report.
+    else
+        report_files = test_files.map { |f| "reports/#{t}" }
+        puts "Running basic_report for timestamp #{ts} with data files #{report_files.inspect}"
+        YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=share_speed -w #{report_files.join(" ")}")
     end
 end
 
-# TODO: Rebuild higher-level index files
+# TODO: Rebuild higher-level index files - or do we do this in Jekyll?
 
 # Make sure it builds locally
-Dir.chdir(YJIT_METRICS_DIR) do
-    YJITMetrics.check_call "bundle"  # Make sure all gems are installed
-    YJITMetrics.check_call "bundle exec jekyll build"
-end
-
+YJITMetrics.check_call "bundle"  # Make sure all gems are installed
+YJITMetrics.check_call "bundle exec jekyll build"
 puts "Jekyll seems to build correctly. That means that GHPages should do the right thing on push."
 
-# Check in new tests and report files
-Dir.chdir(YJIT_METRICS_DIR) do
-    diffs = (YJITMetrics.check_output "git status --porcelain").chomp
-
-    # Only commit if there is something to commit
-    unless diffs == ""
-        YJITMetrics.check_call "git add reports"
-        YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
-    end
+# Commit if there is something to commit
+diffs = (YJITMetrics.check_output "git status --porcelain").chomp
+unless diffs == ""
+    YJITMetrics.check_call "git add reports"
+    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
 end
 
 # Push all the new files (if any) to GitHub Pages
