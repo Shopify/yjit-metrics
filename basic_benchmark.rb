@@ -94,7 +94,7 @@ DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchm
 DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
 # Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
+YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
