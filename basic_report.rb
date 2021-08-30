@@ -21,7 +21,7 @@ only_benchmarks = []  # Empty list means use all benchmarks present in the data 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
       Usage: basic_report.rb [options] [<filenames>]
-        Reports available: per_bench_ruby_compare, yjit_stats_default
+        Reports available: #{all_report_names.join(", ")}
         If no files are specified, report on all results that have the latest timestamp.
     BANNER
 
