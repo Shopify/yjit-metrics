@@ -125,7 +125,8 @@ reports.each do |report_name|
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
     if write_output_files && report.respond_to?(:write_file)
-        report.write_file("#{output_dir}/#{report_name}_#{latest_ts}")
+        ts_str = latest_ts.strftime('%F-%H%M%S')
+        report.write_file("#{output_dir}/#{report_name}_#{ts_str}")
     end
 
     print report.to_s

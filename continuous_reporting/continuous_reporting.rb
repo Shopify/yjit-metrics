@@ -22,7 +22,7 @@ OptionParser.new do |opts|
         Currently-known data will be indexed and git-pushed.
     BANNER
 
-    opts.on("-d", "Data dir for copying data and report files (may be specified multiple times)") do |dir|
+    opts.on("-d DIR", "Data dir for copying data and report files (may be specified multiple times)") do |dir|
         copy_from << dir
     end
 end.parse!
@@ -72,9 +72,14 @@ json_timestamps.each do |ts, test_files|
     if report_timestamps[ts] && !report_timestamps[ts].empty?
         # Great! We *should* have this report, and we *do* have this report.
     else
-        report_files = test_files.map { |f| "reports/#{t}" }
+        report_files = test_files.map { |f| "reports/#{f}" }
         puts "Running basic_report for timestamp #{ts} with data files #{report_files.inspect}"
-        YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=share_speed -w #{report_files.join(" ")}")
+        YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=share_speed -o reports -w #{report_files.join(" ")}")
+
+        report_filename = "reports/share_speed_#{ts}.html"
+        unless File.exist?(report_filename)
+            raise "We tried to create the report #{report_filename} but failed! No process error, but the file didn't appear."
+        end
     end
 end
 
