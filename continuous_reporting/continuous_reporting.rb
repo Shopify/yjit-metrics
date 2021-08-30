@@ -16,6 +16,7 @@ YJIT_METRICS_PAGES_BRANCH = "pages"
 
 copy_from = []
 no_push = false
+regenerate_reports = false
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -30,6 +31,10 @@ OptionParser.new do |opts|
 
     opts.on("-n", "--no-push", "Don't push the new Git commit, just create it locally") do
         no_push = true
+    end
+
+    opts.on("-r", "--regenerate-reports", "Don't use existing reports, generate them again") do
+        regenerate_reports = true
     end
 end.parse!
 
@@ -46,8 +51,10 @@ copy_from.each do |dir_to_copy|
 
         Dir["*.html"].each do |filename|
             FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "reports/#{filename}"))
-            includes_path = File.join(YJIT_METRICS_DIR, "_includes/share_speed/#{filename}")
-            FileUtils.ln_s(filename, includes_path) unless File.exist?(includes_path)
+        end
+
+        Dir["*.svg"].each do |filename|
+            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "reports/#{filename}"))
         end
     end
 end
@@ -82,7 +89,7 @@ end
 # For now we only have one kind of report (share_speed), and we check for that.
 json_timestamps.each do |ts, test_files|
     # If the HTML report doesn't already exist, build it.
-    unless report_timestamps[ts] && !report_timestamps[ts].empty?
+    if regenerate_reports || !report_timestamps[ts] || report_timestamps[ts].empty?
         report_files = test_files.map { |f| "reports/#{f}" }
         puts "Running basic_report for timestamp #{ts} with data files #{report_files.inspect}"
         YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=share_speed -o reports -w #{report_files.join(" ")}")
@@ -91,8 +98,6 @@ json_timestamps.each do |ts, test_files|
         unless File.exist?(report_filename)
             raise "We tried to create the report #{report_filename} but failed! No process error, but the file didn't appear."
         end
-
-        FileUtils.ln_s(report_filename, "_includes/share_speed/share_speed_#{ts}.html")
 
         report_timestamps[ts] ||= []
         report_timestamps[ts].push report_filename
@@ -114,8 +119,8 @@ json_timestamps.each do |ts, test_files|
         "timestamp" => ts,
         "test_results" => test_results_by_config,
         "reports" => {
-            "share_speed" => "reports/share_speed_#{ts}.html",
-            "include_share_speed" => "_includes/share_speed/share_speed_#{ts}.html"
+            "share_speed"             => "reports/share_speed_#{ts}.html",
+            "share_speed_svg"         => "reports/share_speed_#{ts}.svg",
         }
     }
     File.open("_benchmarks/bench_#{ts}.md", "w") do |f|
