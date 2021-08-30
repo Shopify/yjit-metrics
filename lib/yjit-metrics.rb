@@ -340,7 +340,7 @@ module YJITMetrics
         script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
         # These are used in the ERB template
         template_settings = {
-            pre_benchmark_code: (with_chruby ? "chruby #{with_chruby}" : "") + " " +
+            pre_benchmark_code: (with_chruby ? "chruby #{with_chruby}" : "") + "\n" +
                 (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
             env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
             ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
@@ -437,7 +437,7 @@ module YJITMetrics
             bench_data["times"][bench_name].push run_data.times_ms
             bench_data["warmups"][bench_name].push run_data.warmups_ms
 
-            bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats]
+            bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats] if run_data.yjit_stats
             bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
 
             # Benchmark metadata should be unique per-benchmark. In other words,
