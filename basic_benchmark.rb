@@ -157,14 +157,6 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-extra_config_options = []
-if ENV["RUBY_CONFIG_OPTS"]
-    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
-elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
-    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
-end
-
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
 
