@@ -13,13 +13,14 @@ Dir.chdir("#{__dir__}/..") do
         old_data_files.each { |f| FileUtils.rm f }
     end
     #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=100 --min-bench-time=0.01 --min-bench-itrs=500 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
+
+    # This is a much faster set of tests; TODO: switch to the slow, complete tests
     YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=0.01 --min-bench-itrs=50 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/ activerecord respond_to fib getivar lee"
 end
 
 Dir.chdir __dir__ do
-    # TODO: remove --no-push
-    YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push"
-    # The generate/upload script will handle running reports.
+    # This runs reports and uploads the results
+    YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data"
 
     old_data_files = Dir["continuous_reporting/data/*"].to_a
     unless old_data_files.empty?
