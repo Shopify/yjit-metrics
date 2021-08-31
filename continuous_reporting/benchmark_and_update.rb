@@ -27,7 +27,7 @@ def run_benchmarks
         end
 
         # This is a much faster set of tests, more suitable for quick testing
-        #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=0.01 --min-bench-itrs=50 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/ activerecord respond_to fib getivar lee"
+        #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=5 --min-bench-time=30.0 --min-bench-itrs=10 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/ activerecord respond_to fib getivar lee"
 
         # TODO: turn on Truffle?
         YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=20 --min-bench-time=180.0 --min-bench-itrs=20 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
