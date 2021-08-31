@@ -1,10 +1,10 @@
 require_relative "yjit_stats_reports"
 
 class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
-    def exactly_one_config_with_name(configs, substring, description)
+    def exactly_one_config_with_name(configs, substring, description, none_okay: false)
         matching_configs = configs.select { |name| name.include?(substring) }
         raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
-        raise "We didn't find any #{description} config among #{configs.inspect}!" if matching_configs.empty?
+        raise "We didn't find any #{description} config among #{configs.inspect}!" if matching_configs.empty? && !none_okay
         matching_configs[0]
     end
 
@@ -13,7 +13,7 @@ class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
-        @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle")
+        @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle", none_okay: true)
 
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],
@@ -80,19 +80,21 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             @no_jit_config => [],
             @with_mjit_config => [],
             @with_yjit_config => [],
-            @truffle_config => [],
         }
         @rsd_pct_by_config = {
             @no_jit_config => [],
             @with_mjit_config => [],
             @with_yjit_config => [],
-            @truffle_config => [],
         }
         @speedup_by_config = {
             @with_mjit_config => [],
             @with_yjit_config => [],
-            @truffle_config => [],
         }
+        if @truffle_config
+            @mean_by_config[@truffle_config] = []
+            @rsd_pct_by_config[@truffle_config] = []
+            @speedup_by_config[@truffle_config] = []
+        end
         @yjit_ratio = []
 
         @benchmark_names.each do |benchmark_name|
