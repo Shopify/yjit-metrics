@@ -27,7 +27,7 @@ def run_benchmarks
         end
 
         # This is a much faster set of tests, more suitable for quick testing
-        YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=20.0 --min-bench-itrs=10 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/ activerecord respond_to fib getivar lee"
+        YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=20.0 --min-bench-itrs=10 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
 
         # These are slow runs, and will take several hours to update. This might be suitable for daily runs.
         #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=20 --min-bench-time=120.0 --min-bench-itrs=20 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
