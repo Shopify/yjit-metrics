@@ -40,7 +40,7 @@ end.parse!
 
 # Clone YJIT repo on "pages" branch, updated to latest version
 YJITMetrics.clone_repo_with path: YJIT_METRICS_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH
-Dir.chdir(YJIT_METRICS_DIR) { YJITMetrics.check_call "git clean -d -f" }
+#Dir.chdir(YJIT_METRICS_DIR) { YJITMetrics.check_call "git clean -d -f" }
 
 # Copy JSON and report files into the branch
 copy_from.each do |dir_to_copy|
