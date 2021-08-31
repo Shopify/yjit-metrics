@@ -77,6 +77,10 @@ rescue
     $stdout.flush
 
     logged_output = File.read(OUTPUT_LOG) if File.exist?(OUTPUT_LOG)
+    # GitHub API has a 64kb limit on issue body size, and that's realistically too big anyway. Cut this if too big.
+    if logged_output.size > (1024 * 16)
+        logged_output = logged_output[0..12288] + "\n\n(.... cutting ....)\n\n" + logged_output[-2048..-1]
+    end
 
     host = `uname -a`
     issue_body = <<~ISSUE
