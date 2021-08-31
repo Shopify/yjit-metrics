@@ -2,6 +2,10 @@
 
 require_relative "../lib/yjit-metrics"
 
+# This is intended to be the top-level script for running benchmarks, reporting on them
+# and uploading the results. It belongs in a cron job with some kind of error detection
+# to make sure it's running properly.
+
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
 # TODO: would this be happier as a shellscript rather than Ruby?
