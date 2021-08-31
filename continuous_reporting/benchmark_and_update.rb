@@ -12,8 +12,8 @@ Dir.chdir("#{__dir__}/..") do
     unless old_data_files.empty?
         old_data_files.each { |f| FileUtils.rm f }
     end
-    #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=100 --min-bench-time=0.01 --min-bench-itrs=500 --runs=3 --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continous_reporting/data/"
-    YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=0.01 --min-bench-itrs=50 --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continous_reporting/data/"
+    #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=100 --min-bench-time=0.01 --min-bench-itrs=500 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
+    YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=0.01 --min-bench-itrs=50 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/ activerecord respond_to fib getivar lee"
 end
 
 Dir.chdir __dir__ do

@@ -304,6 +304,7 @@ all_runs.each do |run_num, config, bench_info|
         enable_core_dumps: (when_error == :report ? true : false),
     })
 
+    single_run_results = nil
     loop do
         single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
         break if single_run_results # Got results? Great! Then don't die or re-run.

@@ -138,12 +138,15 @@ puts "Jekyll seems to build correctly. That means that GHPages should do the rig
 
 # Commit if there is something to commit
 diffs = (YJITMetrics.check_output "git status --porcelain").chomp
-unless diffs == ""
-    YJITMetrics.check_call "git add ."
+if diffs == ""
+    puts "No changes found. Not committing or pushing."
+elsif no_push
+    puts "Changes found, but --no-push was specified. Not committing or pushing."
+else
+    puts "Changes found. Committing and pushing."
+    YJITMetrics.check_call "git add reports _benchmarks"
     YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
+    YJITMetrics.check_call "git push"
 end
-
-# Push all the new files (if any) to GitHub Pages
-YJITMetrics.check_call "git push" unless no_push
 
 puts "Finished continuous_reporting successfully!"
