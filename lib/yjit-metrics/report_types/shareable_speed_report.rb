@@ -64,7 +64,7 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
         end
 
         # Sort benchmarks by compiled ISEQ count
-        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"]] }
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
 
         @headings = [ "bench" ] +
             @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
