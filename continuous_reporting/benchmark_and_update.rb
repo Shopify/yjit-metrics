@@ -2,6 +2,7 @@
 
 require_relative "../lib/yjit-metrics"
 
+require 'fileutils'
 require 'net/http'
 
 # This is intended to be the top-level script for running benchmarks, reporting on them
@@ -11,11 +12,83 @@ require 'net/http'
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
 OUTPUT_LOG = "/home/ubuntu/benchmark_ci_output.txt"
+PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
 GITHUB_USER=ENV["YJIT_METRICS_GITHUB_USER"]
 GITHUB_TOKEN=ENV["YJIT_METRICS_GITHUB_TOKEN"]
 unless GITHUB_USER && GITHUB_TOKEN
     raise "Set YJIT_METRICS_GITHUB_USER and YJIT_METRICS_GITHUB_TOKEN to an appropriate GitHub username/token for repo access and opening issues!"
+end
+
+def ghapi_post(api_uri, params, verb: :post)
+    uri = URI("https://api.github.com" + api_uri)
+
+    req = Net::HTTP::Post.new(uri)
+    req.basic_auth GITHUB_USER, GITHUB_TOKEN
+    req['Accept'] = "application/vnd.github.v3+json"
+    req['Content-Type'] = "application/json"
+    req.body = JSON.dump(params)
+    result = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
+
+    unless result.is_a?(Net::HTTPSuccess)
+        $stderr.puts "Error in HTTP #{verb.upcase}: #{result.inspect}"
+        $stderr.puts result.body
+        $stderr.puts "------"
+        raise "HTTP error when posting to #{api_uri}!"
+    end
+
+    JSON.load(result.body)
+end
+
+def file_gh_issue(title, message)
+    # If not attached to a tty, stdout often won't flush promptly.
+    # We'd like to include as much output as practical.
+    $stdout.flush
+
+    logged_output = File.read(OUTPUT_LOG) if File.exist?(OUTPUT_LOG)
+    # GitHub API has a 64kb limit on issue body size, and that's realistically too big anyway. Cut this if too big.
+    if logged_output.size > (1024 * 16)
+        logged_output = logged_output[0..12288] + "\n\n(.... cutting ....)\n\n" + logged_output[-2048..-1]
+    end
+
+    host = `uname -a`
+    issue_body = <<~ISSUE
+        <pre>
+        #{message}
+
+        Including contents of #{OUTPUT_LOG} if present:
+
+        #{logged_output}
+
+        </pre>
+    ISSUE
+
+    ghapi_post "/repos/Shopify/yjit-metrics/issues",
+        {
+            "title" => "YJIT-Metrics CI Benchmarking: #{title}",
+            "body" => issue_body,
+            "assignees" => [ GITHUB_USER ]
+        }
+end
+
+if File.exist?(PIDFILE)
+    pid = File.read(PIDFILE).to_i
+    if pid && pid > 0
+        ps_out = `ps -p #{pid}`
+        if ps_out.include?(pid.to_s)
+            # Previous process is still running...
+
+            issue_message = <<~ISSUE
+                When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!
+            ISSUE
+            file_gh_issue("previous process still running", issue_message)
+
+            raise "Previous process still running!"
+        end
+    end
+end
+File.open(PIDFILE, "w") do |f|
+    f.write Process.pid.to_s
 end
 
 def run_benchmarks
@@ -46,64 +119,20 @@ def report_and_upload
     end
 end
 
-def ghapi_post(api_uri, params, verb: :post)
-    uri = URI("https://api.github.com" + api_uri)
-
-    req = Net::HTTP::Post.new(uri)
-    req.basic_auth GITHUB_USER, GITHUB_TOKEN
-    req['Accept'] = "application/vnd.github.v3+json"
-    req['Content-Type'] = "application/json"
-    req.body = JSON.dump(params)
-    result = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
-
-    unless result.is_a?(Net::HTTPSuccess)
-        $stderr.puts "Error in HTTP #{verb.upcase}: #{result.inspect}"
-        $stderr.puts result.body
-        $stderr.puts "------"
-        raise "HTTP error when posting to #{api_uri}!"
-    end
-
-    JSON.load(result.body)
-end
-
 begin
     run_benchmarks
     report_and_upload
 rescue
-    exc = $!
-
-    # If not attached to a tty, stdout often won't flush promptly.
-    # We'd like to include as much output as practical.
-    $stdout.flush
-
-    logged_output = File.read(OUTPUT_LOG) if File.exist?(OUTPUT_LOG)
-    # GitHub API has a 64kb limit on issue body size, and that's realistically too big anyway. Cut this if too big.
-    if logged_output.size > (1024 * 16)
-        logged_output = logged_output[0..12288] + "\n\n(.... cutting ....)\n\n" + logged_output[-2048..-1]
-    end
-
-    host = `uname -a`
-    issue_body = <<~ISSUE
-        <pre>
+    issue_message = <<~ISSUE
         While running CI benchmarks on #{host.inspect}
         benchmark_and_update.rb encountered an exception:
 
         ======
-        #{exc.full_message}
+        #{$!.full_message}
         ======
-
-        Including contents of #{OUTPUT_LOG} if present:
-
-        #{logged_output}
-
-        </pre>
     ISSUE
 
-    # And if this fails... Well, then it fails. We did what we could.
-    ghapi_post "/repos/Shopify/yjit-metrics/issues",
-        {
-            "title" => "YJIT-Metrics CI Benchmarking failure!",
-            "body" => issue_body,
-            "assignees" => [ "noahgibbs" ]
-        }
+    file_gh_issue("Benchmarking failed!", issue_message)
 end
+
+FileUtils.rm PIDFILE
