@@ -125,9 +125,23 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         "blog_speed_details"
     end
 
+    # This is called later than initialize
+    def set_extra_info(info)
+        super
+
+        if info[:filenames]
+            info[:filenames].each do |filename|
+                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/reports/#{filename}"
+            end
+        end
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+
+        # This can be set up using set_extra_info later.
+        @filename_permalinks = {}
 
         look_up_data_by_ruby
 

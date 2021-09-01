@@ -120,10 +120,15 @@ end
 
 filenames = relevant_results.map(&:first)
 config_names = relevant_results.map { |_, config_name, _, _| config_name }.uniq
+timestamps = relevant_results.map { |_, _, timestamp, _| timestamp }.uniq
 
 reports.each do |report_name|
     report_type = report_class_by_name[report_name]
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
+    report.set_extra_info({
+        filenames: filenames,
+        timestamps: timestamps,
+    })
 
     if write_output_files && report.respond_to?(:write_file)
         ts_str = latest_ts.strftime('%F-%H%M%S')

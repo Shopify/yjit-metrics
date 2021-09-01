@@ -16,11 +16,6 @@
 </p>
 
 <p>
-	Tested Ruby version for YJIT and No-JIT: <tt><b><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></b></tt> <br/>
-	Tested Ruby version for MJIT: <tt><b><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></b></tt>
-</p>
-
-<p>
 	Each benchmark is scaled to the CRuby's interpreter's mean result. Want numbers? I like numbers.
 </p>
 
@@ -41,3 +36,18 @@
 	<b>RSD</b> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
 	<b>% in YJIT</b> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
 </p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><b><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></b></tt> <br/>
+	Tested Ruby version for MJIT: <tt><b><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></b></tt>
+</p>
+
+<% unless @filename_permalinks.empty? %>
+<p> Raw JSON data files: (if published) </p>
+
+<ul>
+  <% @filename_permalinks.each do |filename, url| %>
+    <li><a href="<%= url %>"><%= filename %></a></li>
+  <% end %>
+</ul>
+<% end %>

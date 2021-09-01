@@ -258,6 +258,16 @@ class YJITMetrics::Report
         @result_set = results
     end
 
+    # Child classes can accept params in this way. By default it's a no-op.
+    def set_extra_info(info)
+        @extra_info = info
+    end
+
+    # Do we specifically recognize this extra field? Nope. Child classes can override.
+    def accepts_field(name)
+        false
+    end
+
     def filter_benchmark_names(names)
         return names if @only_benchmarks.empty?
         names.select { |bench_name| @only_benchmarks.any? { |bench_spec| bench_name.start_with?(bench_spec) } }
