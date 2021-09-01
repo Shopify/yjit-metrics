@@ -427,9 +427,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         @yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
         @yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
 
-        railsbench_idx = @benchmark_names.index("railsbench")
-        @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][railsbench_idx] / @mean_by_config[@with_yjit_config][railsbench_idx]
-        @yjit_vs_mjit_railsbench_ratio = @mean_by_config[@with_mjit_config][railsbench_idx] / @mean_by_config[@with_yjit_config][railsbench_idx]
+        @railsbench_idx = @benchmark_names.index("railsbench")
+        if @railsbench_idx
+            @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+            @yjit_vs_mjit_railsbench_ratio = @mean_by_config[@with_mjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+        end
     end
 
     def to_s

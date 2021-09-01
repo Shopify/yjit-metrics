@@ -14,6 +14,21 @@ YJIT_METRICS_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages
 YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git"
 YJIT_METRICS_PAGES_BRANCH = "pages"
 
+REPORTS_AND_FILES = {
+    "blog_speed_headline" => {
+        report_type: :basic,
+        extensions: [ "html" ],
+    },
+    "blog_speed_details" => {
+        report_type: :basic,
+        extensions: [ "html", "svg" ],
+    },
+    #"timeline" => {
+    #    report_type: :timeline,
+    #    extensions: [ "html", "svg" ],
+    #},
+}
+
 copy_from = []
 no_push = false
 regenerate_reports = false
@@ -75,59 +90,86 @@ Dir["*_basic_benchmark_*.json", base: "reports"].each do |filename|
     json_timestamps[ts] << filename
 end
 
+# Now see what reports we already have, so we can run anything missing.
 report_timestamps = {}
-Dir["share_speed_*.html", base: "reports"].each do |filename|
-    unless filename =~ /share_speed_(.*)\.html$/
-        raise "Problem parsing report filename #{filename.inspect}!"
-    end
 
-    ts = $1
-    report_timestamps[ts] ||= []
-    report_timestamps[ts] << filename
+report_files = Dir["*", base: "reports"].to_a
+REPORTS_AND_FILES.each do |report_name, details|
+    this_report_files = report_files.select { |filename| filename.include?(report_name) }
+    this_report_files.each do |filename|
+        unless filename =~ /(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).([a-zA-Z]+)/
+            raise "Couldn't parse filename #{filename.inspect} when generating reports!"
+        end
+        report_name_in_file = $1
+        raise "Non-matching report name with filename, #{report_name.inspect} vs #{report_name_in_file.inspect}!" unless report_name == report_name_in_file
+        ts = $2
+        ext = $3
+
+        report_timestamps[ts] ||= {}
+        report_timestamps[ts][report_name] ||= []
+        report_timestamps[ts][report_name].push filename
+    end
 end
 
 # For now we only have one kind of report (share_speed), and we check for that.
 json_timestamps.each do |ts, test_files|
-    # If the HTML report doesn't already exist, build it.
-    if regenerate_reports || !report_timestamps[ts] || report_timestamps[ts].empty?
-        report_files = test_files.map { |f| "reports/#{f}" }
-        puts "Running basic_report for timestamp #{ts} with data files #{report_files.inspect}"
-        YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=share_speed -o reports -w #{report_files.join(" ")}")
+    REPORTS_AND_FILES.each do |report_name, details|
+        # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the normal generated files.
+        run_report = regenerate_reports ||
+            !report_timestamps[ts] ||
+            !report_timestamps[ts][report_name] ||
+            report_timestamps[ts][report_name].size != details[:extensions].size
 
-        report_filename = "reports/share_speed_#{ts}.html"
-        unless File.exist?(report_filename)
-            raise "We tried to create the report #{report_filename} but failed! No process error, but the file didn't appear."
+        # If the HTML report doesn't already exist, build it.
+        if run_report
+            files_for_report = test_files.map { |f| "reports/#{f}" }
+            puts "Running basic_report for timestamp #{ts} with data files #{files_for_report.inspect}"
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=#{report_name} -o reports -w #{files_for_report.join(" ")}")
+
+            report_filenames = details[:extensions].map { |ext| "reports/#{report_name}_#{ts}.#{ext}" }
+            files_not_found = report_filenames.select { |f| !File.exist? f }
+
+            unless files_not_found.empty?
+                raise "We tried to create the report file(s) #{files_not_found.inspect} but failed! No process error, but the file(s) didn't appear."
+            end
+
+            report_timestamps[ts] ||= {}
+            report_timestamps[ts][report_name] = report_filenames
         end
 
-        report_timestamps[ts] ||= []
-        report_timestamps[ts].push report_filename
-    end
-
-    # Now make sure we have a _benchmarks entry for the dataset
-    test_results_by_config = {}
-    # Try to keep the iteration order stable with sort - we do *not* want this to autogenerate differently
-    # every time and have massive Git churn.
-    json_timestamps[ts].sort.each do |file|
-        unless file =~ /basic_benchmark_(.*).json$/
-            raise "Error parsing JSON filename #{file.inspect}!"
+        # Now make sure we have a _benchmarks Jekyll entry for the dataset
+        test_results_by_config = {}
+        # Try to keep the iteration order stable with sort - we do *not* want this to autogenerate differently
+        # every time and have massive Git churn. This lists out the test-result JSON files for this config and timestamp.
+        json_timestamps[ts].sort.each do |file|
+            unless file =~ /basic_benchmark_(.*).json$/
+                raise "Error parsing JSON filename #{file.inspect}!"
+            end
+            config = $1
+            test_results_by_config[config] = "reports/#{file}"
         end
-        config = $1
-        test_results_by_config[config] = "reports/#{file}"
-    end
-    bench_data = {
-        "date_str" => ts.split("-")[0..-2].join("-"),
-        "timestamp" => ts,
-        "test_results" => test_results_by_config,
-        "reports" => {
-            "share_speed"             => "reports/share_speed_#{ts}.html",
-            "share_speed_svg"         => "reports/share_speed_#{ts}.svg",
+
+        generated_reports = {}
+        REPORTS_AND_FILES.each do |report_name, details|
+            details[:extensions].each do |ext|
+                generated_reports[report_name + "_" + ext] = "reports/#{report_name}_#{ts}.#{ext}"
+            end
+        end
+
+        bench_data = {
+            "date_str" => ts.split("-")[0..-2].join("-"),
+            "timestamp" => ts,
+            "test_results" => test_results_by_config,
+            "reports" => generated_reports,
         }
-    }
-    File.open("_benchmarks/bench_#{ts}.md", "w") do |f|
-        f.print(YAML.dump(bench_data))
-        f.print "\n---\n"
-        f.print "Autogenerated by continuous_reporting.rb script."
-        f.print "\n"
+
+        # Finally write out the _benchmarks file for Jekyll to use.
+        File.open("_benchmarks/bench_#{ts}.md", "w") do |f|
+            f.print(YAML.dump(bench_data))
+            f.print "\n---\n"
+            f.print "Autogenerated by continuous_reporting.rb script."
+            f.print "\n"
+        end
     end
 end
 
