@@ -1,6 +1,10 @@
 require_relative "yjit_stats_reports"
 
-class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
+# For details-at-a-specific-time reports, we'll want to find individual configs and make sure everything is
+# present and accounted for. This is a "single" report in the sense that it's conceptually at a single
+# time, even though it can be multiple runs and Rubies. What it is *not* is results over time as YJIT and
+# the benchmarks change.
+class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     def exactly_one_config_with_name(configs, substring, description, none_okay: false)
         matching_configs = configs.select { |name| name.include?(substring) }
         raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
@@ -47,13 +51,13 @@ class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
 end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
-class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
+class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     def self.report_name
-        "share_speed"
+        "blog_speed_details"
     end
 
-    def initialize(config_names, results, benchmarks: [])
-        # Set up the YJIT stats parent class
+    def initialize(config_names, results, benchmarks: [], filenames: [])
+        # Set up the parent class, look up relevant data
         super
 
         look_up_data_by_ruby
@@ -70,7 +74,7 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
             @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
             [ "% in YJIT" ]
-        # Col formats are only used when formatting a text table, not for HTML or CSV
+        # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                                           # Benchmark name
             [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
             [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
@@ -147,6 +151,8 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
     end
 
+    # For the SVG, we calculate ratios from 0 to 1 for how far across the graph area a coordinate is.
+    # Then we convert them here to the actual size of the graph.
     def ratio_to_x(ratio)
         (ratio * 1000).to_s
     end
@@ -354,10 +360,11 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
 
         @svg = svg_object
 
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/shareable_speed.html.erb")
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
 
+        # Write a separate SVG file for showing just the graph on summary pages
         File.open(filename + ".svg", "w") { |f| f.write(@svg.render) }
 
         #write_to_csv(filename + ".csv", [@headings] + report_table_data)

@@ -5,7 +5,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     # the data files. This is that final list of benchmarks.
     attr_reader :benchmark_names
 
-    def initialize(stats_configs, results, benchmarks: [])
+    def initialize(stats_configs, results, benchmarks: [], filenames: [])
         super
 
         bad_configs = stats_configs - results.available_configs
@@ -199,7 +199,7 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
         "yjit_stats_multi"
     end
 
-    def initialize(config_names, results, benchmarks: [])
+    def initialize(config_names, results, benchmarks: [], filenames: [])
         # Set up the YJIT stats parent class
         super
 

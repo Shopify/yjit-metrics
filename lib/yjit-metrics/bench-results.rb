@@ -247,7 +247,7 @@ class YJITMetrics::Report
         out
     end
 
-    def initialize(config_names, results, benchmarks: [])
+    def initialize(config_names, results, benchmarks: [], filenames: [])
         raise "No Rubies specified!" if config_names.empty?
 
         bad_configs = config_names - results.available_configs

@@ -10,7 +10,7 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
         "per_bench_compare"
     end
 
-    def initialize(config_names, results, benchmarks: [])
+    def initialize(config_names, results, benchmarks: [], filenames: [])
         super
 
         @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config}", "RSD" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }
