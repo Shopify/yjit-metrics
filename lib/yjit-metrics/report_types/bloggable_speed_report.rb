@@ -46,40 +46,14 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
             end
         end
-    end
-
-end
-
-# This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
-class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
-    def self.report_name
-        "blog_speed_details"
-    end
-
-    def initialize(config_names, results, benchmarks: [], filenames: [])
-        # Set up the parent class, look up relevant data
-        super
-
-        look_up_data_by_ruby
 
         no_stats_benchmarks = @benchmark_names.select { |bench_name| !@yjit_stats[bench_name] || !@yjit_stats[bench_name][0] || @yjit_stats[bench_name][0].empty? }
         unless no_stats_benchmarks.empty?
             raise "No YJIT stats found for benchmarks: #{no_stats_benchmarks.inspect}"
         end
+    end
 
-        # Sort benchmarks by compiled ISEQ count
-        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
-
-        @headings = [ "bench" ] +
-            @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
-            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
-            [ "% in YJIT" ]
-        # Col formats are only used when formatting entries for a text table, not for CSV
-        @col_formats = [ "%s" ] +                                           # Benchmark name
-            [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
-            [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
-            [ "%.2f%%" ]                                                    # YJIT ratio
-
+    def calc_stats_by_config
         @mean_by_config = {
             @no_jit_config => [],
             @with_mjit_config => [],
@@ -94,10 +68,16 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             @with_mjit_config => [],
             @with_yjit_config => [],
         }
+        @total_time_by_config = {
+            @no_jit_config => 0.0,
+            @with_mjit_config => 0.0,
+            @with_yjit_config => 0.0,
+        }
         if @truffle_config
             @mean_by_config[@truffle_config] = []
             @rsd_pct_by_config[@truffle_config] = []
             @speedup_by_config[@truffle_config] = []
+            @total_time_by_config[@truffle_config] = 0.0
         end
         @yjit_ratio = []
 
@@ -106,6 +86,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 this_config_times = @times_by_config[config][benchmark_name]
                 this_config_mean = mean(this_config_times)
                 @mean_by_config[config].push this_config_mean
+                @total_time_by_config[config] += this_config_times.sum
                 this_config_rel_stddev_pct = rel_stddev_pct(this_config_times)
                 @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
@@ -134,6 +115,36 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
             @yjit_ratio.push yjit_ratio_pct
         end
+    end
+end
+
+# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# with a single YJIT head-of-master.
+class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_speed_details"
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by compiled ISEQ count
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
+
+        @headings = [ "bench" ] +
+            @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
+            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
+            [ "% in YJIT" ]
+        # Col formats are only used when formatting entries for a text table, not for CSV
+        @col_formats = [ "%s" ] +                                           # Benchmark name
+            [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
+            [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
+            [ "%.2f%%" ]                                                    # YJIT ratio
+
+        calc_stats_by_config
     end
 
     def report_table_data
@@ -370,4 +381,50 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         #write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
 
+end
+
+# This very small report is to give the quick headlines and summary for a YJIT comparison.
+class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_speed_headline"
+    end
+
+    def format_speedup(ratio)
+        if ratio >= 1.01
+            "%.2f%% faster" % ((ratio - 1.0) * 100)
+        elsif ratio < 0.99
+            "%.2f%% slower" % ((1.0 - ratio) * 100)
+        else
+            "the same speed" # Grammar's not perfect here
+        end
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by compiled ISEQ count
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
+
+        calc_stats_by_config
+
+        @yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
+        @yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
+
+        railsbench_idx = @benchmark_names.index("railsbench")
+        @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][railsbench_idx] / @mean_by_config[@with_yjit_config][railsbench_idx]
+        @yjit_vs_mjit_railsbench_ratio = @mean_by_config[@with_mjit_config][railsbench_idx] / @mean_by_config[@with_yjit_config][railsbench_idx]
+    end
+
+    def to_s
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_headline.html.erb")
+        script_template.result(binding) # Evaluate an Erb template with template_settings
+    end
+
+    def write_file(filename)
+        html_output = self.to_s
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+    end
 end

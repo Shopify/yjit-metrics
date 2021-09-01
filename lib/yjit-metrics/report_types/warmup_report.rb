@@ -5,7 +5,7 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
         "warmup"
     end
 
-    def initialize(config_names, results, benchmarks: [], filenames: [])
+    def initialize(config_names, results, benchmarks: [])
         super
 
         @headings_by_config = {}
@@ -103,7 +103,7 @@ class YJITMetrics::TotalToIterReport < YJITMetrics::Report
         "total_to_iter"
     end
 
-    def initialize(config_names, results, benchmarks: [], filenames: [])
+    def initialize(config_names, results, benchmarks: [])
         super
 
         @headings_by_config = {}

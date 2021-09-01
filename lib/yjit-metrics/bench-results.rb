@@ -222,7 +222,7 @@ class YJITMetrics::ResultSet
     end
 end
 
-# Shared utility methods for reports
+# Shared utility methods for reports that use a single "blob" of results
 class YJITMetrics::Report
     include YJITMetrics::Stats
 
@@ -247,7 +247,7 @@ class YJITMetrics::Report
         out
     end
 
-    def initialize(config_names, results, benchmarks: [], filenames: [])
+    def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 
         bad_configs = config_names - results.available_configs

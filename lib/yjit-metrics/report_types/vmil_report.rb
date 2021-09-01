@@ -34,7 +34,7 @@ class YJITMetrics::VMILSpeedReport < YJITMetrics::VMILReport
         "vmil_speed"
     end
 
-    def initialize(config_names, results, benchmarks: [], filenames: [])
+    def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super
 
@@ -115,7 +115,7 @@ class YJITMetrics::VMILWarmupReport < YJITMetrics::VMILReport
         "vmil_warmup"
     end
 
-    def initialize(config_names, results, benchmarks: [], filenames: [])
+    def initialize(config_names, results, benchmarks: [])
         # Set up the YJIT stats parent class
         super
 

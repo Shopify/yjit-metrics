@@ -123,7 +123,7 @@ config_names = relevant_results.map { |_, config_name, _, _| config_name }.uniq
 
 reports.each do |report_name|
     report_type = report_class_by_name[report_name]
-    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks, filenames: filenames)
+    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
     if write_output_files && report.respond_to?(:write_file)
         ts_str = latest_ts.strftime('%F-%H%M%S')
