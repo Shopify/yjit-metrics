@@ -2,6 +2,9 @@
 
 set -e
 
+# Just for human verification
+echo $$ `date` >> ~/benchmark_ci_run_times.txt
+
 # I'm sure this shouldn't be necessary. But let's make sure env vars and chruby are set up, shall we?
 . ~/.bashrc
 
@@ -21,3 +24,6 @@ ruby continuous_reporting/benchmark_and_update.rb &> ~ubuntu/benchmark_ci_output
 
 # Hourly at XX:00 straight up
 # 0 * * * *		~ubuntu/ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh
+
+# Show that, yes, we finished successfully.
+echo $$ >> ~/benchmark_successful_runs.txt
