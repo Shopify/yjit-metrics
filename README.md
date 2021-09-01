@@ -1,11 +1,14 @@
 # YJIT Metrics
 
-## About this Repo
+YJIT-metrics is intended to check speedups and internal statistics for YJIT,
+an experimental open-source JIT for Ruby. You can find out more about YJIT
+[at its GitHub repo](https://github.com/Shopify/yjit).
 
-The code in this repo is intended to check speedups and internal YJIT statistics for
-YJIT benchmarks in the [yjit-bench repository](https://github.com/Shopify/yjit-bench).
-We hope to use it as part of a nightly run, generating and exporting data about
-YJIT's progress on a variety of Ruby metrics.
+YJIT-metrics uses the benchmarks in the
+[yjit-bench repository](https://github.com/Shopify/yjit-bench).
+
+You can see the latest benchmark reports
+[on the yjit-metrics GitHub Pages URL](https://shopify.github.io/yjit-metrics).
 
 ## Setup and Installation, Accuracy of Results
 
@@ -13,7 +16,7 @@ To run benchmarks on Linux, you'll need sudo access and to run the following com
 
     sudo ./setup.sh
 
-On Linux you'll need to do the same for each reboot, or do the following:
+You'll need to do the same for each reboot, or do the following:
 
     sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'
     sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'
@@ -22,7 +25,7 @@ On Mac you don't need to do that, but you should expect benchmark accuracy will 
 
 Also Mac timings of some operations are substantially different &mdash; not only will you need to run more iterations for accuracy, but the correct measurement will be different in many cases. CRuby has significant known performance problems on the Mac, and YJIT reflects that (e.g. the setivar microbenchmark.)
 
-For that reason, where we-the-authors provide official numbers they will usually be AWS c5.metal instances, often with dedicated tenancy.
+For that reason, where we-the-authors provide official numbers they will usually be AWS c5.metal instances, often with dedicated-host tenancy.
 
 ## How to Use this Repo
 
@@ -30,11 +33,11 @@ You can run ./basic_benchmark.rb to clone appropriate other repositories (yjit, 
 
 basic_benchmark.rb also accepts a --skip-git-updates parameter for runs after the first to not "git pull" its repos and rebuild Ruby. To see full parameters, try `basic_benchmark.rb --help`
 
-This will write JSON data files into the data directory after successful runs. You can then use reporting (see below) to get descriptions of those results.
+By default, basic_benchmark.rb will write JSON data files into the data directory after successful runs. You can then use reporting (see below) to get descriptions of those results.
 
 Try `basic_report.rb` and `basic_report.rb --help` to get started. There are several different reports, and you can specify which data files to include and which benchmarks to show. By default basic_report will load all data files that have the exact same, most recent timestamp. So if basic_benchmark.rb writes several files, basic_report.rb will use them all by default.
 
-You can find examples of data-gathering scripts in the "runners" directory.
+You can find examples of data-gathering scripts in the "runners" directory and postprocessing scripts in the "formatters" directory.
 
 ## TruffleRuby
 
@@ -45,8 +48,7 @@ While it's possible to install TruffleRuby via ruby-install, our experience has 
 First, clone ruby-build and install it under /usr/local/bin:
 
     $ git clone https://github.com/rbenv/ruby-build.git
-    $ sudo ./ruby-build/install.sh
+    $ cd ruby-build
+    $ sudo install.sh
 
-Then you can clone an appropriate version of TruffleRuby:
-
-    $ ruby-build truffleruby+graalvm-21.2.0 ~/.rubies/truffleruby+graalvm-21.2.0
+Then basic_benchmark.rb will install the appropriate TruffleRuby next time you run it without --skip-git-updates.

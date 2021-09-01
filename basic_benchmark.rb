@@ -94,7 +94,7 @@ DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchm
 DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
 # Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench"
+YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
@@ -103,7 +103,7 @@ RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
 RUBY_BUILD_GIT_BRANCH = "master"
 RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
 
-ERROR_BEHAVIOURS = %i(die report ignore)
+ERROR_BEHAVIOURS = %i(die report ignore re_run)
 
 # Defaults
 skip_git_updates = false
@@ -114,6 +114,7 @@ min_bench_time = DEFAULT_MIN_BENCH_TIME
 DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_CONFIGS
 when_error = :die
+output_path = "data"
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -142,6 +143,10 @@ OptionParser.new do |opts|
         raise "Number of runs must be positive!" if num_runs <= 0
     end
 
+    opts.on("--output DIR", "Write output files to the specified directory") do |dir|
+        output_path = dir
+    end
+
     opts.on("--on-errors=BEHAVIOUR", "When a benchmark fails, how do we respond? Options: #{ERROR_BEHAVIOURS.map(&:to_s).join(",")}") do |choice|
         when_error = choice.to_sym
         unless ERROR_BEHAVIOURS.include?(when_error)
@@ -157,21 +162,10 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-extra_config_options = []
-if ENV["RUBY_CONFIG_OPTS"]
-    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
-elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
-    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
-end
-
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
 
-# For this simple benchmark, store intermediate results in temp.json in the
-# output data directory. In some cases it might make sense not to.
-TEMP_DATA_PATH = File.expand_path(__dir__ + "/data")
-OUTPUT_DATA_PATH = TEMP_DATA_PATH
+OUTPUT_DATA_PATH = output_path[0] == "/" ? output_path : File.expand_path("#{__dir__}/#{output_path}")
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
@@ -276,6 +270,7 @@ all_runs.each do |run_num, config, bench_info|
 
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
+    remaining_re_runs = 3
 
     if num_runs > 1
         run_string = "%04d" % run_num + "_"
@@ -290,7 +285,7 @@ all_runs.each do |run_num, config, bench_info|
         puts "Exception in benchmark: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
 
         # If we get a runtime error, we're not going to record this run's data.
-        if when_error != :ignore
+        if [:die, :report].include?(when_error)
             # Instead we'll record the fact that we got an error.
             crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
             write_crash_file(error_info, crash_report_dir)
@@ -298,6 +293,8 @@ all_runs.each do |run_num, config, bench_info|
 
         # If we die on errors, raise or re-raise the exception.
         raise(exc) if when_error == :die
+        remaining_re_runs -= 1
+        raise(exc) if when_error == :re_run && remaining_re_runs < 1
     end
 
     shell_settings = YJITMetrics::ShellSettings.new({
@@ -307,14 +304,22 @@ all_runs.each do |run_num, config, bench_info|
         enable_core_dumps: (when_error == :report ? true : false),
     })
 
-    single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
+    single_run_results = nil
+    loop do
+        single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
+        break if single_run_results # Got results? Great! Then don't die or re-run.
 
-    if single_run_results.nil?
         if when_error == :die
             raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
         end
-        puts "No data collected for this run, presumably due to errors. On we go."
-        next
+
+        if [:report, :ignore].include?(when_error)
+            puts "No data collected for this run, presumably due to errors. On we go."
+            break
+        end
+
+        # Otherwise re-run until success or exception.
+        raise "Unexpected value of when_error! Internal error!" if when_error != :re_run
     end
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"

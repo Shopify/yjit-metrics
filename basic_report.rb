@@ -21,7 +21,7 @@ only_benchmarks = []  # Empty list means use all benchmarks present in the data 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
       Usage: basic_report.rb [options] [<filenames>]
-        Reports available: per_bench_ruby_compare, yjit_stats_default
+        Reports available: #{all_report_names.join(", ")}
         If no files are specified, report on all results that have the latest timestamp.
     BANNER
 
@@ -105,6 +105,7 @@ if relevant_results.size == 0
     exit -1
 end
 
+latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 relevant_results.each do |filename, config_name, timestamp, run_num|
@@ -124,9 +125,8 @@ reports.each do |report_name|
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
 
     if write_output_files && report.respond_to?(:write_file)
-        timestamp = Time.now.getgm.strftime('%F-%H%M%S')
-
-        report.write_file("#{output_dir}/#{report_name}_#{timestamp}")
+        ts_str = latest_ts.strftime('%F-%H%M%S')
+        report.write_file("#{output_dir}/#{report_name}_#{ts_str}")
     end
 
     print report.to_s
