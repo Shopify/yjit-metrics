@@ -1,6 +1,8 @@
-# Latest YJIT Benchmarks
+---
+layout: basic
+---
 
-How is <a href="https://github.com/Shopify/yjit">YJIT</a> doing on its
+How is <a href="https://github.com/Shopify/yjit">YJIT</a> doing on its latest
 <a href="https://github.com/Shopify/yjit-bench">benchmarks</a>?
 
 {% assign dates = site.benchmarks | map: "date_str" | uniq %}
