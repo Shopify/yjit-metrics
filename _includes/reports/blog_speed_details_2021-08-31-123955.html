@@ -1,0 +1,192 @@
+<!-- HTML header tags? Probably not. We want maximum cut-and-paste potential and browsers do well even without them. -->
+
+<h2>YJIT Benchmark Speed Comparison</h2>
+
+<div style="width: 95%; height: 600px; width: 1000px;">
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
+  
+  <rect x="150.0" y="30.0" width="799.9999999999999" height="450.0" stroke="#000" fill="#EEE"/>
+  <line x1="142.0" y1="480.0" x2="150.0" y2="480.0" stroke="#000"/>
+  <text x="126.0" y="480.0" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  0.0
+  </text>
+  <line x1="142.0" y1="400.8517131350577" x2="150.0" y2="400.8517131350577" stroke="#000"/>
+  <text x="126.0" y="400.8517131350577" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  0.2
+  </text>
+  <line x1="142.0" y1="321.70342627011536" x2="150.0" y2="321.70342627011536" stroke="#000"/>
+  <text x="126.0" y="321.70342627011536" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  0.4
+  </text>
+  <line x1="142.0" y1="242.55513940517298" x2="150.0" y2="242.55513940517298" stroke="#000"/>
+  <text x="126.0" y="242.55513940517298" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  0.6
+  </text>
+  <line x1="142.0" y1="163.40685254023072" x2="150.0" y2="163.40685254023072" stroke="#000"/>
+  <text x="126.0" y="163.40685254023072" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  0.8
+  </text>
+  <line x1="142.0" y1="84.25856567528842" x2="150.0" y2="84.25856567528842" stroke="#000"/>
+  <text x="126.0" y="84.25856567528842" text-anchor="end" font-weight="bold" font-size="small" fill="#111">
+  1.0
+  </text>
+  <rect x="270.0" y="36.00000000000001" width="80.0" height="18.0" fill="#7070f8" stroke="#888"/>
+  <text x="310.0" y="52.50000000000001" font-size="small" text-anchor="middle" font-weight="bold" fill="#111">
+  No JIT
+  </text>
+  <rect x="510.0" y="36.00000000000001" width="80.0" height="18.0" fill="orange" stroke="#888"/>
+  <text x="550.0" y="52.50000000000001" font-size="small" text-anchor="middle" font-weight="bold" fill="#111">
+  YJIT
+  </text>
+  <rect x="750.0" y="36.00000000000001" width="80.0" height="18.0" fill="green" stroke="#888"/>
+  <text x="790.0" y="52.50000000000001" font-size="small" text-anchor="middle" font-weight="bold" fill="#111">
+  MJIT
+  </text>
+  <rect x="190.0" y="84.25856567528842" width="36.0" height="395.7414343247116" fill="#7070f8"/>
+  <line x1="190.0" y1="84.14946352205818" x2="226.0" y2="84.14946352205818" stroke="#000"/>
+  <line x1="190.0" y1="84.36766782851866" x2="226.0" y2="84.36766782851866" stroke="#000"/>
+  <line x1="208.0" y1="84.14946352205818" x2="208.0" y2="84.36766782851866" stroke="#000"/>
+  <rect x="226.0" y="357.582653616769" width="36.0" height="122.41734638323102" fill="orange"/>
+  <line x1="226.0" y1="357.5130881456754" x2="262.0" y2="357.5130881456754" stroke="#000"/>
+  <line x1="226.0" y1="357.6522190878626" x2="262.0" y2="357.6522190878626" stroke="#000"/>
+  <line x1="244.0" y1="357.5130881456754" x2="244.0" y2="357.6522190878626" stroke="#000"/>
+  <rect x="262.0" y="358.39742122215176" width="36.0" height="121.60257877784821" fill="green"/>
+  <line x1="262.0" y1="358.3369781307524" x2="298.0" y2="358.3369781307524" stroke="#000"/>
+  <line x1="262.0" y1="358.4578643135511" x2="298.0" y2="358.4578643135511" stroke="#000"/>
+  <line x1="280.0" y1="358.3369781307524" x2="280.0" y2="358.4578643135511" stroke="#000"/>
+  <line x1="262.0" y1="480.0" x2="262.0" y2="484.8" stroke="#000"/>
+  <text x="262.0" y="494.40000000000003" fill="#111" font-size="small" font-family="monospace" font-weight="bold" text-anchor="end" transform="rotate(-60, 262.0, 494.40000000000003)">
+  fib
+  </text>
+  <rect x="333.99999999999994" y="84.25856567528842" width="36.0" height="395.7414343247116" fill="#7070f8"/>
+  <line x1="333.99999999999994" y1="83.39537442751856" x2="369.99999999999994" y2="83.39537442751856" stroke="#000"/>
+  <line x1="333.99999999999994" y1="85.12175692305829" x2="369.99999999999994" y2="85.12175692305829" stroke="#000"/>
+  <line x1="352.0" y1="83.39537442751856" x2="352.0" y2="85.12175692305829" stroke="#000"/>
+  <rect x="369.99999999999994" y="325.71738234806315" width="36.0" height="154.28261765193685" fill="orange"/>
+  <line x1="369.99999999999994" y1="325.3734125761536" x2="405.99999999999994" y2="325.3734125761536" stroke="#000"/>
+  <line x1="369.99999999999994" y1="326.0613521199727" x2="405.99999999999994" y2="326.0613521199727" stroke="#000"/>
+  <line x1="387.99999999999994" y1="325.3734125761536" x2="387.99999999999994" y2="326.0613521199727" stroke="#000"/>
+  <rect x="406.0" y="93.63662771126077" width="36.0" height="386.36337228873924" fill="green"/>
+  <line x1="406.0" y1="92.69296040280783" x2="441.99999999999994" y2="92.69296040280783" stroke="#000"/>
+  <line x1="406.0" y1="94.58029501971372" x2="441.99999999999994" y2="94.58029501971372" stroke="#000"/>
+  <line x1="424.0" y1="92.69296040280783" x2="424.0" y2="94.58029501971372" stroke="#000"/>
+  <line x1="406.0" y1="480.0" x2="406.0" y2="484.8" stroke="#000"/>
+  <text x="406.0" y="494.40000000000003" fill="#111" font-size="small" font-family="monospace" font-weight="bold" text-anchor="end" transform="rotate(-60, 406.0, 494.40000000000003)">
+  getivar
+  </text>
+  <rect x="478.0" y="84.25856567528842" width="36.0" height="395.7414343247116" fill="#7070f8"/>
+  <line x1="478.0" y1="83.63669867566226" x2="514.0" y2="83.63669867566226" stroke="#000"/>
+  <line x1="478.0" y1="84.88043267491459" x2="514.0" y2="84.88043267491459" stroke="#000"/>
+  <line x1="496.0" y1="83.63669867566226" x2="496.0" y2="84.88043267491459" stroke="#000"/>
+  <rect x="514.0" y="208.2180381585535" width="36.0" height="271.7819618414465" fill="orange"/>
+  <line x1="514.0" y1="207.56708343213398" x2="550.0" y2="207.56708343213398" stroke="#000"/>
+  <line x1="514.0" y1="208.868992884973" x2="550.0" y2="208.868992884973" stroke="#000"/>
+  <line x1="532.0" y1="207.56708343213398" x2="532.0" y2="208.868992884973" stroke="#000"/>
+  <rect x="549.9999999999999" y="140.50773814958566" width="36.0" height="339.49226185041437" fill="green"/>
+  <line x1="549.9999999999999" y1="139.03051643169138" x2="586.0" y2="139.03051643169138" stroke="#000"/>
+  <line x1="549.9999999999999" y1="141.98495986747994" x2="586.0" y2="141.98495986747994" stroke="#000"/>
+  <line x1="568.0" y1="139.03051643169138" x2="568.0" y2="141.98495986747994" stroke="#000"/>
+  <line x1="549.9999999999999" y1="480.0" x2="549.9999999999999" y2="484.8" stroke="#000"/>
+  <text x="549.9999999999999" y="494.40000000000003" fill="#111" font-size="small" font-family="monospace" font-weight="bold" text-anchor="end" transform="rotate(-60, 549.9999999999999, 494.40000000000003)">
+  respond_to
+  </text>
+  <rect x="621.9999999999999" y="84.25856567528842" width="36.0" height="395.7414343247116" fill="#7070f8"/>
+  <line x1="621.9999999999999" y1="80.19199957465047" x2="657.9999999999999" y2="80.19199957465047" stroke="#000"/>
+  <line x1="621.9999999999999" y1="88.32513177592638" x2="657.9999999999999" y2="88.32513177592638" stroke="#000"/>
+  <line x1="639.9999999999999" y1="80.19199957465047" x2="639.9999999999999" y2="88.32513177592638" stroke="#000"/>
+  <rect x="657.9999999999999" y="126.13654535583579" width="36.0" height="353.8634546441642" fill="orange"/>
+  <line x1="657.9999999999999" y1="120.04743325857085" x2="694.0" y2="120.04743325857085" stroke="#000"/>
+  <line x1="657.9999999999999" y1="132.22565745310072" x2="694.0" y2="132.22565745310072" stroke="#000"/>
+  <line x1="675.9999999999999" y1="120.04743325857085" x2="675.9999999999999" y2="132.22565745310072" stroke="#000"/>
+  <rect x="693.9999999999999" y="175.84647584625438" width="36.0" height="304.15352415374565" fill="green"/>
+  <line x1="693.9999999999999" y1="162.71003140984618" x2="729.9999999999999" y2="162.71003140984618" stroke="#000"/>
+  <line x1="693.9999999999999" y1="188.9829202826626" x2="729.9999999999999" y2="188.9829202826626" stroke="#000"/>
+  <line x1="711.9999999999999" y1="162.71003140984618" x2="711.9999999999999" y2="188.9829202826626" stroke="#000"/>
+  <line x1="693.9999999999999" y1="480.0" x2="693.9999999999999" y2="484.8" stroke="#000"/>
+  <text x="693.9999999999999" y="494.40000000000003" fill="#111" font-size="small" font-family="monospace" font-weight="bold" text-anchor="end" transform="rotate(-60, 693.9999999999999, 494.40000000000003)">
+  lee
+  </text>
+  <rect x="766.0" y="84.25856567528842" width="36.0" height="395.7414343247116" fill="#7070f8"/>
+  <line x1="766.0" y1="77.81574607160466" x2="802.0" y2="77.81574607160466" stroke="#000"/>
+  <line x1="766.0" y1="90.70138527897218" x2="802.0" y2="90.70138527897218" stroke="#000"/>
+  <line x1="784.0" y1="77.81574607160466" x2="784.0" y2="90.70138527897218" stroke="#000"/>
+  <rect x="802.0" y="160.44096331668874" width="36.0" height="319.5590366833113" fill="orange"/>
+  <line x1="802.0" y1="153.01429021463332" x2="838.0000000000001" y2="153.01429021463332" stroke="#000"/>
+  <line x1="802.0" y1="167.86763641874415" x2="838.0000000000001" y2="167.86763641874415" stroke="#000"/>
+  <line x1="820.0000000000001" y1="153.01429021463332" x2="820.0000000000001" y2="167.86763641874415" stroke="#000"/>
+  <rect x="838.0" y="61.50000000000001" width="36.0" height="418.5" fill="green"/>
+  <line x1="838.0" y1="54.08097128224051" x2="874.0" y2="54.08097128224051" stroke="#000"/>
+  <line x1="838.0" y1="68.9190287177595" x2="874.0" y2="68.9190287177595" stroke="#000"/>
+  <line x1="856.0" y1="54.08097128224051" x2="856.0" y2="68.9190287177595" stroke="#000"/>
+  <line x1="838.0" y1="480.0" x2="838.0" y2="484.8" stroke="#000"/>
+  <text x="838.0" y="494.40000000000003" fill="#111" font-size="small" font-family="monospace" font-weight="bold" text-anchor="end" transform="rotate(-60, 838.0, 494.40000000000003)">
+  activerecord
+  </text>
+  </svg>
+</div>
+
+<p>
+	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance.
+</p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
+</p>
+
+<p>
+	Each benchmark is scaled to the CRuby's interpreter's mean result. Want numbers? I like numbers.
+</p>
+
+<table>
+	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT (ms)</th>  <th>MJIT RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>MJIT spd</th>  <th>MJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
+	<tbody style="text-align: right;">
+		
+			<tr style="border: 1px solid black;">
+				 <td> fib </td>  <td> 203.9 </td>  <td> 0.03% </td>  <td> 63.1 </td>  <td> 0.05% </td>  <td> 62.7 </td>  <td> 0.04% </td>  <td> 0.31x </td>  <td> 0.06% </td>  <td> 0.31x </td>  <td> 0.05% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> getivar </td>  <td> 93.1 </td>  <td> 0.22% </td>  <td> 36.3 </td>  <td> 0.05% </td>  <td> 90.9 </td>  <td> 0.11% </td>  <td> 0.39x </td>  <td> 0.22% </td>  <td> 0.98x </td>  <td> 0.24% </td>  <td> 87.26% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> respond_to </td>  <td> 232.7 </td>  <td> 0.16% </td>  <td> 159.8 </td>  <td> 0.18% </td>  <td> 199.6 </td>  <td> 0.41% </td>  <td> 0.69x </td>  <td> 0.24% </td>  <td> 0.86x </td>  <td> 0.44% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> lee </td>  <td> 1122.9 </td>  <td> 1.03% </td>  <td> 1004.0 </td>  <td> 1.38% </td>  <td> 863.0 </td>  <td> 4.19% </td>  <td> 0.89x </td>  <td> 1.72% </td>  <td> 0.77x </td>  <td> 4.32% </td>  <td> 51.50% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> activerecord </td>  <td> 149.4 </td>  <td> 1.63% </td>  <td> 120.7 </td>  <td> 1.66% </td>  <td> 158.0 </td>  <td> 0.70% </td>  <td> 0.81x </td>  <td> 2.32% </td>  <td> 1.06x </td>  <td> 1.77% </td>  <td> 74.97% </td> 
+			</tr>
+		
+	</tbody>
+</table>
+
+<p>
+	<b>RSD</b> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
+	<b>% in YJIT</b> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+</p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><b>ruby 3.1.0dev (2021-08-30T15:43:13Z main 093740af0a) [x86_64-linux]</b></tt> <br/>
+	Tested Ruby version for MJIT: <tt><b>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</b></tt>
+</p>
+
+
+<p> Raw JSON data files: (if published) </p>
+
+<ul>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-08-31-123955_basic_benchmark_prod_ruby_no_jit.json">2021-08-31-123955_basic_benchmark_prod_ruby_no_jit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-08-31-123955_basic_benchmark_prod_ruby_with_yjit.json">2021-08-31-123955_basic_benchmark_prod_ruby_with_yjit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-08-31-123955_basic_benchmark_ruby_30_with_mjit.json">2021-08-31-123955_basic_benchmark_ruby_30_with_mjit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-08-31-123955_basic_benchmark_yjit_stats.json">2021-08-31-123955_basic_benchmark_yjit_stats.json</a></li>
+  
+</ul>
+
