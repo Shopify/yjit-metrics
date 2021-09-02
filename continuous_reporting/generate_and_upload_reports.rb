@@ -28,6 +28,7 @@ REPORTS_AND_FILES = {
     #    extensions: [ "html", "svg" ],
     #},
 }
+REPORT_EXTENSIONS = REPORTS_AND_FILES.values.flat_map { |val| val[:extensions] }.uniq
 
 copy_from = []
 no_push = false
@@ -60,16 +61,16 @@ YJITMetrics.clone_repo_with path: YJIT_METRICS_DIR, git_url: YJIT_METRICS_GIT_UR
 # Copy JSON and report files into the branch
 copy_from.each do |dir_to_copy|
     Dir.chdir(dir_to_copy) do
+        # Copy raw data files to a place we can link them rather than include them in pages
         Dir["*.json"].each do |filename|
-            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "reports/#{filename}"))
+            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "raw_benchmark_data/#{filename}"))
         end
 
-        Dir["*.html"].each do |filename|
-            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "reports/#{filename}"))
-        end
-
-        Dir["*.svg"].each do |filename|
-            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "reports/#{filename}"))
+        # Copy html, svg etc. to somewhere we can include them in other Jekyll pages
+        REPORT_EXTENSIONS.each do |ext|
+            Dir["*.#{ext}"].each do |filename|
+                FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "_includes/reports/#{filename}"))
+            end
         end
     end
 end
@@ -81,7 +82,7 @@ starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 
 # Turn JSON files into reports where outdated - first, find out what test results we have
 json_timestamps = {}
-Dir["*_basic_benchmark_*.json", base: "reports"].each do |filename|
+Dir["*_basic_benchmark_*.json", base: "raw_benchmark_data"].each do |filename|
     unless filename =~ /^(.*)_basic_benchmark_/
         raise "Problem parsing test-result filename #{filename.inspect}!"
     end
@@ -122,11 +123,11 @@ json_timestamps.each do |ts, test_files|
 
         # If the HTML report doesn't already exist, build it.
         if run_report
-            files_for_report = test_files.map { |f| "reports/#{f}" }
+            files_for_report = test_files.map { |f| "raw_benchmark_data/#{f}" }
             puts "Running basic_report for timestamp #{ts} with data files #{files_for_report.inspect}"
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d reports --report=#{report_name} -o reports -w #{files_for_report.join(" ")}")
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d raw_benchmark_data --report=#{report_name} -o _includes/reports -w #{files_for_report.join(" ")}")
 
-            report_filenames = details[:extensions].map { |ext| "reports/#{report_name}_#{ts}.#{ext}" }
+            report_filenames = details[:extensions].map { |ext| "_includes/reports/#{report_name}_#{ts}.#{ext}" }
             files_not_found = report_filenames.select { |f| !File.exist? f }
 
             unless files_not_found.empty?
@@ -146,12 +147,13 @@ json_timestamps.each do |ts, test_files|
                 raise "Error parsing JSON filename #{file.inspect}!"
             end
             config = $1
-            test_results_by_config[config] = "reports/#{file}"
+            test_results_by_config[config] = "raw_benchmark_data/#{file}"
         end
 
         generated_reports = {}
         REPORTS_AND_FILES.each do |report_name, details|
             details[:extensions].each do |ext|
+                # Don't include the leading "_includes" - Jekyll checks there by default.
                 generated_reports[report_name + "_" + ext] = "reports/#{report_name}_#{ts}.#{ext}"
             end
         end

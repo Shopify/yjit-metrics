@@ -1,22 +1,11 @@
-<!-- HTML header tags? Probably not. We want maximum cut-and-paste potential and browsers do well even without them. -->
-
-<h2>YJIT Benchmark Speed Comparison</h2>
+<!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
 <div style="width: 95%; height: 600px; width: 1000px;">
 <%= @svg.render.split("\n").join("\n  ") %>
 </div>
 
 <p>
-	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance.
-</p>
-
-<p>
-	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
-	Our benchmark-runner code isn't public yet, but we plan to release it later.
-</p>
-
-<p>
-	Each benchmark is scaled to the CRuby's interpreter's mean result. Want numbers? I like numbers.
+	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
 </p>
 
 <table>
@@ -35,6 +24,11 @@
 <p>
 	<b>RSD</b> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
 	<b>% in YJIT</b> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+</p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
 </p>
 
 <p>
