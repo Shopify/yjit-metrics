@@ -15,4 +15,11 @@ As of this date: {% include {{page.reports.blog_speed_headline_html}} %}
 
 {% include {{page.reports.blog_speed_details_html}} %}
 
+Raw JSON data files:
+
+<ul>
+{% for result in page.test_results %} <li><a href="{{result[1] | relative_url}}">{{result[0]}}</a></li> {% endfor %}
+</ul>
+
+
 {{ content | markdownify }}
