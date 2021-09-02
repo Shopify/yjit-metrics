@@ -6,14 +6,18 @@ Here's a full historical listing of raw results of YJIT benchmark runs, includin
 with other Rubies.
 
 {% assign dates = site.benchmarks | map: "date_str" | uniq %}
-{% for day in dates reversed %} <h3>{{ day }}</h3>
+{% for day in dates reversed %} <!-- <h3>{{ day }}</h3> -->
   {% assign date_benchmarks = site.benchmarks | where: "date_str", day | sort: "timestamp" %}
   {% for benchmark in date_benchmarks reversed %}
 
-  <h4 id="{{benchmark.timestamp}}">{{benchmark.date_str}} {{benchmark.time_str}}</h4> <a href="#{{benchmark.timestamp}}">(permalink)</a>
+  <h4 id="{{benchmark.timestamp}}">{{benchmark.date_str}} {{benchmark.time_str}}</h4> <!-- <a href="#{{benchmark.timestamp}}">(permalink)</a> -->
 
-  <a href="{{ benchmark.reports.share_speed }}"> <img src="{{ benchmark.reports.share_speed_svg }}" />
-  Click through for text report</a><br/>
+  <div style="width: 800px;">
+  <a href="{{ benchmark.url }}">
+  {% include {{benchmark.reports.blog_speed_details_svg}} %}
+  Click through for full text report
+  </a>
+  </div>
 
   Raw JSON data:<br/>
   <ul> {% for result in benchmark.test_results %} <li><a href="{{result[1]}}">{{result[0]}}</a></li> {% endfor %} </ul>
