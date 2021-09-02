@@ -13,7 +13,7 @@ with other Rubies.
   <h4 id="{{benchmark.timestamp}}">{{benchmark.date_str}} {{benchmark.time_str}}</h4> <!-- <a href="#{{benchmark.timestamp}}">(permalink)</a> -->
 
   <div style="width: 800px;">
-  <a href="{{ benchmark.url }}">
+  <a href="{{ benchmark.url | relative_url }}">
   {% include {{benchmark.reports.blog_speed_details_svg}} %}
   Click through for full text report
   </a>
