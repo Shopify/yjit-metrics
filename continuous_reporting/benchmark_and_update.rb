@@ -108,4 +108,5 @@ rescue
     raise "Exception in CI benchmarks: #{$!.message}!"
 end
 
+# There's no error if this isn't here, but it's cleaner to remove it.
 FileUtils.rm PIDFILE
