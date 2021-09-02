@@ -1,0 +1,18 @@
+---
+layout: basic
+---
+
+<h2>{{ page.date_str }} {{ page.time_str }}</h2>
+
+<div>
+As of this date: {% include {{page.reports.blog_speed_headline_html}} %}
+</div>
+
+<!-- TODO: be sure to avoid non-proportional scaling -->
+<div style="width: 800px;">
+{% include {{page.reports.blog_speed_details_svg}} %}
+</div>
+
+{% include {{page.reports.blog_speed_details_html}} %}
+
+{{ content | markdownify }}
