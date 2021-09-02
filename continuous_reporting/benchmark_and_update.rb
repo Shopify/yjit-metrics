@@ -41,25 +41,12 @@ def ghapi_post(api_uri, params, verb: :post)
 end
 
 def file_gh_issue(title, message)
-    # If not attached to a tty, stdout often won't flush promptly.
-    # We'd like to include as much output as practical.
-    $stdout.flush
-
-    logged_output = File.read(OUTPUT_LOG) if File.exist?(OUTPUT_LOG)
-    # GitHub API has a 64kb limit on issue body size, and that's realistically too big anyway. Cut this if too big.
-    if logged_output.size > (1024 * 16)
-        logged_output = logged_output[0..12288] + "\n\n(.... cutting ....)\n\n" + logged_output[-2048..-1]
-    end
-
-    host = `uname -a`
+    host = `uname -a`.chomp
     issue_body = <<~ISSUE
         <pre>
+        Error running benchmark CI job on #{host}:
+
         #{message}
-
-        Including contents of #{OUTPUT_LOG} if present:
-
-        #{logged_output}
-
         </pre>
     ISSUE
 
@@ -76,14 +63,7 @@ if File.exist?(PIDFILE)
     if pid && pid > 0
         ps_out = `ps -p #{pid}`
         if ps_out.include?(pid.to_s)
-            # Previous process is still running...
-
-            issue_message = <<~ISSUE
-                When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!
-            ISSUE
-            file_gh_issue("previous process still running", issue_message)
-
-            raise "Previous process still running!"
+            raise "When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!"
         end
     end
 end
@@ -123,16 +103,9 @@ begin
     run_benchmarks
     report_and_upload
 rescue
-    issue_message = <<~ISSUE
-        While running CI benchmarks on #{host.inspect}
-        benchmark_and_update.rb encountered an exception:
-
-        ======
-        #{$!.full_message}
-        ======
-    ISSUE
-
-    file_gh_issue("Benchmarking failed!", issue_message)
+    host = `uname -a`.chomp
+    puts $!.full_message
+    raise "Exception in CI benchmarks: #{$!.message}!"
 end
 
 FileUtils.rm PIDFILE
