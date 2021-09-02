@@ -1,6 +1,10 @@
 require_relative "yjit_stats_reports"
 
-class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
+# For details-at-a-specific-time reports, we'll want to find individual configs and make sure everything is
+# present and accounted for. This is a "single" report in the sense that it's conceptually at a single
+# time, even though it can be multiple runs and Rubies. What it is *not* is results over time as YJIT and
+# the benchmarks change.
+class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     def exactly_one_config_with_name(configs, substring, description, none_okay: false)
         matching_configs = configs.select { |name| name.include?(substring) }
         raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
@@ -42,40 +46,14 @@ class YJITMetrics::ShareableReport < YJITMetrics::YJITStatsReport
                 raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
             end
         end
-    end
-
-end
-
-# This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
-class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
-    def self.report_name
-        "share_speed"
-    end
-
-    def initialize(config_names, results, benchmarks: [])
-        # Set up the YJIT stats parent class
-        super
-
-        look_up_data_by_ruby
 
         no_stats_benchmarks = @benchmark_names.select { |bench_name| !@yjit_stats[bench_name] || !@yjit_stats[bench_name][0] || @yjit_stats[bench_name][0].empty? }
         unless no_stats_benchmarks.empty?
             raise "No YJIT stats found for benchmarks: #{no_stats_benchmarks.inspect}"
         end
+    end
 
-        # Sort benchmarks by compiled ISEQ count
-        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
-
-        @headings = [ "bench" ] +
-            @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
-            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
-            [ "% in YJIT" ]
-        # Col formats are only used when formatting a text table, not for HTML or CSV
-        @col_formats = [ "%s" ] +                                           # Benchmark name
-            [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
-            [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
-            [ "%.2f%%" ]                                                    # YJIT ratio
-
+    def calc_stats_by_config
         @mean_by_config = {
             @no_jit_config => [],
             @with_mjit_config => [],
@@ -90,10 +68,16 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             @with_mjit_config => [],
             @with_yjit_config => [],
         }
+        @total_time_by_config = {
+            @no_jit_config => 0.0,
+            @with_mjit_config => 0.0,
+            @with_yjit_config => 0.0,
+        }
         if @truffle_config
             @mean_by_config[@truffle_config] = []
             @rsd_pct_by_config[@truffle_config] = []
             @speedup_by_config[@truffle_config] = []
+            @total_time_by_config[@truffle_config] = 0.0
         end
         @yjit_ratio = []
 
@@ -102,6 +86,7 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
                 this_config_times = @times_by_config[config][benchmark_name]
                 this_config_mean = mean(this_config_times)
                 @mean_by_config[config].push this_config_mean
+                @total_time_by_config[config] += this_config_times.sum
                 this_config_rel_stddev_pct = rel_stddev_pct(this_config_times)
                 @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
@@ -131,6 +116,50 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             @yjit_ratio.push yjit_ratio_pct
         end
     end
+end
+
+# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# with a single YJIT head-of-master.
+class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_speed_details"
+    end
+
+    # This is called later than initialize
+    def set_extra_info(info)
+        super
+
+        if info[:filenames]
+            info[:filenames].each do |filename|
+                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/raw_benchmark_data/#{filename}"
+            end
+        end
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        # This can be set up using set_extra_info later.
+        @filename_permalinks = {}
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by compiled ISEQ count
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
+
+        @headings = [ "bench" ] +
+            @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
+            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
+            [ "% in YJIT" ]
+        # Col formats are only used when formatting entries for a text table, not for CSV
+        @col_formats = [ "%s" ] +                                           # Benchmark name
+            [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +         # Mean and RSD per-Ruby
+            [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
+            [ "%.2f%%" ]                                                    # YJIT ratio
+
+        calc_stats_by_config
+    end
 
     def report_table_data
         @benchmark_names.map.with_index do |bench_name, idx|
@@ -147,6 +176,8 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
             "Spd is the speed (iters/second) of the optimised implementation -- 2.0x would be twice as many iters per second.\n"
     end
 
+    # For the SVG, we calculate ratios from 0 to 1 for how far across the graph area a coordinate is.
+    # Then we convert them here to the actual size of the graph.
     def ratio_to_x(ratio)
         (ratio * 1000).to_s
     end
@@ -354,13 +385,62 @@ class YJITMetrics::ShareableSpeedReport < YJITMetrics::ShareableReport
 
         @svg = svg_object
 
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/shareable_speed.html.erb")
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
 
+        # Write a separate SVG file for showing just the graph on summary pages
         File.open(filename + ".svg", "w") { |f| f.write(@svg.render) }
 
         #write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
 
+end
+
+# This very small report is to give the quick headlines and summary for a YJIT comparison.
+class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_speed_headline"
+    end
+
+    def format_speedup(ratio)
+        if ratio >= 1.01
+            "%.2f%% faster" % ((ratio - 1.0) * 100)
+        elsif ratio < 0.99
+            "%.2f%% slower" % ((1.0 - ratio) * 100)
+        else
+            "the same speed" # Grammar's not perfect here
+        end
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by compiled ISEQ count
+        @benchmark_names.sort_by! { |bench_name| [ bench_name.end_with?(".rb") ? 1 : 2, @yjit_stats[bench_name][0]["compiled_iseq_count"], bench_name ] }
+
+        calc_stats_by_config
+
+        @yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
+        @yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
+
+        @railsbench_idx = @benchmark_names.index("railsbench")
+        if @railsbench_idx
+            @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+            @yjit_vs_mjit_railsbench_ratio = @mean_by_config[@with_mjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+        end
+    end
+
+    def to_s
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_headline.html.erb")
+        script_template.result(binding) # Evaluate an Erb template with template_settings
+    end
+
+    def write_file(filename)
+        html_output = self.to_s
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+    end
 end

@@ -13,11 +13,4 @@ git pull
 bundle
 ruby continuous_reporting/benchmark_and_update.rb &> ~ubuntu/benchmark_ci_output.txt
 
-
-# Want to install this? I recommend something like one of the following crontab entries:
-
-# Twice a day, 12:05 am and pm
-# 5 0,12 * * *		~ubuntu/ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh
-
-# Hourly at XX:00 straight up
-# 0 * * * *		~ubuntu/ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh
+echo "Completed successfully."

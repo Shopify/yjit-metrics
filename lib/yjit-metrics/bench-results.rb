@@ -192,6 +192,39 @@ class YJITMetrics::ResultSet
         @ruby_metadata.keys
     end
 
+    # Summarize the data by config. If it's a YJIT config with full stats, get the highlights of the exit report too.
+    SUMMARY_STATS = [ "inline_code_size", "outlined_code_size", "exec_instruction", "vm_insns_count", "compiled_iseq_count" ]
+    def summary_by_config_and_benchmark
+        summary = {}
+        available_configs.each do |config|
+            summary[config] = {}
+
+            times = times_for_config_by_benchmark(config)
+            times.each do |bench, results|
+                summary[config][bench] = {
+                    mean: mean(times),
+                    stddev: stddev(times),
+                    rel_stddev: rel_stddev(times),
+                }
+            end
+
+            stats = yjit_stats_for_config_by_benchmark(config)
+            stats.each do |bench, results|
+                summary[config][bench]["yjit_stats"] = results.slice(*SUMMARY_STATS)
+
+                # Do we have full YJIT stats? If so, let's add the relevant summary bits
+                if results["all_stats"]
+                    total_exits = results.inject(0) { |total, (k, v)| total + k.start_with?("exit_") ? v : 0 }
+                    retired_in_yjit = results["exec_instruction"] - total_exits
+                    avg_len_in_yjit = retired_in_yjit.to_f / total_exits
+                    total_insns_count = retired_in_yjit + stats["vm_insns_count"]
+                    yjit_ratio_pct = 100.0 * retired_in_yjit / total_insns_count
+                end
+            end
+        end
+        summary
+    end
+
     # What Ruby configurations, if any, have full YJIT statistics available?
     def configs_containing_full_yjit_stats
         @yjit_stats.keys.select do |config_name|
@@ -222,7 +255,7 @@ class YJITMetrics::ResultSet
     end
 end
 
-# Shared utility methods for reports
+# Shared utility methods for reports that use a single "blob" of results
 class YJITMetrics::Report
     include YJITMetrics::Stats
 
@@ -256,6 +289,16 @@ class YJITMetrics::Report
         @config_names = config_names
         @only_benchmarks = benchmarks
         @result_set = results
+    end
+
+    # Child classes can accept params in this way. By default it's a no-op.
+    def set_extra_info(info)
+        @extra_info = info
+    end
+
+    # Do we specifically recognize this extra field? Nope. Child classes can override.
+    def accepts_field(name)
+        false
     end
 
     def filter_benchmark_names(names)
