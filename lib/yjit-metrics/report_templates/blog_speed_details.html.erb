@@ -31,13 +31,3 @@
 	Tested Ruby version for YJIT and No-JIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
 	Tested Ruby version for MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></strong></tt>
 </p>
-
-<% unless @filename_permalinks.empty? %>
-<p> Raw JSON data files: (if published) </p>
-
-<ul>
-  <% @filename_permalinks.each do |filename, url| %>
-    <li><a href="<%= url %>"><%= filename %></a></li>
-  <% end %>
-</ul>
-<% end %>
