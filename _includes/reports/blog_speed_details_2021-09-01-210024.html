@@ -1,6 +1,4 @@
-<!-- HTML header tags? Probably not. We want maximum cut-and-paste potential and browsers do well even without them. -->
-
-<h2>YJIT Benchmark Speed Comparison</h2>
+<!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
 <div style="width: 95%; height: 600px; width: 1000px;">
 <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
@@ -318,21 +316,7 @@
 </div>
 
 <p>
-	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance.
-</p>
-
-<p>
-	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
-	Our benchmark-runner code isn't public yet, but we plan to release it later.
-</p>
-
-<p>
-	Tested Ruby version for YJIT and No-JIT: <tt><b>ruby 3.1.0dev (2021-09-01T19:38:24Z main a83668bb26) [x86_64-linux]</b></tt> <br/>
-	Tested Ruby version for MJIT: <tt><b>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</b></tt>
-</p>
-
-<p>
-	Each benchmark is scaled to the CRuby's interpreter's mean result. Want numbers? I like numbers.
+	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
 </p>
 
 <table>
@@ -414,3 +398,29 @@
 	<b>RSD</b> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
 	<b>% in YJIT</b> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
 </p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
+</p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><b>ruby 3.1.0dev (2021-09-01T19:38:24Z main a83668bb26) [x86_64-linux]</b></tt> <br/>
+	Tested Ruby version for MJIT: <tt><b>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</b></tt>
+</p>
+
+
+<p> Raw JSON data files: (if published) </p>
+
+<ul>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-09-01-210024_basic_benchmark_prod_ruby_no_jit.json">2021-09-01-210024_basic_benchmark_prod_ruby_no_jit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-09-01-210024_basic_benchmark_prod_ruby_with_yjit.json">2021-09-01-210024_basic_benchmark_prod_ruby_with_yjit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-09-01-210024_basic_benchmark_ruby_30_with_mjit.json">2021-09-01-210024_basic_benchmark_ruby_30_with_mjit.json</a></li>
+  
+    <li><a href="https://shopify.github.io/yjit-metrics/reports/2021-09-01-210024_basic_benchmark_yjit_stats.json">2021-09-01-210024_basic_benchmark_yjit_stats.json</a></li>
+  
+</ul>
+
