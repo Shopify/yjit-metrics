@@ -10,7 +10,7 @@ with other Rubies.
   {% assign date_benchmarks = site.benchmarks | where: "date_str", day | sort: "timestamp" %}
   {% for benchmark in date_benchmarks reversed %}
 
-  <h4 id="{{benchmark.timestamp}}">{{benchmark.timestamp}}</h4> <a href="#{{benchmark.timestamp}}">(permalink)</a>
+  <h4 id="{{benchmark.timestamp}}">{{benchmark.date_str}} {{benchmark.time_str}}</h4> <a href="#{{benchmark.timestamp}}">(permalink)</a>
 
   <a href="{{ benchmark.reports.share_speed }}"> <img src="{{ benchmark.reports.share_speed_svg }}" />
   Click through for text report</a><br/>
