@@ -1,9 +1,5 @@
 <!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
-<div style="width: 95%; height: 600px; width: 1000px;">
-<%= @svg.render.split("\n").join("\n  ") %>
-</div>
-
 <p>
 	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
 </p>
@@ -22,8 +18,8 @@
 </table>
 
 <p>
-	<b>RSD</b> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
-	<b>% in YJIT</b> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
+	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
 </p>
 
 <p>
@@ -32,8 +28,8 @@
 </p>
 
 <p>
-	Tested Ruby version for YJIT and No-JIT: <tt><b><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></b></tt> <br/>
-	Tested Ruby version for MJIT: <tt><b><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></b></tt>
+	Tested Ruby version for YJIT and No-JIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+	Tested Ruby version for MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></strong></tt>
 </p>
 
 <% unless @filename_permalinks.empty? %>

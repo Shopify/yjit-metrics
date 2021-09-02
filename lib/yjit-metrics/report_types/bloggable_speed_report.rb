@@ -131,7 +131,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         if info[:filenames]
             info[:filenames].each do |filename|
-                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/reports/#{filename}"
+                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/raw_benchmark_data/#{filename}"
             end
         end
     end
