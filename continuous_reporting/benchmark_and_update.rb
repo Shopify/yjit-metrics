@@ -11,7 +11,6 @@ require 'net/http'
 
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
-OUTPUT_LOG = "/home/ubuntu/benchmark_ci_output.txt"
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
 GITHUB_USER=ENV["YJIT_METRICS_GITHUB_USER"]
