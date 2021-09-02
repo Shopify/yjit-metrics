@@ -36,6 +36,14 @@ RUBY_BUILDS = {
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
     },
+    "ruby-yjit-metrics-stats" => {
+        install: "repo",
+        git_url: "https://github.com/Shopify/yjit",
+        git_branch: "main",
+        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+        config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
+    },
     "ruby-yjit-metrics-prod" => {
         install: "repo",
         git_url: "https://github.com/Shopify/yjit",
@@ -59,6 +67,14 @@ RUBY_CONFIGS = {
     yjit_stats: {
         build: "ruby-yjit-metrics-debug",
         opts: [ "--yjit", "--yjit-stats" ],
+    },
+    yjit_prod_stats: {
+        build: "ruby-yjit-metrics-stats",
+        opts: [ "--yjit", "--yjit-stats" ],
+    },
+    yjit_prod_stats_disabled: {
+        build: "ruby-yjit-metrics-stats",
+        opts: [ "--yjit" ],
     },
     prod_ruby_no_jit: {
         build: "ruby-yjit-metrics-prod",
