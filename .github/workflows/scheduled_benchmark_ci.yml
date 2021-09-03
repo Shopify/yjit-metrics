@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        ref: main
       - name: SSH to CI instance to start benchmarking and publication
         run: |
           set -e
