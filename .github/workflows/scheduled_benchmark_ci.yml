@@ -14,6 +14,7 @@ jobs:
         run: |
           set -e
           set -x
+          git pull
           export YJIT_METRICS_GITHUB_TOKEN=${{ secrets.YJIT_METRICS_GITHUB_TOKEN }}
           export YJIT_METRICS_GITHUB_USER=${{ secrets.YJIT_METRICS_GITHUB_USER }}
           export AWS_INSTANCE=${{ secrets.CI_AWS_INSTANCE }}
