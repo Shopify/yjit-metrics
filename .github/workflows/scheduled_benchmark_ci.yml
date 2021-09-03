@@ -21,6 +21,7 @@ jobs:
           export AWS_INSTANCE=${{ secrets.CI_AWS_INSTANCE }}
           cat << EOF > ./id_benchmark_ci_rsa
           ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
+          
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           sha1sum ./id_benchmark_ci_rsa
