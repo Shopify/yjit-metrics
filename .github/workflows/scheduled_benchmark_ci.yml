@@ -18,5 +18,5 @@ jobs:
           ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
-          ssh -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "YJIT_METRICS_GITHUB_TOKEN=$YJIT_METRICS_GITHUB_TOKEN YJIT_METRICS_GITHUB_USER=$YJIT_METRICS_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh"
+          ssh -i ./id_benchmark_ci_rsa ubuntu@18.134.14.158 "YJIT_METRICS_GITHUB_TOKEN=$YJIT_METRICS_GITHUB_TOKEN YJIT_METRICS_GITHUB_USER=$YJIT_METRICS_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh"
 
