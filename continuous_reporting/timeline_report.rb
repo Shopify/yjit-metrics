@@ -12,6 +12,10 @@ all_report_names = report_class_by_name.keys.sort
 data_dir = "data"
 output_dir = "."
 
+# Default benchmarks and configs to compare
+configs = [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "ruby_30_with_mjit" ]
+benchmarks = [ "railsbench", "optcarrot", "lee", "activerecord" ]
+
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
       Usage: timeline_report.rb [options]
@@ -88,27 +92,39 @@ end
 all_benchmarks.uniq!
 ALL_BENCHMARKS = all_benchmarks
 
-puts "Configs: #{ALL_CONFIGS.inspect}"
-puts "Benchmarks: #{ALL_BENCHMARKS.inspect}"
-puts "Timestamps: #{ALL_TIMESTAMPS.inspect}"
+benchmarks = benchmarks & ALL_BENCHMARKS
 
-ALL_TIMESTAMPS.each do |ts|
-    ALL_CONFIGS.each do |config|
-        # Grab the datapoint if the datapoint exists for this combination
-        single_summary = summary_by_ts[ts].dig(config, "railsbench")
-        mean = single_summary["mean"]
+#puts "Configs: #{ALL_CONFIGS.inspect}"
+#puts "Benchmarks: #{benchmarks.inspect}"
+#puts "Timestamps: #{ALL_TIMESTAMPS.inspect}"
+
+#ALL_TIMESTAMPS.each do |ts|
+#    ALL_CONFIGS.each do |config|
+#        ALL_BENCHMARKS.each do |benchmark|
+#            next unless [ "railsbench" ].include?(benchmark)
+#            # Grab the datapoint if the datapoint exists for this combination
+#            single_summary = summary_by_ts.dig(ts, config, benchmark)
+#            mean = single_summary["mean"]
+#        end
+#    end
+#end
+
+@series = []
+configs.each do |config|
+    benchmarks.each do |benchmark|
+        all_points = ALL_TIMESTAMPS.map do |ts|
+            this_point = summary_by_ts.dig(ts, config, benchmark)
+            if this_point
+                [ ts.to_time.to_f, this_point["mean"] ]  # this_point["stddev"]
+            else
+                nil
+            end
+        end
+
+        @series.push({ name: "#{config}-#{benchmark}", data: all_points.compact })
     end
 end
 
-#reports.each do |report_name|
-#    report_type = report_class_by_name[report_name]
-#    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
-#
-#    if write_output_files && report.respond_to?(:write_file)
-#        ts_str = latest_ts.strftime('%F-%H%M%S')
-#        report.write_file("#{output_dir}/#{report_name}_#{ts_str}")
-#    end
-#
-#    print report.to_s
-#    puts
-#end
+script_template = ERB.new File.read(__dir__ + "/timeline_graph_rickshaw_template.html.erb")
+html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+File.open(output_dir + "/timeline_report.html", "w") { |f| f.write(html_output) }
