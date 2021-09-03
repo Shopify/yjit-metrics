@@ -233,9 +233,9 @@ class YJITMetrics::ResultSet
             times_by_bench = times_for_config_by_benchmark(config)
             times_by_bench.each do |bench, results|
                 summary[config][bench] = {
-                    mean: mean(results),
-                    stddev: stddev(results),
-                    rel_stddev: rel_stddev(results),
+                    "mean" => mean(results),
+                    "stddev" => stddev(results),
+                    "rel_stddev" => rel_stddev(results),
                 }
             end
 
