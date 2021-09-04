@@ -1,0 +1,95 @@
+<!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
+
+<p>
+	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
+</p>
+
+<table>
+	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT (ms)</th>  <th>MJIT RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>MJIT spd</th>  <th>MJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
+	<tbody style="text-align: right;">
+		
+			<tr style="border: 1px solid black;">
+				 <td> cfunc_itself.rb </td>  <td> 89.0 </td>  <td> 0.15% </td>  <td> 41.1 </td>  <td> 0.32% </td>  <td> 57.2 </td>  <td> 0.16% </td>  <td> 0.46x </td>  <td> 0.35% </td>  <td> 0.64x </td>  <td> 0.22% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> fib.rb </td>  <td> 206.0 </td>  <td> 0.02% </td>  <td> 58.3 </td>  <td> 0.04% </td>  <td> 62.6 </td>  <td> 0.03% </td>  <td> 0.28x </td>  <td> 0.05% </td>  <td> 0.30x </td>  <td> 0.03% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> getivar.rb </td>  <td> 90.4 </td>  <td> 0.08% </td>  <td> 36.3 </td>  <td> 0.04% </td>  <td> 90.8 </td>  <td> 0.13% </td>  <td> 0.40x </td>  <td> 0.09% </td>  <td> 1.00x </td>  <td> 0.15% </td>  <td> 86.57% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> respond_to.rb </td>  <td> 228.5 </td>  <td> 0.74% </td>  <td> 154.1 </td>  <td> 0.58% </td>  <td> 203.7 </td>  <td> 0.44% </td>  <td> 0.67x </td>  <td> 0.94% </td>  <td> 0.89x </td>  <td> 0.86% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> setivar.rb </td>  <td> 70.5 </td>  <td> 0.08% </td>  <td> 41.8 </td>  <td> 0.29% </td>  <td> 72.9 </td>  <td> 0.07% </td>  <td> 0.59x </td>  <td> 0.30% </td>  <td> 1.03x </td>  <td> 0.11% </td>  <td> 88.61% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> 30k_methods.rb </td>  <td> 5914.8 </td>  <td> 1.58% </td>  <td> 723.3 </td>  <td> 0.01% </td>  <td> 6023.3 </td>  <td> 0.18% </td>  <td> 0.12x </td>  <td> 1.58% </td>  <td> 1.02x </td>  <td> 1.59% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> 30k_ifelse.rb </td>  <td> 2222.1 </td>  <td> 0.61% </td>  <td> 325.8 </td>  <td> 0.17% </td>  <td> 2360.6 </td>  <td> 0.82% </td>  <td> 0.15x </td>  <td> 0.64% </td>  <td> 1.06x </td>  <td> 1.02% </td>  <td> 99.98% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> fannkuchredux </td>  <td> 5533.1 </td>  <td> 0.11% </td>  <td> 5486.6 </td>  <td> 0.10% </td>  <td> 3958.7 </td>  <td> 0.08% </td>  <td> 0.99x </td>  <td> 0.14% </td>  <td> 0.72x </td>  <td> 0.13% </td>  <td> 0.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> nbody </td>  <td> 115.4 </td>  <td> 0.02% </td>  <td> 114.2 </td>  <td> 0.04% </td>  <td> 69.9 </td>  <td> 0.42% </td>  <td> 0.99x </td>  <td> 0.04% </td>  <td> 0.61x </td>  <td> 0.42% </td>  <td> 7.40% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> binarytrees </td>  <td> 370.4 </td>  <td> 0.57% </td>  <td> 298.0 </td>  <td> 0.10% </td>  <td> 254.0 </td>  <td> 0.19% </td>  <td> 0.80x </td>  <td> 0.58% </td>  <td> 0.69x </td>  <td> 0.60% </td>  <td> 82.95% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> psych-load </td>  <td> 2148.1 </td>  <td> 0.42% </td>  <td> 1813.7 </td>  <td> 0.73% </td>  <td> 1993.6 </td>  <td> 3.38% </td>  <td> 0.84x </td>  <td> 0.84% </td>  <td> 0.93x </td>  <td> 3.41% </td>  <td> 63.86% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> lee </td>  <td> 1131.6 </td>  <td> 1.20% </td>  <td> 810.0 </td>  <td> 1.46% </td>  <td> 870.9 </td>  <td> 1.54% </td>  <td> 0.72x </td>  <td> 1.89% </td>  <td> 0.77x </td>  <td> 1.96% </td>  <td> 99.80% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> liquid-render </td>  <td> 185.1 </td>  <td> 0.93% </td>  <td> 148.9 </td>  <td> 1.64% </td>  <td> 164.0 </td>  <td> 2.66% </td>  <td> 0.80x </td>  <td> 1.89% </td>  <td> 0.89x </td>  <td> 2.82% </td>  <td> 66.66% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> activerecord </td>  <td> 148.1 </td>  <td> 1.64% </td>  <td> 109.8 </td>  <td> 1.76% </td>  <td> 152.7 </td>  <td> 0.98% </td>  <td> 0.74x </td>  <td> 2.41% </td>  <td> 1.03x </td>  <td> 1.91% </td>  <td> 79.09% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> optcarrot </td>  <td> 5521.6 </td>  <td> 0.17% </td>  <td> 3128.6 </td>  <td> 0.21% </td>  <td> 2825.6 </td>  <td> 0.18% </td>  <td> 0.57x </td>  <td> 0.27% </td>  <td> 0.51x </td>  <td> 0.25% </td>  <td> 96.16% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> jekyll </td>  <td> 8345.1 </td>  <td> 1.90% </td>  <td> 7613.2 </td>  <td> 1.86% </td>  <td> 8328.3 </td>  <td> 1.68% </td>  <td> 0.91x </td>  <td> 2.66% </td>  <td> 1.00x </td>  <td> 2.54% </td>  <td> 66.85% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> railsbench </td>  <td> 3080.1 </td>  <td> 1.17% </td>  <td> 2684.2 </td>  <td> 1.14% </td>  <td> 3127.4 </td>  <td> 0.96% </td>  <td> 0.87x </td>  <td> 1.63% </td>  <td> 1.02x </td>  <td> 1.51% </td>  <td> 74.44% </td> 
+			</tr>
+		
+	</tbody>
+</table>
+
+<p>
+	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
+	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+</p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
+</p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><strong>ruby 3.1.0dev (2021-09-01T19:38:24Z main a83668bb26) [x86_64-linux]</strong></tt> <br/>
+	Tested Ruby version for MJIT: <tt><strong>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</strong></tt>
+</p>
