@@ -194,7 +194,7 @@ elsif no_push
     puts "Changes found, but --no-push was specified. Not committing or pushing."
 else
     puts "Changes found. Committing and pushing."
-    YJITMetrics.check_call "git add reports _benchmarks"
+    YJITMetrics.check_call "git add raw_benchmark_data _includes/reports"
     YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
     YJITMetrics.check_call "git push"
 end
