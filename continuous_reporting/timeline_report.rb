@@ -115,7 +115,7 @@ configs.each do |config|
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
             if this_point
-                [ ts.to_time.to_f, this_point["mean"] ]  # this_point["stddev"]
+                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"] ]  # this_point["stddev"]
             else
                 nil
             end
@@ -125,6 +125,6 @@ configs.each do |config|
     end
 end
 
-script_template = ERB.new File.read(__dir__ + "/timeline_graph_rickshaw_template.html.erb")
+script_template = ERB.new File.read(__dir__ + "/timeline_graph_d3_template.html.erb")
 html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
 File.open(output_dir + "/timeline_report.html", "w") { |f| f.write(html_output) }

@@ -1,0 +1,110 @@
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<div id="timeline_rs_chart"></div>
+
+<script>
+
+// I still sometimes use the Rickshaw colour palettes: https://github.com/shutterstock/rickshaw/blob/master/src/js/Rickshaw.Fixtures.Color.js
+<%
+# Based on Rickshaw's "Munin" palette, which is likely from the Munin ops tool
+colours = [
+    '#00cc00',
+    '#0066b3',
+    '#ff8000',
+    '#ffcc00',
+    '#330099',
+    '#990099',
+    '#ccff00',
+    '#ff0000',
+    '#808080',
+    '#008f00',
+    '#00487d',
+    '#b35a00',
+    '#b38f00',
+    '#6b006b',
+    '#8fb300',
+    '#b30000',
+    '#bebebe',
+    '#80ff80',
+    '#80c9ff',
+    '#ffc080',
+    '#ffe680',
+    '#aa80ff',
+    '#ee00cc',
+    '#ff8080',
+    '#666600',
+    '#ffbfff',
+    '#00ffcc',
+    '#cc6699',
+    '#999900'
+]
+%>
+
+
+// D3 line graph, starting from https://www.d3-graph-gallery.com/graph/line_basic.html
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var timeParser = d3.timeParse("%Y %m %d %H %M %S");
+
+var data_series = [
+    <% @series.each_with_index do |this_series, colour_index| %>
+    {
+        name: <%= this_series[:name].inspect %>,
+        data: [ <%= this_series[:data].map { |t, mean| "{ time: timeParser(#{t.inspect}), value: #{mean} }" }.join(", ") %> ],
+        colour: <%= colours[colour_index % colours.size].inspect %>,
+        time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
+        value_range: [ <%= this_series[:data][0][1] %>, <%= this_series[:data][-1][1] %> ]
+    },
+    <% end %>
+    {}
+]
+data_series.pop();
+
+var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
+var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data][0][1] }.min %>, <%= @series.map { |this_series| this_series[:data][-1][1] }.max %> ];
+
+// Add X axis --> it is a date format
+var x = d3.scaleTime()
+  .domain(d3.extent(all_series_time_range, function(d) { return d.time; }))
+  .range([ 0, width ]);
+svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+  .call(d3.axisBottom(x));
+
+// Add Y axis
+var y = d3.scaleLinear()
+  .domain([0, d3.max(all_series_value_range, function(d) { return +d.value; })])
+  .range([ height, 0 ]);
+svg.append("g")
+  .call(d3.axisLeft(y));
+
+data_series.forEach(function(item) {
+    console.log(item.data);
+
+    // Add the line
+    svg.append("path")
+      .datum(item.data)
+      .attr("fill", "none")
+      .attr("stroke", item.colour)
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.time) })
+        .y(function(d) { return y(d.value) })
+        );
+});
+
+</script>
