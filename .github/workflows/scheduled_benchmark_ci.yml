@@ -2,7 +2,7 @@ name: Scheduled benchmarking, reporting and publishing
 on:
   schedule:
     # Run twice daily at 7:05 am/pm
-    - cron: '05 * * * *'
+    - cron: '05 7,19 * * *'
 
 jobs:
   checks:
