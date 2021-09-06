@@ -17,6 +17,6 @@ ruby continuous_reporting/benchmark_and_update.rb
 # To do that we'll tell generate_and_upload not to do Git checkins,
 # and to fail if we try to generate any reports. The previous run
 # was *supposed* to generate everything that needed it.
-ruby continuous_reporting/generate_and_upload_reports.rb -n -p
+ruby continuous_reporting/generate_and_upload_reports.rb --no-push --prevent-regenerate
 
 echo "Completed successfully."
