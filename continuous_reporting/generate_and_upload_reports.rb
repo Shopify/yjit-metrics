@@ -177,6 +177,7 @@ json_timestamps.each do |ts, test_files|
 
         generated_reports = {}
         REPORTS_AND_FILES.each do |report_name, details|
+            next unless details[:report_type] == :basic_report
             details[:extensions].each do |ext|
                 # Don't include the leading "_includes" - Jekyll checks there by default.
                 generated_reports[report_name + "_" + ext.gsub(".", "_")] = "reports/#{report_name}_#{ts}.#{ext}"
