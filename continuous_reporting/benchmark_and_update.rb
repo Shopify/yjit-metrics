@@ -99,9 +99,91 @@ def report_and_upload
     end
 end
 
+def clear_latest_data
+    Dir.chdir __dir__ do
+        old_data_files = Dir["continuous_reporting/data/*"].to_a
+        unless old_data_files.empty?
+            old_data_files.each { |f| FileUtils.rm f }
+        end
+    end
+end
+
+def ts_from_tripwire_filename(filename)
+    filename.split("blog_speed_details")[1].split(".")[0]
+end
+
+# If something starts getting false positives, we'll ignore it. Example bad benchmark: jekyll
+EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
+
+# If benchmark results drop noticeably, file a Github issue
+def check_perf_tripwires
+    Dir.chdir(__dir__ + "../../yjit-metrics-pages/_includes/reports") do
+        tripwire_files = Dir["*.tripwires.json"].to_a.sort
+
+        latest = tripwire_files[-1]
+        penultimate = tripwire_files[-2]
+
+        latest_data = File.read(latest)
+        penultimate_data = File.read(penultimate)
+
+        check_failures = []
+
+        penultimate_data.each do |bench_name, values|
+            # Only compare if both sets of data have the benchmark
+            next unless latest_data[bench_name]
+            next if EXCLUDE_HIGH_NOISE_BENCHMARKS.include?(bench_name)
+
+            latest_mean = latest_data[bench_name]["mean"]
+            latest_rsd_pct = latest_data[bench_name]["rsd_pct"]
+            penultimate_mean = values["mean"]
+            penultimate_rsd_pct = values["rsd_pct"]
+
+            latest_stddev = (latest_rsd_pct.to_f / 100.0) * latest_mean
+            penultimate_stddev = (penultimate_rsd_pct.to_f / 100.0) * penultimate_mean
+
+            # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of 2x recent stddev,
+            # or 5% of the larger mean runtime.
+            tolerance = [ latest_stddev * 2.0, penultimate_stddev * 2.0, latest_mean * 0.05, penultimate_mean * 0.05 ].max
+
+            if (latest_mean - penultimate_mean) > tolerance
+                check_failures.push({
+                    benchmark: bench_name,
+                    latest_mean: latest_mean,
+                    second_latest_mean: penultimate_mean,
+                    latest_stddev: latest_stddev,
+                    latest_rsd_pct: latest_rsd_pct,
+                    second_latest_stddev: penultimate_stddev,
+                    second_latest_rsd_pct: penultimate_rsd_pct,
+                })
+            end
+        end
+
+        return if check_failures.empty?
+
+        ts_latest = ts_from_tripwire_filename(latest)
+        ts_penultimate = ts_from_tripwire_filename(penultimate)
+
+        body = <<~BODY
+        Latest failing benchmark: #{latest}
+        Compared to previous benchmark: #{penultimate}
+
+        Failing benchmark names: #{check_failures.keys.inspect}
+
+        <pre>
+        Failure details:
+
+        #{JSON.pretty_generate check_failures}
+        </pre>
+        BODY
+        file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before!", body)
+    end
+end
+
 begin
     run_benchmarks
     report_and_upload
+    check_perf_tripwires
+    clear_latest_data
 rescue
     host = `uname -a`.chomp
     puts $!.full_message
