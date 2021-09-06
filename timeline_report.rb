@@ -117,7 +117,7 @@ if reports.include?("blog_timeline")
             end
         end
 
-        @series.push({ name: "#{config}-#{benchmark}", data: all_points.compact })
+        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: all_points.compact })
     end
 
     script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
