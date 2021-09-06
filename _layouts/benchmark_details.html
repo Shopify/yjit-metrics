@@ -4,8 +4,12 @@ layout: basic
 
 <h2>{{ page.date_str }} {{ page.time_str }}</h2>
 
+<p>
+As of {{page.date_str}} {{page.time_str}}:
+</p>
+
 <div>
-As of this date: {% include {{page.reports.blog_speed_headline_html}} %}
+{% include {{page.reports.blog_speed_headline_html}} %}
 </div>
 
 <div style="width: 800px;">
@@ -20,5 +24,14 @@ Raw JSON data files:
 {% for result in page.test_results %} <li><a href="{{result[1] | relative_url}}">{{result[0]}}</a></li> {% endfor %}
 </ul>
 
+<hr/>
 
+<button onclick="document.getElementById('too_many_details').style.display = 'block'">Show Too Many Details</button>
+<div id="too_many_details" style="display: none">
+  <hr/>
+  {% include {{page.reports.blog_speed_details_raw_details_html}} %}
+  <hr/>
+</div>
+
+<hr/>
 {{ content | markdownify }}

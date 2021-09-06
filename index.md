@@ -8,10 +8,16 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
 
 <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
 
+<h2>YJIT Results Over Time</h2>
+
+{% include reports/blog_timeline.html %}
+
+<h2>Latest Results vs CRuby and MJIT</h2>
+
 <div style="width: 800px;">
 <a href="{{ last_bench.url | relative_url }}">
+Click through for a full-text report.
 {% include {{last_bench.reports.blog_speed_details_svg}} %}
-Here are all the latest details as a full-text report.
 </a>
 </div>
 
