@@ -111,7 +111,8 @@ if reports.include?("blog_timeline")
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
             if this_point
-                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"] ]  # this_point["stddev"]
+                # These fields are from the ResultSet summary
+                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"], this_point["stddev"] ]
             else
                 nil
             end
