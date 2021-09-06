@@ -231,15 +231,17 @@ YJITMetrics.check_call "bundle"  # Make sure all gems are installed
 YJITMetrics.check_call "bundle exec jekyll build"
 puts "Jekyll seems to build correctly. That means that GHPages should do the right thing on push."
 
+dirs_to_commit = %w(_benchmarks _includes)
+
 # Commit if there is something to commit
-diffs = (YJITMetrics.check_output "git status --porcelain").chomp
+diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
 if diffs == ""
     puts "No changes found. Not committing or pushing."
 elsif no_push
     puts "Changes found, but --no-push was specified. Not committing or pushing."
 else
     puts "Changes found. Committing and pushing."
-    YJITMetrics.check_call "git add reports _benchmarks"
+    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
     YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
     YJITMetrics.check_call "git push"
 end
