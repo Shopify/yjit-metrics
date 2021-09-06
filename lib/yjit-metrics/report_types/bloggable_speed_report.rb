@@ -382,6 +382,17 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         svg
     end
 
+    def speedup_tripwires
+        tripwires = {}
+        @benchmark_names.each_with_index do |bench_name, idx|
+            tripwires[bench_name] = {
+                mean: @mean_by_config[@with_yjit_config][idx],
+                rsd_pct: @rsd_pct_by_config[@with_yjit_config][idx]
+            }
+        end
+        tripwires
+    end
+
     def write_file(filename)
         require "victor"
 
@@ -399,6 +410,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_raw_details.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
         File.open(filename + ".raw_details.html", "w") { |f| f.write(html_output) }
+
+        json_data = speedup_tripwires
+        File.open(filename + ".tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
         #write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
