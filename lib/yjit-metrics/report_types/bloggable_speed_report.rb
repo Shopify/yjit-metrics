@@ -413,9 +413,9 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
     def format_speedup(ratio)
         if ratio >= 1.01
-            "%.2f%% faster" % ((ratio - 1.0) * 100)
+            "%.1f%% faster" % ((ratio - 1.0) * 100)
         elsif ratio < 0.99
-            "%.2f%% slower" % ((1.0 - ratio) * 100)
+            "%.1f%% slower" % ((1.0 - ratio) * 100)
         else
             "the same speed" # Grammar's not perfect here
         end

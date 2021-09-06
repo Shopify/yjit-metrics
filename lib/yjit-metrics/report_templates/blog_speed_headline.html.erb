@@ -1,2 +1,2 @@
-YJIT is <%= format_speedup(@yjit_vs_cruby_ratio) %> than CRuby! <% if @railsbench_idx %> On Railsbench, <%= format_speedup @yjit_vs_cruby_railsbench_ratio %>.<% end %> <br/>
-Versus MJIT, <%= format_speedup(@yjit_vs_mjit_ratio) %> overall<% if @railsbench_idx %>, <%= format_speedup(@yjit_vs_mjit_railsbench_ratio) %> on Railsbench<% end %>.
+YJIT is <%= format_speedup(@yjit_vs_cruby_ratio) %> than JIT-less CRuby! <% if @railsbench_idx %> On Railsbench, <%= format_speedup @yjit_vs_cruby_railsbench_ratio %>.<% end %> <br/>
+Versus MJIT, YJIT is <%= format_speedup(@yjit_vs_mjit_ratio) %> overall<% if @railsbench_idx %>, <%= format_speedup(@yjit_vs_mjit_railsbench_ratio) %> on Railsbench<% end %>.
