@@ -1,7 +1,7 @@
 <!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
 <p>
-	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
+	The y axis is CRuby's pure-interpreter time for the benchmark divided by the named interpreter's time (YJIT, MJIT, TruffleRuby). Taller bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result, so CRuby's results are always exactly 1.0.
 </p>
 
 <table>
@@ -9,11 +9,11 @@
 	<tbody style="text-align: right;">
 		
 			<tr style="border: 1px solid black;">
-				 <td> lee </td>  <td> 1121.7 </td>  <td> 1.11% </td>  <td> 808.7 </td>  <td> 1.71% </td>  <td> 873.3 </td>  <td> 1.97% </td>  <td> 0.72x </td>  <td> 2.04% </td>  <td> 0.78x </td>  <td> 2.26% </td>  <td> 99.80% </td> 
+				 <td> lee </td> <td> 1121.7 </td> <td> 1.11% </td> <td> 808.7 </td> <td> 1.71% </td> <td> 873.3 </td> <td> 1.97% </td> <td> 1.39x </td> <td> 2.04% </td> <td> 1.28x </td> <td> 2.26% </td> <td> 99.80% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> activerecord </td>  <td> 149.1 </td>  <td> 1.46% </td>  <td> 110.1 </td>  <td> 1.95% </td>  <td> 156.0 </td>  <td> 0.94% </td>  <td> 0.74x </td>  <td> 2.44% </td>  <td> 1.05x </td>  <td> 1.74% </td>  <td> 79.09% </td> 
+				 <td> activerecord </td> <td> 149.1 </td> <td> 1.46% </td> <td> 110.1 </td> <td> 1.95% </td> <td> 156.0 </td> <td> 0.94% </td> <td> 1.35x </td> <td> 2.44% </td> <td> 0.96x </td> <td> 1.74% </td> <td> 79.09% </td>
 			</tr>
 		
 	</tbody>

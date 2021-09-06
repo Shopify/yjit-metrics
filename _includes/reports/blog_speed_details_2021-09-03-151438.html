@@ -1,7 +1,7 @@
 <!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
 
 <p>
-	The y axis is CRuby's runtime for the benchmark divided by the named interpreter (YJIT, MJIT, TruffleRuby). Shorter bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result.
+	The y axis is CRuby's pure-interpreter time for the benchmark divided by the named interpreter's time (YJIT, MJIT, TruffleRuby). Taller bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result, so CRuby's results are always exactly 1.0.
 </p>
 
 <table>
@@ -9,71 +9,71 @@
 	<tbody style="text-align: right;">
 		
 			<tr style="border: 1px solid black;">
-				 <td> cfunc_itself.rb </td>  <td> 90.2 </td>  <td> 0.21% </td>  <td> 41.0 </td>  <td> 0.34% </td>  <td> 57.7 </td>  <td> 0.16% </td>  <td> 0.45x </td>  <td> 0.40% </td>  <td> 0.64x </td>  <td> 0.26% </td>  <td> 100.00% </td> 
+				 <td> cfunc_itself.rb </td> <td> 90.2 </td> <td> 0.21% </td> <td> 41.0 </td> <td> 0.34% </td> <td> 57.7 </td> <td> 0.16% </td> <td> 2.20x </td> <td> 0.40% </td> <td> 1.56x </td> <td> 0.26% </td> <td> 100.00% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> fib.rb </td>  <td> 203.4 </td>  <td> 0.05% </td>  <td> 58.4 </td>  <td> 0.06% </td>  <td> 62.5 </td>  <td> 0.03% </td>  <td> 0.29x </td>  <td> 0.08% </td>  <td> 0.31x </td>  <td> 0.06% </td>  <td> 100.00% </td> 
+				 <td> fib.rb </td> <td> 203.4 </td> <td> 0.05% </td> <td> 58.4 </td> <td> 0.06% </td> <td> 62.5 </td> <td> 0.03% </td> <td> 3.48x </td> <td> 0.08% </td> <td> 3.25x </td> <td> 0.06% </td> <td> 100.00% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> getivar.rb </td>  <td> 90.5 </td>  <td> 0.06% </td>  <td> 36.3 </td>  <td> 0.05% </td>  <td> 90.7 </td>  <td> 0.16% </td>  <td> 0.40x </td>  <td> 0.07% </td>  <td> 1.00x </td>  <td> 0.17% </td>  <td> 86.57% </td> 
+				 <td> getivar.rb </td> <td> 90.5 </td> <td> 0.06% </td> <td> 36.3 </td> <td> 0.05% </td> <td> 90.7 </td> <td> 0.16% </td> <td> 2.50x </td> <td> 0.07% </td> <td> 1.00x </td> <td> 0.17% </td> <td> 86.57% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> respond_to.rb </td>  <td> 230.2 </td>  <td> 0.18% </td>  <td> 154.2 </td>  <td> 0.24% </td>  <td> 200.9 </td>  <td> 0.50% </td>  <td> 0.67x </td>  <td> 0.30% </td>  <td> 0.87x </td>  <td> 0.53% </td>  <td> 100.00% </td> 
+				 <td> respond_to.rb </td> <td> 230.2 </td> <td> 0.18% </td> <td> 154.2 </td> <td> 0.24% </td> <td> 200.9 </td> <td> 0.50% </td> <td> 1.49x </td> <td> 0.30% </td> <td> 1.15x </td> <td> 0.53% </td> <td> 100.00% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> setivar.rb </td>  <td> 70.7 </td>  <td> 0.05% </td>  <td> 41.8 </td>  <td> 0.33% </td>  <td> 72.9 </td>  <td> 0.07% </td>  <td> 0.59x </td>  <td> 0.34% </td>  <td> 1.03x </td>  <td> 0.08% </td>  <td> 88.61% </td> 
+				 <td> setivar.rb </td> <td> 70.7 </td> <td> 0.05% </td> <td> 41.8 </td> <td> 0.33% </td> <td> 72.9 </td> <td> 0.07% </td> <td> 1.69x </td> <td> 0.34% </td> <td> 0.97x </td> <td> 0.08% </td> <td> 88.61% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> 30k_methods.rb </td>  <td> 6052.7 </td>  <td> 0.01% </td>  <td> 717.7 </td>  <td> 0.02% </td>  <td> 5814.6 </td>  <td> 0.05% </td>  <td> 0.12x </td>  <td> 0.02% </td>  <td> 0.96x </td>  <td> 0.05% </td>  <td> 100.00% </td> 
+				 <td> 30k_methods.rb </td> <td> 6052.7 </td> <td> 0.01% </td> <td> 717.7 </td> <td> 0.02% </td> <td> 5814.6 </td> <td> 0.05% </td> <td> 8.43x </td> <td> 0.02% </td> <td> 1.04x </td> <td> 0.05% </td> <td> 100.00% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> 30k_ifelse.rb </td>  <td> 2302.5 </td>  <td> 0.77% </td>  <td> 329.9 </td>  <td> 0.17% </td>  <td> 2209.0 </td>  <td> 0.70% </td>  <td> 0.14x </td>  <td> 0.79% </td>  <td> 0.96x </td>  <td> 1.04% </td>  <td> 99.98% </td> 
+				 <td> 30k_ifelse.rb </td> <td> 2302.5 </td> <td> 0.77% </td> <td> 329.9 </td> <td> 0.17% </td> <td> 2209.0 </td> <td> 0.70% </td> <td> 6.98x </td> <td> 0.79% </td> <td> 1.04x </td> <td> 1.04% </td> <td> 99.98% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> fannkuchredux </td>  <td> 5495.7 </td>  <td> 0.05% </td>  <td> 5495.9 </td>  <td> 0.04% </td>  <td> 3970.1 </td>  <td> 0.04% </td>  <td> 1.00x </td>  <td> 0.07% </td>  <td> 0.72x </td>  <td> 0.07% </td>  <td> 0.00% </td> 
+				 <td> fannkuchredux </td> <td> 5495.7 </td> <td> 0.05% </td> <td> 5495.9 </td> <td> 0.04% </td> <td> 3970.1 </td> <td> 0.04% </td> <td> 1.00x </td> <td> 0.07% </td> <td> 1.38x </td> <td> 0.07% </td> <td> 0.00% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> nbody </td>  <td> 115.2 </td>  <td> 0.04% </td>  <td> 114.9 </td>  <td> 0.17% </td>  <td> 69.8 </td>  <td> 0.42% </td>  <td> 1.00x </td>  <td> 0.18% </td>  <td> 0.61x </td>  <td> 0.42% </td>  <td> 7.40% </td> 
+				 <td> nbody </td> <td> 115.2 </td> <td> 0.04% </td> <td> 114.9 </td> <td> 0.17% </td> <td> 69.8 </td> <td> 0.42% </td> <td> 1.00x </td> <td> 0.18% </td> <td> 1.65x </td> <td> 0.42% </td> <td> 7.40% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> binarytrees </td>  <td> 370.0 </td>  <td> 0.47% </td>  <td> 301.5 </td>  <td> 0.59% </td>  <td> 253.8 </td>  <td> 0.29% </td>  <td> 0.81x </td>  <td> 0.75% </td>  <td> 0.69x </td>  <td> 0.55% </td>  <td> 82.95% </td> 
+				 <td> binarytrees </td> <td> 370.0 </td> <td> 0.47% </td> <td> 301.5 </td> <td> 0.59% </td> <td> 253.8 </td> <td> 0.29% </td> <td> 1.23x </td> <td> 0.75% </td> <td> 1.46x </td> <td> 0.55% </td> <td> 82.95% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> psych-load </td>  <td> 2129.9 </td>  <td> 0.41% </td>  <td> 1832.1 </td>  <td> 0.50% </td>  <td> 1930.3 </td>  <td> 3.35% </td>  <td> 0.86x </td>  <td> 0.65% </td>  <td> 0.91x </td>  <td> 3.38% </td>  <td> 63.86% </td> 
+				 <td> psych-load </td> <td> 2129.9 </td> <td> 0.41% </td> <td> 1832.1 </td> <td> 0.50% </td> <td> 1930.3 </td> <td> 3.35% </td> <td> 1.16x </td> <td> 0.65% </td> <td> 1.10x </td> <td> 3.38% </td> <td> 63.86% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> lee </td>  <td> 1105.5 </td>  <td> 0.97% </td>  <td> 806.0 </td>  <td> 1.74% </td>  <td> 870.5 </td>  <td> 1.14% </td>  <td> 0.73x </td>  <td> 1.99% </td>  <td> 0.79x </td>  <td> 1.49% </td>  <td> 99.80% </td> 
+				 <td> lee </td> <td> 1105.5 </td> <td> 0.97% </td> <td> 806.0 </td> <td> 1.74% </td> <td> 870.5 </td> <td> 1.14% </td> <td> 1.37x </td> <td> 1.99% </td> <td> 1.27x </td> <td> 1.49% </td> <td> 99.80% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> liquid-render </td>  <td> 184.7 </td>  <td> 1.24% </td>  <td> 149.5 </td>  <td> 1.52% </td>  <td> 161.6 </td>  <td> 2.71% </td>  <td> 0.81x </td>  <td> 1.96% </td>  <td> 0.87x </td>  <td> 2.98% </td>  <td> 66.66% </td> 
+				 <td> liquid-render </td> <td> 184.7 </td> <td> 1.24% </td> <td> 149.5 </td> <td> 1.52% </td> <td> 161.6 </td> <td> 2.71% </td> <td> 1.24x </td> <td> 1.96% </td> <td> 1.14x </td> <td> 2.98% </td> <td> 66.66% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> activerecord </td>  <td> 150.5 </td>  <td> 1.51% </td>  <td> 112.0 </td>  <td> 1.85% </td>  <td> 158.7 </td>  <td> 0.87% </td>  <td> 0.74x </td>  <td> 2.38% </td>  <td> 1.05x </td>  <td> 1.74% </td>  <td> 79.09% </td> 
+				 <td> activerecord </td> <td> 150.5 </td> <td> 1.51% </td> <td> 112.0 </td> <td> 1.85% </td> <td> 158.7 </td> <td> 0.87% </td> <td> 1.34x </td> <td> 2.38% </td> <td> 0.95x </td> <td> 1.74% </td> <td> 79.09% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> optcarrot </td>  <td> 5471.2 </td>  <td> 0.47% </td>  <td> 3145.3 </td>  <td> 0.15% </td>  <td> 2689.4 </td>  <td> 0.27% </td>  <td> 0.57x </td>  <td> 0.50% </td>  <td> 0.49x </td>  <td> 0.54% </td>  <td> 96.16% </td> 
+				 <td> optcarrot </td> <td> 5471.2 </td> <td> 0.47% </td> <td> 3145.3 </td> <td> 0.15% </td> <td> 2689.4 </td> <td> 0.27% </td> <td> 1.74x </td> <td> 0.50% </td> <td> 2.03x </td> <td> 0.54% </td> <td> 96.16% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> jekyll </td>  <td> 8394.2 </td>  <td> 2.24% </td>  <td> 7620.7 </td>  <td> 2.65% </td>  <td> 8334.3 </td>  <td> 1.86% </td>  <td> 0.91x </td>  <td> 3.47% </td>  <td> 0.99x </td>  <td> 2.91% </td>  <td> 66.85% </td> 
+				 <td> jekyll </td> <td> 8394.2 </td> <td> 2.24% </td> <td> 7620.7 </td> <td> 2.65% </td> <td> 8334.3 </td> <td> 1.86% </td> <td> 1.10x </td> <td> 3.47% </td> <td> 1.01x </td> <td> 2.91% </td> <td> 66.85% </td>
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> railsbench </td>  <td> 3202.0 </td>  <td> 1.05% </td>  <td> 2691.7 </td>  <td> 1.39% </td>  <td> 3088.6 </td>  <td> 0.76% </td>  <td> 0.84x </td>  <td> 1.74% </td>  <td> 0.96x </td>  <td> 1.30% </td>  <td> 74.44% </td> 
+				 <td> railsbench </td> <td> 3202.0 </td> <td> 1.05% </td> <td> 2691.7 </td> <td> 1.39% </td> <td> 3088.6 </td> <td> 0.76% </td> <td> 1.19x </td> <td> 1.74% </td> <td> 1.04x </td> <td> 1.30% </td> <td> 74.44% </td>
 			</tr>
 		
 	</tbody>
