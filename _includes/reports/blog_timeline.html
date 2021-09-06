@@ -3,13 +3,32 @@
 
 <div id="timeline_rs_chart"></div>
 
+
+<div id="timeline_legend">
+  <ul style="display:inline-block">
+
+<li style="display: inline-block"><span style='background: #00cc00'>&nbsp;&nbsp; railsbench &nbsp; &nbsp;</span> </li>
+
+<li style="display: inline-block"><span style='background: #0066b3'>&nbsp;&nbsp; optcarrot &nbsp; &nbsp;</span> </li>
+
+<li style="display: inline-block"><span style='background: #ff8000'>&nbsp;&nbsp; lee &nbsp; &nbsp;</span> </li>
+
+<li style="display: inline-block"><span style='background: #ffcc00'>&nbsp;&nbsp; activerecord &nbsp; &nbsp;</span> </li>
+
+  </ul>
+</div>
+
+<p>
+  Y axis values are the total number of seconds to run the benchmark one time - lower is better.
+</p>
+
 <script>
 
 // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 460 - margin.left - margin.right,
+var margin = {top: 10, right: 30, bottom: 100, left: 60},
+    width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
@@ -21,40 +40,37 @@ var svg = d3.select("#timeline_rs_chart")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
 
-// I still sometimes use the Rickshaw colour palettes: https://github.com/shutterstock/rickshaw/blob/master/src/js/Rickshaw.Fixtures.Color.js
-
-
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var data_series = [
     
     {
         name: "prod_ruby_with_yjit-railsbench",
-        data: [ { date: timeParser("2021 08 31 18 00 17"), value: 2841.8664596043527 }, { date: timeParser("2021 08 31 21 00 24"), value: 2797.641230613226 }, { date: timeParser("2021 09 01 14 55 24"), value: 2771.8856072053313 }, { date: timeParser("2021 09 01 21 00 24"), value: 2748.3706017024815 }, { date: timeParser("2021 09 02 09 00 16"), value: 2677.1239531226456 }, { date: timeParser("2021 09 03 15 14 38"), value: 2691.6799366939813 }, { date: timeParser("2021 09 03 17 11 30"), value: 2714.777965587564 }, { date: timeParser("2021 09 03 19 09 42"), value: 2681.4361231285147 }, { date: timeParser("2021 09 03 21 10 08"), value: 2774.169336806517 }, { date: timeParser("2021 09 03 23 10 20"), value: 2693.6555842636153 }, { date: timeParser("2021 09 04 01 29 19"), value: 2724.176667793654 }, { date: timeParser("2021 09 04 03 10 13"), value: 2684.1967821703292 }, { date: timeParser("2021 09 04 05 09 48"), value: 2713.8507200055756 }, { date: timeParser("2021 09 04 07 10 09"), value: 2682.9277965822257 }, { date: timeParser("2021 09 04 09 10 05"), value: 2718.762004596647 }, { date: timeParser("2021 09 04 11 09 53"), value: 2758.374809077941 }, { date: timeParser("2021 09 04 13 11 16"), value: 2780.340043408796 }, { date: timeParser("2021 09 04 15 10 21"), value: 2696.337628015317 }, { date: timeParser("2021 09 04 17 11 14"), value: 2730.814467894379 }, { date: timeParser("2021 09 04 19 09 28"), value: 2688.4723204770125 }, { date: timeParser("2021 09 05 07 09 35"), value: 2769.8998310719617 }, { date: timeParser("2021 09 05 19 09 04"), value: 2772.495423303917 }, { date: timeParser("2021 09 06 07 09 39"), value: 2750.089025311172 } ],
-        colour: "#00cc00",
+        data: [ { date: timeParser("2021 08 31 18 00 17"), value: 2841.8664596043527, stddev: 36.94097589736156 }, { date: timeParser("2021 08 31 21 00 24"), value: 2797.641230613226, stddev: 37.30412462794832 }, { date: timeParser("2021 09 01 14 55 24"), value: 2771.8856072053313, stddev: 39.27101194129877 }, { date: timeParser("2021 09 01 21 00 24"), value: 2748.3706017024815, stddev: 44.729041336249125 }, { date: timeParser("2021 09 02 09 00 16"), value: 2677.1239531226456, stddev: 38.34587109892941 }, { date: timeParser("2021 09 03 15 14 38"), value: 2691.6799366939813, stddev: 37.41384283045828 }, { date: timeParser("2021 09 03 17 11 30"), value: 2714.777965587564, stddev: 42.12170214040744 }, { date: timeParser("2021 09 03 19 09 42"), value: 2681.4361231285147, stddev: 34.51264090750821 }, { date: timeParser("2021 09 03 21 10 08"), value: 2774.169336806517, stddev: 34.92474334556301 }, { date: timeParser("2021 09 03 23 10 20"), value: 2693.6555842636153, stddev: 36.220763631744624 }, { date: timeParser("2021 09 04 01 29 19"), value: 2724.176667793654, stddev: 28.69304937799308 }, { date: timeParser("2021 09 04 03 10 13"), value: 2684.1967821703292, stddev: 30.699994330961708 }, { date: timeParser("2021 09 04 05 09 48"), value: 2713.8507200055756, stddev: 40.10545589719162 }, { date: timeParser("2021 09 04 07 10 09"), value: 2682.9277965822257, stddev: 37.34444971681571 }, { date: timeParser("2021 09 04 09 10 05"), value: 2718.762004596647, stddev: 40.81109386896586 }, { date: timeParser("2021 09 04 11 09 53"), value: 2758.374809077941, stddev: 38.821165578099034 }, { date: timeParser("2021 09 04 13 11 16"), value: 2780.340043408796, stddev: 36.12235853584747 }, { date: timeParser("2021 09 04 15 10 21"), value: 2696.337628015317, stddev: 33.30748891618161 }, { date: timeParser("2021 09 04 17 11 14"), value: 2730.814467894379, stddev: 32.11663458054848 }, { date: timeParser("2021 09 04 19 09 28"), value: 2688.4723204770125, stddev: 35.698227960482164 }, { date: timeParser("2021 09 05 07 09 35"), value: 2769.8998310719617, stddev: 39.96483795682576 }, { date: timeParser("2021 09 05 19 09 04"), value: 2772.495423303917, stddev: 43.24082569682404 }, { date: timeParser("2021 09 06 07 09 39"), value: 2750.089025311172, stddev: 31.375238674632715 } ],
+        color: "#00cc00",
         time_range: [ timeParser("2021 08 31 18 00 17"), timeParser("2021 09 06 07 09 39") ],
         value_range: [ 2677.1239531226456, 2841.8664596043527 ]
     },
     
     {
         name: "prod_ruby_with_yjit-optcarrot",
-        data: [ { date: timeParser("2021 08 31 18 00 17"), value: 3249.555807787692 }, { date: timeParser("2021 08 31 21 00 24"), value: 3214.131467603147 }, { date: timeParser("2021 09 01 14 55 24"), value: 3239.7172622091603 }, { date: timeParser("2021 09 01 21 00 24"), value: 3107.085106498562 }, { date: timeParser("2021 09 02 09 00 16"), value: 3131.8565902183764 }, { date: timeParser("2021 09 03 15 14 38"), value: 3145.3081451938488 }, { date: timeParser("2021 09 03 17 11 30"), value: 3142.7253474714234 }, { date: timeParser("2021 09 03 19 09 42"), value: 3132.0904262014665 }, { date: timeParser("2021 09 03 21 10 08"), value: 3120.612393412739 }, { date: timeParser("2021 09 03 23 10 20"), value: 3136.51050348999 }, { date: timeParser("2021 09 04 01 29 19"), value: 3115.6049505108967 }, { date: timeParser("2021 09 04 03 10 13"), value: 3128.6377334967256 }, { date: timeParser("2021 09 04 05 09 48"), value: 3129.7954829991795 }, { date: timeParser("2021 09 04 07 10 09"), value: 3119.071738817729 }, { date: timeParser("2021 09 04 09 10 05"), value: 3154.6770443907008 }, { date: timeParser("2021 09 04 11 09 53"), value: 3137.753808393609 }, { date: timeParser("2021 09 04 13 11 16"), value: 3128.6844486836344 }, { date: timeParser("2021 09 04 15 10 21"), value: 3151.958856091369 }, { date: timeParser("2021 09 04 17 11 14"), value: 3142.942788696382 }, { date: timeParser("2021 09 04 19 09 28"), value: 3137.947577505838 }, { date: timeParser("2021 09 05 07 09 35"), value: 3138.973096536938 }, { date: timeParser("2021 09 05 19 09 04"), value: 3136.3413729239255 }, { date: timeParser("2021 09 06 07 09 39"), value: 3121.4281239081174 } ],
-        colour: "#0066b3",
+        data: [ { date: timeParser("2021 08 31 18 00 17"), value: 3249.555807787692, stddev: 13.863576063248509 }, { date: timeParser("2021 08 31 21 00 24"), value: 3214.131467603147, stddev: 9.283364770395767 }, { date: timeParser("2021 09 01 14 55 24"), value: 3239.7172622091603, stddev: 6.95795296940655 }, { date: timeParser("2021 09 01 21 00 24"), value: 3107.085106498562, stddev: 4.389740098732491 }, { date: timeParser("2021 09 02 09 00 16"), value: 3131.8565902183764, stddev: 6.008904563072657 }, { date: timeParser("2021 09 03 15 14 38"), value: 3145.3081451938488, stddev: 4.612864847906893 }, { date: timeParser("2021 09 03 17 11 30"), value: 3142.7253474714234, stddev: 6.813597007914753 }, { date: timeParser("2021 09 03 19 09 42"), value: 3132.0904262014665, stddev: 6.446995838698564 }, { date: timeParser("2021 09 03 21 10 08"), value: 3120.612393412739, stddev: 9.81858030235907 }, { date: timeParser("2021 09 03 23 10 20"), value: 3136.51050348999, stddev: 7.417245184470825 }, { date: timeParser("2021 09 04 01 29 19"), value: 3115.6049505108967, stddev: 5.737735437764102 }, { date: timeParser("2021 09 04 03 10 13"), value: 3128.6377334967256, stddev: 6.654594573335628 }, { date: timeParser("2021 09 04 05 09 48"), value: 3129.7954829991795, stddev: 4.008651944445819 }, { date: timeParser("2021 09 04 07 10 09"), value: 3119.071738817729, stddev: 4.437575503603812 }, { date: timeParser("2021 09 04 09 10 05"), value: 3154.6770443907008, stddev: 7.946862415828653 }, { date: timeParser("2021 09 04 11 09 53"), value: 3137.753808393609, stddev: 2.9205668660039654 }, { date: timeParser("2021 09 04 13 11 16"), value: 3128.6844486836344, stddev: 8.14780779228766 }, { date: timeParser("2021 09 04 15 10 21"), value: 3151.958856091369, stddev: 10.433934597041027 }, { date: timeParser("2021 09 04 17 11 14"), value: 3142.942788696382, stddev: 5.154487809185564 }, { date: timeParser("2021 09 04 19 09 28"), value: 3137.947577505838, stddev: 2.7701420257065568 }, { date: timeParser("2021 09 05 07 09 35"), value: 3138.973096536938, stddev: 7.908483752568164 }, { date: timeParser("2021 09 05 19 09 04"), value: 3136.3413729239255, stddev: 8.444798431833298 }, { date: timeParser("2021 09 06 07 09 39"), value: 3121.4281239081174, stddev: 5.983915077639935 } ],
+        color: "#0066b3",
         time_range: [ timeParser("2021 08 31 18 00 17"), timeParser("2021 09 06 07 09 39") ],
         value_range: [ 3107.085106498562, 3249.555807787692 ]
     },
     
     {
         name: "prod_ruby_with_yjit-lee",
-        data: [ { date: timeParser("2021 08 31 12 39 55"), value: 1004.0319355134852 }, { date: timeParser("2021 08 31 16 00 16"), value: 1002.9474924456074 }, { date: timeParser("2021 08 31 18 00 17"), value: 1018.7169148062821 }, { date: timeParser("2021 08 31 21 00 24"), value: 1013.3359126921277 }, { date: timeParser("2021 09 01 14 55 24"), value: 995.7850495490923 }, { date: timeParser("2021 09 01 21 00 24"), value: 809.6112763353934 }, { date: timeParser("2021 09 02 09 00 16"), value: 801.9172289408743 }, { date: timeParser("2021 09 02 15 47 24"), value: 808.7335705005734 }, { date: timeParser("2021 09 03 15 14 38"), value: 806.0245071848234 }, { date: timeParser("2021 09 03 17 11 30"), value: 810.1434992626309 }, { date: timeParser("2021 09 03 19 09 42"), value: 805.1245787258571 }, { date: timeParser("2021 09 03 21 10 08"), value: 806.1652024509385 }, { date: timeParser("2021 09 03 23 10 20"), value: 806.1590418918058 }, { date: timeParser("2021 09 04 01 29 19"), value: 808.7771002668887 }, { date: timeParser("2021 09 04 03 10 13"), value: 809.9548200611025 }, { date: timeParser("2021 09 04 05 09 48"), value: 807.0967074638853 }, { date: timeParser("2021 09 04 07 10 09"), value: 801.8558868750309 }, { date: timeParser("2021 09 04 09 10 05"), value: 809.2746468028054 }, { date: timeParser("2021 09 04 11 09 53"), value: 806.7252369519944 }, { date: timeParser("2021 09 04 13 11 16"), value: 804.2114714005342 }, { date: timeParser("2021 09 04 15 10 21"), value: 811.6242674645036 }, { date: timeParser("2021 09 04 17 11 14"), value: 807.6665639411658 }, { date: timeParser("2021 09 04 19 09 28"), value: 804.6595471290251 }, { date: timeParser("2021 09 05 07 09 35"), value: 803.5394494499391 }, { date: timeParser("2021 09 05 19 09 04"), value: 809.1800355274851 }, { date: timeParser("2021 09 06 07 09 39"), value: 805.9420256021743 } ],
-        colour: "#ff8000",
+        data: [ { date: timeParser("2021 08 31 12 39 55"), value: 1004.0319355134852, stddev: 13.858052969100454 }, { date: timeParser("2021 08 31 16 00 16"), value: 1002.9474924456074, stddev: 13.459553946602954 }, { date: timeParser("2021 08 31 18 00 17"), value: 1018.7169148062821, stddev: 12.836697353710033 }, { date: timeParser("2021 08 31 21 00 24"), value: 1013.3359126921277, stddev: 14.280411607490372 }, { date: timeParser("2021 09 01 14 55 24"), value: 995.7850495490923, stddev: 15.160222863075857 }, { date: timeParser("2021 09 01 21 00 24"), value: 809.6112763353934, stddev: 13.56493552973233 }, { date: timeParser("2021 09 02 09 00 16"), value: 801.9172289408743, stddev: 13.000038897629373 }, { date: timeParser("2021 09 02 15 47 24"), value: 808.7335705005734, stddev: 13.80832958649814 }, { date: timeParser("2021 09 03 15 14 38"), value: 806.0245071848234, stddev: 14.010580491025477 }, { date: timeParser("2021 09 03 17 11 30"), value: 810.1434992626309, stddev: 12.28049577854482 }, { date: timeParser("2021 09 03 19 09 42"), value: 805.1245787258571, stddev: 12.812840262421643 }, { date: timeParser("2021 09 03 21 10 08"), value: 806.1652024509385, stddev: 13.662067926495295 }, { date: timeParser("2021 09 03 23 10 20"), value: 806.1590418918058, stddev: 13.68149639539914 }, { date: timeParser("2021 09 04 01 29 19"), value: 808.7771002668887, stddev: 13.241339596786464 }, { date: timeParser("2021 09 04 03 10 13"), value: 809.9548200611025, stddev: 11.80186828353164 }, { date: timeParser("2021 09 04 05 09 48"), value: 807.0967074638853, stddev: 13.90180063913411 }, { date: timeParser("2021 09 04 07 10 09"), value: 801.8558868750309, stddev: 13.79441536886359 }, { date: timeParser("2021 09 04 09 10 05"), value: 809.2746468028054, stddev: 13.069164513164338 }, { date: timeParser("2021 09 04 11 09 53"), value: 806.7252369519944, stddev: 11.4719564467829 }, { date: timeParser("2021 09 04 13 11 16"), value: 804.2114714005342, stddev: 13.572153758434625 }, { date: timeParser("2021 09 04 15 10 21"), value: 811.6242674645036, stddev: 12.419820414275234 }, { date: timeParser("2021 09 04 17 11 14"), value: 807.6665639411658, stddev: 12.19729151032852 }, { date: timeParser("2021 09 04 19 09 28"), value: 804.6595471290251, stddev: 13.074697719495138 }, { date: timeParser("2021 09 05 07 09 35"), value: 803.5394494499391, stddev: 13.296047492621945 }, { date: timeParser("2021 09 05 19 09 04"), value: 809.1800355274851, stddev: 13.629590454520601 }, { date: timeParser("2021 09 06 07 09 39"), value: 805.9420256021743, stddev: 13.074638319893952 } ],
+        color: "#ff8000",
         time_range: [ timeParser("2021 08 31 12 39 55"), timeParser("2021 09 06 07 09 39") ],
         value_range: [ 801.8558868750309, 1018.7169148062821 ]
     },
     
     {
         name: "prod_ruby_with_yjit-activerecord",
-        data: [ { date: timeParser("2021 08 31 12 39 55"), value: 120.6642676203046 }, { date: timeParser("2021 08 31 16 00 16"), value: 123.34438624336792 }, { date: timeParser("2021 08 31 18 00 17"), value: 122.34034633313838 }, { date: timeParser("2021 08 31 21 00 24"), value: 117.51364559688611 }, { date: timeParser("2021 09 01 14 55 24"), value: 120.84125964275489 }, { date: timeParser("2021 09 01 21 00 24"), value: 111.48521841969341 }, { date: timeParser("2021 09 02 09 00 16"), value: 110.7876622969045 }, { date: timeParser("2021 09 02 15 47 24"), value: 110.12671658425857 }, { date: timeParser("2021 09 03 15 14 38"), value: 111.97787681842476 }, { date: timeParser("2021 09 03 17 11 30"), value: 113.69367194129154 }, { date: timeParser("2021 09 03 19 09 42"), value: 109.09888259810799 }, { date: timeParser("2021 09 03 21 10 08"), value: 112.17999082959682 }, { date: timeParser("2021 09 03 23 10 20"), value: 111.41651618732688 }, { date: timeParser("2021 09 04 01 29 19"), value: 109.88466974299098 }, { date: timeParser("2021 09 04 03 10 13"), value: 109.75660603544594 }, { date: timeParser("2021 09 04 05 09 48"), value: 113.73112275172586 }, { date: timeParser("2021 09 04 07 10 09"), value: 113.89279879800729 }, { date: timeParser("2021 09 04 09 10 05"), value: 112.26612546676824 }, { date: timeParser("2021 09 04 11 09 53"), value: 111.08283876517667 }, { date: timeParser("2021 09 04 13 11 16"), value: 111.33977688082001 }, { date: timeParser("2021 09 04 15 10 21"), value: 109.82059063982068 }, { date: timeParser("2021 09 04 17 11 14"), value: 111.45665543359321 }, { date: timeParser("2021 09 04 19 09 28"), value: 110.97744002676846 }, { date: timeParser("2021 09 05 07 09 35"), value: 112.67303116203819 }, { date: timeParser("2021 09 05 19 09 04"), value: 114.41400532088609 }, { date: timeParser("2021 09 06 07 09 39"), value: 111.82514318408302 } ],
-        colour: "#ffcc00",
+        data: [ { date: timeParser("2021 08 31 12 39 55"), value: 120.6642676203046, stddev: 2.0012253328240805 }, { date: timeParser("2021 08 31 16 00 16"), value: 123.34438624336792, stddev: 1.6853538479515224 }, { date: timeParser("2021 08 31 18 00 17"), value: 122.34034633313838, stddev: 2.3999517704804103 }, { date: timeParser("2021 08 31 21 00 24"), value: 117.51364559688611, stddev: 2.462082128866787 }, { date: timeParser("2021 09 01 14 55 24"), value: 120.84125964275489, stddev: 2.2033091685395427 }, { date: timeParser("2021 09 01 21 00 24"), value: 111.48521841969341, stddev: 2.252313712762298 }, { date: timeParser("2021 09 02 09 00 16"), value: 110.7876622969045, stddev: 2.178391213509615 }, { date: timeParser("2021 09 02 15 47 24"), value: 110.12671658425857, stddev: 2.1528646255660755 }, { date: timeParser("2021 09 03 15 14 38"), value: 111.97787681842476, stddev: 2.0664153355825747 }, { date: timeParser("2021 09 03 17 11 30"), value: 113.69367194129154, stddev: 2.2410453284981533 }, { date: timeParser("2021 09 03 19 09 42"), value: 109.09888259810799, stddev: 2.2409575637966794 }, { date: timeParser("2021 09 03 21 10 08"), value: 112.17999082959682, stddev: 2.0985967897005535 }, { date: timeParser("2021 09 03 23 10 20"), value: 111.41651618732688, stddev: 1.9513722314340032 }, { date: timeParser("2021 09 04 01 29 19"), value: 109.88466974299098, stddev: 1.9709822287534031 }, { date: timeParser("2021 09 04 03 10 13"), value: 109.75660603544594, stddev: 1.9371996636839168 }, { date: timeParser("2021 09 04 05 09 48"), value: 113.73112275172586, stddev: 2.122944192491432 }, { date: timeParser("2021 09 04 07 10 09"), value: 113.89279879800729, stddev: 2.3133268291365807 }, { date: timeParser("2021 09 04 09 10 05"), value: 112.26612546676824, stddev: 2.1789940517406916 }, { date: timeParser("2021 09 04 11 09 53"), value: 111.08283876517667, stddev: 2.310069372909065 }, { date: timeParser("2021 09 04 13 11 16"), value: 111.33977688082001, stddev: 2.300797056582099 }, { date: timeParser("2021 09 04 15 10 21"), value: 109.82059063982068, stddev: 2.170290059980003 }, { date: timeParser("2021 09 04 17 11 14"), value: 111.45665543359321, stddev: 2.293906640828007 }, { date: timeParser("2021 09 04 19 09 28"), value: 110.97744002676846, stddev: 2.1595849017117863 }, { date: timeParser("2021 09 05 07 09 35"), value: 112.67303116203819, stddev: 2.1890946645284517 }, { date: timeParser("2021 09 05 19 09 04"), value: 114.41400532088609, stddev: 2.1282380319384564 }, { date: timeParser("2021 09 06 07 09 39"), value: 111.82514318408302, stddev: 2.111715490665055 } ],
+        color: "#ffcc00",
         time_range: [ timeParser("2021 08 31 12 39 55"), timeParser("2021 09 06 07 09 39") ],
         value_range: [ 109.09888259810799, 123.34438624336792 ]
     },
@@ -71,8 +87,11 @@ var x = d3.scaleTime()
   .domain(d3.extent(all_series_time_range))
   .range([ 0, width ]);
 svg.append("g")
-  .attr("transform", "translate(0," + height + ")")
-  .call(d3.axisBottom(x));
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+  .selectAll("text")
+    .attr("transform", "rotate(-60)")
+    .style("text-anchor", "end");
 
 // Add Y axis
 var y = d3.scaleLinear()
@@ -82,11 +101,62 @@ svg.append("g")
   .call(d3.axisLeft(y));
 
 data_series.forEach(function(item) {
-    // Add the line
+    var circles = svg.selectAll("circle.whiskerdot." + item.name)
+      .data(item.data);
+    circles.enter().append("circle")
+      .attr("class", "whiskerdot")
+      .attr("class", item.name)
+      .attr("fill", item.color)
+      .attr("r", 3.5)
+      .attr("cx", function(d) { return x(d.date) } )
+      .attr("cy", function(d) { return y(d.value) } )
+      ;
+
+    var middle_lines = svg.selectAll("line.whiskercenter." + item.name)
+      .data(item.data);
+    middle_lines.enter().append("line")
+      .attr("class", "whiskercenter")
+      .attr("class", item.name)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2.0)
+      .attr("x1", function(d) { return x(d.date) } )
+      .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+      .attr("x2", function(d) { return x(d.date) } )
+      .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+      ;
+
+    var top_whiskers = svg.selectAll("line.whiskertop." + item.name)
+      .data(item.data);
+    top_whiskers.enter().append("line")
+      .attr("class", "whiskertop")
+      .attr("class", item.name)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2.0)
+      .attr("x1", function(d) { return x(d.date) - 2.0 } )
+      .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+      .attr("x2", function(d) { return x(d.date) + 2.0 } )
+      .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+      ;
+
+    var bottom_whiskers = svg.selectAll("line.whiskerbottom." + item.name)
+      .data(item.data);
+    bottom_whiskers.enter().append("line")
+      .attr("class", "whiskerbottom")
+      .attr("class", item.name)
+      .attr("stroke", "black")
+      .attr("stroke-width", 2.0)
+      .attr("x1", function(d) { return x(d.date) - 2.0 } )
+      .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+      .attr("x2", function(d) { return x(d.date) + 2.0 } )
+      .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
+      ;
+
+
+    // Add the graph line
     svg.append("path")
       .datum(item.data)
       .attr("fill", "none")
-      .attr("stroke", item.colour)
+      .attr("stroke", item.color)
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
         .x(function(d) { return x(d.date) })
