@@ -5,6 +5,22 @@
 
 <script>
 
+// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 30, left: 60},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
 // I still sometimes use the Rickshaw colour palettes: https://github.com/shutterstock/rickshaw/blob/master/src/js/Rickshaw.Fixtures.Color.js
 <%
 # Based on Rickshaw's "Munin" palette, which is likely from the Munin ops tool
@@ -41,33 +57,15 @@ colours = [
 ]
 %>
 
-
-// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
-
-// set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-// append the svg object to the body of the page
-var svg = d3.select("#timeline_rs_chart")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
-
 var data_series = [
     <% @series.each_with_index do |this_series, colour_index| %>
     {
         name: <%= this_series[:name].inspect %>,
-        data: [ <%= this_series[:data].map { |t, mean| "{ time: timeParser(#{t.inspect}), value: #{mean} }" }.join(", ") %> ],
+        data: [ <%= this_series[:data].map { |t, mean| "{ date: timeParser(#{t.inspect}), value: #{mean} }" }.join(", ") %> ],
         colour: <%= colours[colour_index % colours.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
-        value_range: [ <%= this_series[:data][0][1] %>, <%= this_series[:data][-1][1] %> ]
+        value_range: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
     },
     <% end %>
     {}
@@ -75,11 +73,11 @@ var data_series = [
 data_series.pop();
 
 var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
-var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data][0][1] }.min %>, <%= @series.map { |this_series| this_series[:data][-1][1] }.max %> ];
+var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
 
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
-  .domain(d3.extent(all_series_time_range, function(d) { return d.time; }))
+  .domain(d3.extent(all_series_time_range))
   .range([ 0, width ]);
 svg.append("g")
   .attr("transform", "translate(0," + height + ")")
@@ -87,14 +85,12 @@ svg.append("g")
 
 // Add Y axis
 var y = d3.scaleLinear()
-  .domain([0, d3.max(all_series_value_range, function(d) { return +d.value; })])
+  .domain([0, d3.max(all_series_value_range)])
   .range([ height, 0 ]);
 svg.append("g")
   .call(d3.axisLeft(y));
 
 data_series.forEach(function(item) {
-    console.log(item.data);
-
     // Add the line
     svg.append("path")
       .datum(item.data)
@@ -102,7 +98,7 @@ data_series.forEach(function(item) {
       .attr("stroke", item.colour)
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
-        .x(function(d) { return x(d.time) })
+        .x(function(d) { return x(d.date) })
         .y(function(d) { return y(d.value) })
         );
 });
