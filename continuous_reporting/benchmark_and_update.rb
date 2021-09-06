@@ -88,7 +88,8 @@ end
 
 def report_and_upload
     Dir.chdir __dir__ do
-        # This runs reports and uploads the results
+        # This should copy the data directory into the Jekyll directories,
+        # run any reports it needs to and check the results into Git.
         YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data"
 
         old_data_files = Dir["continuous_reporting/data/*"].to_a
