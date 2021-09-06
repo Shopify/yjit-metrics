@@ -246,4 +246,4 @@ else
     YJITMetrics.check_call "git push"
 end
 
-puts "Finished continuous_reporting successfully!"
+puts "Finished generate_and_upload_reports successfully!"

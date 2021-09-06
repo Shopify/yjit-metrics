@@ -117,7 +117,7 @@ EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
 
 # If benchmark results drop noticeably, file a Github issue
 def check_perf_tripwires
-    Dir.chdir(__dir__ + "../../yjit-metrics-pages/_includes/reports") do
+    Dir.chdir(__dir__ + "/../../yjit-metrics-pages/_includes/reports") do
         tripwire_files = Dir["*.tripwires.json"].to_a.sort
 
         latest = tripwire_files[-1]
