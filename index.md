@@ -6,7 +6,12 @@ layout: basic
 
 How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https://github.com/Shopify/yjit-bench) as of <strong>{{last_bench.date_str}} {{last_bench.time_str}}</strong>?
 
+<!-- Headlines -->
 <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
+
+<p>
+    <a href="{{ last_bench.url | relative_url }}">(Link to the latest full-details comparison report)</a>
+</p>
 
 <h2>YJIT Results Over Time</h2>
 
