@@ -5,44 +5,28 @@
 
 <%
 # I still sometimes use the Rickshaw color palettes: https://github.com/shutterstock/rickshaw/blob/master/src/js/Rickshaw.Fixtures.Color.js
-# Based on Rickshaw's "Munin" palette, which is likely from the Munin ops tool
+# Based on Rickshaw's "spectrum14" palette, which is pastel so black text shows up nicely on it.
 colors = [
-    '#00cc00',
-    '#0066b3',
-    '#ff8000',
-    '#ffcc00',
-    '#330099',
-    '#990099',
-    '#ccff00',
-    '#ff0000',
-    '#808080',
-    '#008f00',
-    '#00487d',
-    '#b35a00',
-    '#b38f00',
-    '#6b006b',
-    '#8fb300',
-    '#b30000',
-    '#bebebe',
-    '#80ff80',
-    '#80c9ff',
-    '#ffc080',
-    '#ffe680',
-    '#aa80ff',
-    '#ee00cc',
-    '#ff8080',
-    '#666600',
-    '#ffbfff',
-    '#00ffcc',
-    '#cc6699',
-    '#999900'
-]
+    '#ecb796',
+    '#dc8f70',
+    '#b2a470',
+    '#92875a',
+    '#716c49',
+    '#d2ed82',
+    '#bbe468',
+    '#a1d05d',
+    '#e7cbe6',
+    '#d8aad6',
+    '#a888c2',
+    '#9dc2d3',
+    '#649eb9',
+    '#387aa3']
 %>
 <div id="timeline_legend">
   <ul style="display:inline-block">
 <% @series.each_with_index do |this_series, color_index|
      color = colors[color_index % colors.size] %>
-<li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <%= this_series[:benchmark] %> &nbsp; &nbsp;</span> </li>
+<li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
 <% end %>
   </ul>
 </div>
