@@ -111,13 +111,14 @@ if reports.include?("blog_timeline")
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
             if this_point
-                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"] ]  # this_point["stddev"]
+                # These fields are from the ResultSet summary
+                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"], this_point["stddev"] ]
             else
                 nil
             end
         end
 
-        @series.push({ name: "#{config}-#{benchmark}", data: all_points.compact })
+        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: all_points.compact })
     end
 
     script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
