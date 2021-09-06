@@ -18,17 +18,17 @@ YJIT_METRICS_PAGES_BRANCH = "pages"
 
 REPORTS_AND_FILES = {
     "blog_speed_headline" => {
-        report_type: :basic,
+        report_type: :basic_report,
         extensions: [ "html" ],
     },
     "blog_speed_details" => {
-        report_type: :basic,
+        report_type: :basic_report,
         extensions: [ "html", "raw_details.html", "svg" ],
     },
-    #"timeline" => {
-    #    report_type: :timeline,
-    #    extensions: [ "html", "svg" ],
-    #},
+    "blog_timeline" => {
+        report_type: :timeline_report,
+        extensions: [ "html" ],
+    },
 }
 
 def report_filenames(report_name, ts, prefix="_includes/reports")
@@ -68,6 +68,8 @@ end.parse!
 
 # Clone YJIT repo on "pages" branch, updated to latest version
 YJITMetrics.clone_repo_with path: YJIT_METRICS_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH
+
+# We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
 #Dir.chdir(YJIT_METRICS_DIR) { YJITMetrics.check_call "git clean -d -f" }
 
 # Copy JSON and report files into the branch
@@ -110,6 +112,7 @@ end
 report_timestamps = {}
 report_files = Dir["*", base: "_includes/reports"].to_a
 REPORTS_AND_FILES.each do |report_name, details|
+    next unless details[:report_type] == :basic_report # No timestamped files for timeline reports
     this_report_files = report_files.select { |filename| filename.include?(report_name) }
     this_report_files.each do |filename|
         unless filename =~ /(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).([a-zA-Z]+)/
@@ -126,12 +129,14 @@ REPORTS_AND_FILES.each do |report_name, details|
     end
 end
 
-# For now we only have one kind of report (share_speed), and we check for that.
+# Check timestamped raw data versus the expected set of reports each basic_report can generate
 json_timestamps.each do |ts, test_files|
     REPORTS_AND_FILES.each do |report_name, details|
+        next unless details[:report_type] == :basic_report
+
         rf = report_filenames(report_name, ts)
 
-        # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the normal generated files.
+        # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
             !report_timestamps[ts] ||
             !report_timestamps[ts][report_name] ||
@@ -199,6 +204,25 @@ json_timestamps.each do |ts, test_files|
             f.print "\n"
         end
     end
+end
+
+# Now that we've handled all the point-in-time reports from basic_report, we'll
+# run any all-time (a.k.a. timeline) reports.
+# For now, we assume we should re-run the timeline report unless told not to generate anything.
+unless die_on_regenerate
+    REPORTS_AND_FILES.each do |report_name, details|
+        next unless details[:report_type] == :timeline_report
+
+        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d raw_benchmark_data --report=#{report_name} -o _includes/reports")
+
+        rf = details[:extensions].map { |ext| "_includes/reports/#{report_name}.#{ext}" }
+        files_not_found = rf.select { |f| !File.exist? f }
+
+        unless files_not_found.empty?
+            raise "We tried to create the report file(s) #{files_not_found.inspect} but failed! No process error, but the file(s) didn't appear."
+        end
+    end
+
 end
 
 # Make sure it builds locally

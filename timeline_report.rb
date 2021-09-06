@@ -2,11 +2,9 @@
 
 require "json"
 require "optparse"
-require_relative "../lib/yjit-metrics"
+require_relative "lib/yjit-metrics"
 
-report_class_by_name = YJITMetrics::Report.report_name_hash
-# By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
-all_report_names = report_class_by_name.keys.sort
+all_report_names = [ "blog_timeline" ]
 
 # Default settings
 data_dir = "data"
@@ -15,6 +13,7 @@ output_dir = "."
 # Default benchmarks and configs to compare
 configs = [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "ruby_30_with_mjit" ]
 benchmarks = [ "railsbench", "optcarrot", "lee", "activerecord" ]
+reports = all_report_names
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -27,6 +26,15 @@ OptionParser.new do |opts|
 
     opts.on("-o DIR", "--output-dir DIR", "Directory for writing output files (default: current dir)") do |dir|
         output_dir = dir
+    end
+
+    opts.on("-r REPORTS", "--reports REPORTS", "Run these reports on the data (known reports: #{all_report_names.join(", ")})") do |str|
+        report_strings = str.split(",")
+
+        # Just as OptionParser lets us abbreviate long arg names, we'll let the user abbreviate report names.
+        reports = report_strings.map { |report_string| all_report_names.detect { |name| name.start_with?(report_string) } }
+        bad_indices = reports.map.with_index { |entry, idx| entry.nil? ? idx : nil }.compact
+        raise("Unknown reports: #{bad_indices.map { |idx| report_strings[idx] }.inspect}! Known report types are: #{all_report_names.join(", ")}") unless bad_indices.empty?
     end
 end.parse!
 
@@ -94,23 +102,11 @@ ALL_BENCHMARKS = all_benchmarks
 
 benchmarks = benchmarks & ALL_BENCHMARKS
 
-#puts "Configs: #{ALL_CONFIGS.inspect}"
-#puts "Benchmarks: #{benchmarks.inspect}"
-#puts "Timestamps: #{ALL_TIMESTAMPS.inspect}"
-
-#ALL_TIMESTAMPS.each do |ts|
-#    ALL_CONFIGS.each do |config|
-#        ALL_BENCHMARKS.each do |benchmark|
-#            next unless [ "railsbench" ].include?(benchmark)
-#            # Grab the datapoint if the datapoint exists for this combination
-#            single_summary = summary_by_ts.dig(ts, config, benchmark)
-#            mean = single_summary["mean"]
-#        end
-#    end
-#end
-
-@series = []
-configs.each do |config|
+# For now we have a single timeline report type and we hardcode it here.
+if reports.include?("blog_timeline")
+    report_name = "blog_timeline"
+    @series = []
+    config = "prod_ruby_with_yjit"
     benchmarks.each do |benchmark|
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
@@ -123,8 +119,8 @@ configs.each do |config|
 
         @series.push({ name: "#{config}-#{benchmark}", data: all_points.compact })
     end
-end
 
-script_template = ERB.new File.read(__dir__ + "/timeline_graph_d3_template.html.erb")
-html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-File.open(output_dir + "/timeline_report.html", "w") { |f| f.write(html_output) }
+    script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
+    html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+    File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
+end
