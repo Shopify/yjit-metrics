@@ -102,7 +102,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 this_config_mean = @mean_by_config[config][-1]
                 this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
                 this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
-                speed_ratio = this_config_mean / no_jit_mean
+                speed_ratio = no_jit_mean / this_config_mean
                 speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
                 @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
             end
