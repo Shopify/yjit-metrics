@@ -231,7 +231,7 @@ YJITMetrics.check_call "bundle"  # Make sure all gems are installed
 YJITMetrics.check_call "bundle exec jekyll build"
 puts "Jekyll seems to build correctly. That means that GHPages should do the right thing on push."
 
-dirs_to_commit = %w(_benchmarks _includes)
+dirs_to_commit = %w(_benchmarks _includes raw_benchmark_data)
 
 # Commit if there is something to commit
 diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp

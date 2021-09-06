@@ -2,14 +2,15 @@ name: Scheduled benchmarking, reporting and publishing
 on:
   schedule:
     # Run twice daily at 7:05 am/pm
-    - cron: '05 * * * *'
+    - cron: '05 7,19 * * *'
 
 jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        ref: main
+        with:
+          ref: main
       - name: SSH to CI instance to start benchmarking and publication
         run: |
           set -e
@@ -22,6 +23,7 @@ jobs:
           ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
-          ssh -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "ls"
-          ssh -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "YJIT_METRICS_GITHUB_TOKEN=$YJIT_METRICS_GITHUB_TOKEN YJIT_METRICS_GITHUB_USER=$YJIT_METRICS_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh"
+          sha1sum ./id_benchmark_ci_rsa
+          ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "ls"
+          ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "YJIT_METRICS_GITHUB_TOKEN=$YJIT_METRICS_GITHUB_TOKEN YJIT_METRICS_GITHUB_USER=$YJIT_METRICS_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh"
 
