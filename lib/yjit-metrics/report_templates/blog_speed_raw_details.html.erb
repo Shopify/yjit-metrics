@@ -1,0 +1,29 @@
+<h2>Tested Ruby Configurations</h2>
+
+<h3>Metadata for Ruby Configs</h3>
+<% @configs_with_human_names.each do |config_human_name, config_key| %>
+<h3><%= config_human_name %> Metadata</h3>
+
+<pre>
+<%= JSON.pretty_generate @ruby_metadata_by_config[config_key] %>
+</pre>
+<% end %>
+
+<h2>YJIT Statistics (gathered in a separate stats run)</h2>
+
+<pre>
+<%= JSON.pretty_generate @yjit_stats %>
+</pre>
+
+<h2>Per-Benchmark Metadata</h2>
+
+<% @configs_with_human_names.each do |config_human_name, config_key|
+     @benchmark_names.each do |bench_name| %>
+
+<h3><%= config_human_name %> <% bench_name.capitalize %> Metadata</h3>
+
+<pre>
+<%= JSON.pretty_generate @bench_metadata_by_config[config_key] %>
+</pre>
+
+<% end; end %>

@@ -29,9 +29,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         # Grab relevant data from the ResultSet
         @times_by_config = {}
         @ruby_metadata_by_config = {}
+        @bench_metadata_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config, @truffle_config ].compact.each do|config|
             @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
             @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
+            @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
         end
         @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
@@ -385,12 +387,18 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         @svg = svg_object
 
+        # Write an SVG file for the graph
+        File.open(filename + ".svg", "w") { |f| f.write(@svg.render) }
+
+        # First the 'regular' details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
 
-        # Write a separate SVG file for showing just the graph on summary pages
-        File.open(filename + ".svg", "w") { |f| f.write(@svg.render) }
+        # And then the "no normal person would ever care" details report, with raw everything
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_raw_details.html.erb")
+        html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+        File.open(filename + ".raw_details.html", "w") { |f| f.write(html_output) }
 
         #write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end

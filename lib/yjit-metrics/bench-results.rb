@@ -62,7 +62,7 @@ class YJITMetrics::ResultSet
     # and (optional) hash of YJIT stats. However, there should normally only
     # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
     # assumed to be constant for a specific compiled copy of Ruby over all runs.
-    def add_for_config(config_name, benchmark_results)
+    def add_for_config(config_name, benchmark_results, normalize_bench_names: true)
         if !benchmark_results.has_key?("version")
             puts "No version entry in benchmark results - falling back to version 1 file format."
 
@@ -82,12 +82,14 @@ class YJITMetrics::ResultSet
 
         @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
+            benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
             @times[config_name][benchmark_name] ||= []
             @times[config_name][benchmark_name].concat(times)
         end
 
         @warmups[config_name] ||= {}
         (benchmark_results["warmups"] || {}).each do |benchmark_name, warmups|
+            benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
             @warmups[config_name][benchmark_name] ||= []
             @warmups[config_name][benchmark_name].concat(warmups)
         end
@@ -97,12 +99,14 @@ class YJITMetrics::ResultSet
             next if stats_array.nil?
             stats_array.compact!
             next if stats_array.empty?
+            benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
             @yjit_stats[config_name][benchmark_name] ||= []
             @yjit_stats[config_name][benchmark_name].concat(stats_array)
         end
 
         @benchmark_metadata[config_name] ||= {}
         benchmark_results["benchmark_metadata"].each do |benchmark_name, metadata_for_benchmark|
+            benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
             @benchmark_metadata[config_name][benchmark_name] ||= metadata_for_benchmark
             if @benchmark_metadata[config_name][benchmark_name] != metadata_for_benchmark
                 # We don't print this warning only once because it's really bad, and because we'd like to show it for all
@@ -192,6 +196,33 @@ class YJITMetrics::ResultSet
         @ruby_metadata.keys
     end
 
+    # Sometimes you just want all the yjit_stats fields added up.
+    #
+    # This should return a hash-of-hashes where the top level key
+    # key is the benchmark name and each hash value is the combined stats
+    # for a single benchmark across whatever number of runs is present.
+    #
+    # This may not work as expected if you have full YJIT stats only
+    # sometimes for a given config - which normally should never be
+    # the case.
+    def combined_yjit_stats_for_config_by_benchmark(config)
+        data = {}
+        @yjit_stats[config].each do |benchmark_name, runs|
+            stats = {}
+            runs.map(&:flatten).map(&:first).each do |run|
+                raise "Internal error! #{run.class.name} is not a hash!" unless run.is_a?(Hash)
+
+                stats["all_stats"] = run["all_stats"] if run["all_stats"]
+                (run.keys - ["all_stats"]).each do |key|
+                    stats[key] ||= 0
+                    stats[key] += run[key]
+                end
+            end
+            data[benchmark_name] = stats
+        end
+        data
+    end
+
     # Summarize the data by config. If it's a YJIT config with full stats, get the highlights of the exit report too.
     SUMMARY_STATS = [ "inline_code_size", "outlined_code_size", "exec_instruction", "vm_insns_count", "compiled_iseq_count" ]
     def summary_by_config_and_benchmark
@@ -199,26 +230,27 @@ class YJITMetrics::ResultSet
         available_configs.each do |config|
             summary[config] = {}
 
-            times = times_for_config_by_benchmark(config)
-            times.each do |bench, results|
+            times_by_bench = times_for_config_by_benchmark(config)
+            times_by_bench.each do |bench, results|
                 summary[config][bench] = {
-                    mean: mean(times),
-                    stddev: stddev(times),
-                    rel_stddev: rel_stddev(times),
+                    "mean" => mean(results),
+                    "stddev" => stddev(results),
+                    "rel_stddev" => rel_stddev(results),
                 }
             end
 
-            stats = yjit_stats_for_config_by_benchmark(config)
-            stats.each do |bench, results|
-                summary[config][bench]["yjit_stats"] = results.slice(*SUMMARY_STATS)
+            all_stats = combined_yjit_stats_for_config_by_benchmark(config)
+            all_stats.each do |bench, stats|
+                summary[config][bench]["yjit_stats"] = stats.slice(*SUMMARY_STATS)
 
                 # Do we have full YJIT stats? If so, let's add the relevant summary bits
-                if results["all_stats"]
-                    total_exits = results.inject(0) { |total, (k, v)| total + k.start_with?("exit_") ? v : 0 }
-                    retired_in_yjit = results["exec_instruction"] - total_exits
-                    avg_len_in_yjit = retired_in_yjit.to_f / total_exits
-                    total_insns_count = retired_in_yjit + stats["vm_insns_count"]
-                    yjit_ratio_pct = 100.0 * retired_in_yjit / total_insns_count
+                if stats["all_stats"]
+                    out_stats = summary[config][bench]["yjit_stats"]
+                    out_stats["total_exits"] = out_stats.inject(0) { |total, (k, v)| total + (k.start_with?("exit_") ? v : 0) }
+                    out_stats["retired_in_yjit"] = out_stats["exec_instruction"] - out_stats["total_exits"]
+                    out_stats["avg_len_in_yjit"] = out_stats["retired_in_yjit"].to_f / out_stats["total_exits"]
+                    out_stats["total_insns_count"] = out_stats["retired_in_yjit"] + out_stats["vm_insns_count"]
+                    out_stats["yjit_ratio_pct"] = 100.0 * out_stats["retired_in_yjit"] / out_stats["total_insns_count"]
                 end
             end
         end
