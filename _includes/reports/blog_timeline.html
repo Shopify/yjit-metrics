@@ -4,19 +4,24 @@
 <div id="timeline_rs_chart"></div>
 
 
-<div id="timeline_legend">
-  <ul style="display:inline-block">
 
-<li style="display: inline-block"><span style='background: #a80000'>&nbsp;&nbsp; <strong style="color: black;">railsbench</strong> &nbsp;&nbsp;</span> </li>
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+  
+  <li style="display: inline-block"><span style='background: #a80000'>&nbsp;&nbsp; <strong style="color: black;">railsbench</strong> &nbsp;&nbsp;</span> </li>
+  
+  <li style="display: inline-block"><span style='background: #fb6400'>&nbsp;&nbsp; <strong style="color: black;">optcarrot</strong> &nbsp;&nbsp;</span> </li>
+  
+  <li style="display: inline-block"><span style='background: #ffc400'>&nbsp;&nbsp; <strong style="color: black;">lee</strong> &nbsp;&nbsp;</span> </li>
+  
+  <li style="display: inline-block"><span style='background: #62ba27'>&nbsp;&nbsp; <strong style="color: black;">activerecord</strong> &nbsp;&nbsp;</span> </li>
+  
+    </ul>
+  </div>
+</div>
 
-<li style="display: inline-block"><span style='background: #fb6400'>&nbsp;&nbsp; <strong style="color: black;">optcarrot</strong> &nbsp;&nbsp;</span> </li>
-
-<li style="display: inline-block"><span style='background: #ffc400'>&nbsp;&nbsp; <strong style="color: black;">lee</strong> &nbsp;&nbsp;</span> </li>
-
-<li style="display: inline-block"><span style='background: #62ba27'>&nbsp;&nbsp; <strong style="color: black;">activerecord</strong> &nbsp;&nbsp;</span> </li>
-
-  </ul>
-
+<div>
   <ul style="list-style-type: none">
     <li>Y axis values are the total number of seconds to run the benchmark one time - lower is better.</li>
     <li>Whiskers are shown 2 standard deviations higher and lower.</li>
