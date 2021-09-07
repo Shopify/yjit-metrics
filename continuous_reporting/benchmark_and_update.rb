@@ -5,6 +5,8 @@ require_relative "../lib/yjit-metrics"
 require 'fileutils'
 require 'net/http'
 
+require "optparse"
+
 # This is intended to be the top-level script for running benchmarks, reporting on them
 # and uploading the results. It belongs in a cron job with some kind of error detection
 # to make sure it's running properly.
