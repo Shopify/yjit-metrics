@@ -179,7 +179,7 @@ def check_perf_tripwires
 
             drop = latest_mean - penultimate_mean
 
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }, drop is { "%.2f" % drop }..."
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }, drop is #{ "%.2f" % drop }..."
 
             if drop > tolerance
                 puts "Benchmark #{bench_name} marked as failure!"
