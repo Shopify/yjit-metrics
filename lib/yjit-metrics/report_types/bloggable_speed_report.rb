@@ -270,7 +270,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
         division_ratio_per_value = plot_effective_height / max_speedup_ratio
 
-        # Now find all the tick locations
+        # Now find all the x-axis tick locations
         divisions = []
         cur_div = 0.0
         loop do
@@ -370,7 +370,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             text_end_x = bars_width_middle
             text_end_y = plot_bottom_edge + tick_length * 3
             svg.text bench_name.gsub(/\.rb$/, ""),
-                x: ratio_to_x(text_end_x), y: ratio_to_y(text_end_y),
+                x: ratio_to_x(text_end_x),
+                y: ratio_to_y(text_end_y),
                 fill: text_colour,
                 font_size: font_size,
                 font_family: "monospace",
