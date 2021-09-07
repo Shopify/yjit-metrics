@@ -177,9 +177,11 @@ def check_perf_tripwires
             # or 5% of the larger mean runtime.
             tolerance = [ latest_stddev * 2.0, penultimate_stddev * 2.0, latest_mean * 0.05, penultimate_mean * 0.05 ].max
 
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }..."
+            drop = latest_mean - penultimate_mean
 
-            if (latest_mean - penultimate_mean) > tolerance
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }, drop is { "%2.f" % drop }..."
+
+            if drop > tolerance
                 puts "Benchmark #{bench_name} marked as failure!"
                 check_failures.push({
                     benchmark: bench_name,
