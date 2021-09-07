@@ -34,7 +34,7 @@ OptionParser.new do |opts|
     opts.on("-b BENCHTYPE", "--benchmark-type BENCHTYPE", "The type of benchmarks to run - give a basic_benchmark.rb command line, or one of: #{BENCH_TYPES.keys.inspect}") do |btype|
       if btype.include?("-") # If it has a dash, we assume it's arguments for basic_benchmark
         benchmark_args = btype
-      elsif BENCH_TYPES[btype]
+      elsif BENCH_TYPES.has_key?(btype)
         benchmark_args = BENCH_TYPES[btype]
       else
         raise "Unrecognized benchmark args or type: #{btype.inspect}! Known types: #{BENCH_TYPES.keys.inspect}"
