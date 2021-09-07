@@ -9,9 +9,9 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
 <!-- Headlines -->
 <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
 
-<p>
+<div style="text-align: center;">
     <a href="{{ last_bench.url | relative_url }}">(Link to the latest full-details comparison report)</a>
-</p>
+</div>
 
 <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
@@ -19,9 +19,12 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
 
 <h2 style="text-align: center;">Latest Results vs CRuby and MJIT</h2>
 
+<div style="text-align: center;">
+  <a href="{{ last_bench.url | relative_url }}">Click through for a full text report</a>
+</div>
+
 <div style="width: 800px;">
 <a href="{{ last_bench.url | relative_url }}">
-Click through for a full-text report.
 {% include {{last_bench.reports.blog_speed_details_svg}} %}
 </a>
 </div>
