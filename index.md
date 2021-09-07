@@ -13,7 +13,7 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
     <a href="{{ last_bench.url | relative_url }}">(Link to the latest full-details comparison report)</a>
 </p>
 
-<h2>YJIT Results Over Time</h2>
+<h2 style="text-align: center;">YJIT Results Over Time</h2>
 
 {% include reports/blog_timeline.html %}
 
