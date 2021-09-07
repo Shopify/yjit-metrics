@@ -5,39 +5,36 @@
 
 <%
 # We want different colours, but we want them light so that black shows up on top of them.
-# From: https://www.schemecolor.com/actual-rainbow.php
+# From: https://www.schemecolor.com/galaxy-rainbow.php
 colors = [
-    '#98a9d7',
-    '#8ed2cd',
-    '#c2ed98',
-    '#f1f487',
-    '#fed776',
-    '#f59b7c',
+    '#a80000',
+    '#fb6400',
+    '#ffc400',
+    '#62ba27',
+    '#3342c4',
+    '#9362c4',
 ]
 %>
 <div id="timeline_legend">
   <ul style="display:inline-block">
 <% @series.each_with_index do |this_series, color_index|
      color = colors[color_index % colors.size] %>
-<li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+<li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: black;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
 <% end %>
   </ul>
+
+  <ul style="list-style-type: none">
+    <li>Y axis values are the total number of seconds to run the benchmark one time - lower is better.</li>
+    <li>Whiskers are shown 2 standard deviations higher and lower.</li>
+  </ul>
 </div>
-
-<p>
-  Y axis values are the total number of seconds to run the benchmark one time - lower is better.
-</p>
-
-<p>
-  Whiskers are shown 2 standard deviations higher and lower.
-</p>
 
 <script>
 
 // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 100, left: 60},
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
