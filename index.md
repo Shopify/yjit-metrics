@@ -17,7 +17,7 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
 
 {% include reports/blog_timeline.html %}
 
-<h2>Latest Results vs CRuby and MJIT</h2>
+<h2 style="text-align: center;">Latest Results vs CRuby and MJIT</h2>
 
 <div style="width: 800px;">
 <a href="{{ last_bench.url | relative_url }}">
