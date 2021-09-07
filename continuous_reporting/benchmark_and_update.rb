@@ -123,8 +123,8 @@ def check_perf_tripwires
         latest = tripwire_files[-1]
         penultimate = tripwire_files[-2]
 
-        latest_data = File.read(latest)
-        penultimate_data = File.read(penultimate)
+        latest_data = JSON.parse File.read(latest)
+        penultimate_data = JSON.parse File.read(penultimate)
 
         check_failures = []
 
