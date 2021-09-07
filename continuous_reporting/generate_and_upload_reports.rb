@@ -44,7 +44,7 @@ die_on_regenerate = false
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
-      Usage: continuous_reporting.rb [options]
+      Usage: generate_and_upload_reports.rb [options]
         Specify directories with -d to add new test results and reports.
         Currently-known data will be indexed and git-pushed.
     BANNER

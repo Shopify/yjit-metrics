@@ -11,6 +11,37 @@ require 'net/http'
 
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
+# Remember that if this is running on the benchmark CI server you do *not* want a run so long it will
+# overlap with the regular automatic runs. They happen twice daily as I write this, at 7am and 7pm.
+# Configurations should be a subset of: yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby
+BENCH_TYPES = {
+    "none"       => nil,
+    "default"    => "--warmup-itrs=10  --min-bench-time=20.0  --min-bench-itrs=10   --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit",
+    "minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
+    "extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
+}
+benchmark_args = BENCH_TYPES["default"]
+
+OptionParser.new do |opts|
+    opts.banner = <<~BANNER
+      Usage: benchmark_and_update.rb [options]
+
+        Example benchmark args: "#{BENCH_TYPES["default"]}"
+    BANNER
+
+    opts.on("-b BENCHTYPE", "--benchmark-type BENCHTYPE", "The type of benchmarks to run - give a basic_benchmark.rb command line, or one of: #{BENCH_TYPES.keys.inspect}") do |btype|
+      if btype.include?("-") # If it has a dash, we assume it's arguments for basic_benchmark
+        benchmark_args = btype
+      elsif BENCH_TYPES[btype]
+        benchmark_args = BENCH_TYPES[btype]
+      else
+        raise "Unrecognized benchmark args or type: #{btype.inspect}! Known types: #{BENCH_TYPES.keys.inspect}"
+      end
+    end
+end.parse!
+
+BENCHMARK_ARGS = benchmark_args
+
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
 GITHUB_USER=ENV["YJIT_METRICS_GITHUB_USER"]
@@ -71,6 +102,8 @@ File.open(PIDFILE, "w") do |f|
 end
 
 def run_benchmarks
+    return if BENCHMARK_ARGS.nil?
+
     # Run benchmarks from the top-level dir and write them into continuous_reporting/data
     Dir.chdir("#{__dir__}/..") do
         old_data_files = Dir["continuous_reporting/data/*"].to_a
@@ -79,10 +112,7 @@ def run_benchmarks
         end
 
         # This is a much faster set of tests, more suitable for quick testing
-        YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=10 --min-bench-time=20.0 --min-bench-itrs=10 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
-
-        # These are slow runs, and will take several hours to update. This might be suitable for daily runs.
-        #YJITMetrics.check_call "ruby basic_benchmark.rb --warmup-itrs=20 --min-bench-time=120.0 --min-bench-itrs=20 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit --output=continuous_reporting/data/"
+        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/"
     end
 end
 
