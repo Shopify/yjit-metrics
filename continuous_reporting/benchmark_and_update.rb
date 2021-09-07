@@ -207,7 +207,7 @@ def check_perf_tripwires
         Latest failing benchmark: #{latest}
         Compared to previous benchmark: #{penultimate}
 
-        Failing benchmark names: #{check_failures.keys.inspect}
+        Failing benchmark names: #{check_failures.map { |h| h[:benchmark] }.inspect}
 
         <pre>
         Failure details:
