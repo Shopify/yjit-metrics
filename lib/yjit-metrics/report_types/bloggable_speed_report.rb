@@ -205,11 +205,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         text_colour = "#111"
 
         # Reserve the left 15% of the width for the axis scale numbers. Right 5% is whitespace.
-        left_axis_width = 0.15
-        right_whitespace = 0.05
+        left_axis_width = 0.05
+        right_whitespace = 0.01
 
-        # Reserve the top 5% as whitespace, and the bottom 20% for benchmark names.
-        bottom_key_height = 0.20
+        # Reserve the top room for legend and bottom room for x-axis labels
+        bottom_key_height = 0.15
         top_whitespace = 0.05
 
         plot_left_edge = left_axis_width
@@ -238,7 +238,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Within each benchmark's horizontal span we'll want 3 or 4 bars plus a bit of whitespace.
         # And we'll reserve 5% of the plot's width for whitespace on the far left and again on the far right.
-        plot_padding_ratio = 0.05
+        plot_padding_ratio = 0.02
         plot_effective_width = plot_width * (1.0 - 2 * plot_padding_ratio)
         plot_effective_left = plot_left_edge + plot_width * plot_padding_ratio
         each_bench_width = plot_effective_width / n_benchmarks
