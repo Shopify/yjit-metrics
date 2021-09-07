@@ -84,22 +84,33 @@ svg.append("g")
   .call(d3.axisLeft(y));
 
 data_series.forEach(function(item) {
+    // Add the graph line
+    svg.append("path")
+      .datum(item.data)
+      .attr("fill", "none")
+      .attr("stroke", item.color)
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.date) })
+        .y(function(d) { return y(d.value) })
+        );
+
+    // Add a circle at each datapoint
     var circles = svg.selectAll("circle.whiskerdot." + item.name)
       .data(item.data);
     circles.enter().append("circle")
-      .attr("class", "whiskerdot")
-      .attr("class", item.name)
+      .attr("class", "whiskerdot " + item.name)
       .attr("fill", item.color)
       .attr("r", 3.5)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
       ;
 
+    // Add the whiskers, which are an I-shape of lines
     var middle_lines = svg.selectAll("line.whiskercenter." + item.name)
       .data(item.data);
     middle_lines.enter().append("line")
-      .attr("class", "whiskercenter")
-      .attr("class", item.name)
+      .attr("class", "whiskercenter " + item.name)
       .attr("stroke", "black")
       .attr("stroke-width", 2.0)
       .attr("x1", function(d) { return x(d.date) } )
@@ -111,8 +122,7 @@ data_series.forEach(function(item) {
     var top_whiskers = svg.selectAll("line.whiskertop." + item.name)
       .data(item.data);
     top_whiskers.enter().append("line")
-      .attr("class", "whiskertop")
-      .attr("class", item.name)
+      .attr("class", "whiskertop " + item.name)
       .attr("stroke", "black")
       .attr("stroke-width", 2.0)
       .attr("x1", function(d) { return x(d.date) - 2.0 } )
@@ -124,8 +134,7 @@ data_series.forEach(function(item) {
     var bottom_whiskers = svg.selectAll("line.whiskerbottom." + item.name)
       .data(item.data);
     bottom_whiskers.enter().append("line")
-      .attr("class", "whiskerbottom")
-      .attr("class", item.name)
+      .attr("class", "whiskerbottom " + item.name)
       .attr("stroke", "black")
       .attr("stroke-width", 2.0)
       .attr("x1", function(d) { return x(d.date) - 2.0 } )
@@ -133,18 +142,6 @@ data_series.forEach(function(item) {
       .attr("x2", function(d) { return x(d.date) + 2.0 } )
       .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
       ;
-
-
-    // Add the graph line
-    svg.append("path")
-      .datum(item.data)
-      .attr("fill", "none")
-      .attr("stroke", item.color)
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(function(d) { return x(d.date) })
-        .y(function(d) { return y(d.value) })
-        );
 });
 
 </script>
