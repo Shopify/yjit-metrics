@@ -15,18 +15,24 @@ colors = [
     '#9362c4',
 ]
 %>
-<div id="timeline_legend">
-  <ul style="display:inline-block">
-<% @series.each_with_index do |this_series, color_index|
-     color = colors[color_index % colors.size] %>
-<li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: black;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
-<% end %>
-  </ul>
 
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+  <% @series.each_with_index do |this_series, color_index|
+       color = colors[color_index % colors.size] %>
+  <li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: black;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+  <% end %>
+    </ul>
+  </div>
+</div>
+
+<div>
   <ul style="list-style-type: none">
     <li>Y axis values are the total number of seconds to run the benchmark one time - lower is better.</li>
     <li>Whiskers are shown 2 standard deviations higher and lower.</li>
   </ul>
+</div>
 </div>
 
 <script>
