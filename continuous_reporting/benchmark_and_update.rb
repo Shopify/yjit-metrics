@@ -203,6 +203,7 @@ def check_perf_tripwires
         ts_latest = ts_from_tripwire_filename(latest)
         ts_penultimate = ts_from_tripwire_filename(penultimate)
 
+        puts "Filing Github issue - slower benchmark(s) found."
         body = <<~BODY
         Latest failing benchmark: #{latest}
         Compared to previous benchmark: #{penultimate}
