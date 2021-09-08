@@ -23,7 +23,7 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
   <a href="{{ last_bench.url | relative_url }}">Click through for a full text report</a>
 </div>
 
-<div style="width: 800px;">
+<div>
 <a href="{{ last_bench.url | relative_url }}">
 {% include {{last_bench.reports.blog_speed_details_svg}} %}
 </a>
