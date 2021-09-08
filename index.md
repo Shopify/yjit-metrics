@@ -4,23 +4,29 @@ layout: basic
 
 {% assign last_bench = site.benchmarks | last %}
 
-How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https://github.com/Shopify/yjit-bench) as of <strong>{{last_bench.date_str}} {{last_bench.time_str}}</strong>?
+<div class="headline-box">
 
-<!-- Headlines -->
+<p>
+How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href="https://github.com/Shopify/yjit-bench">benchmarks</a> as of <strong>{{last_bench.date_str}} {{last_bench.time_str}}</strong>?
+</p>
+
 <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
 
-<div style="text-align: center;">
-    <a href="{{ last_bench.url | relative_url }}">(Link to the latest full-details comparison report)</a>
+<div class="headline-button">
+  <a href="{{ last_bench.url | relative_url }}"><button>Latest Full Details</button></a>
+</div>
 </div>
 
 <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
+<div class="timeline_report">
 {% include reports/blog_timeline.html %}
+</div>
 
 <h2 style="text-align: center;">Latest Results vs CRuby and MJIT</h2>
 
 <div style="text-align: center;">
-  <a href="{{ last_bench.url | relative_url }}">Click through for a full text report</a>
+  <a href="{{ last_bench.url | relative_url }}"><button>Latest Full Details</button></a>
 </div>
 
 <div>
@@ -29,4 +35,7 @@ How is [YJIT's](https://github.com/Shopify/yjit) speed on its [benchmarks](https
 </a>
 </div>
 
-Or would you like the full firehose of [older benchmark results?](history)
+<p style="text-align: center; margin-top: 3em;">
+  Do you love extensive details? <br/>
+  <a href="{{ "history" | relative_url }}"> <button>See All the Benchmark History</button></a>
+</p>
