@@ -17,21 +17,6 @@
 }
 </pre>
 
-<h3>YJIT Metadata</h3>
-
-<pre>
-{
-  "RUBY_VERSION": "3.1.0",
-  "RUBY_DESCRIPTION": "ruby 3.1.0dev (2021-08-30T15:43:13Z main 093740af0a) [x86_64-linux]",
-  "RUBY_ENGINE": "ruby",
-  "which ruby": "/home/ubuntu/.rubies/ruby-yjit-metrics-prod/bin/ruby\n",
-  "hostname": "ip-172-31-8-3\n",
-  "ec2 instance id": "i-0ed46ee597dcad5d4",
-  "ec2 instance type": "c5.2xlarge",
-  "RbConfig configure_args": " '--disable-install-doc' '--disable-install-rdoc' '--prefix=/home/ubuntu/.rubies/ruby-yjit-metrics-prod'"
-}
-</pre>
-
 <h3>MJIT Metadata</h3>
 
 <pre>
@@ -44,6 +29,21 @@
   "ec2 instance id": "i-0ed46ee597dcad5d4",
   "ec2 instance type": "c5.2xlarge",
   "RbConfig configure_args": " '--prefix=/home/ubuntu/.rubies/ruby-3.0.2' '' 'build_alias=' 'host_alias=' 'target_alias='"
+}
+</pre>
+
+<h3>YJIT Metadata</h3>
+
+<pre>
+{
+  "RUBY_VERSION": "3.1.0",
+  "RUBY_DESCRIPTION": "ruby 3.1.0dev (2021-08-30T15:43:13Z main 093740af0a) [x86_64-linux]",
+  "RUBY_ENGINE": "ruby",
+  "which ruby": "/home/ubuntu/.rubies/ruby-yjit-metrics-prod/bin/ruby\n",
+  "hostname": "ip-172-31-8-3\n",
+  "ec2 instance id": "i-0ed46ee597dcad5d4",
+  "ec2 instance type": "c5.2xlarge",
+  "RbConfig configure_args": " '--disable-install-doc' '--disable-install-rdoc' '--prefix=/home/ubuntu/.rubies/ruby-yjit-metrics-prod'"
 }
 </pre>
 
@@ -2904,6 +2904,1496 @@
 
 
 
+<h3>MJIT  Metadata</h3>
+
+<pre>
+{
+  "fib": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "fib",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
+    "runs": 1
+  },
+  "respond_to": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "respond_to",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
+    "runs": 1
+  },
+  "activerecord": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": "-rbundler/setup ",
+      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLE_GEMFILE": "Gemfile",
+      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
+      "BUNDLER_VERSION": "1.17.2",
+      "BUNDLER_ORIG_RUBYOPT": "",
+      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "bundler",
+        "1.17.2"
+      ],
+      [
+        "securerandom",
+        "0.1.0"
+      ],
+      [
+        "etc",
+        "1.2.0"
+      ],
+      [
+        "pathname",
+        "0.1.0"
+      ],
+      [
+        "set",
+        "1.0.1"
+      ],
+      [
+        "readline-ext",
+        "0.1.1"
+      ],
+      [
+        "uri",
+        "0.10.1"
+      ],
+      [
+        "tsort",
+        "0.1.0"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ],
+      [
+        "concurrent-ruby",
+        "1.1.9"
+      ],
+      [
+        "i18n",
+        "1.8.10"
+      ],
+      [
+        "minitest",
+        "5.14.4"
+      ],
+      [
+        "thread_safe",
+        "0.3.6"
+      ],
+      [
+        "tzinfo",
+        "1.2.9"
+      ],
+      [
+        "zeitwerk",
+        "2.4.2"
+      ],
+      [
+        "activesupport",
+        "6.0.4"
+      ],
+      [
+        "activemodel",
+        "6.0.4"
+      ],
+      [
+        "activerecord",
+        "6.0.4"
+      ],
+      [
+        "sqlite3",
+        "1.4.2"
+      ]
+    ],
+    "benchmark_name": "activerecord",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+    "runs": 1
+  },
+  "getivar": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "getivar",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
+    "runs": 1
+  },
+  "lee": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "victor",
+        "0.3.3"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ]
+    ],
+    "benchmark_name": "lee",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+    "runs": 1
+  }
+}
+</pre>
+
+
+
+<h3>MJIT  Metadata</h3>
+
+<pre>
+{
+  "fib": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "fib",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
+    "runs": 1
+  },
+  "respond_to": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "respond_to",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
+    "runs": 1
+  },
+  "activerecord": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": "-rbundler/setup ",
+      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLE_GEMFILE": "Gemfile",
+      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
+      "BUNDLER_VERSION": "1.17.2",
+      "BUNDLER_ORIG_RUBYOPT": "",
+      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "bundler",
+        "1.17.2"
+      ],
+      [
+        "securerandom",
+        "0.1.0"
+      ],
+      [
+        "etc",
+        "1.2.0"
+      ],
+      [
+        "pathname",
+        "0.1.0"
+      ],
+      [
+        "set",
+        "1.0.1"
+      ],
+      [
+        "readline-ext",
+        "0.1.1"
+      ],
+      [
+        "uri",
+        "0.10.1"
+      ],
+      [
+        "tsort",
+        "0.1.0"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ],
+      [
+        "concurrent-ruby",
+        "1.1.9"
+      ],
+      [
+        "i18n",
+        "1.8.10"
+      ],
+      [
+        "minitest",
+        "5.14.4"
+      ],
+      [
+        "thread_safe",
+        "0.3.6"
+      ],
+      [
+        "tzinfo",
+        "1.2.9"
+      ],
+      [
+        "zeitwerk",
+        "2.4.2"
+      ],
+      [
+        "activesupport",
+        "6.0.4"
+      ],
+      [
+        "activemodel",
+        "6.0.4"
+      ],
+      [
+        "activerecord",
+        "6.0.4"
+      ],
+      [
+        "sqlite3",
+        "1.4.2"
+      ]
+    ],
+    "benchmark_name": "activerecord",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+    "runs": 1
+  },
+  "getivar": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "getivar",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
+    "runs": 1
+  },
+  "lee": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "victor",
+        "0.3.3"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ]
+    ],
+    "benchmark_name": "lee",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+    "runs": 1
+  }
+}
+</pre>
+
+
+
+<h3>MJIT  Metadata</h3>
+
+<pre>
+{
+  "fib": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "fib",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
+    "runs": 1
+  },
+  "respond_to": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "respond_to",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
+    "runs": 1
+  },
+  "activerecord": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": "-rbundler/setup ",
+      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLE_GEMFILE": "Gemfile",
+      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
+      "BUNDLER_VERSION": "1.17.2",
+      "BUNDLER_ORIG_RUBYOPT": "",
+      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "bundler",
+        "1.17.2"
+      ],
+      [
+        "securerandom",
+        "0.1.0"
+      ],
+      [
+        "etc",
+        "1.2.0"
+      ],
+      [
+        "pathname",
+        "0.1.0"
+      ],
+      [
+        "set",
+        "1.0.1"
+      ],
+      [
+        "readline-ext",
+        "0.1.1"
+      ],
+      [
+        "uri",
+        "0.10.1"
+      ],
+      [
+        "tsort",
+        "0.1.0"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ],
+      [
+        "concurrent-ruby",
+        "1.1.9"
+      ],
+      [
+        "i18n",
+        "1.8.10"
+      ],
+      [
+        "minitest",
+        "5.14.4"
+      ],
+      [
+        "thread_safe",
+        "0.3.6"
+      ],
+      [
+        "tzinfo",
+        "1.2.9"
+      ],
+      [
+        "zeitwerk",
+        "2.4.2"
+      ],
+      [
+        "activesupport",
+        "6.0.4"
+      ],
+      [
+        "activemodel",
+        "6.0.4"
+      ],
+      [
+        "activerecord",
+        "6.0.4"
+      ],
+      [
+        "sqlite3",
+        "1.4.2"
+      ]
+    ],
+    "benchmark_name": "activerecord",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+    "runs": 1
+  },
+  "getivar": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "getivar",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
+    "runs": 1
+  },
+  "lee": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "victor",
+        "0.3.3"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ]
+    ],
+    "benchmark_name": "lee",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+    "runs": 1
+  }
+}
+</pre>
+
+
+
+<h3>MJIT  Metadata</h3>
+
+<pre>
+{
+  "fib": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "fib",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
+    "runs": 1
+  },
+  "respond_to": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "respond_to",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
+    "runs": 1
+  },
+  "activerecord": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": "-rbundler/setup ",
+      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLE_GEMFILE": "Gemfile",
+      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
+      "BUNDLER_VERSION": "1.17.2",
+      "BUNDLER_ORIG_RUBYOPT": "",
+      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "bundler",
+        "1.17.2"
+      ],
+      [
+        "securerandom",
+        "0.1.0"
+      ],
+      [
+        "etc",
+        "1.2.0"
+      ],
+      [
+        "pathname",
+        "0.1.0"
+      ],
+      [
+        "set",
+        "1.0.1"
+      ],
+      [
+        "readline-ext",
+        "0.1.1"
+      ],
+      [
+        "uri",
+        "0.10.1"
+      ],
+      [
+        "tsort",
+        "0.1.0"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ],
+      [
+        "concurrent-ruby",
+        "1.1.9"
+      ],
+      [
+        "i18n",
+        "1.8.10"
+      ],
+      [
+        "minitest",
+        "5.14.4"
+      ],
+      [
+        "thread_safe",
+        "0.3.6"
+      ],
+      [
+        "tzinfo",
+        "1.2.9"
+      ],
+      [
+        "zeitwerk",
+        "2.4.2"
+      ],
+      [
+        "activesupport",
+        "6.0.4"
+      ],
+      [
+        "activemodel",
+        "6.0.4"
+      ],
+      [
+        "activerecord",
+        "6.0.4"
+      ],
+      [
+        "sqlite3",
+        "1.4.2"
+      ]
+    ],
+    "benchmark_name": "activerecord",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+    "runs": 1
+  },
+  "getivar": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "getivar",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
+    "runs": 1
+  },
+  "lee": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "victor",
+        "0.3.3"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ]
+    ],
+    "benchmark_name": "lee",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+    "runs": 1
+  }
+}
+</pre>
+
+
+
+<h3>MJIT  Metadata</h3>
+
+<pre>
+{
+  "fib": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "fib",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
+    "runs": 1
+  },
+  "respond_to": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "respond_to",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
+    "runs": 1
+  },
+  "activerecord": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": "-rbundler/setup ",
+      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+      "BUNDLE_GEMFILE": "Gemfile",
+      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
+      "BUNDLER_VERSION": "1.17.2",
+      "BUNDLER_ORIG_RUBYOPT": "",
+      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "bundler",
+        "1.17.2"
+      ],
+      [
+        "securerandom",
+        "0.1.0"
+      ],
+      [
+        "etc",
+        "1.2.0"
+      ],
+      [
+        "pathname",
+        "0.1.0"
+      ],
+      [
+        "set",
+        "1.0.1"
+      ],
+      [
+        "readline-ext",
+        "0.1.1"
+      ],
+      [
+        "uri",
+        "0.10.1"
+      ],
+      [
+        "tsort",
+        "0.1.0"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ],
+      [
+        "concurrent-ruby",
+        "1.1.9"
+      ],
+      [
+        "i18n",
+        "1.8.10"
+      ],
+      [
+        "minitest",
+        "5.14.4"
+      ],
+      [
+        "thread_safe",
+        "0.3.6"
+      ],
+      [
+        "tzinfo",
+        "1.2.9"
+      ],
+      [
+        "zeitwerk",
+        "2.4.2"
+      ],
+      [
+        "activesupport",
+        "6.0.4"
+      ],
+      [
+        "activemodel",
+        "6.0.4"
+      ],
+      [
+        "activerecord",
+        "6.0.4"
+      ],
+      [
+        "sqlite3",
+        "1.4.2"
+      ]
+    ],
+    "benchmark_name": "activerecord",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+    "runs": 1
+  },
+  "getivar": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ]
+    ],
+    "benchmark_name": "getivar",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
+    "runs": 1
+  },
+  "lee": {
+    "warmup_itrs": 10,
+    "min_bench_itrs": 10,
+    "min_bench_time": 20.0,
+    "env": {
+      "YJIT_METRICS_GITHUB_TOKEN": "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",
+      "RUBY_VERSION": "3.0.2",
+      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "RUBY_ENGINE": "ruby",
+      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
+      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
+      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
+      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
+      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
+      "RUBYOPT": ""
+    },
+    "loaded_gems": [
+      [
+        "did_you_mean",
+        "1.5.0"
+      ],
+      [
+        "benchmark",
+        "0.1.1"
+      ],
+      [
+        "json",
+        "2.5.1"
+      ],
+      [
+        "ostruct",
+        "0.3.1"
+      ],
+      [
+        "victor",
+        "0.3.3"
+      ],
+      [
+        "forwardable",
+        "1.3.2"
+      ]
+    ],
+    "benchmark_name": "lee",
+    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+    "runs": 1
+  }
+}
+</pre>
+
+
+
 <h3>YJIT  Metadata</h3>
 
 <pre>
@@ -4487,1496 +5977,6 @@
     ],
     "benchmark_name": "fib",
     "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  }
-}
-</pre>
-
-
-
-<h3>MJIT  Metadata</h3>
-
-<pre>
-{
-  "fib": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "fib",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  },
-  "respond_to": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "respond_to",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
-    "runs": 1
-  },
-  "activerecord": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": "-rbundler/setup ",
-      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLE_GEMFILE": "Gemfile",
-      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
-      "BUNDLER_VERSION": "1.17.2",
-      "BUNDLER_ORIG_RUBYOPT": "",
-      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "bundler",
-        "1.17.2"
-      ],
-      [
-        "securerandom",
-        "0.1.0"
-      ],
-      [
-        "etc",
-        "1.2.0"
-      ],
-      [
-        "pathname",
-        "0.1.0"
-      ],
-      [
-        "set",
-        "1.0.1"
-      ],
-      [
-        "readline-ext",
-        "0.1.1"
-      ],
-      [
-        "uri",
-        "0.10.1"
-      ],
-      [
-        "tsort",
-        "0.1.0"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ],
-      [
-        "concurrent-ruby",
-        "1.1.9"
-      ],
-      [
-        "i18n",
-        "1.8.10"
-      ],
-      [
-        "minitest",
-        "5.14.4"
-      ],
-      [
-        "thread_safe",
-        "0.3.6"
-      ],
-      [
-        "tzinfo",
-        "1.2.9"
-      ],
-      [
-        "zeitwerk",
-        "2.4.2"
-      ],
-      [
-        "activesupport",
-        "6.0.4"
-      ],
-      [
-        "activemodel",
-        "6.0.4"
-      ],
-      [
-        "activerecord",
-        "6.0.4"
-      ],
-      [
-        "sqlite3",
-        "1.4.2"
-      ]
-    ],
-    "benchmark_name": "activerecord",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
-    "runs": 1
-  },
-  "getivar": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "getivar",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
-    "runs": 1
-  },
-  "lee": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "victor",
-        "0.3.3"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ]
-    ],
-    "benchmark_name": "lee",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
-    "runs": 1
-  }
-}
-</pre>
-
-
-
-<h3>MJIT  Metadata</h3>
-
-<pre>
-{
-  "fib": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "fib",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  },
-  "respond_to": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "respond_to",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
-    "runs": 1
-  },
-  "activerecord": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": "-rbundler/setup ",
-      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLE_GEMFILE": "Gemfile",
-      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
-      "BUNDLER_VERSION": "1.17.2",
-      "BUNDLER_ORIG_RUBYOPT": "",
-      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "bundler",
-        "1.17.2"
-      ],
-      [
-        "securerandom",
-        "0.1.0"
-      ],
-      [
-        "etc",
-        "1.2.0"
-      ],
-      [
-        "pathname",
-        "0.1.0"
-      ],
-      [
-        "set",
-        "1.0.1"
-      ],
-      [
-        "readline-ext",
-        "0.1.1"
-      ],
-      [
-        "uri",
-        "0.10.1"
-      ],
-      [
-        "tsort",
-        "0.1.0"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ],
-      [
-        "concurrent-ruby",
-        "1.1.9"
-      ],
-      [
-        "i18n",
-        "1.8.10"
-      ],
-      [
-        "minitest",
-        "5.14.4"
-      ],
-      [
-        "thread_safe",
-        "0.3.6"
-      ],
-      [
-        "tzinfo",
-        "1.2.9"
-      ],
-      [
-        "zeitwerk",
-        "2.4.2"
-      ],
-      [
-        "activesupport",
-        "6.0.4"
-      ],
-      [
-        "activemodel",
-        "6.0.4"
-      ],
-      [
-        "activerecord",
-        "6.0.4"
-      ],
-      [
-        "sqlite3",
-        "1.4.2"
-      ]
-    ],
-    "benchmark_name": "activerecord",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
-    "runs": 1
-  },
-  "getivar": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "getivar",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
-    "runs": 1
-  },
-  "lee": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "victor",
-        "0.3.3"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ]
-    ],
-    "benchmark_name": "lee",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
-    "runs": 1
-  }
-}
-</pre>
-
-
-
-<h3>MJIT  Metadata</h3>
-
-<pre>
-{
-  "fib": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "fib",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  },
-  "respond_to": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "respond_to",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
-    "runs": 1
-  },
-  "activerecord": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": "-rbundler/setup ",
-      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLE_GEMFILE": "Gemfile",
-      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
-      "BUNDLER_VERSION": "1.17.2",
-      "BUNDLER_ORIG_RUBYOPT": "",
-      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "bundler",
-        "1.17.2"
-      ],
-      [
-        "securerandom",
-        "0.1.0"
-      ],
-      [
-        "etc",
-        "1.2.0"
-      ],
-      [
-        "pathname",
-        "0.1.0"
-      ],
-      [
-        "set",
-        "1.0.1"
-      ],
-      [
-        "readline-ext",
-        "0.1.1"
-      ],
-      [
-        "uri",
-        "0.10.1"
-      ],
-      [
-        "tsort",
-        "0.1.0"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ],
-      [
-        "concurrent-ruby",
-        "1.1.9"
-      ],
-      [
-        "i18n",
-        "1.8.10"
-      ],
-      [
-        "minitest",
-        "5.14.4"
-      ],
-      [
-        "thread_safe",
-        "0.3.6"
-      ],
-      [
-        "tzinfo",
-        "1.2.9"
-      ],
-      [
-        "zeitwerk",
-        "2.4.2"
-      ],
-      [
-        "activesupport",
-        "6.0.4"
-      ],
-      [
-        "activemodel",
-        "6.0.4"
-      ],
-      [
-        "activerecord",
-        "6.0.4"
-      ],
-      [
-        "sqlite3",
-        "1.4.2"
-      ]
-    ],
-    "benchmark_name": "activerecord",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
-    "runs": 1
-  },
-  "getivar": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "getivar",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
-    "runs": 1
-  },
-  "lee": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "victor",
-        "0.3.3"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ]
-    ],
-    "benchmark_name": "lee",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
-    "runs": 1
-  }
-}
-</pre>
-
-
-
-<h3>MJIT  Metadata</h3>
-
-<pre>
-{
-  "fib": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "fib",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  },
-  "respond_to": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "respond_to",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
-    "runs": 1
-  },
-  "activerecord": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": "-rbundler/setup ",
-      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLE_GEMFILE": "Gemfile",
-      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
-      "BUNDLER_VERSION": "1.17.2",
-      "BUNDLER_ORIG_RUBYOPT": "",
-      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "bundler",
-        "1.17.2"
-      ],
-      [
-        "securerandom",
-        "0.1.0"
-      ],
-      [
-        "etc",
-        "1.2.0"
-      ],
-      [
-        "pathname",
-        "0.1.0"
-      ],
-      [
-        "set",
-        "1.0.1"
-      ],
-      [
-        "readline-ext",
-        "0.1.1"
-      ],
-      [
-        "uri",
-        "0.10.1"
-      ],
-      [
-        "tsort",
-        "0.1.0"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ],
-      [
-        "concurrent-ruby",
-        "1.1.9"
-      ],
-      [
-        "i18n",
-        "1.8.10"
-      ],
-      [
-        "minitest",
-        "5.14.4"
-      ],
-      [
-        "thread_safe",
-        "0.3.6"
-      ],
-      [
-        "tzinfo",
-        "1.2.9"
-      ],
-      [
-        "zeitwerk",
-        "2.4.2"
-      ],
-      [
-        "activesupport",
-        "6.0.4"
-      ],
-      [
-        "activemodel",
-        "6.0.4"
-      ],
-      [
-        "activerecord",
-        "6.0.4"
-      ],
-      [
-        "sqlite3",
-        "1.4.2"
-      ]
-    ],
-    "benchmark_name": "activerecord",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
-    "runs": 1
-  },
-  "getivar": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "getivar",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
-    "runs": 1
-  },
-  "lee": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "victor",
-        "0.3.3"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ]
-    ],
-    "benchmark_name": "lee",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
-    "runs": 1
-  }
-}
-</pre>
-
-
-
-<h3>MJIT  Metadata</h3>
-
-<pre>
-{
-  "fib": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "fib",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/fib.rb",
-    "runs": 1
-  },
-  "respond_to": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "respond_to",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/respond_to.rb",
-    "runs": 1
-  },
-  "activerecord": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": "-rbundler/setup ",
-      "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
-      "BUNDLE_GEMFILE": "Gemfile",
-      "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/exe/bundle",
-      "BUNDLER_VERSION": "1.17.2",
-      "BUNDLER_ORIG_RUBYOPT": "",
-      "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.2/gems/bundler-1.17.2/lib"
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "bundler",
-        "1.17.2"
-      ],
-      [
-        "securerandom",
-        "0.1.0"
-      ],
-      [
-        "etc",
-        "1.2.0"
-      ],
-      [
-        "pathname",
-        "0.1.0"
-      ],
-      [
-        "set",
-        "1.0.1"
-      ],
-      [
-        "readline-ext",
-        "0.1.1"
-      ],
-      [
-        "uri",
-        "0.10.1"
-      ],
-      [
-        "tsort",
-        "0.1.0"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ],
-      [
-        "concurrent-ruby",
-        "1.1.9"
-      ],
-      [
-        "i18n",
-        "1.8.10"
-      ],
-      [
-        "minitest",
-        "5.14.4"
-      ],
-      [
-        "thread_safe",
-        "0.3.6"
-      ],
-      [
-        "tzinfo",
-        "1.2.9"
-      ],
-      [
-        "zeitwerk",
-        "2.4.2"
-      ],
-      [
-        "activesupport",
-        "6.0.4"
-      ],
-      [
-        "activemodel",
-        "6.0.4"
-      ],
-      [
-        "activerecord",
-        "6.0.4"
-      ],
-      [
-        "sqlite3",
-        "1.4.2"
-      ]
-    ],
-    "benchmark_name": "activerecord",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
-    "runs": 1
-  },
-  "getivar": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ]
-    ],
-    "benchmark_name": "getivar",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/getivar.rb",
-    "runs": 1
-  },
-  "lee": {
-    "warmup_itrs": 10,
-    "min_bench_itrs": 10,
-    "min_bench_time": 20.0,
-    "env": {
-      "YJIT_METRICS_GITHUB_TOKEN": "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",
-      "RUBY_VERSION": "3.0.2",
-      "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "RUBY_ENGINE": "ruby",
-      "YJIT_METRICS_GITHUB_USER": "noahgibbs",
-      "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.2:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0",
-      "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.2",
-      "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.2",
-      "PATH": "/home/ubuntu/.gem/ruby/3.0.2/bin:/home/ubuntu/.rubies/ruby-3.0.2/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.2/bin:/usr/bin:/bin:/snap/bin",
-      "RUBYOPT": ""
-    },
-    "loaded_gems": [
-      [
-        "did_you_mean",
-        "1.5.0"
-      ],
-      [
-        "benchmark",
-        "0.1.1"
-      ],
-      [
-        "json",
-        "2.5.1"
-      ],
-      [
-        "ostruct",
-        "0.3.1"
-      ],
-      [
-        "victor",
-        "0.3.3"
-      ],
-      [
-        "forwardable",
-        "1.3.2"
-      ]
-    ],
-    "benchmark_name": "lee",
-    "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
     "runs": 1
   }
 }
