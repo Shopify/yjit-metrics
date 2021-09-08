@@ -21,8 +21,8 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],
-            ["YJIT", @with_yjit_config],
             ["MJIT", @with_mjit_config],
+            ["YJIT", @with_yjit_config],
         ]
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
 
@@ -209,7 +209,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         right_whitespace = 0.01
 
         # Reserve the top room for legend and bottom room for x-axis labels
-        bottom_key_height = 0.15
+        bottom_key_height = 0.17
         top_whitespace = 0.05
 
         plot_left_edge = left_axis_width
