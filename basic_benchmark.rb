@@ -338,11 +338,15 @@ all_runs.each do |run_num, config, bench_info|
         raise "Unexpected value of when_error! Internal error!" if when_error != :re_run
     end
 
-    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
-    puts "Writing to JSON output file #{json_path}."
-    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
+    # Single-run results can be nil if we're reporting or ignoring errors.
+    # If we die or re-run on error, we should raise an exception if we fail completely
+    unless single_run_results.nil?
+        json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
+        puts "Writing to JSON output file #{json_path}."
+        File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
 
-    intermediate_by_config[config].push json_path
+        intermediate_by_config[config].push json_path
+    end
 end
 
 puts "All intermediate runs finished, merging to final files..."
