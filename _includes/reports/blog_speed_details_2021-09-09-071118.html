@@ -1,0 +1,99 @@
+<!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
+
+<p>
+	The y axis is CRuby's pure-interpreter time for the benchmark divided by the named interpreter's time (YJIT, MJIT, TruffleRuby). Taller bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result, so CRuby's results are always exactly 1.0.
+</p>
+
+<table>
+	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>MJIT (ms)</th>  <th>MJIT RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT spd</th>  <th>MJIT spd RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
+	<tbody style="text-align: right;">
+		
+			<tr style="border: 1px solid black;">
+				 <td> cfunc_itself.rb </td>  <td> 90.3 </td>  <td> 0.22% </td>  <td> 57.2 </td>  <td> 0.18% </td>  <td> 41.0 </td>  <td> 0.32% </td>  <td> 1.58x </td>  <td> 0.28% </td>  <td> 2.20x </td>  <td> 0.39% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> fib.rb </td>  <td> 200.5 </td>  <td> 0.05% </td>  <td> 62.5 </td>  <td> 0.05% </td>  <td> 58.4 </td>  <td> 0.06% </td>  <td> 3.21x </td>  <td> 0.07% </td>  <td> 3.44x </td>  <td> 0.08% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> getivar.rb </td>  <td> 90.5 </td>  <td> 0.08% </td>  <td> 90.7 </td>  <td> 0.14% </td>  <td> 36.3 </td>  <td> 0.04% </td>  <td> 1.00x </td>  <td> 0.16% </td>  <td> 2.50x </td>  <td> 0.09% </td>  <td> 86.57% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> respond_to.rb </td>  <td> 227.0 </td>  <td> 0.75% </td>  <td> 201.6 </td>  <td> 0.30% </td>  <td> 154.4 </td>  <td> 0.27% </td>  <td> 1.13x </td>  <td> 0.81% </td>  <td> 1.47x </td>  <td> 0.80% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> setivar.rb </td>  <td> 70.7 </td>  <td> 0.06% </td>  <td> 72.9 </td>  <td> 0.08% </td>  <td> 41.6 </td>  <td> 0.38% </td>  <td> 0.97x </td>  <td> 0.10% </td>  <td> 1.70x </td>  <td> 0.39% </td>  <td> 88.61% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> 30k_methods.rb </td>  <td> 5904.2 </td>  <td> 0.01% </td>  <td> 6188.4 </td>  <td> 0.25% </td>  <td> 712.5 </td>  <td> 0.02% </td>  <td> 0.95x </td>  <td> 0.25% </td>  <td> 8.29x </td>  <td> 0.02% </td>  <td> 100.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> 30k_ifelse.rb </td>  <td> 2297.4 </td>  <td> 0.64% </td>  <td> 2315.6 </td>  <td> 0.99% </td>  <td> 337.3 </td>  <td> 0.19% </td>  <td> 0.99x </td>  <td> 1.18% </td>  <td> 6.81x </td>  <td> 0.67% </td>  <td> 99.98% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> fannkuchredux </td>  <td> 5478.0 </td>  <td> 0.08% </td>  <td> 4180.3 </td>  <td> 0.08% </td>  <td> 5395.5 </td>  <td> 0.37% </td>  <td> 1.31x </td>  <td> 0.11% </td>  <td> 1.02x </td>  <td> 0.38% </td>  <td> 0.00% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> nbody </td>  <td> 115.3 </td>  <td> 0.08% </td>  <td> 69.8 </td>  <td> 0.41% </td>  <td> 114.6 </td>  <td> 0.19% </td>  <td> 1.65x </td>  <td> 0.41% </td>  <td> 1.01x </td>  <td> 0.21% </td>  <td> 7.40% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> binarytrees </td>  <td> 363.8 </td>  <td> 0.48% </td>  <td> 256.0 </td>  <td> 0.28% </td>  <td> 286.8 </td>  <td> 1.11% </td>  <td> 1.42x </td>  <td> 0.56% </td>  <td> 1.27x </td>  <td> 1.21% </td>  <td> 82.95% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> psych-load </td>  <td> 2105.9 </td>  <td> 0.50% </td>  <td> 1873.4 </td>  <td> 1.96% </td>  <td> 1802.0 </td>  <td> 0.51% </td>  <td> 1.12x </td>  <td> 2.02% </td>  <td> 1.17x </td>  <td> 0.72% </td>  <td> 66.22% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> lee </td>  <td> 1107.2 </td>  <td> 1.20% </td>  <td> 880.9 </td>  <td> 0.97% </td>  <td> 806.5 </td>  <td> 1.66% </td>  <td> 1.26x </td>  <td> 1.54% </td>  <td> 1.37x </td>  <td> 2.05% </td>  <td> 99.80% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> liquid-render </td>  <td> 186.5 </td>  <td> 1.05% </td>  <td> 162.7 </td>  <td> 2.41% </td>  <td> 152.2 </td>  <td> 2.43% </td>  <td> 1.15x </td>  <td> 2.63% </td>  <td> 1.23x </td>  <td> 2.65% </td>  <td> 66.66% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> activerecord </td>  <td> 149.5 </td>  <td> 1.35% </td>  <td> 155.2 </td>  <td> 0.79% </td>  <td> 113.1 </td>  <td> 1.78% </td>  <td> 0.96x </td>  <td> 1.57% </td>  <td> 1.32x </td>  <td> 2.23% </td>  <td> 79.08% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> optcarrot </td>  <td> 5475.0 </td>  <td> 0.25% </td>  <td> 2698.2 </td>  <td> 0.17% </td>  <td> 3146.6 </td>  <td> 0.32% </td>  <td> 2.03x </td>  <td> 0.30% </td>  <td> 1.74x </td>  <td> 0.41% </td>  <td> 96.16% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> jekyll </td>  <td> 8336.3 </td>  <td> 1.64% </td>  <td> 8308.9 </td>  <td> 1.37% </td>  <td> 7570.8 </td>  <td> 1.90% </td>  <td> 1.00x </td>  <td> 2.14% </td>  <td> 1.10x </td>  <td> 2.51% </td>  <td> 66.85% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> mail </td>  <td> 154.0 </td>  <td> 1.18% </td>  <td> 150.2 </td>  <td> 1.54% </td>  <td> 139.5 </td>  <td> 1.49% </td>  <td> 1.03x </td>  <td> 1.94% </td>  <td> 1.10x </td>  <td> 1.91% </td>  <td> 23.92% </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> railsbench </td>  <td> 3118.7 </td>  <td> 1.52% </td>  <td> 3071.6 </td>  <td> 0.91% </td>  <td> 2699.9 </td>  <td> 1.36% </td>  <td> 1.02x </td>  <td> 1.77% </td>  <td> 1.16x </td>  <td> 2.04% </td>  <td> 74.43% </td> 
+			</tr>
+		
+	</tbody>
+</table>
+
+<p>
+	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
+	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+</p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
+	Our benchmark-runner code isn't public yet, but we plan to release it later.
+</p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><strong>ruby 3.1.0dev (2021-09-08T20:26:37Z main 7b8fc81f17) [x86_64-linux]</strong></tt> <br/>
+	Tested Ruby version for MJIT: <tt><strong>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</strong></tt>
+</p>
