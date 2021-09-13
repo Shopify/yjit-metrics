@@ -1,14 +1,14 @@
 # YJIT Metrics
 
 YJIT-metrics is intended to check speedups and internal statistics for YJIT,
-an experimental open-source JIT for Ruby. You can find out more about YJIT
-[at its GitHub repo](https://github.com/Shopify/yjit).
+an experimental open-source JIT for CRuby. You can find out more about YJIT
+[at yjit.org](https://yjit.org).
 
 YJIT-metrics uses the benchmarks in the
 [yjit-bench repository](https://github.com/Shopify/yjit-bench).
 
 You can see the latest benchmark reports
-[on the yjit-metrics GitHub Pages URL](https://shopify.github.io/yjit-metrics).
+[at speed.yjit.org](https://speed.yjit.org).
 
 ## Setup and Installation, Accuracy of Results
 
@@ -43,12 +43,14 @@ You can find examples of data-gathering scripts in the "runners" directory and p
 
 While it's possible to install TruffleRuby via ruby-install, our experience has been that the JVM (non-default) version gets better results than the native/SubstrateVM version available via ruby-install. So: you're probably going to need to install ruby-build and install it yourself.
 
-(Eventually yjit-metrics will do this for you.)
+When you first try to run basic_benchmark.rb including a TruffleRuby configuration, basic_benchmark will clone ruby-build and tell you how to install it. After you do so, run basic_benchmark again and it will install TruffleRuby for you.
 
-First, clone ruby-build and install it under /usr/local/bin:
+In general, basic_benchmark will try to install or update the appropriate Ruby version(s) when you run it. If you run it with --skip-git-updates it will *not* attempt to install or update any Ruby configuration, nor yjit-bench, nor any of its other dependencies. If you want a partial installation or update you'll want to do it manually rather than relying on basic_benchmark.
 
-    $ git clone https://github.com/rbenv/ruby-build.git
-    $ cd ruby-build
-    $ sudo install.sh
+## Bugs, Questions and Contributions
 
-Then basic_benchmark.rb will install the appropriate TruffleRuby next time you run it without --skip-git-updates.
+We'd love your questions, your docs and code contributions, and just generally to talk with you about benchmarking YJIT!
+
+Please see LICENSE.md, CODE_OF_CONDUCT.md and CONTRIBUTING.md for more information about this project and how to make changes.
+
+Or, y'know, just talk to us. The authors have significant online presences and we love normal GitHub interaction like issues, pull requests and so on.
