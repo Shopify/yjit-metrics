@@ -9,7 +9,7 @@ require_relative "../lib/yjit-metrics"
 
 # This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
 
-# Slight subtlety: this repo is currently not public, so we need a token to pull or clone it.
+# We want to check into the repo and file issues, so we need credentials.
 raise "Please set YJIT_METRICS_GITHUB_TOKEN to an appropriate GitHub token!" unless ENV["YJIT_METRICS_GITHUB_TOKEN"]
 GITHUB_TOKEN = ENV["YJIT_METRICS_GITHUB_TOKEN"].chomp
 YJIT_METRICS_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
