@@ -122,10 +122,11 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
     def to_s
         # Bindings for use inside ERB report template
         stats = combined_stats_data_for_benchmarks(@benchmark_names)
-        total_exits = total_exit_count(stats)
+        side_exits = total_exit_count(stats)
+        total_exits = side_exits + stats["leave_interp_return"]
 
         # Number of instructions that finish executing in YJIT
-        retired_in_yjit = stats["exec_instruction"] - total_exits
+        retired_in_yjit = stats["exec_instruction"] - side_exits
 
         # Average length of instruction sequences executed by YJIT
         avg_len_in_yjit = retired_in_yjit.to_f / total_exits
@@ -149,10 +150,10 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
         end
 
         exits = exits.sort_by { |name, count| -count }[0...how_many]
-        total_exits = total_exit_count(stats)
+        side_exits = total_exit_count(stats)
 
         top_n_total = exits.map { |name, count| count }.sum
-        top_n_exit_pct = 100.0 * top_n_total / total_exits
+        top_n_exit_pct = 100.0 * top_n_total / side_exits
 
         prefix_text = "Top-#{how_many} most frequent exit ops (#{"%.1f" % top_n_exit_pct}% of exits):\n"
 
@@ -161,7 +162,7 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
             padding = longest_insn_name_len + left_pad
             padded_name = "%#{padding}s" % name
             padded_count = "%10d" % count
-            percent = 100.0 * count / total_exits
+            percent = 100.0 * count / side_exits
             formatted_percent = "%.1f" % percent
             "#{padded_name}: #{padded_count} (#{formatted_percent})"
         end.join("\n")
@@ -244,8 +245,8 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
             # For these calculations we just add all relevant counters together.
             this_bench_stats = combined_stats_data_for_benchmarks([benchmark_name])
 
-            total_exits = total_exit_count(this_bench_stats)
-            retired_in_yjit = this_bench_stats["exec_instruction"] - total_exits
+            side_exits = total_exit_count(this_bench_stats)
+            retired_in_yjit = this_bench_stats["exec_instruction"] - side_exits
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
 
