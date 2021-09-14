@@ -10,8 +10,8 @@ require_relative "../lib/yjit-metrics"
 # This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
 
 # We want to check into the repo and file issues, so we need credentials.
-raise "Please set YJIT_METRICS_GITHUB_TOKEN to an appropriate GitHub token!" unless ENV["YJIT_METRICS_GITHUB_TOKEN"]
-GITHUB_TOKEN = ENV["YJIT_METRICS_GITHUB_TOKEN"].chomp
+raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token!" unless ENV["BENCHMARK_CI_GITHUB_TOKEN"]
+GITHUB_TOKEN = ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp
 YJIT_METRICS_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
 YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git"
 YJIT_METRICS_PAGES_BRANCH = "pages"

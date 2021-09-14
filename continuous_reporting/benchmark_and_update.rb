@@ -46,10 +46,10 @@ BENCHMARK_ARGS = benchmark_args
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
-GITHUB_USER=ENV["YJIT_METRICS_GITHUB_USER"]
-GITHUB_TOKEN=ENV["YJIT_METRICS_GITHUB_TOKEN"]
+GITHUB_USER=ENV["BENCHMARK_CI_GITHUB_USER"]
+GITHUB_TOKEN=ENV["BENCHMARK_CI_GITHUB_TOKEN"]
 unless GITHUB_USER && GITHUB_TOKEN
-    raise "Set YJIT_METRICS_GITHUB_USER and YJIT_METRICS_GITHUB_TOKEN to an appropriate GitHub username/token for repo access and opening issues!"
+    raise "Set BENCHMARK_CI_GITHUB_USER and BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub username/token for repo access and opening issues!"
 end
 
 def ghapi_post(api_uri, params, verb: :post)
