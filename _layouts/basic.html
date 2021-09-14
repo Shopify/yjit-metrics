@@ -8,13 +8,22 @@
     <meta name="viewport" content="width=device-width,maximum-scale=2">
     <link rel="stylesheet" type="text/css" media="screen" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
 
-    <!-- no Google Analytics in our case -->
+    <style media="all">
+      #svg_tooltip {
+        background: white;
+        border:  1px solid black;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        display: none;
+      }
+    </style>
 
+    <!-- no Google Analytics in our case -->
 {% seo %}
   </head>
 
   <body>
-
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
@@ -41,5 +50,24 @@
         </ul>
       </footer>
     </div>
+
+    <div id="svg_tooltip"></div>
+
+    <script>
+      function showSVGTooltip(evt, text) {
+        let tt = document.getElementById("svg_tooltip");
+        if(tt === null) return;
+        tt.innerHTML = text;
+        tt.style.display = "block";
+        tt.style.left = evt.pageX + 10 + 'px';
+        tt.style.top = evt.pageY + 10 + 'px';
+      }
+
+      function hideSVGTooltip() {
+        var tt = document.getElementById("svg_tooltip");
+        if(tt === undefined) return;
+        tt.style.display = "none";
+      }
+    </script>
   </body>
 </html>
