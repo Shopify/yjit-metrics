@@ -125,6 +125,7 @@ data_series.forEach(function(item) {
       .attr("r", 3.5)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
+      .attr("data-tooltip", function(d) { return item.name + ": " + d.value.toFixed(1); } )
       ;
 
     // Add the whiskers, which are an I-shape of lines
