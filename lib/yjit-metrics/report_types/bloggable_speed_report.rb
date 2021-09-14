@@ -345,7 +345,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     y: ratio_to_y(bar_top),
                     width: ratio_to_x(bar_width),
                     height: ratio_to_y(bar_height_ratio * plot_effective_height),
-                    fill: ruby_config_bar_colour[config]
+                    fill: ruby_config_bar_colour[config],
+                    data_tooltip: "%.1f" % speedup
 
                 # Whiskers should be centered around the top of the bar, at a distance of one stddev.
                 top_whisker_y = bar_top - stddev_ratio * plot_effective_height

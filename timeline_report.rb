@@ -38,6 +38,14 @@ OptionParser.new do |opts|
     end
 end.parse!
 
+# Not currently used
+CONFIGS_TO_HUMAN_NAMES = {
+    "prod_ruby_no_jit" => "No JIT",
+    "prod_ruby_with_yjit" => "YJIT",
+    "ruby_30_with_mjit" => "MJIT",
+    "truffleruby" => "Truffle",
+}
+
 # Expand relative paths *before* we change into the data directory
 output_dir = File.expand_path(output_dir)
 
