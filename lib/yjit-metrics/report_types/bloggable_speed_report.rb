@@ -225,6 +225,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Basic info on Ruby configs and benchmarks
         ruby_configs = @configs_with_human_names.map { |name, config| config }
+        ruby_human_names = @configs_with_human_names.map(&:first)
         ruby_config_bar_colour = Hash[ruby_configs.zip(RUBY_BAR_COLOURS)]
         n_configs = ruby_configs.size
         n_benchmarks = @benchmark_names.size
@@ -324,6 +325,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
             bars_width_start = bench_left_edge[bench_idx]
             ruby_configs.each.with_index do |config, config_idx|
+                human_name = ruby_human_names[config_idx]
+
                 if config == @no_jit_config
                     speedup = 1.0 # No-JIT is always exactly 1x No-JIT
                     rsd_pct = @rsd_pct_by_config[@no_jit_config][bench_idx]
@@ -345,7 +348,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     y: ratio_to_y(bar_top),
                     width: ratio_to_x(bar_width),
                     height: ratio_to_y(bar_height_ratio * plot_effective_height),
-                    fill: ruby_config_bar_colour[config]
+                    fill: ruby_config_bar_colour[config],
+                    data_tooltip: "#{human_name}: %.1f" % speedup
 
                 # Whiskers should be centered around the top of the bar, at a distance of one stddev.
                 top_whisker_y = bar_top - stddev_ratio * plot_effective_height

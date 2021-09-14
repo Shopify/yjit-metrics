@@ -51,10 +51,13 @@ var svg = d3.select("#timeline_rs_chart")
           "translate(" + margin.left + "," + margin.top + ")");
 
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
+var timePrinter = d3.timeFormat("%H:%M:%S");
 var data_series = [
     <% @series.each_with_index do |this_series, color_index| %>
     {
         name: <%= this_series[:name].inspect %>,
+        config: <%= this_series[:config].inspect %>,
+        benchmark: <%= this_series[:benchmark].inspect %>,
         data: [ <%= this_series[:data].map { |t, mean, stddev| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
@@ -104,10 +107,14 @@ data_series.forEach(function(item) {
     circles.enter().append("circle")
       .attr("class", "whiskerdot " + item.name)
       .attr("fill", item.color)
-      .attr("r", 3.5)
+      .attr("r", 5.0)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1); } )
       ;
+
+    var whiskerStrokeWidth = 1.0;
+    var whiskerBarWidth = 5;
 
     // Add the whiskers, which are an I-shape of lines
     var middle_lines = svg.selectAll("line.whiskercenter." + item.name)
@@ -115,7 +122,7 @@ data_series.forEach(function(item) {
     middle_lines.enter().append("line")
       .attr("class", "whiskercenter " + item.name)
       .attr("stroke", "black")
-      .attr("stroke-width", 2.0)
+      .attr("stroke-width", whiskerStrokeWidth)
       .attr("x1", function(d) { return x(d.date) } )
       .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
       .attr("x2", function(d) { return x(d.date) } )
@@ -127,10 +134,10 @@ data_series.forEach(function(item) {
     top_whiskers.enter().append("line")
       .attr("class", "whiskertop " + item.name)
       .attr("stroke", "black")
-      .attr("stroke-width", 2.0)
-      .attr("x1", function(d) { return x(d.date) - 2.0 } )
+      .attr("stroke-width", whiskerStrokeWidth)
+      .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
       .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-      .attr("x2", function(d) { return x(d.date) + 2.0 } )
+      .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
       .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
       ;
 
@@ -139,10 +146,10 @@ data_series.forEach(function(item) {
     bottom_whiskers.enter().append("line")
       .attr("class", "whiskerbottom " + item.name)
       .attr("stroke", "black")
-      .attr("stroke-width", 2.0)
-      .attr("x1", function(d) { return x(d.date) - 2.0 } )
+      .attr("stroke-width", whiskerStrokeWidth)
+      .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
       .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-      .attr("x2", function(d) { return x(d.date) + 2.0 } )
+      .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
       .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
       ;
 });
