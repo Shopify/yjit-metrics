@@ -134,7 +134,7 @@ data_series.forEach(function(item) {
       .attr("r", 5.0)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1); } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec"; } )
       ;
 
     var whiskerStrokeWidth = 1.0;
