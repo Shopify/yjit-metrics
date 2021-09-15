@@ -174,17 +174,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @with_mjit_config => 0.0,
             @with_yjit_config => 0.0,
         }
-        @realish_time_by_config = {
-            @no_jit_config => 0.0,
-            @with_mjit_config => 0.0,
-            @with_yjit_config => 0.0,
-        }
         if @truffle_config
             @mean_by_config[@truffle_config] = []
             @rsd_pct_by_config[@truffle_config] = []
             @speedup_by_config[@truffle_config] = []
             @total_time_by_config[@truffle_config] = 0.0
-            @realish_time_by_config[@truffle_config] = 0.0
         end
         @yjit_ratio = []
 
@@ -194,7 +188,6 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 this_config_mean = mean(this_config_times)
                 @mean_by_config[config].push this_config_mean
                 @total_time_by_config[config] += this_config_times.sum
-                @realish_time_by_config[config] += this_config_times.sum if BENCHMARK_METADATA[benchmark_name][:realness] >= REALNESS_THRESHOLD
                 this_config_rel_stddev_pct = rel_stddev_pct(this_config_times)
                 @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
@@ -600,8 +593,23 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         calc_stats_by_config
 
-        @yjit_vs_cruby_ratio = @realish_time_by_config[@no_jit_config] / @realish_time_by_config[@with_yjit_config]
-        @yjit_vs_mjit_ratio = @realish_time_by_config[@with_mjit_config] / @realish_time_by_config[@with_yjit_config]
+        # "Ratio of total times" method
+        #@yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
+        #@yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
+
+        # Scale "realish" benchmarks to normalised No-JIT time and average that way, so each benchmark is weighted equally
+        realish_runtimes = realish_benchmarks.map do |bench_name|
+            bench_idx = @benchmark_names.index(bench_name)
+
+            bench_no_jit_mean = @mean_by_config[@no_jit_config][bench_idx]
+            bench_yjit_mean = @mean_by_config[@with_yjit_config][bench_idx]
+            bench_mjit_mean = @mean_by_config[@with_mjit_config][bench_idx]
+
+            [ bench_yjit_mean, bench_mjit_mean, bench_no_jit_mean ]
+        end
+        # Normalized-per-bench real-bench-only method
+        @yjit_vs_cruby_ratio = realish_runtimes.map { |yjit_mean, _, no_jit_mean| no_jit_mean / yjit_mean }.sum / realish_runtimes.size
+        @yjit_vs_mjit_ratio = realish_runtimes.map { |yjit_mean, mjit_mean, _| mjit_mean / yjit_mean }.sum / realish_runtimes.size
 
         @railsbench_idx = @benchmark_names.index("railsbench")
         if @railsbench_idx
