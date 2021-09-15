@@ -111,9 +111,7 @@ puts "Loading #{relevant_results.size} data files..."
 relevant_results.each do |filename, config_name, timestamp, run_num|
     benchmark_data = JSON.load(File.read(filename))
     begin
-        # For now, don't normalize the benchmark names - we actually *want* the .rb suffix for single-file benchmarks
-        # for the bloggable reports so we can do a left-to-right sort by whether it's a single-file benchmark.
-        RESULT_SET.add_for_config(config_name, benchmark_data, normalize_bench_names: false)
+        RESULT_SET.add_for_config(config_name, benchmark_data)
     rescue
         puts "Error adding data from #{filename.inspect}!"
         raise

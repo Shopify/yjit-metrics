@@ -7,7 +7,7 @@
 <table>
 	<thead> <% @headings.each { |heading| %> <th><%= heading %></th> <% } %> </thead>
 	<tbody style="text-align: right;">
-		<% report_table_data.each do |row| %>
+		<% details_report_table_data.each do |row| %>
 			<tr style="border: 1px solid black;">
 				<% row.each_with_index do |cell, idx|
 					format = @col_formats[idx]
@@ -23,11 +23,12 @@
 </p>
 
 <p>
-	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
-	Our benchmark-runner code isn't public yet, but we plan to release it later.
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>. <br/>
+	Our benchmark-runner and reporting code is <a href="https://github.com/Shopify/yjit-metrics">in the yjit-metrics Github repo</a>.
 </p>
 
 <p>
 	Tested Ruby version for YJIT and No-JIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-	Tested Ruby version for MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></strong></tt>
+	Tested Ruby version for MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+	(We got much better MJIT results with released than prerelease, so we used those.)
 </p>

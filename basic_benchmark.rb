@@ -355,9 +355,9 @@ intermediate_by_config.each do |config, int_files|
     merged_data = YJITMetrics.merge_benchmark_data(run_data)
     next if merged_data.nil?  # No non-error results? Skip it.
 
-    # We should include how many runs we tried to do in each benchmark's metadata.
+    # Extra per-benchmark metadata tags
     merged_data["benchmark_metadata"].each do |bench_name, metadata|
-        metadata["runs"] = num_runs
+        metadata["runs"] = num_runs # how many runs we tried to do
     end
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
