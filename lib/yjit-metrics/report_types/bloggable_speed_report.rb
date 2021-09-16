@@ -6,102 +6,99 @@ require_relative "yjit_stats_reports"
 # the benchmarks change.
 class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
-    REALNESS_THRESHOLD = 2 # How real is "basically real"?
-
-    # The bloggable reports separate benchmarks by their degree of real-world-ness/realness.
+    # Benchmarks sometimes go into multiple categories, based on the category field
     BENCHMARK_METADATA = {
         # Highly synthetic microbenchmarks
         "30k_ifelse" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "30_ifelse tests thousands of nested methods containing simple if/else statements.",
         },
         "30k_methods" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.",
         },
         "cfunc_itself" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "cfunc_itself just calls the 'itself' method many, many times.",
         },
         "fib" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "Fib is a simple exponential-time recursive Fibonacci number generator.",
         },
         "getivar" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "getivar tests the performance of getting instance variable values.",
         },
         "setivar" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "setivar tests the performance of setting instance variable values.",
         },
         "respond_to" => {
-            realness: 0,
             single_file: true,
+            category: :micro,
             desc: "respond_to tests the performance of the respond_to? method.",
         },
 
         # "Shootout" benchmarks, from places like The Computer Language Benchmarks Game
         "binarytrees" => {
-            realness: 1,
             desc: "binarytrees from the Computer Language Benchmarks Game.",
         },
         "fannkuchredux" => {
-            realness: 1,
             desc: "fannkuchredux from the Computer Language Benchmarks Game.",
         },
         "nbody" => {
-            realness: 1,
             desc: "nbody from the Computer Language Benchmarks Game.",
         },
 
-        # Synthetic benchmarks with some measure of real-world functionality (e.g. simple library load-tests)
+        # Benchmarks with some measure of real-world functionality (e.g. simple library load-tests)
         "activerecord" => {
-            realness: 2,
+            category: :headline,
             desc: "activeRecord repeatedly queries entries in a SQLite table with highly-random names.",
         },
         "psych-load" => {
-            realness: 2,
+            category: :headline,
             desc: "psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.",
         },
         "mail" => {
-            realness: 2,
+            category: :headline,
             desc: "mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.",
         },
         "liquid-render" => {
-            realness: 2,
+            category: :headline,
             desc: "liquid-render renders a chosen-for-profiling Liquid theme repeatedly.",
         },
         "jekyll" => {
-            realness: 2,
-            unstable: 1, # jekyll has known problems including some kind of resource leak. Jekyll's real, but this usage method is flawed.
+            category: :headline,
+            unstable: 1, # jekyll has known problems including some kind of resource leak. Jekyll-the-tool is fine, but this usage method is flawed.
             desc: "jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.",
         },
 
         # Real-esque benchmarks that you could pretend are real for a blog post or a paper
         "lee" => {
-            realness: 3,
-            desc: "lee is a Lee's Method Sudoku solver, deployed in a plausibly reality-like way",
+            desc: "lee is a circuit-board layout solver, deployed in a plausibly reality-like way",
         },
         "railsbench" => {
-            realness: 3,
+            category: :headline,
             desc: "railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.",
         },
         "optcarrot" => {
-            realness: 3,
             desc: "optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.",
         },
 
     }
 
-    def realish_benchmarks
-        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench][:realness] >= REALNESS_THRESHOLD }
+    def headline_benchmarks
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench][:category] == :headline }
+    end
+
+    def micro_benchmarks
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench][:category] == :micro }
     end
 
     def exactly_one_config_with_name(configs, substring, description, none_okay: false)
@@ -235,8 +232,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         look_up_data_by_ruby
 
-        # Sort benchmarks by most-to-least real, and then alphabetically
-        @benchmark_names.sort_by! { |bench_name| [ -BENCHMARK_METADATA[bench_name][:realness], bench_name ] }
+        # Sort benchmarks by headline/micro category, then alphabetically
+        @benchmark_names.sort_by! { |bench_name|
+            [ BENCHMARK_METADATA[bench_name][:category] == :headline ? 0 : BENCHMARK_METADATA[bench_name][:category] == :micro ? 2 : 1,
+              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
+              bench_name ] }
 
         @headings = [ "bench" ] +
             @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
@@ -347,7 +347,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         n_benchmarks = benchmarks.size
 
 
-        # How high to speedup ratios go?
+        # How high do speedup ratios go?
         max_speedup_ratio = benchmarks.map { |bench_name|
             bench_idx = @benchmark_names.index(bench_name)
             @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench[bench_idx][0] }.max
@@ -357,14 +357,13 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             $stderr.puts "Speedup data: #{@speedup_by_config.inspect}"
             raise "Error finding axis Y scale for benchmarks: #{benchmarks.inspect}"
         end
-        #max_speedup_ratio = @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench.map(&:first).max }.max
 
 
         # Now let's calculate some widths...
 
         # Within each benchmark's horizontal span we'll want 3 or 4 bars plus a bit of whitespace.
         # And we'll reserve 5% of the plot's width for whitespace on the far left and again on the far right.
-        plot_padding_ratio = 0.02
+        plot_padding_ratio = 0.05
         plot_effective_width = plot_width * (1.0 - 2 * plot_padding_ratio)
         plot_effective_left = plot_left_edge + plot_width * plot_padding_ratio
         each_bench_width = plot_effective_width / n_benchmarks
@@ -375,7 +374,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
 
         # And some heights...
-        plot_top_whitespace = 0.07 * plot_height
+        plot_top_whitespace = 0.15 * plot_height
         plot_effective_top = plot_top_edge + plot_top_whitespace
         plot_effective_height = plot_height - plot_top_whitespace
 
@@ -529,24 +528,30 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     def write_file(filename)
         require "victor"
 
-        real_bench = realish_benchmarks
-        synth_bench = @benchmark_names - real_bench
+        head_bench = headline_benchmarks
+        micro_bench = micro_benchmarks
+        back_bench = @benchmark_names - head_bench - micro_bench
 
-        if real_bench.empty?
-            puts "Warning: when writing file #{filename.inspect}, real benchmark list is empty!"
+        if head_bench.empty?
+            puts "Warning: when writing file #{filename.inspect}, headlining benchmark list is empty!"
         end
-        if synth_bench.empty?
-            puts "Warning: when writing file #{filename.inspect}, synthetic benchmark list is empty!"
+        if micro_bench.empty?
+            puts "Warning: when writing file #{filename.inspect}, micro benchmark list is empty!"
+        end
+        if back_bench.empty?
+            puts "Warning: when writing file #{filename.inspect}, miscellaneous benchmark list is empty!"
         end
 
-        @svg_real = svg_object(benchmarks: real_bench) unless real_bench.empty?
-        @svg_synth = svg_object(benchmarks: synth_bench) unless synth_bench.empty?
+        @svg_head = svg_object(benchmarks: head_bench) unless head_bench.empty?
+        @svg_micro = svg_object(benchmarks: micro_bench) unless micro_bench.empty?
+        @svg_back = svg_object(benchmarks: back_bench) unless back_bench.empty?
         @svg_everything = svg_object # All the benchmarks
 
         # Write SVG files for the graphs
         File.open(filename + ".svg", "w") { |f| f.write(@svg_everything.render) }
-        File.open(filename + ".real.svg", "w") { |f| f.write(@svg_real.render) } if @svg_real
-        File.open(filename + ".synth.svg", "w") { |f| f.write(@svg_synth.render) } if @svg_synth
+        File.open(filename + ".head.svg", "w") { |f| f.write(@svg_head.render) } if @svg_head
+        File.open(filename + ".micro.svg", "w") { |f| f.write(@svg_micro.render) } if @svg_micro
+        File.open(filename + ".back.svg", "w") { |f| f.write(@svg_back.render) } if @svg_back
 
         # First the 'regular' details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
@@ -588,8 +593,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         look_up_data_by_ruby
 
-        # Sort benchmarks by most-to-least real, and then alphabetically
-        @benchmark_names.sort_by! { |bench_name| [ -BENCHMARK_METADATA[bench_name][:realness], bench_name ] }
+        # Sort benchmarks by headline/micro category, then alphabetically
+        @benchmark_names.sort_by! { |bench_name|
+            [ BENCHMARK_METADATA[bench_name][:category] == :headline ? 0 : BENCHMARK_METADATA[bench_name][:category] == :micro ? 2 : 1,
+              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
+              bench_name ] }
 
         calc_stats_by_config
 
@@ -597,8 +605,7 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         #@yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
         #@yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
 
-        # Scale "realish" benchmarks to normalised No-JIT time and average that way, so each benchmark is weighted equally
-        realish_runtimes = realish_benchmarks.map do |bench_name|
+        headline_runtimes = headline_benchmarks.map do |bench_name|
             bench_idx = @benchmark_names.index(bench_name)
 
             bench_no_jit_mean = @mean_by_config[@no_jit_config][bench_idx]
@@ -607,9 +614,9 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
             [ bench_yjit_mean, bench_mjit_mean, bench_no_jit_mean ]
         end
-        # Normalized-per-bench real-bench-only method
-        @yjit_vs_cruby_ratio = realish_runtimes.map { |yjit_mean, _, no_jit_mean| no_jit_mean / yjit_mean }.sum / realish_runtimes.size
-        @yjit_vs_mjit_ratio = realish_runtimes.map { |yjit_mean, mjit_mean, _| mjit_mean / yjit_mean }.sum / realish_runtimes.size
+        # Geometric mean of headlining benchmarks only
+        @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, _, no_jit_mean| no_jit_mean / yjit_mean }
+        @yjit_vs_mjit_ratio = geomean headline_runtimes.map { |yjit_mean, mjit_mean, _| mjit_mean / yjit_mean }
 
         @railsbench_idx = @benchmark_names.index("railsbench")
         if @railsbench_idx

@@ -7,6 +7,11 @@ module YJITMetrics::Stats
         return values.sum(0.0) / values.size
     end
 
+    def geomean(values)
+        exponent = 1.0 / values.size
+        values.inject(1.0, &:*) ** exponent
+    end
+
     def stddev(values)
         xbar = mean(values)
         diff_sqrs = values.map { |v| (v-xbar)*(v-xbar) }
