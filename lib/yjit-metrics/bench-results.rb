@@ -224,7 +224,17 @@ class YJITMetrics::ResultSet
     end
 
     # Summarize the data by config. If it's a YJIT config with full stats, get the highlights of the exit report too.
-    SUMMARY_STATS = [ "inline_code_size", "outlined_code_size", "exec_instruction", "vm_insns_count", "compiled_iseq_count", "leave_interp_return" ]
+    SUMMARY_STATS = [
+        "inline_code_size",
+        "outlined_code_size",
+        "exec_instruction",
+        "vm_insns_count",
+        "compiled_iseq_count",
+        "leave_interp_return",
+        "compiled_block_count",
+        "invalidation_count",
+        "constant_state_bumps",
+    ]
     def summary_by_config_and_benchmark
         summary = {}
         available_configs.each do |config|

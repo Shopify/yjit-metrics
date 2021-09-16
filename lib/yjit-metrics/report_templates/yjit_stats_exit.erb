@@ -8,6 +8,9 @@ Number of locals modified through binding: <%= stats["binding_set"] %>
 <%= counters_section(stats, prefix: 'oaref_', prompt: 'opt_aref exit reasons: ') %>
 
 compiled_iseq_count:   <%= "%10d" % stats["compiled_iseq_count"] %>
+compiled_block_count:  <%= "%10d" % (stats["compiled_block_count"] || 0) %>
+invalidation_count:    <%= "%10d" % (stats["invalidation_count"] || 0) %>
+constant_state_bumps:  <%= "%10d" % (stats["constant_state_bumps"] || 0) %>
 inline_code_size:      <%= "%10d" % stats["inline_code_size"] %>
 outlined_code_size:    <%= "%10d" % stats["outlined_code_size"] %>
 
