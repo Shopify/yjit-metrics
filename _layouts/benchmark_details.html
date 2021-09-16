@@ -10,16 +10,40 @@ As of {{page.date_str}} {{page.time_str}}:
 
 <div>
 <span style="font-weight: bold; font-size: 125%;">{% include {{page.reports.blog_speed_headline_html}} %}
-</span><br/> Those totals are for all benchmarks on this page added together.
+</span><br/> The basic "faster" measurement is for all "real-world" benchmarks on this page added together.
 </div>
 
+<h2>Headlining Benchmarks</h2>
+
+<p>
+  These are "headlining" because the overall speedup above is based on these benchmarks specifically.
+</p>
+
 <div style="width: 800px;">
-{% include {{page.reports.blog_speed_details_svg}} %}
+{% include {{page.reports.blog_speed_details_head_svg}} %}
 </div>
+
+<h2>MicroBenchmarks</h2>
+
+<div style="width: 800px;">
+{% include {{page.reports.blog_speed_details_micro_svg}} %}
+</div>
+
+<h2>Other Benchmarks</h2>
+
+<div style="width: 800px;">
+{% include {{page.reports.blog_speed_details_back_svg}} %}
+</div>
+
+<h2>Benchmarks In Detail and In Text</h2>
 
 {% include {{page.reports.blog_speed_details_html}} %}
 
-Raw JSON data files:
+<h2>Raw JSON data files</h2>
+
+<p>
+  All graphs and table data in this page comes from processing these data files, which come from <a href="https://github.com/Shopify/yjit-metrics/blob/main/basic_benchmark.rb">benchmark runs</a>.
+</p>
 
 <ul>
 {% for result in page.test_results %} <li><a href="{{result[1] | relative_url}}">{{result[0]}}</a></li> {% endfor %}

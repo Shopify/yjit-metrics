@@ -31,7 +31,7 @@ How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href
 
 <div>
 <a href="{{ last_bench.url | relative_url }}">
-{% include {{last_bench.reports.blog_speed_details_svg}} %}
+{% include {{last_bench.reports.blog_speed_details_head_svg}} %}
 </a>
 The details graphs are the speed (reqs/second) scaled to MRI's interpreted performance. Higher is better.
 </div>
