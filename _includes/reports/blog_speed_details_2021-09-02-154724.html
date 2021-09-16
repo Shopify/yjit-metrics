@@ -9,11 +9,11 @@
 	<tbody style="text-align: right;">
 		
 			<tr style="border: 1px solid black;">
-				 <td> lee </td>  <td> 1121.7 </td>  <td> 1.11% </td>  <td> 873.3 </td>  <td> 1.97% </td>  <td> 808.7 </td>  <td> 1.71% </td>  <td> 1.28x </td>  <td> 2.26% </td>  <td> 1.39x </td>  <td> 2.04% </td>  <td> 99.80% </td> 
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activeRecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 149.1 </td>  <td> 1.46% </td>  <td> 156.0 </td>  <td> 0.94% </td>  <td> 110.1 </td>  <td> 1.95% </td>  <td> 0.96x </td>  <td> 1.74% </td>  <td> 1.35x </td>  <td> 2.44% </td>  <td> 79.09% </td> 
 			</tr>
 		
 			<tr style="border: 1px solid black;">
-				 <td> activerecord </td>  <td> 149.1 </td>  <td> 1.46% </td>  <td> 156.0 </td>  <td> 0.94% </td>  <td> 110.1 </td>  <td> 1.95% </td>  <td> 0.96x </td>  <td> 1.74% </td>  <td> 1.35x </td>  <td> 2.44% </td>  <td> 79.09% </td> 
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 1121.7 </td>  <td> 1.11% </td>  <td> 873.3 </td>  <td> 1.97% </td>  <td> 808.7 </td>  <td> 1.71% </td>  <td> 1.28x </td>  <td> 2.26% </td>  <td> 1.39x </td>  <td> 2.04% </td>  <td> 99.80% </td> 
 			</tr>
 		
 	</tbody>
@@ -21,15 +21,17 @@
 
 <p>
 	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
-	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.
+	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.<br/>
+	<strong>Speedup</strong> is relative to interpreted CRuby. So an "MJIT speedup" of 1.21x means it runs at 1.21 times the iters/second of CRuby with JIT disabled.
 </p>
 
 <p>
-	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>.
-	Our benchmark-runner code isn't public yet, but we plan to release it later.
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>. <br/>
+	Our benchmark-runner and reporting code is <a href="https://github.com/Shopify/yjit-metrics">in the yjit-metrics Github repo</a>.
 </p>
 
 <p>
 	Tested Ruby version for YJIT and No-JIT: <tt><strong>ruby 3.1.0dev (2021-09-01T19:38:24Z main a83668bb26) [x86_64-linux]</strong></tt> <br/>
-	Tested Ruby version for MJIT: <tt><strong>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</strong></tt>
+	Tested Ruby version for MJIT: <tt><strong>ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) +JIT [x86_64-linux]</strong></tt> <br/>
+	(We got much better MJIT results with released than prerelease, so we used those.)
 </p>
