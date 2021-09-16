@@ -542,16 +542,20 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             puts "Warning: when writing file #{filename.inspect}, miscellaneous benchmark list is empty!"
         end
 
-        @svg_head = svg_object(benchmarks: head_bench) unless head_bench.empty?
-        @svg_micro = svg_object(benchmarks: micro_bench) unless micro_bench.empty?
-        @svg_back = svg_object(benchmarks: back_bench) unless back_bench.empty?
-        @svg_everything = svg_object # All the benchmarks
+        [
+            [ @benchmark_names, ".svg" ],
+            [ head_bench, ".head.svg" ],
+            [ micro_bench, ".micro.svg" ],
+            [ back_bench, ".back.svg" ],
+        ].each do |bench_names, extension|
+            if bench_names.empty?
+                contents = ""
+            else
+                contents = svg_object(benchmarks: bench_names).render
+            end
 
-        # Write SVG files for the graphs
-        File.open(filename + ".svg", "w") { |f| f.write(@svg_everything.render) }
-        File.open(filename + ".head.svg", "w") { |f| f.write(@svg_head.render) } if @svg_head
-        File.open(filename + ".micro.svg", "w") { |f| f.write(@svg_micro.render) } if @svg_micro
-        File.open(filename + ".back.svg", "w") { |f| f.write(@svg_back.render) } if @svg_back
+            File.open(filename + extension, "w") { |f| f.write(contents) }
+        end
 
         # First the 'regular' details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
