@@ -19,6 +19,10 @@ How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href
 
 <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
+<div style="text-align: center;">
+  <a href="{{ "timeline-deep" | relative_url }}"><button>Results-Over-Time Deep Dive</button></a>
+</div>
+
 <div class="timeline_report">
 {% include reports/blog_timeline.html %}
 </div>
