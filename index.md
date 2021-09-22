@@ -33,7 +33,7 @@ How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href
   <a href="{{ last_bench.url | relative_url }}"><button>Latest Full Details</button></a>
 </div>
 
-<div>
+<div style="text-align: center;">
 <a href="{{ last_bench.url | relative_url }}">
 {% include {{last_bench.reports.blog_speed_details_head_svg}} %}
 </a>
