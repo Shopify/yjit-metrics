@@ -248,6 +248,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
             [ "%.2f%%" ]                                                    # YJIT ratio
 
+        @col_formats[9] = "<b>%.2fx</b>" # Boldface the YJIT speedup column.
+
         calc_stats_by_config
     end
 
