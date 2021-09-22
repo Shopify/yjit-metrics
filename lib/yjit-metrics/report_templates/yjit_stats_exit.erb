@@ -1,12 +1,11 @@
-Number of bindings allocated: <%= stats["binding_allocations"] %>
-Number of locals modified through binding: <%= stats["binding_set"] %>
-
 <%= counters_section(stats, prefix: 'send_', prompt: 'method call exit reasons: ') %>
 <%= counters_section(stats, prefix: 'leave_', prompt: 'leave exit reasons: ') %>
 <%= counters_section(stats, prefix: 'getivar_', prompt: 'getinstancevariable exit reasons: ') %>
 <%= counters_section(stats, prefix: 'setivar_', prompt: 'setinstancevariable exit reasons: ') %>
 <%= counters_section(stats, prefix: 'oaref_', prompt: 'opt_aref exit reasons: ') %>
 
+bindings_allocations:  <%= stats["binding_allocations"] %>
+bindings_set:          <%= stats["binding_set"] %>
 compiled_iseq_count:   <%= "%10d" % stats["compiled_iseq_count"] %>
 compiled_block_count:  <%= "%10d" % (stats["compiled_block_count"] || 0) %>
 invalidation_count:    <%= "%10d" % (stats["invalidation_count"] || 0) %>
