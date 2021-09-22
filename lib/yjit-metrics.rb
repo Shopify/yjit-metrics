@@ -66,7 +66,9 @@ module YJITMetrics
     end
 
     def check_output(command)
-        output = IO.popen(command).read
+        output = IO.popen(command) do |io_obj|
+            io_obj.read
+        end
         unless $?.success?
             puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
             raise RuntimeError.new
