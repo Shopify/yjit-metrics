@@ -28,6 +28,10 @@ OptionParser.new do |opts|
         output_dir = dir
     end
 
+    opts.on("-b BENCH_NAMES", "--benchmarks BENCH_NAMES", "Benchmarks to include or to make visible by default") do |bench|
+        benchmarks = bench.split(",")
+    end
+
     opts.on("-r REPORTS", "--reports REPORTS", "Run these reports on the data (known reports: #{all_report_names.join(", ")})") do |str|
         report_strings = str.split(",")
 
@@ -115,7 +119,7 @@ if reports.include?("blog_timeline")
     report_name = "blog_timeline"
     @series = []
     config = "prod_ruby_with_yjit"
-    benchmarks.each do |benchmark|
+    ALL_BENCHMARKS.each do |benchmark|
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
             if this_point
@@ -126,8 +130,11 @@ if reports.include?("blog_timeline")
             end
         end
 
-        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: all_points.compact })
+        visible = benchmarks.include?(benchmark)
+
+        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", visible: visible, data: all_points.compact })
     end
+    @series.sort_by! { |s| s[:visible] ? 0 : 1 }
 
     script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
     html_output = script_template.result(binding) # Evaluate an Erb template with template_settings

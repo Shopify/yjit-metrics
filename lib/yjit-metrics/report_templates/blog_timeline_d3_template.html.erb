@@ -4,7 +4,7 @@
 <div id="timeline_rs_chart"></div>
 
 <%
-# We want different colours, but we want them light so that black shows up on top of them.
+# We want different colours, but we want them saturated so that white text shows up on top of them.
 # From: https://www.schemecolor.com/galaxy-rainbow.php
 colors = [
     '#a80000',
@@ -14,14 +14,19 @@ colors = [
     '#3342c4',
     '#9362c4',
 ]
+
+# List of just the initially-visible series
+@vis_series = @series.select { |s| s[:visible] == true }
 %>
 
 <div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
   <div id="timeline_legend_child">
     <ul style="display:inline-block">
   <% @series.each_with_index do |this_series, color_index|
-       color = colors[color_index % colors.size] %>
-  <li style="display: inline-block"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+       color = colors[color_index % colors.size]
+       visible = this_series[:visible]
+     %>
+  <li style="display: <%= visible ? "inline-block" : "none" %>" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
   <% end %>
     </ul>
   </div>
@@ -30,6 +35,18 @@ colors = [
 <div class="timeline-report-explanation">
   Y axis values are the total number of seconds to run the benchmark one time - lower is better.<br/>
   Whiskers are shown 2 standard deviations higher and lower.
+</div>
+
+<div id="bottom_selection_checkboxes" style="display: none;">
+  <ul>
+    <% @series.each_with_index do |this_series, color_index|
+         color = colors[color_index % colors.size]
+         visible = this_series[:visible]
+     %>
+    <li><input type="checkbox" <%= visible ? "checked='checked'" : ""%> data-benchmark="<%= this_series[:benchmark]%>" /> <span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span>
+    </li>
+  <% end %>
+  </ul>
 </div>
 
 <script>
@@ -58,6 +75,7 @@ var data_series = [
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
+        visible: <%= this_series[:visible] ? "true" : "false" %>,
         data: [ <%= this_series[:data].map { |t, mean, stddev| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
@@ -71,10 +89,17 @@ data_series.pop();
 var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
 var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
 
+/* Only for initially-visible series */
+var vis_series_time_range = [ timeParser(<%= @vis_series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @vis_series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
+var vis_series_value_range = [ <%= @vis_series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @vis_series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
+
+document.timeline_data = {} // For sharing data w/ handlers
+
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
-  .domain(d3.extent(all_series_time_range))
+  .domain(d3.extent(vis_series_time_range))
   .range([ 0, width ]);
+document.timeline_data.x_axis_function = x; /* Export for the event handlers */
 svg.append("g")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x))
@@ -84,14 +109,18 @@ svg.append("g")
 
 // Add Y axis
 var y = d3.scaleLinear()
-  .domain([0, d3.max(all_series_value_range)])
+  .domain([0, d3.max(vis_series_value_range)])
   .range([ height, 0 ]);
-svg.append("g")
-  .call(d3.axisLeft(y));
+document.timeline_data.y_axis_function = y; /* Export for the event handlers */
+document.timeline_data.y_axis = d3.axisLeft(y);
+document.timeline_data.top_svg_group = svg.append("g")
+  .call(document.timeline_data.y_axis);
 
 data_series.forEach(function(item) {
+    group = svg.append("g").attr("class", item.name).attr("visibility", item.visible == true ? "visible" : "hidden" )
+
     // Add the graph line
-    svg.append("path")
+    group.append("path")
       .datum(item.data)
       .attr("fill", "none")
       .attr("stroke", item.color)
@@ -102,7 +131,7 @@ data_series.forEach(function(item) {
         );
 
     // Add a circle at each datapoint
-    var circles = svg.selectAll("circle.whiskerdot." + item.name)
+    var circles = group.selectAll("circle.whiskerdot." + item.name)
       .data(item.data);
     circles.enter().append("circle")
       .attr("class", "whiskerdot " + item.name)
@@ -117,7 +146,7 @@ data_series.forEach(function(item) {
     var whiskerBarWidth = 5;
 
     // Add the whiskers, which are an I-shape of lines
-    var middle_lines = svg.selectAll("line.whiskercenter." + item.name)
+    var middle_lines = group.selectAll("line.whiskercenter." + item.name)
       .data(item.data);
     middle_lines.enter().append("line")
       .attr("class", "whiskercenter " + item.name)
@@ -129,7 +158,7 @@ data_series.forEach(function(item) {
       .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
       ;
 
-    var top_whiskers = svg.selectAll("line.whiskertop." + item.name)
+    var top_whiskers = group.selectAll("line.whiskertop." + item.name)
       .data(item.data);
     top_whiskers.enter().append("line")
       .attr("class", "whiskertop " + item.name)
@@ -141,7 +170,7 @@ data_series.forEach(function(item) {
       .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
       ;
 
-    var bottom_whiskers = svg.selectAll("line.whiskerbottom." + item.name)
+    var bottom_whiskers = group.selectAll("line.whiskerbottom." + item.name)
       .data(item.data);
     bottom_whiskers.enter().append("line")
       .attr("class", "whiskerbottom " + item.name)
