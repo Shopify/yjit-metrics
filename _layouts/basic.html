@@ -71,6 +71,13 @@
         if(tt === undefined) return;
         tt.style.display = "none";
       }
+
+      document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
+        elt.addEventListener("mousemove", (e) => { showSVGTooltip(e, e.target.getAttribute("data-tooltip")); });
+      });
+      document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
+        elt.addEventListener("mouseout", (e) => { hideSVGTooltip(); });
+      });
     </script>
   </body>
 </html>

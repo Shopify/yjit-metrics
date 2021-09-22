@@ -44,12 +44,3 @@ The details graphs are the speed (reqs/second) scaled to MRI's interpreted perfo
   Do you love extensive details? <br/>
   <a href="{{ "history" | relative_url }}"> <button>See All the Benchmark History</button></a>
 </p>
-
-<script>
-  document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
-    elt.addEventListener("mousemove", (e) => { showSVGTooltip(e, e.target.getAttribute("data-tooltip")); });
-  });
-  document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
-    elt.addEventListener("mouseout", (e) => { hideSVGTooltip(); });
-  });
-</script>
