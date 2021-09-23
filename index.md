@@ -22,7 +22,7 @@ layout: basic
 <div class="latest-details-box">
   <h2 style="text-align: center;">Latest Headlining Results vs CRuby and MJIT</h2>
 
-  <p>
+  <p style="text-align: center;">
     "Overall" in the headline means results on these benchmarks. Click through for more benchmarks.
   </p>
 
