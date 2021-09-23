@@ -20,7 +20,11 @@ layout: basic
 
 <!-- Latest Headlined Results -->
 <div class="latest-details-box">
-  <h2 style="text-align: center;">Latest Results vs CRuby and MJIT</h2>
+  <h2 style="text-align: center;">Latest Headlining Results vs CRuby and MJIT</h2>
+
+  <p>
+    "Overall" in the headline means results on these benchmarks. Click through for more benchmarks.
+  </p>
 
   <div style="text-align: center;">
     <a href="{{ last_bench.url | relative_url }}"><button>Latest Full Details</button></a>
