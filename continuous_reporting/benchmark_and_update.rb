@@ -28,6 +28,7 @@ benchmark_args = BENCH_TYPES["default"]
 should_file_gh_issue = true
 all_perf_tripwires = false
 single_perf_tripwire = nil
+is_verbose = false
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -58,12 +59,17 @@ OptionParser.new do |opts|
     opts.on("-t TS", "--perf-timestamp TIMESTAMP", "Check performance tripwire at this specific timestamp") do |ts|
         single_perf_tripwire = ts.strip
     end
+
+    opts.on("-v", "--verbose", "Print verbose output about tripwire checks") do
+        is_verbose = true
+    end
 end.parse!
 
 BENCHMARK_ARGS = benchmark_args
 FILE_GH_ISSUE = should_file_gh_issue
 ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
+VERBOSE = is_verbose
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
@@ -193,7 +199,7 @@ def check_perf_tripwires
     end
 end
 
-def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE)
+def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE, verbose: VERBOSE)
     latest_data = JSON.parse File.read(current_filename)
     penultimate_data = JSON.parse File.read(compared_filename)
 
@@ -218,10 +224,13 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
 
         drop = latest_mean - penultimate_mean
 
-        puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }, drop is #{ "%.2f" % drop }..."
+        if verbose
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, " +
+                "next-latest mean is #{ "%.2f" % penultimate_mean }, drop is #{ "%.2f" % drop }..."
+        end
 
         if drop > tolerance
-            puts "Benchmark #{bench_name} marked as failure!"
+            puts "Benchmark #{bench_name} marked as failure!" if verbose
             check_failures.push({
                 benchmark: bench_name,
                 latest_mean: latest_mean,
