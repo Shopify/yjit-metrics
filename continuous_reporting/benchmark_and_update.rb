@@ -194,8 +194,8 @@ def check_perf_tripwires
 end
 
 def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE)
-    latest_data = JSON.parse File.read(latest)
-    penultimate_data = JSON.parse File.read(penultimate)
+    latest_data = JSON.parse File.read(current_filename)
+    penultimate_data = JSON.parse File.read(compared_filename)
 
     check_failures = []
 
