@@ -15,6 +15,16 @@ require "optparse"
 
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
+# The STDDEV_TOLERANCE is what multiple of the standard deviation it's okay to drop on
+# a given run. That effectively determines the false-positive rate since we're comparing samples
+# from a Gaussian-ish distribution.
+STDDEV_TOLERANCE = 2.5
+# The DROP_TOLERANCE is what absolute multiple-of-the-mean drop (e.g. 0.05 means 5%) is
+# assumed to be okay. For each metric we use the more permissive of the two tolerances
+# on the more permissive of the two mean values. All four must be outside of tolerance
+# for us to count a failure.
+DROP_TOLERANCE = 0.07
+
 # Remember that if this is running on the benchmark CI server you do *not* want a run so long it will
 # overlap with the regular automatic runs. They happen twice daily as I write this, at 7am and 7pm.
 # Configurations should be a subset of: yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby
@@ -218,15 +228,17 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
         current_stddev = (current_rsd_pct.to_f / 100.0) * current_mean
         compared_stddev = (compared_rsd_pct.to_f / 100.0) * compared_mean
 
-        # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of 2x recent stddev,
-        # or 5% of the larger mean runtime.
-        tolerance = [ current_stddev * 2.0, compared_stddev * 2.0, current_mean * 0.05, compared_mean * 0.05 ].max
+        # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of multiple-of-recent-stddev,
+        # or a percentage of the larger mean runtime. Basically, a drop must be unusual enough (stddev) and large enough (mean)
+        # for us to flag it.
+        tolerance = [ current_stddev * STDDEV_TOLERANCE, compared_stddev * STDDEV_TOLERANCE,
+            current_mean * DROP_TOLERANCE, compared_mean * DROP_TOLERANCE ].max
 
         drop = current_mean - compared_mean
 
         if verbose
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean }, " +
-                "next-latest mean is #{ "%.2f" % compared_mean }, drop is #{ "%.2f" % drop }..."
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean } (stddev #{"%.2f" % current_stddev}), " +
+                "next-latest mean is #{ "%.2f" % compared_mean } (stddev #{ "%.2f" % compared_stddev}), drop is #{ "%.2f" % drop }..."
         end
 
         if drop > tolerance
