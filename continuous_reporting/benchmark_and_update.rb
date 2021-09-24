@@ -7,11 +7,23 @@ require 'net/http'
 
 require "optparse"
 
+# TODO: should the benchmark-run and perf-check parts of this script be separated? Probably.
+
 # This is intended to be the top-level script for running benchmarks, reporting on them
 # and uploading the results. It belongs in a cron job with some kind of error detection
 # to make sure it's running properly.
 
 # We want to run our benchmarks, then update GitHub Pages appropriately.
+
+# The STDDEV_TOLERANCE is what multiple of the standard deviation it's okay to drop on
+# a given run. That effectively determines the false-positive rate since we're comparing samples
+# from a Gaussian-ish distribution.
+STDDEV_TOLERANCE = 2.0
+# The DROP_TOLERANCE is what absolute multiple-of-the-mean drop (e.g. 0.05 means 5%) is
+# assumed to be okay. For each metric we use the more permissive of the two tolerances
+# on the more permissive of the two mean values. All four must be outside of tolerance
+# for us to count a failure.
+DROP_TOLERANCE = 0.07
 
 # Remember that if this is running on the benchmark CI server you do *not* want a run so long it will
 # overlap with the regular automatic runs. They happen twice daily as I write this, at 7am and 7pm.
@@ -23,6 +35,10 @@ BENCH_TYPES = {
     "extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }
 benchmark_args = BENCH_TYPES["default"]
+should_file_gh_issue = true
+all_perf_tripwires = false
+single_perf_tripwire = nil
+is_verbose = false
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -40,9 +56,30 @@ OptionParser.new do |opts|
         raise "Unrecognized benchmark args or type: #{btype.inspect}! Known types: #{BENCH_TYPES.keys.inspect}"
       end
     end
+
+    opts.on("-g", "--no-gh-issue", "Do not file an actual GitHub issue, only print failures to console") do
+        should_file_gh_issue = false
+    end
+
+    opts.on("-a", "--all-perf-tripwires", "Check performance tripwires on all pairs of benchmarks (implies --no-gh-issue)") do
+        all_perf_tripwires = true
+        should_file_gh_issue = false
+    end
+
+    opts.on("-t TS", "--perf-timestamp TIMESTAMP", "Check performance tripwire at this specific timestamp") do |ts|
+        single_perf_tripwire = ts.strip
+    end
+
+    opts.on("-v", "--verbose", "Print verbose output about tripwire checks") do
+        is_verbose = true
+    end
 end.parse!
 
 BENCHMARK_ARGS = benchmark_args
+FILE_GH_ISSUE = should_file_gh_issue
+ALL_PERF_TRIPWIRES = all_perf_tripwires
+SINGLE_PERF_TRIPWIRE = single_perf_tripwire
+VERBOSE = is_verbose
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
@@ -73,6 +110,8 @@ def ghapi_post(api_uri, params, verb: :post)
 end
 
 def file_gh_issue(title, message)
+    return unless FILE_GH_ISSUE
+
     host = `uname -a`.chomp
     issue_body = <<~ISSUE
         <pre>
@@ -141,7 +180,7 @@ def clear_latest_data
 end
 
 def ts_from_tripwire_filename(filename)
-    filename.split("blog_speed_details")[1].split(".")[0]
+    filename.split("blog_speed_details_")[1].split(".")[0]
 end
 
 # If something starts getting false positives, we'll ignore it. Example bad benchmark: jekyll
@@ -152,72 +191,97 @@ def check_perf_tripwires
     Dir.chdir(__dir__ + "/../../yjit-metrics-pages/_includes/reports") do
         tripwire_files = Dir["*.tripwires.json"].to_a.sort
 
-        latest = tripwire_files[-1]
-        penultimate = tripwire_files[-2]
-
-        latest_data = JSON.parse File.read(latest)
-        penultimate_data = JSON.parse File.read(penultimate)
-
-        check_failures = []
-
-        penultimate_data.each do |bench_name, values|
-            # Only compare if both sets of data have the benchmark
-            next unless latest_data[bench_name]
-            next if EXCLUDE_HIGH_NOISE_BENCHMARKS.include?(bench_name)
-
-            latest_mean = latest_data[bench_name]["mean"]
-            latest_rsd_pct = latest_data[bench_name]["rsd_pct"]
-            penultimate_mean = values["mean"]
-            penultimate_rsd_pct = values["rsd_pct"]
-
-            latest_stddev = (latest_rsd_pct.to_f / 100.0) * latest_mean
-            penultimate_stddev = (penultimate_rsd_pct.to_f / 100.0) * penultimate_mean
-
-            # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of 2x recent stddev,
-            # or 5% of the larger mean runtime.
-            tolerance = [ latest_stddev * 2.0, penultimate_stddev * 2.0, latest_mean * 0.05, penultimate_mean * 0.05 ].max
-
-            drop = latest_mean - penultimate_mean
-
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, next-latest mean is #{ "%.2f" % penultimate_mean }, drop is #{ "%.2f" % drop }..."
-
-            if drop > tolerance
-                puts "Benchmark #{bench_name} marked as failure!"
-                check_failures.push({
-                    benchmark: bench_name,
-                    latest_mean: latest_mean,
-                    second_latest_mean: penultimate_mean,
-                    latest_stddev: latest_stddev,
-                    latest_rsd_pct: latest_rsd_pct,
-                    second_latest_stddev: penultimate_stddev,
-                    second_latest_rsd_pct: penultimate_rsd_pct,
-                })
+        if ALL_PERF_TRIPWIRES
+            (tripwire_files.size - 1).times do |index|
+                check_one_perf_tripwire(tripwire_files[index], tripwire_files[index - 1])
             end
+        elsif SINGLE_PERF_TRIPWIRE
+            specified_file = tripwire_files.detect { |f| f.include?(SINGLE_PERF_TRIPWIRE) }
+            raise "Couldn't find perf tripwire report containing #{SINGLE_PERF_TRIPWIRE.inspect}!" unless specified_file
+
+            specified_index = tripwire_files.index(specified_file)
+            raise "Can't check perf on the very first report!" if specified_index == 0
+
+            check_one_perf_tripwire(tripwire_files[specified_index], tripwire_files[specified_index - 1])
+        else
+            check_one_perf_tripwire(tripwire_files[-1], tripwire_files[-2])
         end
-
-        if check_failures.empty?
-          puts "No benchmarks failing performance tripwire - yay!"
-          return
-        end
-
-        ts_latest = ts_from_tripwire_filename(latest)
-        ts_penultimate = ts_from_tripwire_filename(penultimate)
-
-        puts "Filing Github issue - slower benchmark(s) found."
-        body = <<~BODY
-        Latest failing benchmark: #{latest}
-        Compared to previous benchmark: #{penultimate}
-
-        Failing benchmark names: #{check_failures.map { |h| h[:benchmark] }.inspect}
-
-        <pre>
-        Failure details:
-
-        #{JSON.pretty_generate check_failures}
-        </pre>
-        BODY
-        file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before!", body)
     end
+end
+
+def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE, verbose: VERBOSE)
+    current_data = JSON.parse File.read(current_filename)
+    compared_data = JSON.parse File.read(compared_filename)
+
+    check_failures = []
+
+    compared_data.each do |bench_name, values|
+        # Only compare if both sets of data have the benchmark
+        next unless current_data[bench_name]
+        next if EXCLUDE_HIGH_NOISE_BENCHMARKS.include?(bench_name)
+
+        current_mean = current_data[bench_name]["mean"]
+        current_rsd_pct = current_data[bench_name]["rsd_pct"]
+        compared_mean = values["mean"]
+        compared_rsd_pct = values["rsd_pct"]
+
+        current_stddev = (current_rsd_pct.to_f / 100.0) * current_mean
+        compared_stddev = (compared_rsd_pct.to_f / 100.0) * compared_mean
+
+        # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of multiple-of-recent-stddev,
+        # or a percentage of the larger mean runtime. Basically, a drop must be unusual enough (stddev) and large enough (mean)
+        # for us to flag it.
+        tolerance = [ current_stddev * STDDEV_TOLERANCE, compared_stddev * STDDEV_TOLERANCE,
+            current_mean * DROP_TOLERANCE, compared_mean * DROP_TOLERANCE ].max
+
+        drop = current_mean - compared_mean
+
+        if verbose
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean } (stddev #{"%.2f" % current_stddev}), " +
+                "next-latest mean is #{ "%.2f" % compared_mean } (stddev #{ "%.2f" % compared_stddev}), drop is #{ "%.2f" % drop }..."
+        end
+
+        if drop > tolerance
+            puts "Benchmark #{bench_name} marked as failure!" if verbose
+            check_failures.push({
+                benchmark: bench_name,
+                current_mean: current_mean,
+                second_current_mean: compared_mean,
+                current_stddev: current_stddev,
+                current_rsd_pct: current_rsd_pct,
+                second_current_stddev: compared_stddev,
+                second_current_rsd_pct: compared_rsd_pct,
+            })
+        end
+    end
+
+    if check_failures.empty?
+      puts "No benchmarks failing performance tripwire (#{current_filename})"
+      return
+    end
+
+    puts "Failing benchmarks (#{current_filename}): #{check_failures.map { |h| h[:benchmark] }}"
+    file_perf_bug(current_filename, compared_filename, check_failures) if can_file_issue
+end
+
+def file_perf_bug(current_filename, compared_filename, check_failures)
+    ts_latest = ts_from_tripwire_filename(current_filename)
+    ts_penultimate = ts_from_tripwire_filename(compared_filename)
+
+    puts "Filing Github issue - slower benchmark(s) found."
+    body = <<~BODY
+    Latest failing benchmark: #{current_filename}
+    Compared to previous benchmark: #{compared_filename}
+
+    Failing benchmark names: #{check_failures.map { |h| h[:benchmark] }.inspect}
+
+    <pre>
+    Failure details:
+
+    #{JSON.pretty_generate check_failures}
+    </pre>
+    BODY
+    file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
 begin
