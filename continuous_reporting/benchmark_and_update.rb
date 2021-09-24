@@ -239,8 +239,8 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
       return
     end
 
-    puts "Failing benchmarks: #{check_failures.map { |h| h[:benchmark] }}"
-    file_perf_bug(latest, penultimate, check_failures) if FILE_GH_ISSUE
+    puts "Failing benchmarks (#{current_filename}): #{check_failures.map { |h| h[:benchmark] }}"
+    file_perf_bug(current_filename, compared_filename, check_failures) if can_file_issue
 end
 
 def file_perf_bug(latest_filename, compared_filename, check_failures)
