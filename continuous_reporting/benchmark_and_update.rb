@@ -170,7 +170,7 @@ def clear_latest_data
 end
 
 def ts_from_tripwire_filename(filename)
-    filename.split("blog_speed_details")[1].split(".")[0]
+    filename.split("blog_speed_details_")[1].split(".")[0]
 end
 
 # If something starts getting false positives, we'll ignore it. Example bad benchmark: jekyll
