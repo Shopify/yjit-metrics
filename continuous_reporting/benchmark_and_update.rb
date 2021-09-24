@@ -18,7 +18,7 @@ require "optparse"
 # The STDDEV_TOLERANCE is what multiple of the standard deviation it's okay to drop on
 # a given run. That effectively determines the false-positive rate since we're comparing samples
 # from a Gaussian-ish distribution.
-STDDEV_TOLERANCE = 2.5
+STDDEV_TOLERANCE = 2.0
 # The DROP_TOLERANCE is what absolute multiple-of-the-mean drop (e.g. 0.05 means 5%) is
 # assumed to be okay. For each metric we use the more permissive of the two tolerances
 # on the more permissive of the two mean values. All four must be outside of tolerance
