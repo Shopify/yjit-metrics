@@ -244,7 +244,7 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
     end
 
     if check_failures.empty?
-      puts "No benchmarks failing performance tripwire - yay!"
+      puts "No benchmarks failing performance tripwire (#{current_filename})"
       return
     end
 
