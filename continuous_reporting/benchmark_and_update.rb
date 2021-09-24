@@ -200,45 +200,45 @@ def check_perf_tripwires
 end
 
 def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE, verbose: VERBOSE)
-    latest_data = JSON.parse File.read(current_filename)
-    penultimate_data = JSON.parse File.read(compared_filename)
+    current_data = JSON.parse File.read(current_filename)
+    compared_data = JSON.parse File.read(compared_filename)
 
     check_failures = []
 
-    penultimate_data.each do |bench_name, values|
+    compared_data.each do |bench_name, values|
         # Only compare if both sets of data have the benchmark
-        next unless latest_data[bench_name]
+        next unless current_data[bench_name]
         next if EXCLUDE_HIGH_NOISE_BENCHMARKS.include?(bench_name)
 
-        latest_mean = latest_data[bench_name]["mean"]
-        latest_rsd_pct = latest_data[bench_name]["rsd_pct"]
-        penultimate_mean = values["mean"]
-        penultimate_rsd_pct = values["rsd_pct"]
+        current_mean = current_data[bench_name]["mean"]
+        current_rsd_pct = current_data[bench_name]["rsd_pct"]
+        compared_mean = values["mean"]
+        compared_rsd_pct = values["rsd_pct"]
 
-        latest_stddev = (latest_rsd_pct.to_f / 100.0) * latest_mean
-        penultimate_stddev = (penultimate_rsd_pct.to_f / 100.0) * penultimate_mean
+        current_stddev = (current_rsd_pct.to_f / 100.0) * current_mean
+        compared_stddev = (compared_rsd_pct.to_f / 100.0) * compared_mean
 
         # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of 2x recent stddev,
         # or 5% of the larger mean runtime.
-        tolerance = [ latest_stddev * 2.0, penultimate_stddev * 2.0, latest_mean * 0.05, penultimate_mean * 0.05 ].max
+        tolerance = [ current_stddev * 2.0, compared_stddev * 2.0, current_mean * 0.05, compared_mean * 0.05 ].max
 
-        drop = latest_mean - penultimate_mean
+        drop = current_mean - compared_mean
 
         if verbose
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % latest_mean }, " +
-                "next-latest mean is #{ "%.2f" % penultimate_mean }, drop is #{ "%.2f" % drop }..."
+            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean }, " +
+                "next-latest mean is #{ "%.2f" % compared_mean }, drop is #{ "%.2f" % drop }..."
         end
 
         if drop > tolerance
             puts "Benchmark #{bench_name} marked as failure!" if verbose
             check_failures.push({
                 benchmark: bench_name,
-                latest_mean: latest_mean,
-                second_latest_mean: penultimate_mean,
-                latest_stddev: latest_stddev,
-                latest_rsd_pct: latest_rsd_pct,
-                second_latest_stddev: penultimate_stddev,
-                second_latest_rsd_pct: penultimate_rsd_pct,
+                current_mean: current_mean,
+                second_current_mean: compared_mean,
+                current_stddev: current_stddev,
+                current_rsd_pct: current_rsd_pct,
+                second_current_stddev: compared_stddev,
+                second_current_rsd_pct: compared_rsd_pct,
             })
         end
     end
@@ -252,13 +252,13 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
     file_perf_bug(current_filename, compared_filename, check_failures) if can_file_issue
 end
 
-def file_perf_bug(latest_filename, compared_filename, check_failures)
-    ts_latest = ts_from_tripwire_filename(latest_filename)
+def file_perf_bug(current_filename, compared_filename, check_failures)
+    ts_latest = ts_from_tripwire_filename(current_filename)
     ts_penultimate = ts_from_tripwire_filename(compared_filename)
 
     puts "Filing Github issue - slower benchmark(s) found."
     body = <<~BODY
-    Latest failing benchmark: #{latest_filename}
+    Latest failing benchmark: #{current_filename}
     Compared to previous benchmark: #{compared_filename}
 
     Failing benchmark names: #{check_failures.map { |h| h[:benchmark] }.inspect}
