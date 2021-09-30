@@ -601,6 +601,9 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
+            category_idx = 1 # Default to misc
+            category_idx = 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :headline
+            category_idx = 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :micro
             [ BENCHMARK_METADATA[bench_name][:category] == :headline ? 0 : BENCHMARK_METADATA[bench_name][:category] == :micro ? 2 : 1,
               #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
