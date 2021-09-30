@@ -94,11 +94,17 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     }
 
     def headline_benchmarks
-        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench][:category] == :headline }
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == :headline }
     end
 
     def micro_benchmarks
-        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench][:category] == :micro }
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == :micro }
+    end
+
+    def benchmark_category_index(bench_name)
+        return 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :headline
+        return 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :micro
+        return 1
     end
 
     def exactly_one_config_with_name(configs, substring, description, none_okay: false)
@@ -234,7 +240,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
-            [ BENCHMARK_METADATA[bench_name][:category] == :headline ? 0 : BENCHMARK_METADATA[bench_name][:category] == :micro ? 2 : 1,
+            [ benchmark_category_index(bench_name),
               #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
 
@@ -277,7 +283,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     def details_report_table_data
         @benchmark_names.map.with_index do |bench_name, idx|
             bench_desc = BENCHMARK_METADATA[bench_name][:desc] || "(no description available)"
-            if BENCHMARK_METADATA[:single_file]
+            if BENCHMARK_METADATA[bench_name][:single_file]
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
             else
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
@@ -601,10 +607,7 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
-            category_idx = 1 # Default to misc
-            category_idx = 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :headline
-            category_idx = 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :micro
-            [ category_idx,
+            [ benchmark_category_index(bench_name),
               #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
 
