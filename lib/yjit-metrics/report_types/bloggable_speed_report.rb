@@ -44,6 +44,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             category: :micro,
             desc: "respond_to tests the performance of the respond_to? method.",
         },
+        "keyword_args" => {
+            single_file: true,
+            category: :micro,
+            desc: "keyword_args tests the performance of method calls with keyword arguments.",
+        },
 
         # "Shootout" benchmarks, from places like The Computer Language Benchmarks Game
         "binarytrees" => {
