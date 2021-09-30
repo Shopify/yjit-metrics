@@ -282,8 +282,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     # Listed on the details page
     def details_report_table_data
         @benchmark_names.map.with_index do |bench_name, idx|
-            bench_desc = BENCHMARK_METADATA[bench_name][:desc] || "(no description available)"
-            if BENCHMARK_METADATA[bench_name][:single_file]
+            bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] )  || "(no description available)"
+            if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
             else
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
