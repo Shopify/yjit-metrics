@@ -21,8 +21,8 @@ extra_config_options = []
 if ENV["RUBY_CONFIG_OPTS"]
     extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
 elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL location if not otherwise specified
-    extra_config_options = [ "--with-openssl-dir=/usr/local/opt/openssl" ]
+    # On Mac with Homebrew, default to Homebrew's OpenSSL 1.1 location if not otherwise specified
+    extra_config_options = [ "--with-openssl-dir=`brew --prefix openssl@1.1`" ]
 end
 
 # The same build of Ruby (e.g. current prerelease Ruby 3.1) can
