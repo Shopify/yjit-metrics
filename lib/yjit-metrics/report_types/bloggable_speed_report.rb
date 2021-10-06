@@ -83,9 +83,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             unstable: 1, # jekyll has known problems including some kind of resource leak. Jekyll-the-tool is fine, but this usage method is flawed.
             desc: "jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.",
         },
-        "hexapdf_line_wrap" => {
+        "hexapdf" => {
             category: :headline,
-            desc: "hexapdf_line_wrap benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.",
+            desc: "hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.",
         },
 
         # Real-esque benchmarks that you could pretend are real for a blog post or a paper
