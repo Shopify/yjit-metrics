@@ -12,7 +12,7 @@ output_dir = "."
 
 # Default benchmarks and configs to compare
 configs = [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "ruby_30_with_mjit" ]
-benchmarks = [ "railsbench", "optcarrot", "lee", "activerecord" ]
+benchmarks = [ "railsbench", "optcarrot", "liquid-render", "activerecord" ]
 reports = all_report_names
 
 OptionParser.new do |opts|
