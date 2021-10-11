@@ -23,7 +23,7 @@ REPORTS_AND_FILES = {
     },
     "blog_speed_details" => {
         report_type: :basic_report,
-        extensions: [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json" ],
+        extensions: [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
     },
     "blog_timeline" => {
         report_type: :timeline_report,

@@ -584,10 +584,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         html_output = script_template.result(binding)
         File.open(filename + ".raw_details.html", "w") { |f| f.write(html_output) }
 
+        # The Tripwire report is used to tell when benchmark performance drops suddenly
         json_data = speedup_tripwires
         File.open(filename + ".tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
-        #write_to_csv(filename + ".csv", [@headings] + report_table_data)
+        write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
 
 end
