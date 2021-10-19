@@ -34,7 +34,7 @@ layout: basic
   <a href="{{ last_bench.url | relative_url }}">
   {% include {{last_bench.reports.blog_speed_details_head_svg}} %}
   </a>
-  The details graphs are the speed (reqs/second) scaled to MRI's interpreted performance. Higher is better.
+  Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
   </div>
 </div>
 
