@@ -4,7 +4,7 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
-all_report_names = [ "blog_timeline" ]
+all_report_names = [ "blog_timeline", "mini_timelines" ]
 
 # Default settings
 data_dir = "data"
@@ -103,6 +103,10 @@ end
 ALL_CONFIGS = relevant_results.map { |_, config_name, _, _| config_name }.uniq
 ALL_TIMESTAMPS = result_set_by_ts.keys.sort
 
+# This should match the JS parser in the template files
+TIME_FORMAT = "%Y %m %d %H %M %S"
+
+# Grab a statistical summary of every timestamp, config and benchmark
 summary_by_ts = {}
 all_benchmarks = []
 ALL_TIMESTAMPS.each do |ts|
@@ -114,17 +118,20 @@ ALL_BENCHMARKS = all_benchmarks
 
 benchmarks = benchmarks & ALL_BENCHMARKS
 
-# For now we have a single timeline report type and we hardcode it here.
+# For now we hardcode report types here.
+
 if reports.include?("blog_timeline")
     report_name = "blog_timeline"
+
     @series = []
     config = "prod_ruby_with_yjit"
+
     ALL_BENCHMARKS.each do |benchmark|
         all_points = ALL_TIMESTAMPS.map do |ts|
             this_point = summary_by_ts.dig(ts, config, benchmark)
             if this_point
                 # These fields are from the ResultSet summary
-                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"], this_point["stddev"] ]
+                [ ts.strftime(TIME_FORMAT), this_point["mean"], this_point["stddev"] ]
             else
                 nil
             end
@@ -138,5 +145,30 @@ if reports.include?("blog_timeline")
 
     script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
     html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+    File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
+end
+
+# At some point, we need to figure out what to do with a different number of benchmarks.
+if reports.include?("mini_timelines") && benchmarks.size == 4
+    report_name = "mini_timelines"
+
+    @series = []
+    config = "prod_ruby_with_yjit"
+
+    benchmarks.each do |benchmark|
+        all_points = ALL_TIMESTAMPS.map do |ts|
+            this_point = summary_by_ts.dig(ts, config, benchmark)
+            if this_point
+                [ ts.strftime(TIME_FORMAT), this_point["mean"] ]
+            else
+                nil
+            end
+        end
+
+        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: all_points.compact })
+    end
+
+    script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/mini_timeline_d3_template.html.erb")
+    html_output = script_template.result(binding)
     File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
 end
