@@ -99,6 +99,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         "optcarrot" => {
             desc: "optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.",
         },
+        "rubykon" => {
+            desc: "Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.",
+        },
 
     }
 
