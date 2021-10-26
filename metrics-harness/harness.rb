@@ -30,8 +30,7 @@ OUT_JSON_PATH = File.expand_path(ENV.fetch('OUT_JSON_PATH', default_path))
 # starting with YJIT_METRICS before running it.
 IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" ]
 
-IS_YJIT = Object.const_defined?(:YJIT)
-HAS_YJIT_STATS = IS_YJIT && !!YJIT.runtime_stats
+YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
 
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
 # It shouldn't include timestamps or other data that changes from run to run.
@@ -59,7 +58,7 @@ def run_benchmark(num_itrs_hint)
   # Note: this harness records *one* set of YJIT stats for all iterations
   # combined, including warmups. That's a good thing for our specific use
   # case, but would be awful for many other use cases.
-  YJIT.reset_stats! if HAS_YJIT_STATS
+  YJIT_MODULE&.reset_stats!
   begin
     time = Benchmark.realtime { yield }
     num_itrs += 1
@@ -79,7 +78,7 @@ def run_benchmark(num_itrs_hint)
   mem = `ps -o rss= -p #{Process.pid}`
   peak_mem_bytes = 1024 * mem.to_i
 
-  yjit_stats = HAS_YJIT_STATS ? YJIT.runtime_stats : nil
+  yjit_stats = YJIT_MODULE&.runtime_stats
 
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
 
@@ -105,6 +104,6 @@ def run_benchmark(num_itrs_hint)
     ruby_metadata: ruby_metadata,
     peak_mem_bytes: peak_mem_bytes,
   }
-  out_data[:yjit_stats] = YJIT.runtime_stats if HAS_YJIT_STATS
+  out_data[:yjit_stats] = YJIT_MODULE&.runtime_stats
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
