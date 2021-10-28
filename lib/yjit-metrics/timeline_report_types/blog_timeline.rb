@@ -14,7 +14,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:benchmark_order].each do |benchmark|
-            all_points = @context[:all_timestamps].map do |ts|
+            all_points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
                 if this_point
                     # These fields are from the ResultSet summary
@@ -34,7 +34,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
     def write_file(file_path)
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_timeline_d3_template.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-        File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
+        File.open(file_path + ".html", "w") { |f| f.write(html_output) }
     end
 end
 
@@ -54,7 +54,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:selected_benchmarks].each do |benchmark|
-            all_points = @context[:all_timestamps].map do |ts|
+            all_points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
                 if this_point
                     # These fields are from the ResultSet summary
@@ -71,6 +71,6 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
     def write_file(file_path)
         script_template = ERB.new File.read(__dir__ + "/../report_templates/mini_timeline_d3_template.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-        File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
+        File.open(file_path + ".html", "w") { |f| f.write(html_output) }
     end
 end

@@ -116,7 +116,7 @@ context = {
     result_set_by_timestamp: result_set_by_ts,
     summary_by_timestamp: summary_by_ts,
 
-    configs: all_configs,
+    configs: configs,
     timestamps: all_timestamps,
 
     selected_benchmarks: benchmarks,
