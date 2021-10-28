@@ -114,7 +114,7 @@ ALL_TIMESTAMPS.each do |ts|
     all_benchmarks += summary_by_ts[ts].values.flat_map(&:keys)
 end
 all_benchmarks.uniq!
-ALL_BENCHMARKS = all_benchmarks
+ALL_BENCHMARKS = all_benchmarks.sort
 
 benchmarks = benchmarks & ALL_BENCHMARKS
 
