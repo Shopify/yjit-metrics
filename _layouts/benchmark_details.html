@@ -47,9 +47,13 @@ As of {{page.date_str}} {{page.time_str}}:
   <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.csv">CSV speed results</a></li>
 </ul>
 
-<h2>Benchmarks In Detail and In Text</h2>
+<h2>Benchmarks Speed Details</h2>
 
 {% include {{page.reports.blog_speed_details_html}} %}
+
+<h2>Benchmark Memory-Usage Details</h2>
+
+{% include {{page.reports.blog_memory_details_html}} %}
 
 <h2>Raw JSON data files</h2>
 
