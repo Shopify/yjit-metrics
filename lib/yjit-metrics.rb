@@ -14,6 +14,11 @@ Dir.glob("yjit-metrics/report_types/*.rb", base: __dir__).each do |report_type_f
     require_relative report_type_file
 end
 
+# Require all source files in yjit-metrics/timeline_report_types/*.rb
+Dir.glob("yjit-metrics/timeline_report_types/*.rb", base: __dir__).each do |report_type_file|
+    require_relative report_type_file
+end
+
 module YJITMetrics
     extend self # Make methods callable as YJITMetrics.method_name
 
