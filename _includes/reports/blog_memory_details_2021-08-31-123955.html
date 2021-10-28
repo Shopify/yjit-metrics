@@ -1,0 +1,26 @@
+<table>
+	<thead>  <th>bench</th>  <th>No JIT mem (MB)</th>  <th>MJIT mem (MB)</th>  <th>YJIT mem (MB)</th>  <th>MJIT mem ratio</th>  <th>YJIT mem ratio</th>  </thead>
+	<tbody style="text-align: right;">
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activeRecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 60 </td>  <td> 64 </td>  <td> 320 </td>  <td> 1.07x </td>  <td> 5.28x </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 28 </td>  <td> 28 </td>  <td> 286 </td>  <td> 0.98x </td>  <td> 9.98x </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td>  <td> 22 </td>  <td> 22 </td>  <td> 278 </td>  <td> 0.98x </td>  <td> 12.47x </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td>  <td> 22 </td>  <td> 22 </td>  <td> 278 </td>  <td> 0.99x </td>  <td> 12.49x </td> 
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td>  <td> 22 </td>  <td> 22 </td>  <td> 278 </td>  <td> 0.99x </td>  <td> 12.43x </td> 
+			</tr>
+		
+	</tbody>
+</table>
