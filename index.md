@@ -47,7 +47,7 @@ layout: basic
   </div>
 
   <div class="timeline_report">
-  {% include reports/blog_timeline.html %}
+  {% include reports/mini_timelines.html %}
   </div>
 </div>
 
