@@ -1,0 +1,143 @@
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<% if @series.size != 4
+       raise "The mini_timeline graph assumes a 2x2 grid of benchmarks!"
+   end %>
+
+<%
+# We want different colours, but we want them saturated so that white text shows up on top of them.
+# From: https://www.schemecolor.com/galaxy-rainbow.php
+colors = [
+    '#a80000',
+    '#fb6400',
+    '#3342c4',
+    '#62ba27',
+    '#ffc400',
+    '#9362c4',
+]
+%>
+
+<div id="mini_timeline"></div>
+
+<div id="mini_timeline_legend" style="display: flex; justify-content: center;">
+  <div id="mini_timeline_legend_child">
+    <ul style="display:inline-block">
+  <% @series.each_with_index do |this_series, color_index|
+       color = colors[color_index % colors.size]
+     %>
+  <li style="display: inline-block" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+  <% end %>
+    </ul>
+  </div>
+</div>
+
+<div class="timeline-report-explanation">
+  Y axis values are the total number of seconds to run the benchmark one time - lower is better.
+</div>
+
+<script>
+
+// set the dimensions and margins of the graph
+var outerMargin = 10,
+    fullWidth = 800,
+    fullHeight = 400,
+    width = fullWidth - 2 * outerMargin,
+    height = fullHeight - 2 * outerMargin,
+    axisHeight = 40, // Each horizontal axis is this tall
+    axisWidth = 60,  // Each vertical axis is this wide
+    subgraphWidth = (width - 2 * axisWidth) / 2.0,
+    subgraphHeight = (height - 2 * axisHeight) / 2.0
+    ;
+
+// append the svg object to the body of the page
+var realSVG = d3.select("#mini_timeline")
+  .append("svg")
+    .attr("width", fullWidth)
+    .attr("height", fullHeight)
+
+// This is the non-blank center area of the graph, inside the margins
+var svg = realSVG.append("g")
+    .attr("transform",
+          "translate(" + outerMargin + "," + outerMargin + ")");
+
+var timeParser = d3.timeParse("%Y %m %d %H %M %S"); // This should match the output format in the report
+var timePrinter = d3.timeFormat("%H:%M:%S"); // This is for tooltips
+var dataSeries = [
+    <% @series.each_with_index do |this_series, color_index| %>
+    {
+        name: <%= this_series[:name].inspect %>,
+        config: <%= this_series[:config].inspect %>,
+        benchmark: <%= this_series[:benchmark].inspect %>,
+        data: [ <%= this_series[:data].map { |t, mean| "{ date: timeParser(#{t.inspect}), value: #{mean} }" }.join(", ") %> ],
+        color: <%= colors[color_index % colors.size].inspect %>,
+        timeRange: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
+        valueRange: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
+    },
+    <% end %>
+    {}
+]
+dataSeries.pop();
+
+dataSeries[0].xOffset = 0;
+dataSeries[0].yOffset = 0;
+dataSeries[1].xOffset = width / 2.0;
+dataSeries[1].yOffset = 0;
+dataSeries[2].xOffset = 0;
+dataSeries[2].yOffset = height / 2.0;
+dataSeries[3].xOffset = width / 2.0;
+dataSeries[3].yOffset = height / 2.0;
+
+dataSeries.forEach(function(thisSeries) {
+
+  var quadrant = svg.append("g")
+    .attr("class", "quadrant")
+    .attr("transform",
+          "translate(" + thisSeries.xOffset + "," + thisSeries.yOffset + ")");
+
+  var x = d3.scaleTime()
+    .domain(d3.extent(thisSeries.timeRange))
+    .range([ 0, subgraphWidth ]);
+
+  var xAxis = d3.axisBottom(x);
+
+  var subgraph = quadrant.append("g")
+    .attr("class", "subgraph")
+    .attr("transform", "translate(" + axisWidth + ",0)")
+    ;
+
+  subgraph.append("g")
+    .attr("transform", "translate(0," + subgraphHeight + ")")
+    .attr("class", "subgraphBottomAxis")
+    .call(d3.axisBottom(x))
+    ;
+
+  var valueMin = thisSeries.valueRange[0];
+  var valueMax = thisSeries.valueRange[1];
+  var valueSpan = valueMax - valueMin;
+  var scaledValueRange = [ valueMin - 0.1 * valueSpan, valueMax + 0.1 * valueSpan ];
+
+  var y = d3.scaleLinear()
+    .domain([0, scaledValueRange[1]])
+    .range([ subgraphHeight, 0 ]);
+  var yAxis = d3.axisLeft(y)
+    .ticks(6);
+
+  subgraph.append("g")
+    .attr("class", "subgraphLeftAxis")
+    .call(yAxis)
+    ;
+
+  var graphLine = subgraph.append("path")
+    .datum(thisSeries.data)
+    .attr("fill", "none")
+    .attr("stroke", thisSeries.color)
+    .attr("stroke-width", 2.5)
+    .attr("d", d3.line()
+      .x(function (d) { return x(d.date); })
+      .y(function (d) { return y(d.value); })
+      )
+    ;
+});
+
+</script>

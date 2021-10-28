@@ -4,7 +4,9 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
-all_report_names = [ "blog_timeline" ]
+report_class_by_name = YJITMetrics::TimelineReport.report_name_hash
+# By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
+all_report_names = report_class_by_name.keys.sort
 
 # Default settings
 data_dir = "data"
@@ -13,7 +15,7 @@ output_dir = "."
 # Default benchmarks and configs to compare
 configs = [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "ruby_30_with_mjit" ]
 benchmarks = [ "railsbench", "optcarrot", "liquid-render", "activerecord" ]
-reports = all_report_names
+reports = all_report_names.dup
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -41,14 +43,6 @@ OptionParser.new do |opts|
         raise("Unknown reports: #{bad_indices.map { |idx| report_strings[idx] }.inspect}! Known report types are: #{all_report_names.join(", ")}") unless bad_indices.empty?
     end
 end.parse!
-
-# Not currently used
-CONFIGS_TO_HUMAN_NAMES = {
-    "prod_ruby_no_jit" => "No JIT",
-    "prod_ruby_with_yjit" => "YJIT",
-    "ruby_30_with_mjit" => "MJIT",
-    "truffleruby" => "Truffle",
-}
 
 # Expand relative paths *before* we change into the data directory
 output_dir = File.expand_path(output_dir)
@@ -100,43 +94,36 @@ relevant_results.each do |filename, config_name, timestamp, run_num|
     end
 end
 
-ALL_CONFIGS = relevant_results.map { |_, config_name, _, _| config_name }.uniq
-ALL_TIMESTAMPS = result_set_by_ts.keys.sort
+configs = relevant_results.map { |_, config_name, _, _| config_name }.uniq.sort
+all_timestamps = result_set_by_ts.keys.sort
 
+# This should match the JS parser in the template files
+TIME_FORMAT = "%Y %m %d %H %M %S"
+
+# Grab a statistical summary of every timestamp, config and benchmark
 summary_by_ts = {}
 all_benchmarks = []
-ALL_TIMESTAMPS.each do |ts|
+all_timestamps.each do |ts|
     summary_by_ts[ts] = result_set_by_ts[ts].summary_by_config_and_benchmark
     all_benchmarks += summary_by_ts[ts].values.flat_map(&:keys)
 end
 all_benchmarks.uniq!
-ALL_BENCHMARKS = all_benchmarks
+all_benchmarks.sort!
 
-benchmarks = benchmarks & ALL_BENCHMARKS
+benchmarks = benchmarks & all_benchmarks
 
-# For now we have a single timeline report type and we hardcode it here.
-if reports.include?("blog_timeline")
-    report_name = "blog_timeline"
-    @series = []
-    config = "prod_ruby_with_yjit"
-    ALL_BENCHMARKS.each do |benchmark|
-        all_points = ALL_TIMESTAMPS.map do |ts|
-            this_point = summary_by_ts.dig(ts, config, benchmark)
-            if this_point
-                # These fields are from the ResultSet summary
-                [ ts.strftime("%Y %m %d %H %M %S"), this_point["mean"], this_point["stddev"] ]
-            else
-                nil
-            end
-        end
+context = {
+    result_set_by_timestamp: result_set_by_ts,
+    summary_by_timestamp: summary_by_ts,
 
-        visible = benchmarks.include?(benchmark)
+    configs: configs,
+    timestamps: all_timestamps,
 
-        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", visible: visible, data: all_points.compact })
-    end
-    @series.sort_by! { |s| s[:visible] ? 0 : 1 }
+    selected_benchmarks: benchmarks,
+    benchmark_order: all_benchmarks,
+}
 
-    script_template = ERB.new File.read(__dir__ + "/lib/yjit-metrics/report_templates/blog_timeline_d3_template.html.erb")
-    html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-    File.open(output_dir + "/#{report_name}.html", "w") { |f| f.write(html_output) }
+reports.each do |report_name|
+    report = report_class_by_name[report_name].new context
+    report.write_file(output_dir + "/#{report_name}")
 end

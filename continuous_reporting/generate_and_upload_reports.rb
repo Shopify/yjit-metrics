@@ -29,6 +29,10 @@ REPORTS_AND_FILES = {
         report_type: :timeline_report,
         extensions: [ "html" ],
     },
+    "mini_timelines" => {
+        report_type: :timeline_report,
+        extensions: [ "html" ],
+    },
 }
 
 def report_filenames(report_name, ts, prefix="_includes/reports")
@@ -211,11 +215,11 @@ end
 # run any all-time (a.k.a. timeline) reports.
 # For now, we assume we should re-run the timeline report unless told not to generate anything.
 unless die_on_regenerate
-    REPORTS_AND_FILES.each do |report_name, details|
-        next unless details[:report_type] == :timeline_report
+    timeline_reports = REPORTS_AND_FILES.select { |report_name, details| details[:report_type] == :timeline_report }
 
-        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d raw_benchmark_data --report=#{report_name} -o _includes/reports")
+    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d raw_benchmark_data --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
 
+    timeline_reports.each do |report_name, details|
         rf = details[:extensions].map { |ext| "_includes/reports/#{report_name}.#{ext}" }
         files_not_found = rf.select { |f| !File.exist? f }
 
