@@ -46,6 +46,7 @@ class YJITMetrics::ResultSet
         @benchmark_metadata = {}
         @ruby_metadata = {}
         @yjit_stats = {}
+        @peak_mem = {}
     end
 
     # A ResultSet normally expects to see results with this structure:
@@ -131,6 +132,13 @@ class YJITMetrics::ResultSet
             puts "Metadata 2: #{benchmark_results["ruby_metadata"].inspect}"
             @printed_ruby_metadata_warning = true
         end
+
+        @peak_mem[config_name] ||= {}
+        benchmark_results["peak_mem_bytes"].each do |benchmark_name, mem_bytes|
+            benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
+            @peak_mem[config_name][benchmark_name] ||= []
+            @peak_mem[config_name][benchmark_name].concat(mem_bytes)
+        end
     end
 
     # This returns a hash-of-arrays by configuration name
@@ -182,6 +190,10 @@ class YJITMetrics::ResultSet
             data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
         end
         data
+    end
+
+    def peak_mem_bytes_for_config_by_benchmark(config)
+        @peak_mem[config]
     end
 
     # This returns a hash-of-hashes by config name

@@ -64,7 +64,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         # Benchmarks with some measure of real-world functionality (e.g. simple library load-tests)
         "activerecord" => {
             category: :headline,
-            desc: "activeRecord repeatedly queries entries in a SQLite table with highly-random names.",
+            desc: "activerecord repeatedly queries entries in a SQLite table with highly-random names.",
         },
         "psych-load" => {
             category: :headline,
@@ -144,10 +144,12 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @times_by_config = {}
         @ruby_metadata_by_config = {}
         @bench_metadata_by_config = {}
+        @peak_mem_by_config = {}
         [ @with_yjit_config, @with_mjit_config, @no_jit_config, @truffle_config ].compact.each do|config|
             @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
             @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
             @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
+            @peak_mem_by_config[config] = @result_set.peak_mem_bytes_for_config_by_benchmark(config)
         end
         @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
@@ -169,7 +171,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         end
     end
 
-    def calc_stats_by_config
+    def calc_speed_stats_by_config
         @mean_by_config = {
             @no_jit_config => [],
             @with_mjit_config => [],
@@ -232,6 +234,35 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @yjit_ratio.push yjit_ratio_pct
         end
     end
+
+    def calc_mem_stats_by_config
+        @peak_mb_by_config = {
+            @no_jit_config => [],
+            @with_mjit_config => [],
+            @with_yjit_config => [],
+        }
+        @mem_ratio_by_config = {
+            @no_jit_config => [],
+            @with_mjit_config => [],
+            @with_yjit_config => [],
+        }
+
+        if @truffle_config
+            @peak_mb_by_config[@truffle_config] = []
+        end
+
+        @benchmark_names.each.with_index do |benchmark_name, idx|
+            no_jit_bytes = mean(@peak_mem_by_config[@no_jit_config][benchmark_name])
+
+            @configs_with_human_names.each do |name, config|
+                this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
+                @peak_mb_by_config[config].push(this_config_bytes / (1024.0 * 1024))
+                if config != @no_jit_config
+                    @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
+                end
+            end
+        end
+    end
 end
 
 # This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
@@ -268,7 +299,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         @col_formats[9] = "<b>%.2fx</b>" # Boldface the YJIT speedup column.
 
-        calc_stats_by_config
+        calc_speed_stats_by_config
     end
 
     def set_extra_info(info)
@@ -596,6 +627,75 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
 end
 
+# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# with a single YJIT head-of-master.
+class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_memory_details"
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by headline/micro category, then alphabetically
+        @benchmark_names.sort_by! { |bench_name|
+            [ benchmark_category_index(bench_name),
+              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
+              bench_name ] }
+
+        @headings = [ "bench" ] +
+            @configs_with_human_names.map { |name, _| "#{name} mem (MB)" } +
+            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
+        # Col formats are only used when formatting entries for a text table, not for CSV
+        @col_formats = [ "%s" ] +                               # Benchmark name
+            [ "%d" ] * @configs_with_human_names.size +         # Mem usage per-Ruby
+            [ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
+
+        calc_mem_stats_by_config
+    end
+
+    # Printed to console
+    def report_table_data
+        @benchmark_names.map.with_index do |bench_name, idx|
+            [ bench_name ] +
+                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
+                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
+        end
+    end
+
+    # Listed on the details page
+    def details_report_table_data
+        @benchmark_names.map.with_index do |bench_name, idx|
+            bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] )  || "(no description available)"
+            if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
+                bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
+            else
+                bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
+            end
+            [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
+                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
+                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
+        end
+    end
+
+    def to_s
+        # This is just used to print the table to the console
+        format_as_table(@headings, @col_formats, report_table_data) +
+            "\nMemory usage is in MB (mebibytes,) rounded. Ratio is versus interpreted baseline CRuby.\n"
+    end
+
+    def write_file(filename)
+        # Memory details report, with tables and text descriptions
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
+        html_output = script_template.result(binding)
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+    end
+
+end
+
 # This very small report is to give the quick headlines and summary for a YJIT comparison.
 class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
     def self.report_name
@@ -624,7 +724,7 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
               #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
 
-        calc_stats_by_config
+        calc_speed_stats_by_config
 
         # "Ratio of total times" method
         #@yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
