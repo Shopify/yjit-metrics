@@ -118,7 +118,7 @@ dataSeries.forEach(function(thisSeries) {
   var scaledValueRange = [ valueMin - 0.1 * valueSpan, valueMax + 0.1 * valueSpan ];
 
   var y = d3.scaleLinear()
-    .domain(scaledValueRange)
+    .domain([0, scaledValueRange[1]])
     .range([ subgraphHeight, 0 ]);
   var yAxis = d3.axisLeft(y)
     .ticks(6);
@@ -126,17 +126,6 @@ dataSeries.forEach(function(thisSeries) {
   subgraph.append("g")
     .attr("class", "subgraphLeftAxis")
     .call(yAxis)
-    ;
-
-  var circles = subgraph.selectAll("circle.whiskerdot." + thisSeries.name)
-    .data(thisSeries.data);
-  circles.enter().append("circle")
-    .attr("class", "whiskerdot " + thisSeries.name)
-    .attr("fill", "#808080")
-    .attr("fill-opacity", 0.75)
-    .attr("r", 3.5)
-    .attr("cx", function(d) { return x(d.date) } )
-    .attr("cy", function(d) { return y(d.value) } )
     ;
 
   var graphLine = subgraph.append("path")
