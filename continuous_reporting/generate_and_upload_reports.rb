@@ -29,6 +29,11 @@ REPORTS_AND_FILES = {
         report_type: :basic_report,
         extensions: [ "html" ],
     },
+    "blog_yjit_stats" => {
+        report_type: :basic_report,
+        extensions: [ "html" ],
+    },
+
     "blog_timeline" => {
         report_type: :timeline_report,
         extensions: [ "html" ],

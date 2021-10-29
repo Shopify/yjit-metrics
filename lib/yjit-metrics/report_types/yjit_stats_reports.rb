@@ -192,6 +192,11 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
 
         text
     end
+
+    def write_file(filename)
+        text_output = self.to_s
+        File.open(filename + ".txt", "w") { |f| f.write(text_output) }
+    end
 end
 
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
@@ -258,4 +263,8 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
         format_as_table(@headings, @col_formats, @report_data)
     end
 
+    def write_file(filename)
+        text_output = self.to_s
+        File.open(filename + ".txt", "w") { |f| f.write(text_output) }
+    end
 end

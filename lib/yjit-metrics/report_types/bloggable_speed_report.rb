@@ -659,7 +659,7 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
               bench_name ] }
 
         @headings = [ "bench" ] +
-            @configs_with_human_names.map { |name, _| "#{name}" } +
+            @configs_with_human_names.map(&:first) +
             [ "Inline Code", "Outlined Code", "YJIT Mem Breakdown" ]
             #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
         # Col formats are only used when formatting entries for a text table, not for CSV
@@ -708,6 +708,65 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
     def write_file(filename)
         # Memory details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
+        html_output = script_template.result(binding)
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+    end
+
+end
+
+# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# with a single YJIT head-of-master.
+class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_yjit_stats"
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by headline/micro category, then alphabetically
+        @benchmark_names.sort_by! { |bench_name|
+            [ benchmark_category_index(bench_name),
+              bench_name ] }
+
+        @headings = [ "bench", "Comp iSeqs/Blocks", "Inval", "Bind Alloc/Set", "Const Bumps" ]
+        @headings_with_tooltips = {
+            "bench" => "Benchmark name",
+            "Comp iSeqs/Blocks" => "Number of compiled iSeqs (methods), followed by num. of compiled blocks",
+            "Inval" => "Number of methods or blocks invalidated",
+            "Bind Alloc/Set" => "Number of Ruby bindings allocated, then number of variables set via bindings",
+            "Const Bumps" => "Number of times Ruby clears its internal constant cache",
+        }
+
+        # Col formats are only used when formatting entries for a text table, not for CSV
+        @col_formats = @headings.map { "%s" }
+    end
+
+    # Listed on the details page
+    def details_report_table_data
+        @benchmark_names.map.with_index do |bench_name, idx|
+            bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] )  || "(no description available)"
+            if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
+                bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
+            else
+                bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
+            end
+            [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
+                "#{@yjit_stats[bench_name][0]["compiled_iseq_count"]} / #{@yjit_stats[bench_name][0]["compiled_block_count"]}",
+                @yjit_stats[bench_name][0]["invalidation_count"],
+                "#{@yjit_stats[bench_name][0]["binding_allocations"]} / #{@yjit_stats[bench_name][0]["binding_set"]}",
+                @yjit_stats[bench_name][0]["constant_state_bumps"],
+            ]
+
+        end
+    end
+
+    def write_file(filename)
+        # Memory details report, with tables and text descriptions
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_yjit_stats.html.erb")
         html_output = script_template.result(binding)
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end
