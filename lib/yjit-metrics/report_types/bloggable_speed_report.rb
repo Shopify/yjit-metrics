@@ -659,13 +659,13 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
               bench_name ] }
 
         @headings = [ "bench" ] +
-            @configs_with_human_names.map(&:first) +
-            [ "Inline Code", "Outlined Code", "YJIT Mem Breakdown" ]
+            @configs_with_human_names.map { |name, config| "#{name} mem (MiB)"}
+            #[ "Inline Code", "Outlined Code", "YJIT Mem Breakdown" ]
             #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
         # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                               # Benchmark name
-            [ "%d" ] * @configs_with_human_names.size +         # Mem usage per-Ruby
-            [ "%d", "%d", "%s" ]                                            # YJIT mem breakdown
+            [ "%d" ] * @configs_with_human_names.size           # Mem usage per-Ruby
+            #[ "%d", "%d", "%s" ]                                # YJIT mem breakdown
             #[ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
 
         calc_mem_stats_by_config
@@ -676,8 +676,8 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         @benchmark_names.map.with_index do |bench_name, idx|
             [ bench_name ] +
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
-                [ @inline_mem_used[idx], @outline_mem_used[idx] ] +
-                [ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
+                [ @inline_mem_used[idx], @outline_mem_used[idx] ]
+                #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
                 #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
@@ -692,9 +692,9 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
-                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
-                [ @inline_mem_used[idx], @outline_mem_used[idx] ] +
-                [ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
+                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] }
+                #[ @inline_mem_used[idx], @outline_mem_used[idx] ] +
+                #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
                 #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
@@ -732,17 +732,20 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
             [ benchmark_category_index(bench_name),
               bench_name ] }
 
-        @headings = [ "bench", "Comp iSeqs/Blocks", "Inval", "Bind Alloc/Set", "Const Bumps" ]
         @headings_with_tooltips = {
             "bench" => "Benchmark name",
-            "Comp iSeqs/Blocks" => "Number of compiled iSeqs (methods), followed by num. of compiled blocks",
+            "Inline" => "Bytes of inlined code generated",
+            "Outlined" => "Bytes of outlined code generated",
+            "Comp iSeqs" => "Number of compiled iSeqs (methods)",
+            "Comp Blocks" => "Number of compiled blocks",
             "Inval" => "Number of methods or blocks invalidated",
-            "Bind Alloc/Set" => "Number of Ruby bindings allocated, then number of variables set via bindings",
+            "Bind Alloc" => "Number of Ruby bindings allocated",
+            "Bind Set" => "Number of variables set via bindings",
             "Const Bumps" => "Number of times Ruby clears its internal constant cache",
         }
 
         # Col formats are only used when formatting entries for a text table, not for CSV
-        @col_formats = @headings.map { "%s" }
+        @col_formats = @headings_with_tooltips.keys.map { "%s" }
     end
 
     # Listed on the details page
@@ -755,9 +758,13 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
-                "#{@yjit_stats[bench_name][0]["compiled_iseq_count"]} / #{@yjit_stats[bench_name][0]["compiled_block_count"]}",
+                @yjit_stats[bench_name][0]["inline_code_size"],
+                @yjit_stats[bench_name][0]["outlined_code_size"],
+                @yjit_stats[bench_name][0]["compiled_iseq_count"],
+                @yjit_stats[bench_name][0]["compiled_block_count"],
                 @yjit_stats[bench_name][0]["invalidation_count"],
-                "#{@yjit_stats[bench_name][0]["binding_allocations"]} / #{@yjit_stats[bench_name][0]["binding_set"]}",
+                @yjit_stats[bench_name][0]["binding_allocations"],
+                @yjit_stats[bench_name][0]["binding_set"],
                 @yjit_stats[bench_name][0]["constant_state_bumps"],
             ]
 

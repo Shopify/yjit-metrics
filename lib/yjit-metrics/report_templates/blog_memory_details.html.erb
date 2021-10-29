@@ -17,12 +17,7 @@
 </p>
 
 <p>
-    YJIT memory is divided into normal memory and memory for inline/outlined generated code.
-    By default YJIT allocates 128MB each for inline and outlined code. The amount can be tuned
-    using a command-line parameter. Code sizes are always rounded upward - even a single
-    byte is counted as a full mebibyte since exceeding the limit will cause a crash.
-</p>
-
-<p>
-    Memory usage other than code sizes is rounded down, as normal.
+    By default, YJIT allocates an additional 256MiB for generated code. The additional size
+    allocated can be tuned with a command-line parameter, but allocating too little memory
+    will result in YJIT crashing.
 </p>
