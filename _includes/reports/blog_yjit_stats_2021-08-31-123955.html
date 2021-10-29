@@ -3,27 +3,27 @@
 </p>
 
 <table>
-    <thead>  <th title="Benchmark name">bench</th>  <th title="Number of compiled iSeqs (methods), followed by num. of compiled blocks">Comp iSeqs/Blocks</th>  <th title="Number of methods or blocks invalidated">Inval</th>  <th title="Number of Ruby bindings allocated, then number of variables set via bindings">Bind Alloc/Set</th>  <th title="Number of times Ruby clears its internal constant cache">Const Bumps</th>  </thead>
+    <thead>  <th title="Benchmark name">bench</th>  <th title="Bytes of inlined code generated">Inline</th>  <th title="Bytes of outlined code generated">Outlined</th>  <th title="Number of compiled iSeqs (methods)">Comp iSeqs</th>  <th title="Number of compiled blocks">Comp Blocks</th>  <th title="Number of methods or blocks invalidated">Inval</th>  <th title="Number of Ruby bindings allocated">Bind Alloc</th>  <th title="Number of variables set via bindings">Bind Set</th>  <th title="Number of times Ruby clears its internal constant cache">Const Bumps</th>  </thead>
     <tbody style="text-align: right;">
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 185 /  </td>  <td>  </td>  <td> 0 / 0 </td>  <td>  </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 989412 </td>  <td> 853642 </td>  <td> 185 </td>  <td>  </td>  <td>  </td>  <td> 0 </td>  <td> 0 </td>  <td>  </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 85 /  </td>  <td>  </td>  <td> 1 / 0 </td>  <td>  </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 190509 </td>  <td> 168742 </td>  <td> 85 </td>  <td>  </td>  <td>  </td>  <td> 1 </td>  <td> 0 </td>  <td>  </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td>  <td> 6 /  </td>  <td>  </td>  <td> 0 / 0 </td>  <td>  </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td>  <td> 100416 </td>  <td> 89132 </td>  <td> 6 </td>  <td>  </td>  <td>  </td>  <td> 0 </td>  <td> 0 </td>  <td>  </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td>  <td> 6 /  </td>  <td>  </td>  <td> 0 / 0 </td>  <td>  </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td>  <td> 102400 </td>  <td> 92028 </td>  <td> 6 </td>  <td>  </td>  <td>  </td>  <td> 0 </td>  <td> 0 </td>  <td>  </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td>  <td> 6 /  </td>  <td>  </td>  <td> 0 / 0 </td>  <td>  </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td>  <td> 104128 </td>  <td> 92010 </td>  <td> 6 </td>  <td>  </td>  <td>  </td>  <td> 0 </td>  <td> 0 </td>  <td>  </td> 
             </tr>
         
     </tbody>

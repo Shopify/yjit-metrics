@@ -3,87 +3,87 @@
 </p>
 
 <table>
-    <thead>  <th title="Benchmark name">bench</th>  <th title="Number of compiled iSeqs (methods), followed by num. of compiled blocks">Comp iSeqs/Blocks</th>  <th title="Number of methods or blocks invalidated">Inval</th>  <th title="Number of Ruby bindings allocated, then number of variables set via bindings">Bind Alloc/Set</th>  <th title="Number of times Ruby clears its internal constant cache">Const Bumps</th>  </thead>
+    <thead>  <th title="Benchmark name">bench</th>  <th title="Bytes of inlined code generated">Inline</th>  <th title="Bytes of outlined code generated">Outlined</th>  <th title="Number of compiled iSeqs (methods)">Comp iSeqs</th>  <th title="Number of compiled blocks">Comp Blocks</th>  <th title="Number of methods or blocks invalidated">Inval</th>  <th title="Number of Ruby bindings allocated">Bind Alloc</th>  <th title="Number of variables set via bindings">Bind Set</th>  <th title="Number of times Ruby clears its internal constant cache">Const Bumps</th>  </thead>
     <tbody style="text-align: right;">
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 185 / 1149 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td>  <td> 1111066 </td>  <td> 865696 </td>  <td> 185 </td>  <td> 1149 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/hexapdf/benchmark.rb" title="hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.">hexapdf</a> </td>  <td> 603 / 7830 </td>  <td> 621 </td>  <td> 0 / 0 </td>  <td> 320 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/hexapdf/benchmark.rb" title="hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.">hexapdf</a> </td>  <td> 1066804 </td>  <td> 892841 </td>  <td> 603 </td>  <td> 7830 </td>  <td> 621 </td>  <td> 0 </td>  <td> 0 </td>  <td> 320 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/jekyll/benchmark.rb" title="jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.">jekyll</a> </td>  <td> 336 / 3728 </td>  <td> 173 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/jekyll/benchmark.rb" title="jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.">jekyll</a> </td>  <td> 1960730 </td>  <td> 1630708 </td>  <td> 336 </td>  <td> 3728 </td>  <td> 173 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/liquid-render/benchmark.rb" title="liquid-render renders a chosen-for-profiling Liquid theme repeatedly.">liquid-render</a> </td>  <td> 143 / 1270 </td>  <td> 94 </td>  <td> 0 / 0 </td>  <td> 1 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/liquid-render/benchmark.rb" title="liquid-render renders a chosen-for-profiling Liquid theme repeatedly.">liquid-render</a> </td>  <td> 456468 </td>  <td> 373454 </td>  <td> 143 </td>  <td> 1270 </td>  <td> 94 </td>  <td> 0 </td>  <td> 0 </td>  <td> 1 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/mail/benchmark.rb" title="mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.">mail</a> </td>  <td> 337 / 5196 </td>  <td> 129 </td>  <td> 0 / 0 </td>  <td> 39 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/mail/benchmark.rb" title="mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.">mail</a> </td>  <td> 1000730 </td>  <td> 774700 </td>  <td> 337 </td>  <td> 5196 </td>  <td> 129 </td>  <td> 0 </td>  <td> 0 </td>  <td> 39 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/psych-load/benchmark.rb" title="psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.">psych-load</a> </td>  <td> 56 / 409 </td>  <td> 1 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/psych-load/benchmark.rb" title="psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.">psych-load</a> </td>  <td> 184490 </td>  <td> 148785 </td>  <td> 56 </td>  <td> 409 </td>  <td> 1 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/railsbench/benchmark.rb" title="railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.">railsbench</a> </td>  <td> 1293 / 9600 </td>  <td> 262 </td>  <td> 0 / 0 </td>  <td> 26 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/railsbench/benchmark.rb" title="railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.">railsbench</a> </td>  <td> 2567729 </td>  <td> 1999839 </td>  <td> 1293 </td>  <td> 9600 </td>  <td> 262 </td>  <td> 0 </td>  <td> 0 </td>  <td> 26 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/binarytrees/benchmark.rb" title="binarytrees from the Computer Language Benchmarks Game.">binarytrees</a> </td>  <td> 9 / 49 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/binarytrees/benchmark.rb" title="binarytrees from the Computer Language Benchmarks Game.">binarytrees</a> </td>  <td> 113853 </td>  <td> 90204 </td>  <td> 9 </td>  <td> 49 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fannkuchredux/benchmark.rb" title="fannkuchredux from the Computer Language Benchmarks Game.">fannkuchredux</a> </td>  <td> 6 / 203 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fannkuchredux/benchmark.rb" title="fannkuchredux from the Computer Language Benchmarks Game.">fannkuchredux</a> </td>  <td> 129917 </td>  <td> 103829 </td>  <td> 6 </td>  <td> 203 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 85 / 1091 </td>  <td> 114 </td>  <td> 1 / 0 </td>  <td> 13 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td>  <td> 234922 </td>  <td> 181419 </td>  <td> 85 </td>  <td> 1091 </td>  <td> 114 </td>  <td> 1 </td>  <td> 0 </td>  <td> 13 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/nbody/benchmark.rb" title="nbody from the Computer Language Benchmarks Game.">nbody</a> </td>  <td> 8 / 149 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/nbody/benchmark.rb" title="nbody from the Computer Language Benchmarks Game.">nbody</a> </td>  <td> 123325 </td>  <td> 97934 </td>  <td> 8 </td>  <td> 149 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/optcarrot/benchmark.rb" title="optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.">optcarrot</a> </td>  <td> 196 / 3567 </td>  <td> 20 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/optcarrot/benchmark.rb" title="optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.">optcarrot</a> </td>  <td> 459453 </td>  <td> 429726 </td>  <td> 196 </td>  <td> 3567 </td>  <td> 20 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_ifelse.rb" title="30_ifelse tests thousands of nested methods containing simple if/else statements.">30k_ifelse</a> </td>  <td> 9261 / 57795 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_ifelse.rb" title="30_ifelse tests thousands of nested methods containing simple if/else statements.">30k_ifelse</a> </td>  <td> 5561149 </td>  <td> 4890755 </td>  <td> 9261 </td>  <td> 57795 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td>  <td> 5780 / 19352 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td>  <td> 2118013 </td>  <td> 1816950 </td>  <td> 5780 </td>  <td> 19352 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/cfunc_itself.rb" title="cfunc_itself just calls the 'itself' method many, many times.">cfunc_itself</a> </td>  <td> 6 / 40 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/cfunc_itself.rb" title="cfunc_itself just calls the 'itself' method many, many times.">cfunc_itself</a> </td>  <td> 112317 </td>  <td> 88643 </td>  <td> 6 </td>  <td> 40 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td>  <td> 6 / 29 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td>  <td> 110845 </td>  <td> 88216 </td>  <td> 6 </td>  <td> 29 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td>  <td> 6 / 56 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td>  <td> 112253 </td>  <td> 90679 </td>  <td> 6 </td>  <td> 56 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/keyword_args.rb" title="keyword_args tests the performance of method calls with keyword arguments.">keyword_args</a> </td>  <td> 7 / 42 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/keyword_args.rb" title="keyword_args tests the performance of method calls with keyword arguments.">keyword_args</a> </td>  <td> 112253 </td>  <td> 88627 </td>  <td> 7 </td>  <td> 42 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td>  <td> 6 / 55 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td>  <td> 114557 </td>  <td> 90187 </td>  <td> 6 </td>  <td> 55 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/setivar.rb" title="setivar tests the performance of setting instance variable values.">setivar</a> </td>  <td> 6 / 29 </td>  <td> 0 </td>  <td> 0 / 0 </td>  <td> 0 </td> 
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/setivar.rb" title="setivar tests the performance of setting instance variable values.">setivar</a> </td>  <td> 112253 </td>  <td> 88988 </td>  <td> 6 </td>  <td> 29 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td>  <td> 0 </td> 
             </tr>
         
     </tbody>
