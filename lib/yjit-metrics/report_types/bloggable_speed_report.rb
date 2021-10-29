@@ -761,7 +761,11 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
 
             bench_stats = @yjit_stats[bench_name][0]
 
-            inval_ratio = bench_stats["invalidation_count"].to_f / bench_stats["compiled_block_count"]
+            fmt_inval_ratio = "?"
+            if bench_stats["invalidation_count"] && bench_stats["compiled_block_count"]
+                inval_ratio = bench_stats["invalidation_count"].to_f / bench_stats["compiled_block_count"]
+                fmt_inval_ratio = "%d%%" % (inval_ratio * 100.0).to_i
+            end
 
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
                 bench_stats["inline_code_size"],
@@ -769,7 +773,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_stats["compiled_iseq_count"],
                 bench_stats["compiled_block_count"],
                 bench_stats["invalidation_count"],
-                "%d%%" % (inval_ratio * 100.0).to_i,
+                fmt_inval_ratio,
                 bench_stats["binding_allocations"],
                 bench_stats["binding_set"],
                 bench_stats["constant_state_bumps"],
