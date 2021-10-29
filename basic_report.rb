@@ -135,6 +135,6 @@ reports.each do |report_name|
         report.write_file("#{output_dir}/#{report_name}_#{ts_str}")
     end
 
-    print report.to_s
-    puts
+    #print report.to_s
+    #puts
 end
