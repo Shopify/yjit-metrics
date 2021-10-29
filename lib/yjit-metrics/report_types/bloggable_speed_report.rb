@@ -246,17 +246,29 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @with_mjit_config => [],
             @with_yjit_config => [],
         }
+        @inline_mem_used = []
+        @outline_mem_used = []
 
         if @truffle_config
             @peak_mb_by_config[@truffle_config] = []
         end
 
+        one_mib = 1024 * 1024.0 # As a float
+
         @benchmark_names.each.with_index do |benchmark_name, idx|
             no_jit_bytes = mean(@peak_mem_by_config[@no_jit_config][benchmark_name])
-
             @configs_with_human_names.each do |name, config|
                 this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
-                @peak_mb_by_config[config].push(this_config_bytes / (1024.0 * 1024))
+                @peak_mb_by_config[config].push(this_config_bytes / one_mib)
+
+                # Round MiB upward, even with a single byte used, since we crash if the block isn't allocated.
+                inline_mib = ((@yjit_stats[benchmark_name][0]["inline_code_size"] + (one_mib - 1))/one_mib).to_i
+                outline_mib = ((@yjit_stats[benchmark_name][0]["outlined_code_size"] + (one_mib - 1))/one_mib).to_i
+
+                @inline_mem_used.push inline_mib
+                @outline_mem_used.push outline_mib
+
+                # Total mem ratios - not currently displayed
                 if config != @no_jit_config
                     @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
                 end
@@ -647,12 +659,14 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
               bench_name ] }
 
         @headings = [ "bench" ] +
-            @configs_with_human_names.map { |name, _| "#{name} mem (MB)" } +
-            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
+            @configs_with_human_names.map { |name, _| "#{name}" } +
+            [ "Inline Code", "Outlined Code", "YJIT Mem Breakdown" ]
+            #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
         # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                               # Benchmark name
             [ "%d" ] * @configs_with_human_names.size +         # Mem usage per-Ruby
-            [ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
+            [ "%d", "%d", "%s" ]                                            # YJIT mem breakdown
+            #[ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
 
         calc_mem_stats_by_config
     end
@@ -662,7 +676,9 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         @benchmark_names.map.with_index do |bench_name, idx|
             [ bench_name ] +
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
-                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
+                [ @inline_mem_used[idx], @outline_mem_used[idx] ] +
+                [ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
+                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
@@ -677,14 +693,16 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
             end
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
-                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
+                [ @inline_mem_used[idx], @outline_mem_used[idx] ] +
+                [ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
+                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
     def to_s
         # This is just used to print the table to the console
         format_as_table(@headings, @col_formats, report_table_data) +
-            "\nMemory usage is in MB (mebibytes,) rounded. Ratio is versus interpreted baseline CRuby.\n"
+            "\nMemory usage is in MiB (mebibytes,) rounded. Ratio is versus interpreted baseline CRuby.\n"
     end
 
     def write_file(filename)
