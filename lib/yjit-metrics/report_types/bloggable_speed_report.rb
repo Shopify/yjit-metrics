@@ -739,6 +739,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
             "Comp iSeqs" => "Number of compiled iSeqs (methods)",
             "Comp Blocks" => "Number of compiled blocks",
             "Inval" => "Number of methods or blocks invalidated",
+            "Inval Ratio" => "Number of blocks invalidated over number of blocks compiled",
             "Bind Alloc" => "Number of Ruby bindings allocated",
             "Bind Set" => "Number of variables set via bindings",
             "Const Bumps" => "Number of times Ruby clears its internal constant cache",
@@ -757,15 +758,21 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
             else
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
+
+            bench_stats = @yjit_stats[bench_name][0]
+
+            inval_ratio = bench_stats["invalidation_count"].to_f / bench_stats["compiled_block_count"]
+
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
-                @yjit_stats[bench_name][0]["inline_code_size"],
-                @yjit_stats[bench_name][0]["outlined_code_size"],
-                @yjit_stats[bench_name][0]["compiled_iseq_count"],
-                @yjit_stats[bench_name][0]["compiled_block_count"],
-                @yjit_stats[bench_name][0]["invalidation_count"],
-                @yjit_stats[bench_name][0]["binding_allocations"],
-                @yjit_stats[bench_name][0]["binding_set"],
-                @yjit_stats[bench_name][0]["constant_state_bumps"],
+                bench_stats["inline_code_size"],
+                bench_stats["outlined_code_size"],
+                bench_stats["compiled_iseq_count"],
+                bench_stats["compiled_block_count"],
+                bench_stats["invalidation_count"],
+                "%d%%" % (inval_ratio * 100.0).to_i,
+                bench_stats["binding_allocations"],
+                bench_stats["binding_set"],
+                bench_stats["constant_state_bumps"],
             ]
 
         end
