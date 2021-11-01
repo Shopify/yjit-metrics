@@ -25,29 +25,32 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
     extra_config_options = [ "--with-openssl-dir=`brew --prefix openssl@1.1`" ]
 end
 
+YJIT_GIT_URL = "https://github.com/ruby/ruby"
+YJIT_GIT_BRANCH = "master"
+
 # The same build of Ruby (e.g. current prerelease Ruby 3.1) can
 # have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
 RUBY_BUILDS = {
     "ruby-yjit-metrics-debug" => {
         install: "repo",
-        git_url: "https://github.com/Shopify/yjit",
-        git_branch: "main",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
     },
     "ruby-yjit-metrics-stats" => {
         install: "repo",
-        git_url: "https://github.com/Shopify/yjit",
-        git_branch: "main",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
     },
     "ruby-yjit-metrics-prod" => {
         install: "repo",
-        git_url: "https://github.com/Shopify/yjit",
-        git_branch: "main",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
     },
