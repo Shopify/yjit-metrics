@@ -5,8 +5,9 @@
 #   You can also specify RUBY_CONFIG_OPTS to specify the arguments
 #   that should be passed to Ruby's configuration script.
 
-# This benchmark keeps two checkouts of YJIT so that we have debug and
-# non-debug available. They are maintained at ../yjit-debug and ../yjit-prod.
+# This benchmark keeps multiple checkouts of YJIT so that we have
+# configurations for production, debug, stats and potentially others
+# over time.
 # It also keeps a yjit-bench repository at ../yjit-bench.
 
 # The intention is that basic_benchmark can be used to collect benchmark
