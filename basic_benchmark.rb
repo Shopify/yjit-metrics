@@ -23,7 +23,8 @@ if ENV["RUBY_CONFIG_OPTS"]
     extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
 elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
     # On Mac with Homebrew, default to Homebrew's OpenSSL 1.1 location if not otherwise specified
-    extra_config_options = [ "--with-openssl-dir=`brew --prefix openssl@1.1`" ]
+    ossl_prefix = `brew --prefix openssl@1.1`.chomp
+    extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
 end
 
 YJIT_GIT_URL = "https://github.com/ruby/ruby"
