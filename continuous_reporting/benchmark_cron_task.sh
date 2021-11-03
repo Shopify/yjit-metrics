@@ -10,6 +10,7 @@ chruby 3.0.2
 
 cd ~ubuntu/ym/yjit-metrics/
 git pull
+gem install bundler:1.17.2
 bundle
 ruby continuous_reporting/benchmark_and_update.rb
 
