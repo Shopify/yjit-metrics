@@ -56,7 +56,7 @@ RUBY_BUILDS = {
         repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
     },
-    "ruby-3.0.2" => {
+    "ruby-3.0.0" => {
         install: "ruby-install",
     },
     "truffleruby+graalvm-21.2.0" => {
@@ -98,7 +98,7 @@ RUBY_CONFIGS = {
         opts: [],
     },
     ruby_30_with_mjit: {
-        build: "ruby-3.0.2",
+        build: "ruby-3.0.0",
         opts: [ "--jit --jit-max-cache=10000 --jit-min-calls=10" ],
         install: "ruby-install",
     },
