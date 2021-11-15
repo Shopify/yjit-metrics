@@ -18,12 +18,23 @@ require "optparse"
 # The STDDEV_TOLERANCE is what multiple of the standard deviation it's okay to drop on
 # a given run. That effectively determines the false-positive rate since we're comparing samples
 # from a Gaussian-ish distribution.
-STDDEV_TOLERANCE = 2.0
+NORMAL_STDDEV_TOLERANCE = 1.5
 # The DROP_TOLERANCE is what absolute multiple-of-the-mean drop (e.g. 0.05 means 5%) is
 # assumed to be okay. For each metric we use the more permissive of the two tolerances
 # on the more permissive of the two mean values. All four must be outside of tolerance
 # for us to count a failure.
-DROP_TOLERANCE = 0.07
+NORMAL_DROP_TOLERANCE = 0.07
+
+# A microbenchmark will normally have a very small stddev from run to run. That means
+# it's actually *less* tolerant of noise on the host, since "twice the stddev" is a
+# significantly smaller absolute value.
+MICRO_STDDEV_TOLERANCE = 2.0
+
+# A microbenchmark will routinely show persistent speed changes of much larger magnitude
+# than a larger, more varied benchmark. For example, setivar is surprisingly prone to
+# large swings in time taken depending on tiny changes to memory layout. So the drop
+# tolerance needs to be significantly larger to avoid frequent false positives.
+MICRO_DROP_TOLERANCE = 0.20
 
 # Remember that if this is running on the benchmark CI server you do *not* want a run so long it will
 # overlap with the regular automatic runs. They happen twice daily as I write this, at 7am and 7pm.
@@ -228,11 +239,23 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
         current_stddev = (current_rsd_pct.to_f / 100.0) * current_mean
         compared_stddev = (compared_rsd_pct.to_f / 100.0) * compared_mean
 
+        # Normally is_micro should be the same in all cases for any one specific benchmark.
+        # So we just assume the most recent data has the correct value.
+        is_micro = current_data[bench_name]["micro"]
+
+        if is_micro
+            bench_stddev_tolerance = MICRO_STDDEV_TOLERANCE
+            bench_drop_tolerance = MICRO_DROP_TOLERANCE
+        else
+            bench_stddev_tolerance = NORMAL_STDDEV_TOLERANCE
+            bench_drop_tolerance = NORMAL_DROP_TOLERANCE
+        end
+
         # Occasionally stddev can change pretty wildly from run to run. Take the most tolerant of multiple-of-recent-stddev,
         # or a percentage of the larger mean runtime. Basically, a drop must be unusual enough (stddev) and large enough (mean)
         # for us to flag it.
-        tolerance = [ current_stddev * STDDEV_TOLERANCE, compared_stddev * STDDEV_TOLERANCE,
-            current_mean * DROP_TOLERANCE, compared_mean * DROP_TOLERANCE ].max
+        tolerance = [ current_stddev * bench_stddev_tolerance, compared_stddev * bench_stddev_tolerance,
+            current_mean * bench_drop_tolerance, compared_mean * bench_drop_tolerance ].max
 
         drop = current_mean - compared_mean
 
