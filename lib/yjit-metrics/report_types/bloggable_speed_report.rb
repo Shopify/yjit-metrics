@@ -579,10 +579,12 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
     def speedup_tripwires
         tripwires = {}
+        micro = micro_benchmarks
         @benchmark_names.each_with_index do |bench_name, idx|
             tripwires[bench_name] = {
                 mean: @mean_by_config[@with_yjit_config][idx],
-                rsd_pct: @rsd_pct_by_config[@with_yjit_config][idx]
+                rsd_pct: @rsd_pct_by_config[@with_yjit_config][idx],
+                micro: micro.include?(bench_name),
             }
         end
         tripwires
