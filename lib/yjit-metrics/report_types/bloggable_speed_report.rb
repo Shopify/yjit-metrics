@@ -129,13 +129,15 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     # Include Truffle data only if we can find it
     def look_up_data_by_ruby(in_runs: false)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
-        @with_mjit_config = exactly_one_config_with_name(@config_names, "with_mjit", "with-MJIT")
+        @with_mjit30_config = exactly_one_config_with_name(@config_names, "ruby_30_with_mjit", "with-MJIT3.0")
+        @with_mjit31_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT3.1")
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
         @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle", none_okay: true)
 
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],
-            ["MJIT", @with_mjit_config],
+            ["MJIT30", @with_mjit30_config],
+            ["MJIT31", @with_mjit31_config],
             ["YJIT", @with_yjit_config],
         ]
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
@@ -145,7 +147,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @ruby_metadata_by_config = {}
         @bench_metadata_by_config = {}
         @peak_mem_by_config = {}
-        [ @with_yjit_config, @with_mjit_config, @no_jit_config, @truffle_config ].compact.each do|config|
+        @configs_with_human_names.values.each do |config|
             @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
             @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
             @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
@@ -172,31 +174,18 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     end
 
     def calc_speed_stats_by_config
-        @mean_by_config = {
-            @no_jit_config => [],
-            @with_mjit_config => [],
-            @with_yjit_config => [],
-        }
-        @rsd_pct_by_config = {
-            @no_jit_config => [],
-            @with_mjit_config => [],
-            @with_yjit_config => [],
-        }
-        @speedup_by_config = {
-            @with_mjit_config => [],
-            @with_yjit_config => [],
-        }
-        @total_time_by_config = {
-            @no_jit_config => 0.0,
-            @with_mjit_config => 0.0,
-            @with_yjit_config => 0.0,
-        }
-        if @truffle_config
-            @mean_by_config[@truffle_config] = []
-            @rsd_pct_by_config[@truffle_config] = []
-            @speedup_by_config[@truffle_config] = []
-            @total_time_by_config[@truffle_config] = 0.0
+        @mean_by_config = {}
+        @rsd_pct_by_config = {}
+        @speedup_by_config = {}
+        @total_time_by_config = {}
+
+        @configs_with_human_names.values.each do |config|
+            @mean_by_config[config] = []
+            @rsd_pct_by_config[config] = []
+            @total_time_by_config[config] = []
+            @mean_by_config[config] = [] unless config == @no_jit_config
         end
+
         @yjit_ratio = []
 
         @benchmark_names.each do |benchmark_name|
@@ -236,22 +225,14 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     end
 
     def calc_mem_stats_by_config
-        @peak_mb_by_config = {
-            @no_jit_config => [],
-            @with_mjit_config => [],
-            @with_yjit_config => [],
-        }
-        @mem_ratio_by_config = {
-            @no_jit_config => [],
-            @with_mjit_config => [],
-            @with_yjit_config => [],
-        }
+        @peak_mb_by_config = {}
+        @mem_ratio_by_config = {}
+        @configs_with_human_names.values.each do |config|
+            @peak_mb_by_config[config] = []
+            @mem_ratio_by_config[config] = []
+        end
         @inline_mem_used = []
         @outline_mem_used = []
-
-        if @truffle_config
-            @peak_mb_by_config[@truffle_config] = []
-        end
 
         one_mib = 1024 * 1024.0 # As a float
 
@@ -814,6 +795,9 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         super
 
         look_up_data_by_ruby
+
+        # For now, report the headlining speed comparisons versus current prerelease MJIT
+        @with_mjit_config = @with_mjit_31_config
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
