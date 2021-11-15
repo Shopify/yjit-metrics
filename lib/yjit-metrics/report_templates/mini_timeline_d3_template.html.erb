@@ -53,8 +53,9 @@ var outerMargin = 10,
 // append the svg object to the body of the page
 var realSVG = d3.select("#mini_timeline")
   .append("svg")
-    .attr("width", fullWidth)
-    .attr("height", fullHeight)
+    .attr("viewBox", "0 0 " + fullWidth + " " + fullHeight)
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
 
 // This is the non-blank center area of the graph, inside the margins
 var svg = realSVG.append("g")
