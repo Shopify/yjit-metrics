@@ -1,0 +1,357 @@
+{
+  "version": 2,
+  "times": {
+    "30k_methods": [
+      [
+        6182.540876790881,
+        6146.770245395601,
+        6259.307209402323,
+        6261.665322817862,
+        6226.096474565566
+      ]
+    ],
+    "lee": [
+      [
+        973.153930157423,
+        916.2216819822788,
+        918.4565376490355,
+        919.7099050506949,
+        924.0292590111494,
+        929.0099507197738,
+        932.2074269875884,
+        928.5504380241036,
+        915.9104451537132,
+        912.2606460005045
+      ]
+    ],
+    "activerecord": [
+      [
+        160.45620385557413,
+        160.8857661485672,
+        162.17089351266623,
+        161.36950254440308,
+        160.22274550050497,
+        160.86739115417004,
+        160.22123396396637,
+        161.53278201818466,
+        162.06113994121552,
+        160.34475900232792,
+        159.9986394867301,
+        160.8095858246088,
+        160.8645487576723,
+        160.2693796157837,
+        159.99281033873558,
+        161.02382820099592,
+        162.1113419532776,
+        161.4964921027422,
+        161.82859614491463,
+        160.69609858095646,
+        160.38338094949722,
+        159.7434813156724,
+        160.1512348279357,
+        160.55480483919382,
+        161.3865438848734,
+        162.85606753081083,
+        163.20404596626759,
+        164.9490687996149,
+        161.73082403838634,
+        160.9970023855567,
+        161.04170121252537,
+        160.88513378053904,
+        161.71203460544348,
+        161.51718515902758,
+        163.74510992318392,
+        161.38587798923254,
+        160.26347037404776,
+        160.57504247874022,
+        159.89253483712673,
+        160.28351057320833,
+        161.79320309311152,
+        163.1910102441907,
+        162.21629176288843,
+        161.77705116569996,
+        160.563082434237,
+        161.09503712505102,
+        161.0544202849269,
+        160.81845480948687,
+        159.94654782116413,
+        160.2864507585764,
+        163.67029771208763,
+        160.75643803924322,
+        160.63334047794342,
+        162.4329723417759,
+        160.70504393428564,
+        160.79046297818422,
+        161.9816990569234,
+        160.56710295379162,
+        159.63065717369318,
+        159.72591470927,
+        159.1933649033308,
+        160.2471387013793
+      ]
+    ]
+  },
+  "warmups": {
+    "30k_methods": [
+      [
+        6079.9508122727275
+      ]
+    ],
+    "lee": [
+      [
+        1006.8230479955673
+      ]
+    ],
+    "activerecord": [
+      [
+        158.59059430658817
+      ]
+    ]
+  },
+  "yjit_stats": {
+    "30k_methods": [
+
+    ],
+    "lee": [
+
+    ],
+    "activerecord": [
+
+    ]
+  },
+  "peak_mem_bytes": {
+    "30k_methods": [
+      58474496
+    ],
+    "lee": [
+      34177024
+    ],
+    "activerecord": [
+      63946752
+    ]
+  },
+  "benchmark_metadata": {
+    "30k_methods": {
+      "warmup_itrs": 1,
+      "min_bench_itrs": 5,
+      "min_bench_time": 10.0,
+      "env": {
+        "RUBY_VERSION": "3.0.0",
+        "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "RUBY_ENGINE": "ruby",
+        "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.0:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.0",
+        "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0",
+        "PATH": "/home/ubuntu/.gem/ruby/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "RUBYOPT": ""
+      },
+      "loaded_gems": [
+        [
+          "did_you_mean",
+          "1.5.0"
+        ],
+        [
+          "benchmark",
+          "0.1.1"
+        ],
+        [
+          "json",
+          "2.5.1"
+        ],
+        [
+          "ostruct",
+          "0.3.1"
+        ]
+      ],
+      "benchmark_name": "30k_methods",
+      "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/30k_methods.rb",
+      "runs": 1
+    },
+    "lee": {
+      "warmup_itrs": 1,
+      "min_bench_itrs": 5,
+      "min_bench_time": 10.0,
+      "env": {
+        "RUBY_VERSION": "3.0.0",
+        "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "RUBY_ENGINE": "ruby",
+        "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.0:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.0",
+        "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0",
+        "PATH": "/home/ubuntu/.gem/ruby/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "RUBYOPT": "-r/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/lib/bundler/setup ",
+        "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.0",
+        "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.0:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/exe/bundle",
+        "BUNDLE_GEMFILE": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/Gemfile",
+        "BUNDLER_VERSION": "2.2.30",
+        "BUNDLER_ORIG_RUBYOPT": "",
+        "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/lib"
+      },
+      "loaded_gems": [
+        [
+          "did_you_mean",
+          "1.5.0"
+        ],
+        [
+          "benchmark",
+          "0.1.1"
+        ],
+        [
+          "json",
+          "2.5.1"
+        ],
+        [
+          "ostruct",
+          "0.3.1"
+        ],
+        [
+          "bundler",
+          "2.2.30"
+        ],
+        [
+          "pathname",
+          "0.1.0"
+        ],
+        [
+          "tsort",
+          "0.1.0"
+        ],
+        [
+          "benchmark-ips",
+          "2.8.3"
+        ],
+        [
+          "victor",
+          "0.3.2"
+        ]
+      ],
+      "benchmark_name": "lee",
+      "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/lee/benchmark.rb",
+      "runs": 1
+    },
+    "activerecord": {
+      "warmup_itrs": 1,
+      "min_bench_itrs": 5,
+      "min_bench_time": 10.0,
+      "env": {
+        "RUBY_VERSION": "3.0.0",
+        "GEM_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "RUBY_ENGINE": "ruby",
+        "GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.0:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.0",
+        "RUBY_ROOT": "/home/ubuntu/.rubies/ruby-3.0.0",
+        "PATH": "/home/ubuntu/.gem/ruby/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "RUBYOPT": "-r/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/lib/bundler/setup ",
+        "BUNDLER_ORIG_BUNDLE_BIN_PATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_BUNDLE_GEMFILE": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_BUNDLER_VERSION": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_GEM_HOME": "/home/ubuntu/.gem/ruby/3.0.0",
+        "BUNDLER_ORIG_GEM_PATH": "/home/ubuntu/.gem/ruby/3.0.0:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0",
+        "BUNDLER_ORIG_MANPATH": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_PATH": "/home/ubuntu/.gem/ruby/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/lib/ruby/gems/3.0.0/bin:/home/ubuntu/.rubies/ruby-3.0.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+        "BUNDLER_ORIG_RB_USER_INSTALL": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLER_ORIG_RUBYLIB": "BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL",
+        "BUNDLE_BIN_PATH": "/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/exe/bundle",
+        "BUNDLE_GEMFILE": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/Gemfile",
+        "BUNDLER_VERSION": "2.2.30",
+        "BUNDLER_ORIG_RUBYOPT": "",
+        "RUBYLIB": "/home/ubuntu/.gem/ruby/3.0.0/gems/bundler-2.2.30/lib"
+      },
+      "loaded_gems": [
+        [
+          "did_you_mean",
+          "1.5.0"
+        ],
+        [
+          "benchmark",
+          "0.1.1"
+        ],
+        [
+          "json",
+          "2.5.1"
+        ],
+        [
+          "ostruct",
+          "0.3.1"
+        ],
+        [
+          "securerandom",
+          "0.1.0"
+        ],
+        [
+          "bundler",
+          "2.2.30"
+        ],
+        [
+          "pathname",
+          "0.1.0"
+        ],
+        [
+          "tsort",
+          "0.1.0"
+        ],
+        [
+          "concurrent-ruby",
+          "1.1.9"
+        ],
+        [
+          "i18n",
+          "1.8.11"
+        ],
+        [
+          "minitest",
+          "5.14.4"
+        ],
+        [
+          "thread_safe",
+          "0.3.6"
+        ],
+        [
+          "tzinfo",
+          "1.2.9"
+        ],
+        [
+          "zeitwerk",
+          "2.5.1"
+        ],
+        [
+          "activesupport",
+          "6.0.4.1"
+        ],
+        [
+          "activemodel",
+          "6.0.4.1"
+        ],
+        [
+          "activerecord",
+          "6.0.4.1"
+        ],
+        [
+          "sqlite3",
+          "1.4.2"
+        ]
+      ],
+      "benchmark_name": "activerecord",
+      "benchmark_path": "/home/ubuntu/ym/yjit-bench/benchmarks/activerecord/benchmark.rb",
+      "runs": 1
+    }
+  },
+  "ruby_metadata": {
+    "RUBY_VERSION": "3.0.0",
+    "RUBY_DESCRIPTION": "ruby 3.0.0p0 (2020-12-25 revision 95aff21468) +JIT [x86_64-linux]",
+    "RUBY_ENGINE": "ruby",
+    "which ruby": "/home/ubuntu/.rubies/ruby-3.0.0/bin/ruby\n",
+    "hostname": "ip-172-31-8-3\n",
+    "ec2 instance id": "i-0ed46ee597dcad5d4",
+    "ec2 instance type": "c5.2xlarge",
+    "RbConfig configure_args": " '--prefix=/home/ubuntu/.rubies/ruby-3.0.0' '' 'build_alias=' 'host_alias=' 'target_alias='"
+  }
+}
