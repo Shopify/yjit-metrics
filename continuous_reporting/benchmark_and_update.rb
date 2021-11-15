@@ -260,7 +260,7 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
         drop = current_mean - compared_mean
 
         if verbose
-            puts "Benchmark #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean } (stddev #{"%.2f" % current_stddev}), " +
+            puts "#{is_micro ? "Microbenchmark" : "Benchmark"} #{bench_name}, tolerance is #{ "%.2f" % tolerance }, latest mean is #{ "%.2f" % current_mean } (stddev #{"%.2f" % current_stddev}), " +
                 "next-latest mean is #{ "%.2f" % compared_mean } (stddev #{ "%.2f" % compared_stddev}), drop is #{ "%.2f" % drop }..."
         end
 
