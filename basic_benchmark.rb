@@ -109,6 +109,11 @@ RUBY_CONFIGS = {
 }
 CONFIG_NAMES = RUBY_CONFIGS.keys
 
+SKIPPED_COMBOS = [
+    [ "prod_ruby_with_mjit", "hexapdf" ],
+    # [ "name_of_config", "name_of_benchmark" ],
+]
+
 # Default settings for benchmark sampling
 DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
 DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
@@ -245,8 +250,13 @@ timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 # Create an "all_runs" entry for every tested combination of config/benchmark/run-number, then randomize the order.
 all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
-        benchmark_list.map do |bench_info|
-            [ run_num, config, bench_info ]
+        benchmark_list.to_a.flat_map do |bench_info|
+            if SKIPPED_COMBOS.include?([ config.to_s, bench_info[:name] ])
+                puts "Skipping: #{config} / #{bench_info[:name]}..."
+                []
+            else
+                [ [ run_num, config, bench_info ] ]
+            end
         end
     end
 end

@@ -257,6 +257,10 @@ module YJITMetrics
             }
         end
 
+        def to_a
+            @benchmark_script_by_name.keys.map { |name| benchmark_info(name) }
+        end
+
         # If we call .map, we'll pretend to be an array of benchmark_info hashes
         def map
             @benchmark_script_by_name.keys.map do |name|
