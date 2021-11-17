@@ -41,7 +41,7 @@ MICRO_DROP_TOLERANCE = 0.20
 # Configurations should be a subset of: yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby
 BENCH_TYPES = {
     "none"       => nil,
-    "default"    => "--warmup-itrs=10  --min-bench-time=20.0  --min-bench-itrs=10   --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit",
+    "default"    => "--warmup-itrs=10  --min-bench-time=20.0  --min-bench-itrs=10   --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,prod_ruby_with_mjit",
     "minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
     "extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }

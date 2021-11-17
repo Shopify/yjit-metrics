@@ -30,6 +30,11 @@
 
 <p>
 	Tested Ruby version for YJIT and No-JIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-	Tested Ruby version for MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% if @with_mjit31_config %>
+	Tested Ruby version for Ruby 3.1 MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit31_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% end %>
+<% if @with_mjit30_config %>
+	Tested Ruby version for Ruby 3.0 MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit30_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% end %>
 	(We got much better MJIT results with released than prerelease, so we used those.)
 </p>
