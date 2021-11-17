@@ -3,13 +3,32 @@ module YJITMetrics; end
 
 # Statistical methods
 module YJITMetrics::Stats
+    def sum(values)
+        return values.sum(0.0)
+    end
+
+    def sum_or_nil(values)
+        return nil if values.nil?
+        sum(values)
+    end
+
     def mean(values)
         return values.sum(0.0) / values.size
+    end
+
+    def mean_or_nil(values)
+        return nil if values.nil?
+        mean(values)
     end
 
     def geomean(values)
         exponent = 1.0 / values.size
         values.inject(1.0, &:*) ** exponent
+    end
+
+    def geomean_or_nil(values)
+        return nil if values.nil?
+        geomean(values)
     end
 
     def stddev(values)
@@ -21,12 +40,27 @@ module YJITMetrics::Stats
         return Math.sqrt(variance)
     end
 
+    def stddev_or_nil(values)
+        return nil if values.nil?
+        stddev(values)
+    end
+
     def rel_stddev(values)
         stddev(values) / mean(values)
     end
 
+    def rel_stddev_or_nil(values)
+        return nil if values.nil?
+        rel_stddev(values)
+    end
+
     def rel_stddev_pct(values)
         100.0 * stddev(values) / mean(values)
+    end
+
+    def rel_stddev_pct_or_nil(values)
+        return nil if values.nil?
+        rel_stddev_pct(values)
     end
 end
 
