@@ -174,7 +174,6 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 else
                     raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
                 end
-            }
             end
         end
 
