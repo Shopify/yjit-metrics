@@ -168,7 +168,12 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             end
             no_result_benchmarks = @benchmark_names.select { |bench_name| config_results[bench_name].nil? || config_results[bench_name].empty? }
             unless no_result_benchmarks.empty?
-                raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+                # We allow MJIT 3.1 ONLY to have some benchmarks skipped... (empty is also fine)
+                if config_name == @with_mjit31_config
+                    @mjit_31_is_incomplete = true
+                else
+                    raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+                end
             end
         end
 
@@ -196,10 +201,10 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @benchmark_names.each do |benchmark_name|
             @configs_with_human_names.each do |name, config|
                 this_config_times = @times_by_config[config][benchmark_name]
-                this_config_mean = mean(this_config_times)
+                this_config_mean = mean_or_nil(this_config_times) # When nil? When a benchmark didn't happen for this config.
                 @mean_by_config[config].push this_config_mean
-                @total_time_by_config[config] += this_config_times.sum
-                this_config_rel_stddev_pct = rel_stddev_pct(this_config_times)
+                @total_time_by_config[config] += this_config_times.nil? ? 0.0 : sum(this_config_times)
+                this_config_rel_stddev_pct = rel_stddev_pct_or_nil(this_config_times)
                 @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
 
@@ -210,11 +215,17 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 next if config == @no_jit_config
 
                 this_config_mean = @mean_by_config[config][-1]
-                this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
-                this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
-                speed_ratio = no_jit_mean / this_config_mean
-                speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
-                @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
+
+                if this_config_mean.nil?
+                    @speedup_by_config[config].push [nil, nil]
+                else
+                    this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
+                    this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
+                    speed_ratio = no_jit_mean / this_config_mean
+                    speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
+                    @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
+                end
+
             end
 
             # A benchmark run may well return multiple sets of YJIT stats per benchmark name/type.
@@ -244,19 +255,28 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @benchmark_names.each.with_index do |benchmark_name, idx|
             no_jit_bytes = mean(@peak_mem_by_config[@no_jit_config][benchmark_name])
             @configs_with_human_names.each do |name, config|
-                this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
-                @peak_mb_by_config[config].push(this_config_bytes / one_mib)
+                if @peak_mem_by_config[config][benchmark_name].nil?
+                    @peak_mb_by_config[config].push nil
+                    @inline_mem_used.push nil
+                    @outline_mem_used.push nil
+                    if config != @no_jit_config
+                        @mem_ratio_by_config[config].push nil
+                    end
+                else
+                    this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
+                    @peak_mb_by_config[config].push(this_config_bytes / one_mib)
 
-                # Round MiB upward, even with a single byte used, since we crash if the block isn't allocated.
-                inline_mib = ((@yjit_stats[benchmark_name][0]["inline_code_size"] + (one_mib - 1))/one_mib).to_i
-                outline_mib = ((@yjit_stats[benchmark_name][0]["outlined_code_size"] + (one_mib - 1))/one_mib).to_i
+                    # Round MiB upward, even with a single byte used, since we crash if the block isn't allocated.
+                    inline_mib = ((@yjit_stats[benchmark_name][0]["inline_code_size"] + (one_mib - 1))/one_mib).to_i
+                    outline_mib = ((@yjit_stats[benchmark_name][0]["outlined_code_size"] + (one_mib - 1))/one_mib).to_i
 
-                @inline_mem_used.push inline_mib
-                @outline_mem_used.push outline_mib
+                    @inline_mem_used.push inline_mib
+                    @outline_mem_used.push outline_mib
 
-                # Total mem ratios - not currently displayed
-                if config != @no_jit_config
-                    @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
+                    # Total mem ratios - not currently displayed
+                    if config != @no_jit_config
+                        @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
+                    end
                 end
             end
         end
@@ -399,7 +419,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         # How high do speedup ratios go?
         max_speedup_ratio = benchmarks.map { |bench_name|
             bench_idx = @benchmark_names.index(bench_name)
-            @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench[bench_idx][0] }.max
+            @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench[bench_idx][0] }.compact.max
         }.max
         if max_speedup_ratio.nil?
             $stderr.puts "Error finding Y axis. Benchmarks: #{benchmarks.inspect}."
@@ -509,36 +529,40 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 else
                     speedup, rsd_pct = @speedup_by_config[config][bench_idx]
                 end
-                rsd_ratio = rsd_pct / 100.0
-                bar_height_ratio = speedup / max_speedup_ratio
 
-                # The calculated number is rel stddev and is scaled by bar height.
-                stddev_ratio = bar_height_ratio * rsd_ratio
+                # If speedup is nil, there's no such benchmark in this specific case.
+                if speedup != nil
+                    rsd_ratio = rsd_pct / 100.0
+                    bar_height_ratio = speedup / max_speedup_ratio
 
-                bar_left = bars_width_start + config_idx * bar_width
-                bar_right = bar_left + bar_width
-                bar_lr_center = bar_left + 0.5 * bar_width
-                bar_top = plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height
-                svg.rect \
-                    x: ratio_to_x(bar_left),
-                    y: ratio_to_y(bar_top),
-                    width: ratio_to_x(bar_width),
-                    height: ratio_to_y(bar_height_ratio * plot_effective_height),
-                    fill: ruby_config_bar_colour[config],
-                    data_tooltip: "#{"%.2f" % speedup}x No-JIT time (#{human_name})"
+                    # The calculated number is rel stddev and is scaled by bar height.
+                    stddev_ratio = bar_height_ratio * rsd_ratio
 
-                # Whiskers should be centered around the top of the bar, at a distance of one stddev.
-                top_whisker_y = bar_top - stddev_ratio * plot_effective_height
-                svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
-                    x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
-                    stroke: axis_colour
-                bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
-                svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
-                    x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
-                    stroke: axis_colour
-                svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
-                    x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
-                    stroke: axis_colour
+                    bar_left = bars_width_start + config_idx * bar_width
+                    bar_right = bar_left + bar_width
+                    bar_lr_center = bar_left + 0.5 * bar_width
+                    bar_top = plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height
+                    svg.rect \
+                        x: ratio_to_x(bar_left),
+                        y: ratio_to_y(bar_top),
+                        width: ratio_to_x(bar_width),
+                        height: ratio_to_y(bar_height_ratio * plot_effective_height),
+                        fill: ruby_config_bar_colour[config],
+                        data_tooltip: "#{"%.2f" % speedup}x No-JIT time (#{human_name})"
+
+                    # Whiskers should be centered around the top of the bar, at a distance of one stddev.
+                    top_whisker_y = bar_top - stddev_ratio * plot_effective_height
+                    svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
+                        x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
+                        stroke: axis_colour
+                    bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
+                    svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
+                        x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
+                        stroke: axis_colour
+                    svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
+                        x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
+                        stroke: axis_colour
+                end
             end
 
             # Below all the bars, we'll want a tick on the bottom axis and a name of the benchmark
@@ -802,7 +826,13 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         look_up_data_by_ruby
 
         # For now, report the headlining speed comparisons versus current prerelease MJIT
-        @with_mjit_config = @with_mjit31_config || @with_mjit30_config
+        if @mjit_31_is_incomplete
+            @with_mjit_config = @with_mjit30_config
+        else
+            @with_mjit_config = @with_mjit31_config || @with_mjit30_config
+        end
+        @mjit_name = "MJIT"
+        @mjit_name = "MJIT (3.0)" if @with_mjit_config == @with_mjit30_config
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
