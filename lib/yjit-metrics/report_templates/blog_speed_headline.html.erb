@@ -1,2 +1,2 @@
-Overall YJIT is <%= format_speedup(@yjit_vs_cruby_ratio) %> than interpreted CRuby, or <%= format_speedup(@yjit_vs_mjit_ratio) %> than MJIT! <br/>
-<% if @railsbench_idx %>On Railsbench specifically, YJIT is <%= format_speedup @yjit_vs_cruby_railsbench_ratio %> than CRuby, <%= format_speedup(@yjit_vs_mjit_railsbench_ratio) %> than MJIT!<% end %>
+Overall YJIT is <%= format_speedup(@yjit_vs_cruby_ratio) %> than interpreted CRuby, or <%= format_speedup(@yjit_vs_mjit_ratio) %> than <%= @mjit_name %>! <br/>
+<% if @railsbench_idx %>On Railsbench specifically, YJIT is <%= format_speedup @yjit_vs_cruby_railsbench_ratio %> than CRuby, <%= format_speedup(@yjit_vs_mjit_railsbench_ratio) %> than <%= @mjit_name %>!<% end %>

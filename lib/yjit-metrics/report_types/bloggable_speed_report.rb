@@ -813,6 +813,8 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         else
             @with_mjit_config = @with_mjit31_config || @with_mjit30_config
         end
+        @mjit_name = "MJIT"
+        @mjit_name = "MJIT (3.0)" if @with_mjit_config == @with_mjit30_config
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
