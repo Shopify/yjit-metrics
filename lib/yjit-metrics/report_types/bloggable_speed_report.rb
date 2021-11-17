@@ -168,7 +168,13 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             end
             no_result_benchmarks = @benchmark_names.select { |bench_name| config_results[bench_name].nil? || config_results[bench_name].empty? }
             unless no_result_benchmarks.empty?
-                raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+                # We allow MJIT 3.1 ONLY to have some benchmarks skipped... (empty is also fine)
+                if config_name == @with_mjit31_config
+                    @mjit_31_is_incomplete = true
+                else
+                    raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+                end
+            }
             end
         end
 
@@ -802,7 +808,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         look_up_data_by_ruby
 
         # For now, report the headlining speed comparisons versus current prerelease MJIT
-        @with_mjit_config = @with_mjit31_config || @with_mjit30_config
+        if @mjit_31_is_incomplete
+            @with_mjit_config = @with_mjit30_config
+        else
+            @with_mjit_config = @with_mjit31_config || @with_mjit30_config
+        end
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
