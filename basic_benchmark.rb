@@ -14,6 +14,8 @@
 # results, and then basic_report can be used to show reports for those
 # benchmarks.
 
+START_TIME = Time.now
+
 require "optparse"
 require "fileutils"
 require_relative "lib/yjit-metrics"
@@ -382,4 +384,13 @@ intermediate_by_config.each do |config, int_files|
     int_files.each { |f| FileUtils.rm_f f }
 end
 
-puts "All done."
+END_TIME = Time.now
+
+total_elapsed = END_TIME - START_TIME
+total_seconds = total_elapsed.to_i
+total_minutes = total_seconds / 60
+total_hours = total_minutes / 60
+seconds = total_elapsed % 60
+minutes = total_minutes % 60
+
+puts "All done, total time #{total_hours} hours, #{minutes} minutes, #{seconds} seconds."
