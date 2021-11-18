@@ -95,6 +95,10 @@ RUBY_CONFIGS = {
         build: "ruby-yjit-metrics-prod",
         opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10" ],
     },
+    prod_ruby_with_mjit_verbose: {
+        build: "ruby-yjit-metrics-prod",
+        opts: [ "--jit --disable-yjit --jit-max-cache=10000 --jit-min-calls=10 --jit-verbose=1" ],
+    },
     ruby_30: {
         build: "ruby-3.0.2",
         opts: [],
