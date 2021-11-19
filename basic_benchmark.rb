@@ -186,7 +186,7 @@ OptionParser.new do |opts|
         end
     end
 
-    config_desc = "Comma-separated list of configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
+    config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
     opts.on("--configs=CONFIGS", config_desc) do |configs|
         configs_to_test = configs.split(",").map(&:strip).map(&:to_sym).uniq
         bad_configs = configs_to_test - CONFIG_NAMES
@@ -370,24 +370,6 @@ all_runs.each do |run_num, config, bench_info|
     end
 end
 
-puts "All intermediate runs finished, merging to final files..."
-intermediate_by_config.each do |config, int_files|
-    run_data = int_files.map { |file| YJITMetrics::RunData.from_json JSON.load(File.read(file)) }
-    merged_data = YJITMetrics.merge_benchmark_data(run_data)
-    next if merged_data.nil?  # No non-error results? Skip it.
-
-    # Extra per-benchmark metadata tags
-    merged_data["benchmark_metadata"].each do |bench_name, metadata|
-        metadata["runs"] = num_runs # how many runs we tried to do
-    end
-
-    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
-    puts "Writing to JSON output file #{json_path}, removing intermediate files."
-    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(merged_data) }
-
-    int_files.each { |f| FileUtils.rm_f f }
-end
-
 END_TIME = Time.now
 
 total_elapsed = END_TIME - START_TIME
@@ -397,4 +379,27 @@ total_hours = total_minutes / 60
 seconds = total_elapsed % 60
 minutes = total_minutes % 60
 
-puts "All done, total time #{total_hours} hours, #{minutes} minutes, #{seconds} seconds."
+puts "All intermediate runs finished, merging to final files..."
+intermediate_by_config.each do |config, int_files|
+    run_data = int_files.map { |file| YJITMetrics::RunData.from_json JSON.load(File.read(file)) }
+    merged_data = YJITMetrics.merge_benchmark_data(run_data)
+    next if merged_data.nil?  # No non-error results? Skip it.
+
+    # Extra per-benchmark metadata tags
+    merged_data["benchmark_metadata"].each do |bench_name, metadata|
+        metadata["runs"] = num_runs # how many runs we tried to do
+
+        # Include total time for the whole run, not just this benchmark, to monitor how long
+        # large jobs run for.
+        metadata["total_bench_time"] = "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds"
+        metadata["total_bench_seconds"] = total_seconds
+    end
+
+    json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
+    puts "Writing to JSON output file #{json_path}, removing intermediate files."
+    File.open(json_path, "w") { |f| f.write JSON.pretty_generate(merged_data) }
+
+    int_files.each { |f| FileUtils.rm_f f }
+end
+
+puts "All done, total benchmarking time #{total_hours} hours, #{minutes} minutes, #{seconds} seconds."
