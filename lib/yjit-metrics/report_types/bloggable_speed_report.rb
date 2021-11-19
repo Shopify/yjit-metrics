@@ -132,7 +132,8 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         matching_configs[0]
     end
 
-    # Include Truffle data only if we can find it
+    # Include Truffle data only if we can find it, use MJIT 3.0 and/or 3.1 depending on what's available.
+    # YJIT and No-JIT are mandatory.
     def look_up_data_by_ruby(in_runs: false)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit30_config = exactly_one_config_with_name(@config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
