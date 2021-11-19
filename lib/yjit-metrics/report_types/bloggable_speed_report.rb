@@ -374,7 +374,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     end
 
     # These will be assigned in order to each Ruby
-    RUBY_BAR_COLOURS = [ "#7070f8", "orange", "green", "red" ]
+    RUBY_BAR_COLOURS = [ "#7070f8", "orange", "green", "#4F3A7A" ]
 
     def svg_object(benchmarks: @benchmark_names)
         # If we render a comparative report to file, we need victor for SVG output.
