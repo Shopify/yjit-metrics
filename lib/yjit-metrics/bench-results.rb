@@ -62,6 +62,31 @@ module YJITMetrics::Stats
         return nil if values.nil?
         rel_stddev_pct(values)
     end
+
+    # See https://en.wikipedia.org/wiki/Covariance#Definition and/or
+    # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance
+    def covariance(x, y)
+        raise "Trying to take the covariance of two different-sized arrays!" if x.size != y.size
+
+        x_mean = mean(x)
+        y_mean = mean(y)
+
+        cov = 0.0
+        (0...(x.size)).each do |i|
+            cov += (x[i] - x_mean) * (y[i] - y_mean) / x.size
+        end
+
+        cov
+    end
+
+    # See https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+    def pearson_correlation(x, y)
+        cov = covariance(x, y)
+        x_stddev = stddev(x)
+        y_stddev = stddev(y)
+
+        cov / (x_stddev * y_stddev)
+    end
 end
 
 # Encapsulate multiple benchmark runs across multiple Ruby configurations.

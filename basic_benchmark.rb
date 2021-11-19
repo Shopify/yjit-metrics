@@ -140,9 +140,12 @@ ERROR_BEHAVIOURS = %i(die report ignore re_run)
 # Defaults
 skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
-warmup_itrs = DEFAULT_WARMUP_ITRS
-min_bench_itrs = DEFAULT_MIN_BENCH_ITRS
-min_bench_time = DEFAULT_MIN_BENCH_TIME
+harness_params = {
+    variable_warmup_config_file: nil,
+    warmup_itrs: DEFAULT_WARMUP_ITRS,
+    min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
+    min_bench_time: DEFAULT_MIN_BENCH_TIME,
+}
 DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_CONFIGS
 when_error = :die
@@ -155,24 +158,33 @@ OptionParser.new do |opts|
         skip_git_updates = true
     end
 
+    opts.on("--variable-warmup-config-file=FILENAME", "JSON file with per-Ruby, per-benchmark configuration for warmup, iterations, etc.") do |filename|
+        raise "Variable warmup config file #{filename.inspect} does not exist!" unless File.exist?(filename)
+        harness_params[:variable_warmup_config_file] = filename
+        harness_params[:warmup_itrs] = harness_params[:min_bench_itrs] = harness_params[:min_bench_time] = nil
+    end
+
     opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
-        warmup_itrs = n.to_i
-        raise "Number of warmup iterations must be zero or positive!" if warmup_itrs < 0
+        raise "Must not specify warmup/itrs configuration along with a warmup config file!" if harness_params[:variable_warmup_config_file]
+        raise "Number of warmup iterations must be zero or positive!" if n.to_i < 0
+        harness_params[:warmup_itrs] = n.to_i
     end
 
-    opts.on("--min-bench-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
-        min_bench_time = t.to_f
-        raise "min-bench-time must be zero or positive!" if min_bench_time < 0.0
+    opts.on("--min-bench-time=t", "--min-benchmark-time=t", "Number of seconds minimum to run real benchmark iterations, default: 10.0") do |t|
+        raise "Must not specify warmup/itrs configuration along with a warmup config file!" if harness_params[:variable_warmup_config_file]
+        raise "min-bench-time must be zero or positive!" if t.to_f < 0.0
+        harness_params[:min_bench_time] = t.to_f
     end
 
-    opts.on("--min-bench-itrs=n", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
-        min_bench_itrs = n.to_i
-        raise "min-bench-itrs must be zero or positive!" if min_bench_itrs < 0
+    opts.on("--min-bench-itrs=n", "--min-benchmark-itrs=t", "Number of iterations minimum to run real benchmark iterations, default: 10") do |n|
+        raise "Must not specify warmup/itrs configuration along with a warmup config file!" if harness_params[:variable_warmup_config_file]
+        raise "min-bench-itrs must be zero or positive!" if n.to_i < 0
+        harness_params[:min_bench_itrs] = n.to_i
     end
 
     opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
+        raise "Number of runs must be positive!" if n.to_i <= 0
         num_runs = n.to_i
-        raise "Number of runs must be positive!" if num_runs <= 0
     end
 
     opts.on("--output DIR", "Write output files to the specified directory") do |dir|
@@ -193,6 +205,8 @@ OptionParser.new do |opts|
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
     end
 end.parse!
+
+HARNESS_PARAMS = harness_params
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -253,6 +267,27 @@ benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
+def harness_settings_for_config_and_bench(config, bench)
+    if HARNESS_PARAMS[:variable_warmup_config_file]
+        @variable_warmup_settings ||= JSON.parse(File.read HARNESS_PARAMS[:variable_warmup_config_file])
+        @hs_by_config_and_bench ||= {}
+        @hs_by_config_and_bench[config] ||= {}
+        @hs_by_config_and_bench[config][bench] ||= YJITMetricsHarnessSettings.new({
+            warmup_itrs: @variable_warmup_settings["warmup_itrs"][config][bench],
+            min_benchmark_itrs: @variable_warmup_settings["min_bench_itrs"][config][bench],
+            min_benchmark_time: @variable_warmup_settings["min_bench_time"][config][bench],
+        })
+        return @hs_by_config_and_bench[config][bench]
+    else
+        @harness_settings ||= YJITMetrics::HarnessSettings.new({
+            warmup_itrs: HARNESS_PARAMS[:warmup_itrs],
+            min_benchmark_itrs: HARNESS_PARAMS[:min_bench_itrs],
+            min_benchmark_time: HARNESS_PARAMS[:min_bench_time],
+        })
+        return @harness_settings
+    end
+end
+
 # Create an "all_runs" entry for every tested combination of config/benchmark/run-number, then randomize the order.
 all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
@@ -267,12 +302,6 @@ all_runs = (0...num_runs).flat_map do |run_num|
     end
 end
 all_runs = all_runs.sample(all_runs.size)
-
-harness_settings = YJITMetrics::HarnessSettings.new({
-    warmup_itrs: warmup_itrs,
-    min_benchmark_itrs: min_bench_itrs,
-    min_benchmark_time: min_bench_time,
-})
 
 # We write out intermediate files, allowing us to free data belonging to
 # runs that have finished. That way if we do really massive runs, we're
@@ -343,7 +372,9 @@ all_runs.each do |run_num, config, bench_info|
 
     single_run_results = nil
     loop do
-        single_run_results = YJITMetrics.run_single_benchmark(bench_info, harness_settings: harness_settings, shell_settings: shell_settings)
+        single_run_results = YJITMetrics.run_single_benchmark(bench_info,
+            harness_settings: harness_settings_for_config_and_bench(config, bench_info[:name]),
+            shell_settings: shell_settings)
         break if single_run_results # Got results? Great! Then don't die or re-run.
 
         if when_error == :die
