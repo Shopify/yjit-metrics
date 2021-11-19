@@ -64,7 +64,7 @@ module YJITMetrics::Stats
     end
 
     # See https://en.wikipedia.org/wiki/Covariance#Definition and/or
-    # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance
+    # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Covariance (two-pass algorithm)
     def covariance(x, y)
         raise "Trying to take the covariance of two different-sized arrays!" if x.size != y.size
 
@@ -80,12 +80,69 @@ module YJITMetrics::Stats
     end
 
     # See https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+    # I'm not convinced this is correct. It definitely doesn't match the least-squares correlation coefficient below.
     def pearson_correlation(x, y)
-        cov = covariance(x, y)
-        x_stddev = stddev(x)
-        y_stddev = stddev(y)
+        raise "Trying to take the Pearson correlation of two different-sized arrays!" if x.size != y.size
 
-        cov / (x_stddev * y_stddev)
+        ## Some random Ruby guy method
+        #xx_prod = x.map { |xi| xi * xi }
+        #yy_prod = y.map { |yi| yi * yi }
+        #xy_prod = (0...(x.size)).map { |i| x[i] * y[i] }
+        #
+        #x_sum = x.sum
+        #y_sum = y.sum
+        #
+        #num = xy_prod.sum - (x_sum * y_sum) / x.size
+        #den = Math.sqrt(xx_prod.sum - x_sum ** 2.0 / x.size) * (yy_prod.sum - y_sum ** 2.0 / x.size)
+        #
+        #num/den
+
+        # Wikipedia translation of the definition
+        x_mean = mean(x)
+        y_mean = mean(y)
+        num = (0...(x.size)).map { |i| (x[i] - x_mean) * (y[i] - y_mean) }.sum
+        den = Math.sqrt((0...(x.size)).map { |i| (x[i] - x_mean) ** 2.0 }.sum) *
+            Math.sqrt((0...(x.size)).map { |i| (y[i] - y_mean) ** 2.0 }.sum)
+        num / den
+    end
+
+    # See https://mathworld.wolfram.com/LeastSquaresFitting.html
+    def least_squares_slope_intercept_and_correlation(x, y)
+        raise "Trying to take the least-squares slope of two different-sized arrays!" if x.size != y.size
+
+        x_mean = mean(x)
+        y_mean = mean(y)
+
+        xx_sum_of_squares = x.map { |xi| (xi - x_mean)**2.0 }.sum
+        yy_sum_of_squares = y.map { |yi| (yi - y_mean)**2.0 }.sum
+        xy_sum_of_squares = (0...(x.size)).map { |i| (x[i] - x_mean) * (y[i] - y_mean) }.sum
+
+        slope = xy_sum_of_squares / xx_sum_of_squares
+        intercept = y_mean - slope * x_mean
+
+        r_squared = xy_sum_of_squares ** 2.0 / (xx_sum_of_squares * yy_sum_of_squares)
+
+        [slope, intercept, r_squared]
+    end
+
+    # code taken from https://github.com/clbustos/statsample/blob/master/lib/statsample/regression/simple.rb#L74
+    # (StatSample Ruby gem, simple linear regression.)
+    def simple_regression_slope(x, y)
+        raise "Trying to take the least-squares slope of two different-sized arrays!" if x.size != y.size
+
+        x_mean = mean(x)
+        y_mean = mean(y)
+
+        num = den = 0.0
+        (0...x.size).each do |i|
+            num += (x[i] - x_mean) * (y[i] - y_mean)
+            den += (x[i] - x_mean)**2.0
+        end
+
+        slope = num / den
+        #intercept = y_mean - slope * x_mean
+
+        slope
     end
 end
 
@@ -372,6 +429,53 @@ class YJITMetrics::ResultSet
                 !stats.values.all? { |val| val.nil? || val[0].nil? || val[0][0].nil? || val[0][0]["all_stats"].nil? }
         end
     end
+end
+
+module YJITMetrics
+    # Default settings for Benchmark CI.
+    # This is used by benchmark_and_update.rb for CI reporting directly.
+    # It's also used by the VariableWarmupReport when selecting appropriate
+    # benchmarking settings.
+    DEFAULT_CI_SETTINGS = {
+        # Config names and config-specific settings
+        "configs" => {
+            "yjit_stats" => {
+                max_warmup_itrs: 20,
+                warmup_type: :simple,
+            },
+            "prod_ruby_no_jit" => {
+                max_warmup_itrs: 5,
+                warmup_type: :simple,
+            },
+            "prod_ruby_with_yjit" => {
+                max_warmup_itrs: 20,
+                # "Simple" warmup means after X iterations, we know everything relevant is fully warmed up.
+                # We're not currently using the warmup_type, but we may in the future.
+                warmup_type: :simple,
+            },
+            "ruby_30_with_mjit" => {
+                max_warmup_itrs: 20,
+                # "Delayed" warmup means it may take arbitrary extra time before compilation, but it's a one-shot compile
+                warmup_type: :delayed,
+            },
+            "prod_ruby_with_mjit" => {
+                max_warmup_itrs: 75,
+                max_warmup_time: 300, # in seconds
+                # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
+                warmup_type: :complex,
+            },
+            "unknown" => {
+                warmup_itrs: 50,
+                min_bench_time: 200.0,
+                min_bench_itrs: 15,
+            }
+        },
+        # Basic settings, outside of all specific configs
+        min_bench_itrs: 15,
+        min_warmup_itrs: 5,
+        max_warmup_itrs: 75,
+        max_itr_time: 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 minutes of non-overhead iteration time
+    }
 end
 
 # Shared utility methods for reports that use a single "blob" of results
