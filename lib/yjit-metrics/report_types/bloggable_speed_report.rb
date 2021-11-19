@@ -87,6 +87,12 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             category: :headline,
             desc: "hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.",
         },
+        "erubi" => {
+            desc: "erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.",
+        },
+        "erubi_rails" => {
+            desc: "erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.",
+        },
 
         # Real-esque benchmarks that you could pretend are real for a blog post or a paper
         "lee" => {
