@@ -252,15 +252,13 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             end
         end
 
-
-        @stability_by_config[]
     end
 
     # Figure out how many iterations, warmup and non-, for each Ruby config and benchmark
     def iterations_for_configs_and_benchmarks(default_settings)
         # Initial "blank" settings for each relevant config and benchmark
         looked_up_configs = @configs_with_human_names.map { |_, config| config }.sort
-        default_configs = default_settings["configs"].keys.sort - ["unknown"]
+        default_configs = default_settings["configs"].keys.sort
         all_configs = (looked_up_configs + default_configs).uniq.sort
 
         warmup_settings = all_configs.to_h do |config|
@@ -269,8 +267,8 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
                         {
                             # Conservative defaults - sometimes these are for Ruby configs we know nothing about,
                             # because they're not present in recent-at-the-time benchmark data.
-                            warmup_itrs: default_settings[:min_warmup_itrs],
-                            min_bench_itrs: default_settings[:min_bench_itrs],
+                            warmup_itrs: default_settings["min_warmup_itrs"],
+                            min_bench_itrs: default_settings["min_bench_itrs"],
                             min_bench_time: 0,
                         }
                     ]
@@ -287,6 +285,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
                 stats = @stability_by_config[config] ? @stability_by_config[config][idx] : nil
                 itr_time_ms = stats.nil? ? nil : stats[:mean]
                 ws = warmup_settings[config][bench_name]
+                raise "No warmup settings found for #{config.inspect}/#{bench_name.inspect}!" if ws.nil?
 
                 # Do we have an estimate of how long this takes per iteration? If so, include it.
                 ws[:itr_time_ms] = itr_time_ms unless itr_time_ms.nil?
@@ -298,7 +297,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
                     # Choose the tighter of the two warmup limits
                     ws[:warmup_itrs] = max_allowed_itrs if ws[:warmup_itrs] > max_allowed_itrs
                 end
-                ws[:min_bench_itrs] = settings[:min_bench_itrs] || default_settings[:min_bench_itrs]
+                ws[:min_bench_itrs] = settings[:min_bench_itrs] || default_settings["min_bench_itrs"]
 
                 itrs = ws[:warmup_itrs] + ws[:min_bench_itrs]
                 est_time_ms = itrs * (itr_time_ms || 0.0)
@@ -319,8 +318,8 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         warmup_settings["estimated_time"] = est_time
 
         # Do we need to reduce the time taken?
-        if est_time > default_settings[:max_itr_time]
-            puts "Maximum allowed time: #{default_settings[:max_itr_time].inspect}sec"
+        if est_time > default_settings["max_itr_time"]
+            puts "Maximum allowed time: #{default_settings["max_itr_time"].inspect}sec"
             puts "Estimated run time: #{est_time.inspect}sec"
             raise "This is where logic to do something statistical and clever would go!"
         end

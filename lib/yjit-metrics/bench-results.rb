@@ -464,17 +464,12 @@ module YJITMetrics
                 # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
                 warmup_type: :complex,
             },
-            "unknown" => {
-                warmup_itrs: 50,
-                min_bench_time: 200.0,
-                min_bench_itrs: 15,
-            }
         },
         # Basic settings, outside of all specific configs
-        min_bench_itrs: 15,
-        min_warmup_itrs: 5,
-        max_warmup_itrs: 75,
-        max_itr_time: 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 minutes of non-overhead iteration time
+        "min_bench_itrs" => 15,
+        "min_warmup_itrs" => 5,
+        "max_warmup_itrs" => 75,
+        "max_itr_time" => 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 minutes of non-overhead iteration time
     }
 end
 

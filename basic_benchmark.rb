@@ -268,15 +268,34 @@ benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path
 timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
 def harness_settings_for_config_and_bench(config, bench)
+    config = config.to_s
     if HARNESS_PARAMS[:variable_warmup_config_file]
         @variable_warmup_settings ||= JSON.parse(File.read HARNESS_PARAMS[:variable_warmup_config_file])
         @hs_by_config_and_bench ||= {}
         @hs_by_config_and_bench[config] ||= {}
-        @hs_by_config_and_bench[config][bench] ||= YJITMetricsHarnessSettings.new({
-            warmup_itrs: @variable_warmup_settings["warmup_itrs"][config][bench],
-            min_benchmark_itrs: @variable_warmup_settings["min_bench_itrs"][config][bench],
-            min_benchmark_time: @variable_warmup_settings["min_bench_time"][config][bench],
-        })
+
+        if @variable_warmup_settings[config][bench]
+            @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
+                warmup_itrs: @variable_warmup_settings[config][bench]["warmup_itrs"] || 15,
+                min_benchmark_itrs: @variable_warmup_settings[config][bench]["min_bench_itrs"] || 15,
+                min_benchmark_time: @variable_warmup_settings[config][bench]["min_bench_time"] || 0,
+            })
+        elsif YJITMetrics::DEFAULT_CI_SETTINGS["configs"][config]
+            defaults = YJITMetrics::DEFAULT_CI_SETTINGS["configs"][config]
+            # This benchmark hasn't been run before. Use default settings for this config until we've finished a run.
+            @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
+                warmup_itrs: defaults["max_warmup_itrs"] || 15,
+                min_benchmark_itrs: defaults["min_bench_itrs"] || 15,
+                min_benchmark_time: 0,
+            })
+        else
+            # This benchmark hasn't been run before and we don't have config-specific defaults. Oof.
+            @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
+                warmup_itrs: YJITMetrics::DEFAULT_CI_SETTINGS["max_warmup_itrs"],
+                min_benchmark_itrs: YJITMetrics::DEFAULT_CI_SETTINGS["min_bench_itrs"],
+                min_benchmark_time: 0,
+            })
+        end
         return @hs_by_config_and_bench[config][bench]
     else
         @harness_settings ||= YJITMetrics::HarnessSettings.new({
@@ -292,6 +311,7 @@ end
 all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
         benchmark_list.to_a.flat_map do |bench_info|
+            bench_info[:name] = bench_info[:name].gsub(/\.rb$/, "")
             if SKIPPED_COMBOS.include?([ config.to_s, bench_info[:name] ])
                 puts "Skipping: #{config} / #{bench_info[:name]}..."
                 []

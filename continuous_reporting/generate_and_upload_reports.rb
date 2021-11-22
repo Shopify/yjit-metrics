@@ -35,7 +35,7 @@ REPORTS_AND_FILES = {
     },
     "variable_warmup" => {
         report_type: :basic_report,
-        extensions: [ ".warmup_settings.json" ],
+        extensions: [ "warmup_settings.json", "stats_of_interest.json" ],
     },
 
     "blog_timeline" => {

@@ -36,12 +36,30 @@ MICRO_STDDEV_TOLERANCE = 2.0
 # tolerance needs to be significantly larger to avoid frequent false positives.
 MICRO_DROP_TOLERANCE = 0.20
 
-# Remember that if this is running on the benchmark CI server you do *not* want a run so long it will
-# overlap with the regular automatic runs. They happen twice daily as I write this, at 7am and 7pm.
-# Configurations should be a subset of: yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby
+YM_REPORT_DIR = File.expand_path "#{__dir__}/../../yjit-metrics-pages/_includes/reports/"
+if File.exist?(YM_REPORT_DIR)
+    var_warmup_reports = Dir.glob(YM_REPORT_DIR + "/variable_warmup_*.warmup_settings.json").to_a
+    if var_warmup_reports.empty?
+        VAR_WARMUP_FILE = nil
+    else
+        # Grab the most recent
+        VAR_WARMUP_FILE = var_warmup_reports.sort[-1]
+    end
+else
+    VAR_WARMUP_FILE = nil
+end
+
+# If we have a config file from the variable warmup report, we should use it. If not,
+# we should have defaults to fall back on.
+DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
+    (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
+        "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
+        "--warmup-itrs=50 --min-bench-time=30.0 --min-bench-itrs=15") +
+    " --configs=#{YJITMetrics::DEFAULT_CI_SETTINGS["configs"].keys.join(",")}"
+
 BENCH_TYPES = {
     "none"       => nil,
-    "default"    => "--warmup-itrs=50  --min-bench-time=30.0  --min-bench-itrs=15   --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,prod_ruby_with_mjit",
+    "default"    => DEFAULT_CI_COMMAND_LINE,
     "minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
     "extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }
@@ -55,7 +73,7 @@ OptionParser.new do |opts|
     opts.banner = <<~BANNER
       Usage: benchmark_and_update.rb [options]
 
-        Example benchmark args: "#{BENCH_TYPES["default"]}"
+        Example benchmark args: "#{BENCH_TYPES["extended"]}"
     BANNER
 
     opts.on("-b BENCHTYPE", "--benchmark-type BENCHTYPE", "The type of benchmarks to run - give a basic_benchmark.rb command line, or one of: #{BENCH_TYPES.keys.inspect}") do |btype|
