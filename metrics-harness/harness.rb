@@ -67,7 +67,7 @@ def use_gemfile(extra_setup_cmd: nil)
   puts "Command: #{cmd}"
   success = system(cmd)
   unless success
-    raise "Couldn't set up benchmark in #{in_dir.inspect}!"
+    raise "Couldn't set up benchmark in #{Dir.pwd.inspect}!"
   end
 
   # Need to be in the appropriate directory
