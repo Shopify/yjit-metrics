@@ -111,17 +111,9 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         oaref_argc_not_one
         )
 
-end
-
-# This is intended to match the exit report printed by debug YJIT when stats are turned on.
-class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
-    def self.report_name
-        "yjit_stats_default"
-    end
-
-    def to_s
+    def exit_report_for_benchmarks(benchmarks)
         # Bindings for use inside ERB report template
-        stats = combined_stats_data_for_benchmarks(@benchmark_names)
+        stats = combined_stats_data_for_benchmarks(benchmarks)
         side_exits = total_exit_count(stats)
         total_exits = side_exits + stats["leave_interp_return"]
 
@@ -191,6 +183,18 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
         end
 
         text
+    end
+
+end
+
+# This is intended to match the exit report printed by debug YJIT when stats are turned on.
+class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
+    def self.report_name
+        "yjit_stats_default"
+    end
+
+    def to_s
+        exit_report_for_benchmarks(@benchmark_names)
     end
 
     def write_file(filename)

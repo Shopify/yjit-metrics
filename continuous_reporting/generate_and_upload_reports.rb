@@ -37,6 +37,10 @@ REPORTS_AND_FILES = {
         report_type: :basic_report,
         extensions: [ "warmup_settings.json", "stats_of_interest.json" ],
     },
+    "blog_exit_reports" => {
+        report_type: :basic_report,
+        extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but only one with a fixed name.
+    },
 
     "blog_timeline" => {
         report_type: :timeline_report,
