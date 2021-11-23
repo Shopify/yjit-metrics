@@ -41,6 +41,10 @@ REPORTS_AND_FILES = {
         report_type: :basic_report,
         extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but only one with a fixed name.
     },
+    "iteration_count" => {
+        report_type: :basic_report,
+        extensions: [ "html" ],
+    },
 
     "blog_timeline" => {
         report_type: :timeline_report,
