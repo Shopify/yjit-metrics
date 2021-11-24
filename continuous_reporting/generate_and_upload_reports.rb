@@ -160,14 +160,18 @@ json_timestamps.each do |ts, test_files|
         next unless details[:report_type] == :basic_report
 
         rf = report_filenames(report_name, ts)
+        required_files = details[:extensions].map { |ext| "#{report_name}_#{ts}.#{ext}" }
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
             !report_timestamps[ts] ||
             !report_timestamps[ts][report_name] ||
-            report_timestamps[ts][report_name].size != details[:extensions].size
+            !(required_files - report_timestamps[ts][report_name]).empty?
 
         if run_report && die_on_regenerate
+            puts "Report: #{report_name.inspect}, ts: #{ts.inspect}"
+            puts "Available files: #{report_timestamps[ts][report_name].inspect}"
+            puts "Required files: #{required_files.inspect}"
             raise "Regenerating reports isn't allowed! Failing on report #{report_name.inspect} for timestamp #{ts} with files #{report_timestamps[ts][report_name].inspect}!"
         end
 
