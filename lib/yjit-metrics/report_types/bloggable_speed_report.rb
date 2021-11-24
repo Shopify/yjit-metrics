@@ -745,9 +745,10 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
 
         if info[:timestamps]
             @timestamps = info[:timestamps]
-            if @timestamps.size > 1
-                raise "WE ONLY SUPPORT A SINGLE TIMESTAMP FOR THIS REPORT RIGHT NOW!"
+            if @timestamps.size != 1
+                raise "WE REQUIRE A SINGLE TIMESTAMP FOR THIS REPORT RIGHT NOW!"
             end
+            @timestamp_str = @timestamps[0].strftime("%Y-%m-%d-%H%M%S")
         end
     end
 
@@ -790,7 +791,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
 
-            exit_report_url = "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_#{@timestamps[0]}.#{bench_name}.html"
+            exit_report_url = "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_#{@timestamp_str}.#{bench_name}.html"
 
             bench_stats = @yjit_stats[bench_name][0]
 
