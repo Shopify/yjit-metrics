@@ -281,7 +281,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
 
             # Number of iterations is chosen per-benchmark, but stays the same across all configs.
             fastest_itr_time_ms = default_configs.map { |config| @stability_by_config.dig(config, idx, :mean) || 10_000_000.0 }.min
-            min_itrs_needed = default_settings["min_bench_time"] * 1000.0 / fastest_itr_time_ms
+            min_itrs_needed = (default_settings["min_bench_time"] * 1000.0 / fastest_itr_time_ms).to_i
             min_itrs_needed = [ min_itrs_needed, default_settings["min_bench_itrs"] ].max
 
             default_configs.each do |config|
