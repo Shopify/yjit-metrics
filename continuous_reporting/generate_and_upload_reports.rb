@@ -136,7 +136,7 @@ REPORTS_AND_FILES.each do |report_name, details|
     next unless details[:report_type] == :basic_report # No timestamped files for timeline reports
     this_report_files = report_files.select { |filename| filename.include?(report_name) }
     this_report_files.each do |filename|
-        unless filename =~ /(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).([a-zA-Z]+)/
+        unless filename =~ /(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).([a-zA-Z_0-9]+)/
             raise "Couldn't parse filename #{filename.inspect} when generating reports!"
         end
         report_name_in_file = $1
