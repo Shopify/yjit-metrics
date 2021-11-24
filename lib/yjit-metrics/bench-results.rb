@@ -439,6 +439,8 @@ module YJITMetrics
     DEFAULT_CI_SETTINGS = {
         # Config names and config-specific settings
         "configs" => {
+            # Each config controls warmup individually. But the number of real iterations needs
+            # to match across all configs, so it's not set per-config.
             "yjit_stats" => {
                 max_warmup_itrs: 20,
                 warmup_type: :simple,
@@ -467,9 +469,10 @@ module YJITMetrics
         },
         # Basic settings, outside of all specific configs
         "min_bench_itrs" => 15,
+        "min_bench_time" => 20,
         "min_warmup_itrs" => 5,
         "max_warmup_itrs" => 75,
-        "max_itr_time" => 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 minutes of non-overhead iteration time
+        "max_itr_time" => 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 expected minutes of non-overhead iteration time
     }
 end
 
