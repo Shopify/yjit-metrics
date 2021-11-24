@@ -2,29 +2,29 @@
   "prod_ruby_no_jit": {
     "activerecord": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 181,
       "min_bench_time": 0,
       "itr_time_ms": 149.06662653172106,
-      "estimated_time": 3
+      "estimated_time": 28
     },
     "lee": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 24,
       "min_bench_time": 0,
       "itr_time_ms": 1121.7283880027633,
-      "estimated_time": 23
+      "estimated_time": 33
     }
   },
   "prod_ruby_with_mjit": {
     "activerecord": {
       "warmup_itrs": 75,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 181,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "lee": {
       "warmup_itrs": 75,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 24,
       "min_bench_time": 0,
       "estimated_time": 0
     }
@@ -32,50 +32,48 @@
   "prod_ruby_with_yjit": {
     "activerecord": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 181,
       "min_bench_time": 0,
       "itr_time_ms": 110.12671658425857,
-      "estimated_time": 4
+      "estimated_time": 23
     },
     "lee": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 24,
       "min_bench_time": 0,
       "itr_time_ms": 808.7335705005734,
-      "estimated_time": 29
+      "estimated_time": 36
     }
   },
   "ruby_30_with_mjit": {
     "activerecord": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 181,
       "min_bench_time": 0,
       "itr_time_ms": 155.9612121227907,
-      "estimated_time": 6
+      "estimated_time": 32
     },
     "lee": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 24,
       "min_bench_time": 0,
       "itr_time_ms": 873.2685007969849,
-      "estimated_time": 31
+      "estimated_time": 39
     }
   },
   "yjit_stats": {
     "activerecord": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 181,
       "min_bench_time": 0,
-      "itr_time_ms": 110.12671658425857,
-      "estimated_time": 4
+      "estimated_time": 0
     },
     "lee": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 15,
+      "min_bench_itrs": 24,
       "min_bench_time": 0,
-      "itr_time_ms": 808.7335705005734,
-      "estimated_time": 29
+      "estimated_time": 0
     }
   },
-  "estimated_time": 129
+  "estimated_time": 250
 }
