@@ -1,0 +1,51 @@
+method call exit reasons: 
+    callsite_not_simple   31020475 (100.0%)
+
+leave exit reasons: 
+    interp_return   31894404 (100.0%)
+     se_interrupt          1 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           10
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          105861
+outlined_code_size:         94644
+
+total_exit_count:        63351682
+total_insns_count:     1493790116
+vm_insns_count:         254717705
+yjit_insns_count:      1270529689
+ratio_in_yjit:              82.9%
+avg_len_in_yjit:             19.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   31020475 (98.6)
+             setlocal_WC_1:     436791 (1.4)
+               invokeblock:         11 (0.0)
+                     leave:          1 (0.0)
+             setblockparam:          0 (0.0)
+        getblockparamproxy:          0 (0.0)
+                getspecial:          0 (0.0)
+                setspecial:          0 (0.0)
+       getinstancevariable:          0 (0.0)
+       setinstancevariable:          0 (0.0)
+          getclassvariable:          0 (0.0)
+          setclassvariable:          0 (0.0)
+               getconstant:          0 (0.0)
+               setconstant:          0 (0.0)
+                 getglobal:          0 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)

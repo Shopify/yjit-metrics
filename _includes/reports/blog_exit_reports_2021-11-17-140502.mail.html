@@ -1,0 +1,57 @@
+method call exit reasons: 
+             args_splat      76936 (45.8%)
+                bmethod      54114 (32.2%)
+              block_arg      19931 (11.9%)
+           cfunc_kwargs      14220 ( 8.5%)
+    iseq_complex_callee       2841 ( 1.7%)
+
+leave exit reasons: 
+        interp_return    4573070 (99.7%)
+    start_pc_non_zero      11393 ( 0.2%)
+         se_interrupt        137 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          339
+compiled_block_count:        5221
+invalidation_count:           124
+constant_state_bumps:          39
+inline_code_size:          853546
+outlined_code_size:        587121
+
+total_exit_count:         5368564
+total_insns_count:     1512292021
+vm_insns_count:          25401115
+yjit_insns_count:      1487686400
+ratio_in_yjit:              98.3%
+avg_len_in_yjit:            277.0
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     273837 (34.4)
+        getblockparamproxy:     253582 (31.9)
+                      send:     108253 (13.6)
+               invokesuper:      42732 (5.4)
+               opt_empty_p:      37052 (4.7)
+       getinstancevariable:      31361 (3.9)
+               getconstant:      31341 (3.9)
+               invokeblock:       5739 (0.7)
+                  opt_ltlt:       5694 (0.7)
+               expandarray:       2848 (0.4)
+          setclassvariable:       2841 (0.4)
+                     leave:        137 (0.0)
+        opt_getinlinecache:         48 (0.0)
+          opt_regexpmatch2:         27 (0.0)
+                  opt_plus:          1 (0.0)
+                opt_length:          1 (0.0)
+                 putstring:          0 (0.0)
+             concatstrings:          0 (0.0)
+                  tostring:          0 (0.0)
+                  toregexp:          0 (0.0)

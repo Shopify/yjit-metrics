@@ -1,0 +1,59 @@
+method call exit reasons: 
+      callsite_not_simple    5228921 (43.4%)
+         optimized_method    3972548 (32.9%)
+                  bmethod    1341775 (11.1%)
+      iseq_complex_callee     985723 ( 8.2%)
+          ivar_set_method     240582 ( 2.0%)
+       iseq_only_keywords     224682 ( 1.9%)
+                 kw_splat      65722 ( 0.5%)
+    cfunc_ruby_array_varg         16 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   33685901 (98.0%)
+    start_pc_non_zero     698634 ( 2.0%)
+         se_interrupt        130 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1291
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         5233722
+outlined_code_size:       3240704
+
+total_exit_count:        59670113
+total_insns_count:     1590302574
+vm_insns_count:         406493412
+yjit_insns_count:      1209793374
+ratio_in_yjit:              74.4%
+avg_len_in_yjit:             19.8
+
+Top-20 most frequent exit ops (98.2% of exits):
+    opt_send_without_block:   10346951 (39.8)
+                      send:    3017337 (11.6)
+               invokesuper:    1744360 (6.7)
+        getblockparamproxy:    1641999 (6.3)
+                    opt_eq:    1537213 (5.9)
+       getinstancevariable:    1312470 (5.1)
+        opt_getinlinecache:    1042779 (4.0)
+          getclassvariable:    1024517 (3.9)
+               invokeblock:     906388 (3.5)
+                  opt_aset:     679354 (2.6)
+         opt_case_dispatch:     383427 (1.5)
+             getblockparam:     305472 (1.2)
+                  opt_aref:     280001 (1.1)
+                   newhash:     225120 (0.9)
+                     throw:     207257 (0.8)
+               concatarray:     199525 (0.8)
+               expandarray:     199391 (0.8)
+                  opt_plus:     172568 (0.7)
+             invokebuiltin:     159387 (0.6)
+             setlocal_WC_0:     119386 (0.5)

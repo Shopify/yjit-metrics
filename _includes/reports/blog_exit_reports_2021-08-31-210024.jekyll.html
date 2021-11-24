@@ -1,0 +1,61 @@
+method call exit reasons: 
+          ivar_set_method   17863372 (31.5%)
+      callsite_not_simple   16480582 (29.0%)
+       iseq_only_keywords   11800794 (20.8%)
+         optimized_method    6174328 (10.9%)
+                  bmethod    3866000 ( 6.8%)
+      iseq_complex_callee     471559 ( 0.8%)
+            zsuper_method      38900 ( 0.1%)
+    cfunc_ruby_array_varg      28670 ( 0.1%)
+                 kw_splat      13194 ( 0.0%)
+       cfunc_toomany_args       6900 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  110020699 (100.0%)
+    start_pc_non_zero      18205 ( 0.0%)
+         se_interrupt       1168 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          335
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         2209892
+outlined_code_size:       1800274
+
+total_exit_count:       197678720
+total_insns_count:     5205386468
+vm_insns_count:        1747075912
+yjit_insns_count:      3545968577
+ratio_in_yjit:              66.4%
+avg_len_in_yjit:             17.5
+
+Top-20 most frequent exit ops (99.9% of exits):
+    opt_send_without_block:   58471480 (66.7)
+             setlocal_WC_1:    8676961 (9.9)
+               invokeblock:    5409002 (6.2)
+               expandarray:    4966091 (5.7)
+               invokesuper:    3372683 (3.8)
+                  opt_aset:    1046065 (1.2)
+       getinstancevariable:     949782 (1.1)
+                    opt_eq:     940855 (1.1)
+         opt_case_dispatch:     833285 (1.0)
+                     throw:     751992 (0.9)
+                  opt_aref:     734211 (0.8)
+                  opt_plus:     546366 (0.6)
+        opt_getinlinecache:     332641 (0.4)
+                  newrange:     179879 (0.2)
+               getconstant:     100100 (0.1)
+                      once:      92898 (0.1)
+        getblockparamproxy:      47499 (0.1)
+                   newhash:      38199 (0.0)
+                 opt_minus:      35599 (0.0)
+                      send:      34761 (0.0)

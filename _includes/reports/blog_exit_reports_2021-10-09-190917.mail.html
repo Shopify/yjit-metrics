@@ -1,0 +1,58 @@
+method call exit reasons: 
+                 args_splat      76938 (43.6%)
+                    bmethod      54114 (30.7%)
+                  block_arg      19930 (11.3%)
+               cfunc_kwargs      14184 ( 8.0%)
+    iseq_kwargs_none_passed       8523 ( 4.8%)
+        iseq_complex_callee       2841 ( 1.6%)
+
+leave exit reasons: 
+        interp_return    4564559 (99.7%)
+    start_pc_non_zero      11393 ( 0.2%)
+         se_interrupt         87 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:        4987
+invalidation_count:           131
+constant_state_bumps:          39
+inline_code_size:          970074
+outlined_code_size:        749528
+
+total_exit_count:         5379886
+total_insns_count:     1512799413
+vm_insns_count:          25548672
+yjit_insns_count:      1488066068
+ratio_in_yjit:              98.3%
+avg_len_in_yjit:            276.4
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     282301 (34.6)
+        getblockparamproxy:     253595 (31.1)
+                      send:     108251 (13.3)
+               invokesuper:      42733 (5.2)
+               opt_empty_p:      37087 (4.5)
+       getinstancevariable:      31361 (3.8)
+               getconstant:      31341 (3.8)
+                   newhash:      11368 (1.4)
+               invokeblock:       5739 (0.7)
+                  opt_ltlt:       5694 (0.7)
+               expandarray:       2848 (0.3)
+          setclassvariable:       2841 (0.3)
+                     leave:         87 (0.0)
+        opt_getinlinecache:         48 (0.0)
+          opt_regexpmatch2:         29 (0.0)
+                opt_length:          2 (0.0)
+                  opt_plus:          2 (0.0)
+             concatstrings:          0 (0.0)
+                  tostring:          0 (0.0)
+                  toregexp:          0 (0.0)

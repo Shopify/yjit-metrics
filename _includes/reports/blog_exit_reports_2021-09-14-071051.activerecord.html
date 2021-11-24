@@ -1,0 +1,57 @@
+method call exit reasons: 
+    iseq_complex_callee    1394948 (31.9%)
+    callsite_not_simple    1208958 (27.7%)
+                bmethod    1022964 (23.4%)
+     iseq_only_keywords     278997 ( 6.4%)
+       optimized_method     278986 ( 6.4%)
+        ivar_set_method     185986 ( 4.3%)
+
+leave exit reasons: 
+        interp_return   18321012 (99.0%)
+    start_pc_non_zero     186021 ( 1.0%)
+         se_interrupt        277 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          185
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         1068454
+outlined_code_size:        824692
+
+total_exit_count:        27342475
+total_insns_count:      659560560
+vm_insns_count:         134404923
+yjit_insns_count:       534177100
+ratio_in_yjit:              79.6%
+avg_len_in_yjit:             19.2
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    3813124 (42.3)
+        getblockparamproxy:    2045882 (22.7)
+                      send:    1022971 (11.3)
+               invokeblock:     558076 (6.2)
+          getclassvariable:     279000 (3.1)
+             setlocal_WC_1:     279000 (3.1)
+             getblockparam:     186000 (2.1)
+                  opt_plus:     185986 (2.1)
+               invokesuper:      93155 (1.0)
+                    opt_lt:      93000 (1.0)
+        opt_getinlinecache:      93000 (1.0)
+                     throw:      93000 (1.0)
+               opt_empty_p:      92993 (1.0)
+                 opt_minus:      92993 (1.0)
+               concatarray:      92991 (1.0)
+                     leave:        277 (0.0)
+                  branchif:         14 (0.0)
+                  opt_aref:          1 (0.0)
+             concatstrings:          0 (0.0)
+                  tostring:          0 (0.0)

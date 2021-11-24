@@ -1,0 +1,57 @@
+method call exit reasons: 
+    callsite_not_simple    6330933 (64.9%)
+     iseq_only_keywords    3199045 (32.8%)
+       optimized_method     184421 ( 1.9%)
+    iseq_complex_callee      31791 ( 0.3%)
+     cfunc_toomany_args      12710 ( 0.1%)
+
+leave exit reasons: 
+        interp_return   20752791 (100.0%)
+         se_interrupt        503 ( 0.0%)
+    start_pc_non_zero         15 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         51 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          144
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          408224
+outlined_code_size:        372652
+
+total_exit_count:        31410499
+total_insns_count:      724284704
+vm_insns_count:         241479510
+yjit_insns_count:       493462902
+ratio_in_yjit:              66.7%
+avg_len_in_yjit:             15.4
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    9767825 (91.7)
+                     throw:     218358 (2.0)
+                  opt_aset:     218324 (2.0)
+             setlocal_WC_1:     183362 (1.7)
+               invokeblock:     131462 (1.2)
+                    opt_eq:     130379 (1.2)
+                  opt_plus:       7411 (0.1)
+                     leave:        503 (0.0)
+       getinstancevariable:         51 (0.0)
+                 opt_nil_p:         25 (0.0)
+        opt_getinlinecache:          4 (0.0)
+                  opt_ltlt:          2 (0.0)
+                  opt_aref:          1 (0.0)
+                   opt_neq:          1 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)

@@ -1,0 +1,56 @@
+method call exit reasons: 
+    iseq_complex_callee    1424949 (33.3%)
+    callsite_not_simple    1234958 (28.9%)
+                bmethod    1044964 (24.4%)
+     iseq_only_keywords     284997 ( 6.7%)
+       optimized_method     284986 ( 6.7%)
+
+leave exit reasons: 
+        interp_return   19284584 (99.0%)
+    start_pc_non_zero     190021 ( 1.0%)
+         se_interrupt        532 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          185
+compiled_block_count:        1136
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         1075672
+outlined_code_size:        820976
+
+total_exit_count:        27835003
+total_insns_count:      678780068
+vm_insns_count:         133871153
+yjit_insns_count:       553459334
+ratio_in_yjit:              80.3%
+avg_len_in_yjit:             19.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    3894888 (45.6)
+        getblockparamproxy:    2089941 (24.4)
+                      send:    1044969 (12.2)
+               invokeblock:     570078 (6.7)
+          getclassvariable:     285000 (3.3)
+             getblockparam:     190000 (2.2)
+               invokesuper:      95021 (1.1)
+                     throw:      95000 (1.1)
+        opt_getinlinecache:      95000 (1.1)
+               opt_empty_p:      94993 (1.1)
+               concatarray:      94993 (1.1)
+                     leave:        532 (0.0)
+                  opt_ltlt:          3 (0.0)
+                  branchif:          1 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)
+             concatstrings:          0 (0.0)
+                  tostring:          0 (0.0)

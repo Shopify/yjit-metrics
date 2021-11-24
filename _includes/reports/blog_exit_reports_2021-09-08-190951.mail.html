@@ -1,0 +1,57 @@
+method call exit reasons: 
+    callsite_not_simple     110217 (56.5%)
+                bmethod      59814 (30.6%)
+     cfunc_toomany_args      12589 ( 6.4%)
+     iseq_only_keywords       9423 ( 4.8%)
+    iseq_complex_callee       3141 ( 1.6%)
+
+leave exit reasons: 
+        interp_return    5113285 (99.8%)
+    start_pc_non_zero      12593 ( 0.2%)
+         se_interrupt         93 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          735206
+outlined_code_size:        664928
+
+total_exit_count:         6905330
+total_insns_count:      709988125
+vm_insns_count:         542044749
+yjit_insns_count:       169735421
+ratio_in_yjit:              23.7%
+avg_len_in_yjit:             24.3
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     311894 (17.4)
+        getblockparamproxy:     280284 (15.6)
+        opt_getinlinecache:     211078 (11.8)
+             invokebuiltin:     179424 (10.0)
+                getspecial:     160608 (9.0)
+                      send:     119652 (6.7)
+                    opt_lt:      94472 (5.3)
+                    opt_eq:      88155 (4.9)
+         opt_case_dispatch:      75542 (4.2)
+               invokesuper:      47232 (2.6)
+               opt_empty_p:      40950 (2.3)
+                  opt_plus:      40909 (2.3)
+       getinstancevariable:      34661 (1.9)
+               getconstant:      34641 (1.9)
+                    opt_le:      18891 (1.1)
+                  opt_aset:      18882 (1.1)
+          getclassvariable:      18879 (1.1)
+               invokeblock:       6345 (0.4)
+                  opt_ltlt:       6293 (0.4)
+               expandarray:       3148 (0.2)

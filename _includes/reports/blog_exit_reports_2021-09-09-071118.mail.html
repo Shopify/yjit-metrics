@@ -1,0 +1,56 @@
+method call exit reasons: 
+    callsite_not_simple     111966 (60.4%)
+                bmethod      60764 (32.8%)
+     iseq_only_keywords       9573 ( 5.2%)
+    iseq_complex_callee       3191 ( 1.7%)
+
+leave exit reasons: 
+        interp_return    5194412 (99.8%)
+    start_pc_non_zero      12793 ( 0.2%)
+         se_interrupt        102 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          734246
+outlined_code_size:        663926
+
+total_exit_count:         7014916
+total_insns_count:      721434045
+vm_insns_count:         548841732
+yjit_insns_count:       174412817
+ratio_in_yjit:              23.9%
+avg_len_in_yjit:             24.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     304049 (16.7)
+        getblockparamproxy:     284735 (15.6)
+        opt_getinlinecache:     214428 (11.8)
+             invokebuiltin:     182274 (10.0)
+                getspecial:     163152 (9.0)
+                      send:     121555 (6.7)
+                    opt_lt:      95972 (5.3)
+                    opt_eq:      89557 (4.9)
+         opt_case_dispatch:      89529 (4.9)
+               invokesuper:      47978 (2.6)
+               opt_empty_p:      41601 (2.3)
+                  opt_plus:      41566 (2.3)
+       getinstancevariable:      35211 (1.9)
+               getconstant:      35191 (1.9)
+                    opt_le:      19191 (1.1)
+                  opt_aset:      19182 (1.1)
+          getclassvariable:      19178 (1.1)
+               invokeblock:       6446 (0.4)
+                  opt_ltlt:       6394 (0.4)
+               expandarray:       3198 (0.2)

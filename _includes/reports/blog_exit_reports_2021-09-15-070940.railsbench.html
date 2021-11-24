@@ -1,0 +1,58 @@
+method call exit reasons: 
+      callsite_not_simple    5308904 (44.6%)
+         optimized_method    3972563 (33.4%)
+                  bmethod    1341775 (11.3%)
+      iseq_complex_callee     985722 ( 8.3%)
+       iseq_only_keywords     224682 ( 1.9%)
+                 kw_splat      65721 ( 0.6%)
+    cfunc_ruby_array_varg         16 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   33088650 (97.9%)
+    start_pc_non_zero     698383 ( 2.1%)
+         se_interrupt        144 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1292
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         5165228
+outlined_code_size:       3052714
+
+total_exit_count:        56698833
+total_insns_count:     1609829353
+vm_insns_count:         366028195
+yjit_insns_count:      1267411341
+ratio_in_yjit:              77.3%
+avg_len_in_yjit:             21.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   10186375 (43.1)
+                      send:    3017337 (12.8)
+               invokesuper:    1784330 (7.6)
+        getblockparamproxy:    1641993 (7.0)
+       getinstancevariable:    1312470 (5.6)
+          getclassvariable:    1064517 (4.5)
+        opt_getinlinecache:    1042780 (4.4)
+               invokeblock:     906385 (3.8)
+                  opt_aset:     771347 (3.3)
+             getblockparam:     305469 (1.3)
+                  opt_aref:     280005 (1.2)
+                   newhash:     225124 (1.0)
+                     throw:     207257 (0.9)
+               concatarray:     199517 (0.8)
+               expandarray:     199390 (0.8)
+             invokebuiltin:     159387 (0.7)
+             setlocal_WC_0:     119386 (0.5)
+               getconstant:      79993 (0.3)
+             setlocal_WC_1:      66280 (0.3)
+              checkkeyword:      39991 (0.2)

@@ -1,0 +1,53 @@
+method call exit reasons: 
+    block_arg      12780 (100.0%)
+
+leave exit reasons: 
+        interp_return  419805802 (100.0%)
+    start_pc_non_zero      45559 ( 0.0%)
+         se_interrupt       2154 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range          9 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          138
+compiled_block_count:        1502
+invalidation_count:             1
+constant_state_bumps:           0
+inline_code_size:          255594
+outlined_code_size:        220910
+
+total_exit_count:       452420150
+total_insns_count:     36918921940
+vm_insns_count:          86061643
+yjit_insns_count:      36865474645
+ratio_in_yjit:              99.8%
+avg_len_in_yjit:             81.4
+
+Top-20 most frequent exit ops (100.0% of exits):
+                    opt_eq:   14563729 (44.7)
+               invokeblock:   14447222 (44.3)
+                  opt_plus:    3567377 (10.9)
+                   newhash:      19991 (0.1)
+                      send:      12939 (0.0)
+                     leave:       2154 (0.0)
+    opt_send_without_block:        530 (0.0)
+                  opt_ltlt:        245 (0.0)
+                  opt_size:         96 (0.0)
+                  opt_aref:         38 (0.0)
+                   opt_neq:         17 (0.0)
+       getinstancevariable:          9 (0.0)
+        opt_getinlinecache:          1 (0.0)
+                 getglobal:          0 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)

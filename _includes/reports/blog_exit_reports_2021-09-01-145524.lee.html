@@ -1,0 +1,53 @@
+method call exit reasons: 
+      callsite_not_simple      61180 (99.9%)
+    cfunc_ruby_array_varg         66 ( 0.1%)
+      iseq_complex_callee         11 ( 0.0%)
+
+leave exit reasons: 
+    interp_return   24318121 (100.0%)
+     se_interrupt        201 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           1
+bindings_set:                   0
+compiled_iseq_count:           86
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          191288
+outlined_code_size:        169282
+
+total_exit_count:        62386653
+total_insns_count:     2164189022
+vm_insns_count:        1049587838
+yjit_insns_count:      1152669716
+ratio_in_yjit:              51.5%
+avg_len_in_yjit:             17.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+                  newrange:   37692618 (99.0)
+                  opt_plus:      67149 (0.2)
+    opt_send_without_block:      61511 (0.2)
+                    opt_eq:      58285 (0.2)
+                      dupn:      58271 (0.2)
+                  setlocal:      58271 (0.2)
+             setlocal_WC_1:      54210 (0.1)
+        getblockparamproxy:      12171 (0.0)
+             getblockparam:       4072 (0.0)
+               invokeblock:       1147 (0.0)
+                      send:        275 (0.0)
+               invokesuper:        238 (0.0)
+                     leave:        201 (0.0)
+                getspecial:         44 (0.0)
+        opt_getinlinecache:         33 (0.0)
+       getinstancevariable:         15 (0.0)
+                     throw:         13 (0.0)
+                    opt_ge:          4 (0.0)
+              checkkeyword:          3 (0.0)
+          getclassvariable:          1 (0.0)

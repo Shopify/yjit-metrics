@@ -1,0 +1,57 @@
+method call exit reasons: 
+                iseq_complex_callee    1503939 (36.4%)
+                          block_arg    1033967 (25.0%)
+                            bmethod    1033964 (25.0%)
+                   optimized_method     281986 ( 6.8%)
+                         args_splat     187992 ( 4.5%)
+    iseq_kwargs_req_and_opt_missing      94000 ( 2.3%)
+
+leave exit reasons: 
+        interp_return   19081968 (99.0%)
+    start_pc_non_zero     188021 ( 1.0%)
+         se_interrupt        465 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          184
+compiled_block_count:        1156
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          978932
+outlined_code_size:        768855
+
+total_exit_count:        27072542
+total_insns_count:      673138043
+vm_insns_count:         127013122
+yjit_insns_count:       554115495
+ratio_in_yjit:              81.1%
+avg_len_in_yjit:             20.2
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    3665965 (45.9)
+        getblockparamproxy:    2067941 (25.9)
+                      send:    1127970 (14.1)
+               invokeblock:     564074 (7.1)
+             getblockparam:     188000 (2.4)
+               invokesuper:      94002 (1.2)
+                     throw:      93999 (1.2)
+               opt_empty_p:      93993 (1.2)
+               concatarray:      93992 (1.2)
+                     leave:        465 (0.0)
+                  opt_ltlt:        171 (0.0)
+                  opt_aref:          1 (0.0)
+                  branchif:          1 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)
+             concatstrings:          0 (0.0)

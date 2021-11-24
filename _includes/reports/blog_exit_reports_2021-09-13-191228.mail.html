@@ -1,0 +1,56 @@
+method call exit reasons: 
+    callsite_not_simple     113718 (60.4%)
+                bmethod      61714 (32.8%)
+     iseq_only_keywords       9723 ( 5.2%)
+    iseq_complex_callee       3241 ( 1.7%)
+
+leave exit reasons: 
+        interp_return    5282085 (99.8%)
+    start_pc_non_zero      12993 ( 0.2%)
+         se_interrupt        106 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          773222
+outlined_code_size:        613106
+
+total_exit_count:         6897161
+total_insns_count:      736632299
+vm_insns_count:         553246422
+yjit_insns_count:       185000953
+ratio_in_yjit:              24.9%
+avg_len_in_yjit:             26.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     308855 (19.1)
+        getblockparamproxy:     289178 (17.9)
+        opt_getinlinecache:     217778 (13.5)
+             invokebuiltin:     185124 (11.5)
+                      send:     123456 (7.6)
+                    opt_lt:      97469 (6.0)
+         opt_case_dispatch:      90927 (5.6)
+               invokesuper:      48729 (3.0)
+               opt_empty_p:      42251 (2.6)
+                  opt_plus:      42212 (2.6)
+       getinstancevariable:      35761 (2.2)
+               getconstant:      35741 (2.2)
+             setlocal_WC_1:      22735 (1.4)
+                    opt_le:      19491 (1.2)
+                  opt_aset:      19482 (1.2)
+          getclassvariable:      19479 (1.2)
+               invokeblock:       6547 (0.4)
+                  opt_ltlt:       6495 (0.4)
+               expandarray:       3248 (0.2)
+                     leave:        106 (0.0)

@@ -1,0 +1,58 @@
+method call exit reasons: 
+                iseq_complex_callee    1471940 (34.8%)
+                          block_arg    1011967 (23.9%)
+                            bmethod    1011893 (23.9%)
+            iseq_kwargs_none_passed     275997 ( 6.5%)
+                   optimized_method     275986 ( 6.5%)
+    iseq_kwargs_req_and_opt_missing      92000 ( 2.2%)
+                         args_splat      92000 ( 2.2%)
+
+leave exit reasons: 
+        interp_return   18859862 (99.0%)
+    start_pc_non_zero     184021 ( 1.0%)
+         se_interrupt        154 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          185
+compiled_block_count:        1151
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         1111578
+outlined_code_size:        865915
+
+total_exit_count:        26864237
+total_insns_count:      658356200
+vm_insns_count:         125321146
+yjit_insns_count:       541039429
+ratio_in_yjit:              81.0%
+avg_len_in_yjit:             19.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    3772280 (47.1)
+        getblockparamproxy:    2023895 (25.3)
+                      send:    1103967 (13.8)
+               invokeblock:     552075 (6.9)
+             getblockparam:     184000 (2.3)
+               invokesuper:      92011 (1.1)
+                     throw:      92000 (1.1)
+               opt_empty_p:      91993 (1.1)
+               concatarray:      91953 (1.1)
+                     leave:        154 (0.0)
+                  opt_aref:         47 (0.0)
+               setconstant:          0 (0.0)
+                 getglobal:          0 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)
+             concatstrings:          0 (0.0)

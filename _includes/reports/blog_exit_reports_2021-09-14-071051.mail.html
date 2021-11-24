@@ -1,0 +1,56 @@
+method call exit reasons: 
+    callsite_not_simple      99717 (60.4%)
+                bmethod      54114 (32.8%)
+     iseq_only_keywords       8523 ( 5.2%)
+    iseq_complex_callee       2841 ( 1.7%)
+
+leave exit reasons: 
+        interp_return    4563843 (99.7%)
+    start_pc_non_zero      11393 ( 0.2%)
+         se_interrupt         89 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          904486
+outlined_code_size:        699948
+
+total_exit_count:         5900440
+total_insns_count:     1422785139
+vm_insns_count:         176624778
+yjit_insns_count:      1247496958
+ratio_in_yjit:              87.6%
+avg_len_in_yjit:            211.2
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     270919 (20.3)
+        getblockparamproxy:     253585 (19.0)
+        opt_getinlinecache:     190978 (14.3)
+             invokebuiltin:     162324 (12.1)
+                      send:     108252 (8.1)
+                    opt_lt:      85473 (6.4)
+               invokesuper:      42733 (3.2)
+               opt_empty_p:      37049 (2.8)
+                  opt_plus:      37012 (2.8)
+       getinstancevariable:      31361 (2.3)
+               getconstant:      31341 (2.3)
+             setlocal_WC_1:      19937 (1.5)
+                    opt_le:      17091 (1.3)
+                  opt_aset:      17082 (1.3)
+          getclassvariable:      17079 (1.3)
+               invokeblock:       5739 (0.4)
+                  opt_ltlt:       5693 (0.4)
+               expandarray:       2848 (0.2)
+                     leave:         89 (0.0)
+          opt_regexpmatch2:         12 (0.0)

@@ -1,0 +1,51 @@
+method call exit reasons: 
+    cfunc_kwargs      17052 (100.0%)
+
+leave exit reasons: 
+    interp_return    7953053 (100.0%)
+     se_interrupt         45 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           32
+compiled_block_count:         439
+invalidation_count:            70
+constant_state_bumps:          12
+inline_code_size:          330026
+outlined_code_size:        230067
+
+total_exit_count:         7999774
+total_insns_count:      777426636
+vm_insns_count:            564450
+yjit_insns_count:       776908907
+ratio_in_yjit:              99.9%
+avg_len_in_yjit:             97.1
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:      21901 (46.9)
+                      dupn:      17475 (37.4)
+        getblockparamproxy:       3645 (7.8)
+                     throw:       2434 (5.2)
+             getblockparam:       1216 (2.6)
+                     leave:         45 (0.1)
+        opt_getinlinecache:          5 (0.0)
+       setinstancevariable:          0 (0.0)
+          getclassvariable:          0 (0.0)
+          setclassvariable:          0 (0.0)
+               getconstant:          0 (0.0)
+               setconstant:          0 (0.0)
+                 getglobal:          0 (0.0)
+                 setglobal:          0 (0.0)
+                    putnil:          0 (0.0)
+                   putself:          0 (0.0)
+                 putobject:          0 (0.0)
+          putspecialobject:          0 (0.0)
+                 putstring:          0 (0.0)
+             concatstrings:          0 (0.0)

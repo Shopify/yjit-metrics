@@ -1,0 +1,57 @@
+method call exit reasons: 
+    iseq_complex_callee    1379947 (31.9%)
+    callsite_not_simple    1195957 (27.7%)
+                bmethod    1011946 (23.4%)
+     iseq_only_keywords     275997 ( 6.4%)
+       optimized_method     275986 ( 6.4%)
+        ivar_set_method     183986 ( 4.3%)
+
+leave exit reasons: 
+        interp_return   17756628 (99.0%)
+    start_pc_non_zero     184021 ( 1.0%)
+         se_interrupt        253 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          185
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         1024038
+outlined_code_size:        899882
+
+total_exit_count:        27325348
+total_insns_count:      650627207
+vm_insns_count:         136097868
+yjit_insns_count:       524098059
+ratio_in_yjit:              79.1%
+avg_len_in_yjit:             18.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    3956308 (41.3)
+        getblockparamproxy:    2023865 (21.2)
+                      send:    1011979 (10.6)
+               invokeblock:     552067 (5.8)
+                    opt_eq:     459993 (4.8)
+          getclassvariable:     276000 (2.9)
+             setlocal_WC_1:     275997 (2.9)
+             getblockparam:     184000 (1.9)
+                  opt_plus:     183986 (1.9)
+               invokesuper:      92182 (1.0)
+                    opt_lt:      92000 (1.0)
+        opt_getinlinecache:      92000 (1.0)
+                     throw:      91998 (1.0)
+                 opt_minus:      91993 (1.0)
+               opt_empty_p:      91993 (1.0)
+               concatarray:      91988 (1.0)
+                     leave:        253 (0.0)
+                  opt_ltlt:         72 (0.0)
+                  branchif:         46 (0.0)
+                  tostring:          0 (0.0)

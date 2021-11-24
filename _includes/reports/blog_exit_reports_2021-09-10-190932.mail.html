@@ -1,0 +1,56 @@
+method call exit reasons: 
+    callsite_not_simple     111968 (60.4%)
+                bmethod      60764 (32.8%)
+     iseq_only_keywords       9573 ( 5.2%)
+    iseq_complex_callee       3191 ( 1.7%)
+
+leave exit reasons: 
+        interp_return    5188091 (99.8%)
+    start_pc_non_zero      12793 ( 0.2%)
+         se_interrupt         88 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:           0
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          765734
+outlined_code_size:        605118
+
+total_exit_count:         6919045
+total_insns_count:      724750163
+vm_insns_count:         547465474
+yjit_insns_count:       179015643
+ratio_in_yjit:              24.5%
+avg_len_in_yjit:             25.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     304062 (17.6)
+        getblockparamproxy:     284749 (16.5)
+        opt_getinlinecache:     214428 (12.4)
+             invokebuiltin:     182274 (10.5)
+                getspecial:     163148 (9.4)
+                      send:     121555 (7.0)
+                    opt_lt:      95971 (5.5)
+         opt_case_dispatch:      89528 (5.2)
+               invokesuper:      47982 (2.8)
+               opt_empty_p:      41601 (2.4)
+                  opt_plus:      41560 (2.4)
+       getinstancevariable:      35211 (2.0)
+               getconstant:      35191 (2.0)
+                    opt_le:      19191 (1.1)
+                  opt_aset:      19182 (1.1)
+          getclassvariable:      19180 (1.1)
+               invokeblock:       6446 (0.4)
+                  opt_ltlt:       6394 (0.4)
+               expandarray:       3198 (0.2)
+                     leave:         88 (0.0)

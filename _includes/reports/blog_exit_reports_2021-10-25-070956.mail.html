@@ -1,0 +1,58 @@
+method call exit reasons: 
+                 args_splat      75589 (43.6%)
+                    bmethod      53164 (30.6%)
+                  block_arg      19578 (11.3%)
+               cfunc_kwargs      13974 ( 8.1%)
+    iseq_kwargs_none_passed       8373 ( 4.8%)
+        iseq_complex_callee       2791 ( 1.6%)
+
+leave exit reasons: 
+        interp_return    4484454 (99.7%)
+    start_pc_non_zero      11193 ( 0.2%)
+         se_interrupt         98 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          337
+compiled_block_count:        5194
+invalidation_count:           129
+constant_state_bumps:          39
+inline_code_size:         1000922
+outlined_code_size:        774586
+
+total_exit_count:         5285539
+total_insns_count:     1485827564
+vm_insns_count:          25284382
+yjit_insns_count:      1461344267
+ratio_in_yjit:              98.3%
+avg_len_in_yjit:            276.3
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     277437 (34.6)
+        getblockparamproxy:     249143 (31.1)
+                      send:     106352 (13.3)
+               invokesuper:      41982 (5.2)
+               opt_empty_p:      36401 (4.5)
+       getinstancevariable:      30811 (3.8)
+               getconstant:      30791 (3.8)
+                   newhash:      11166 (1.4)
+               invokeblock:       5638 (0.7)
+                  opt_ltlt:       5593 (0.7)
+               expandarray:       2798 (0.3)
+          setclassvariable:       2791 (0.3)
+                     leave:         98 (0.0)
+        opt_getinlinecache:         48 (0.0)
+          opt_regexpmatch2:         32 (0.0)
+                  opt_plus:          2 (0.0)
+                   opt_neq:          1 (0.0)
+                opt_length:          1 (0.0)
+                  tostring:          0 (0.0)
+                  toregexp:          0 (0.0)
