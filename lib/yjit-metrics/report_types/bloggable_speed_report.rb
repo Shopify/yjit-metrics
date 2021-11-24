@@ -156,11 +156,13 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
+        @warmups_by_config = {}
         @ruby_metadata_by_config = {}
         @bench_metadata_by_config = {}
         @peak_mem_by_config = {}
         @configs_with_human_names.map { |name, config| config }.each do |config|
             @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
+            @warmups_by_config[config] = @result_set.warmups_for_config_by_benchmark(config, in_runs: in_runs)
             @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
             @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
             @peak_mem_by_config[config] = @result_set.peak_mem_bytes_for_config_by_benchmark(config)
@@ -732,6 +734,60 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
     end
 
 end
+
+# Count up number of iterations and warmups for each Ruby and benchmark configuration.
+# As we vary these, we need to make sure people can see what settings we're using for each Ruby.
+class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "iteration_count"
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # Set up the parent class, look up relevant data
+        super
+
+        look_up_data_by_ruby
+
+        # Sort benchmarks by headline/micro category, then alphabetically
+        @benchmark_names.sort_by! { |bench_name|
+            [ benchmark_category_index(bench_name),
+              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
+              bench_name ] }
+
+        @headings = [ "bench" ] +
+            @configs_with_human_names.flat_map { |name, config| [ "#{name} warmups", "#{name} iters" ] }
+        # Col formats are only used when formatting entries for a text table, not for CSV
+        @col_formats = [ "%s" ] +                               # Benchmark name
+            [ "%d", "%d" ] * @configs_with_human_names.size     # Iterations per-Ruby-config
+    end
+
+    # Listed on the details page
+    def iterations_report_table_data
+        @benchmark_names.map do |bench_name|
+            [ bench_name ] +
+                @configs_with_human_names.flat_map do |_, config|
+                    if @times_by_config[config][bench_name]
+                        [
+                            @warmups_by_config[config][bench_name].size,
+                            @times_by_config[config][bench_name].size,
+                        ]
+                    else
+                        # If we didn't run this benchmark for this config, we'd like the columns to be blank.
+                        [ nil, nil ]
+                    end
+                end
+        end
+    end
+
+    def write_file(filename)
+        # Memory details report, with tables and text descriptions
+        script_template = ERB.new File.read(__dir__ + "/../report_templates/iteration_count.html.erb")
+        html_output = script_template.result(binding)
+        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+    end
+
+end
+
 
 # This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
