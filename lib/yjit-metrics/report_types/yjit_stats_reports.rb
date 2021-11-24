@@ -141,7 +141,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
             end
         end
 
-        exits = exits.sort_by { |name, count| -count }[0...how_many]
+        exits = exits.sort_by { |name, count| [-count, name] }[0...how_many]
         side_exits = total_exit_count(stats)
 
         top_n_total = exits.map { |name, count| count }.sum
