@@ -5,7 +5,7 @@
             <tr style="border: 1px solid black;">
                 <% row.each_with_index do |cell, idx|
                     format = @col_formats[idx]
-                %> <td> <%= cell.nil? ? "" : format % cell %> </td> <% end %>
+                %> <td> <%= cell.nil? ? "" : format % cell %> </td><% end %>
             </tr>
         <% end %>
     </tbody>
