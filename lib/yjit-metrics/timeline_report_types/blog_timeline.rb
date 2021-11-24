@@ -28,7 +28,10 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
 
             @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", visible: visible, data: all_points.compact })
         end
-        @series.sort_by! { |s| s[:visible] ? 0 : 1 }
+        @series.sort_by! do |s|
+            visi = s[:visible] ? 0 : 1
+            [ visi, s[:name] ]
+        end
     end
 
     def write_file(file_path)
