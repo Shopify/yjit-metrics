@@ -740,6 +740,18 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
         "blog_yjit_stats"
     end
 
+    def set_extra_info(info)
+        super
+
+        if info[:timestamps]
+            @timestamps = info[:timestamps]
+            if @timestamps.size != 1
+                raise "WE REQUIRE A SINGLE TIMESTAMP FOR THIS REPORT RIGHT NOW!"
+            end
+            @timestamp_str = @timestamps[0].strftime("%Y-%m-%d-%H%M%S")
+        end
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
@@ -753,6 +765,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
 
         @headings_with_tooltips = {
             "bench" => "Benchmark name",
+            "Exit Report" => "Link to a generated YJIT-stats-style exit report",
             "Inline" => "Bytes of inlined code generated",
             "Outlined" => "Bytes of outlined code generated",
             "Comp iSeqs" => "Number of compiled iSeqs (methods)",
@@ -778,6 +791,8 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
 
+            exit_report_url = "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_#{@timestamp_str}.#{bench_name}.html"
+
             bench_stats = @yjit_stats[bench_name][0]
 
             fmt_inval_ratio = "?"
@@ -787,6 +802,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
             end
 
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
+                "<a href=\"#{exit_report_url}\">(click)</a>",
                 bench_stats["inline_code_size"],
                 bench_stats["outlined_code_size"],
                 bench_stats["compiled_iseq_count"],
@@ -808,6 +824,21 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end
 
+end
+
+class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
+    def self.report_name
+        "blog_exit_reports"
+    end
+
+    def write_file(filename)
+        @benchmark_names.each do |bench_name|
+            File.open("#{filename}.#{bench_name}.html", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
+        end
+
+        # This is a file with a known name that we can look for when generating.
+        File.open("#{filename}.bench_list.html", "w") { |f| f.puts @benchmark_names.join("\n") }
+    end
 end
 
 # This very small report is to give the quick headlines and summary for a YJIT comparison.
