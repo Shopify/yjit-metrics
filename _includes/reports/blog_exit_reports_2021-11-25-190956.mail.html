@@ -1,0 +1,58 @@
+method call exit reasons: 
+       optimized_method     627336 (57.8%)
+             args_splat     209224 (19.3%)
+                bmethod     147214 (13.6%)
+              block_arg      54229 ( 5.0%)
+           cfunc_kwargs      38689 ( 3.6%)
+    iseq_complex_callee       7741 ( 0.7%)
+
+leave exit reasons: 
+        interp_return   12696000 (99.8%)
+    start_pc_non_zero      30993 ( 0.2%)
+         se_interrupt        259 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          324
+compiled_block_count:        4854
+invalidation_count:           124
+constant_state_bumps:          39
+inline_code_size:          809258
+outlined_code_size:        597017
+
+total_exit_count:        15478936
+total_insns_count:     3958030515
+vm_insns_count:         452906637
+yjit_insns_count:      3507906814
+ratio_in_yjit:              88.6%
+avg_len_in_yjit:            226.4
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    1372027 (49.3)
+        getblockparamproxy:     689636 (24.8)
+                      send:     294444 (10.6)
+               invokesuper:     116225 (4.2)
+               opt_empty_p:     100771 (3.6)
+       getinstancevariable:      85261 (3.1)
+               getconstant:      85241 (3.1)
+               invokeblock:      15637 (0.6)
+                  opt_ltlt:      15498 (0.6)
+               expandarray:       7748 (0.3)
+                     leave:        259 (0.0)
+          opt_regexpmatch2:         99 (0.0)
+        opt_getinlinecache:         49 (0.0)
+               objtostring:         33 (0.0)
+                  opt_plus:          6 (0.0)
+                  opt_aref:          1 (0.0)
+                opt_length:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
