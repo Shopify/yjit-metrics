@@ -1,0 +1,62 @@
+method call exit reasons: 
+               args_splat   12754126 (36.6%)
+    optimized_method_send   11099187 (31.8%)
+                  bmethod    6765500 (19.4%)
+             cfunc_kwargs    1690640 ( 4.9%)
+    optimized_method_call    1252185 ( 3.6%)
+      iseq_complex_callee    1019629 ( 2.9%)
+    cfunc_ruby_array_varg     100939 ( 0.3%)
+                block_arg      76011 ( 0.2%)
+            zsuper_method      68075 ( 0.2%)
+                 kw_splat      23093 ( 0.1%)
+          ivar_set_method        167 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  160306177 (100.0%)
+    start_pc_non_zero      31331 ( 0.0%)
+         se_interrupt       2069 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          336
+compiled_block_count:        4007
+invalidation_count:           180
+constant_state_bumps:           0
+inline_code_size:         1890282
+outlined_code_size:       1502134
+
+total_exit_count:       227412165
+total_insns_count:     9647566911
+vm_insns_count:        1724033750
+yjit_insns_count:      7990639149
+ratio_in_yjit:              82.1%
+avg_len_in_yjit:             34.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   37624509 (56.1)
+               invokeblock:    9565505 (14.3)
+               expandarray:    8701679 (13.0)
+                     throw:    6567020 (9.8)
+       getinstancevariable:    1678482 (2.5)
+                  opt_aref:    1284890 (1.9)
+             setlocal_WC_0:     654451 (1.0)
+        opt_getinlinecache:     242461 (0.4)
+                    opt_eq:     186897 (0.3)
+               getconstant:     175175 (0.3)
+                      once:     162573 (0.2)
+             getblockparam:      83469 (0.1)
+        getblockparamproxy:      83124 (0.1)
+                      send:      76420 (0.1)
+               invokesuper:      16315 (0.0)
+                     leave:       2069 (0.0)
+             setlocal_WC_1:        350 (0.0)
+                opt_length:        266 (0.0)
+                  opt_ltlt:        244 (0.0)
+                   opt_neq:         46 (0.0)
