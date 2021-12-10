@@ -8,6 +8,9 @@ set -e
 # We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
 chruby 3.0.2
 
+cd ~ubuntu/ym/yjit-bench
+find . -wholename "*tmp/cache/bootsnap" -print0 | xargs -0 rm -r || echo OK
+
 cd ~ubuntu/ym/yjit-metrics/
 git pull
 gem install bundler:2.2.30
