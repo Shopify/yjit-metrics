@@ -427,7 +427,7 @@ total_elapsed = END_TIME - START_TIME
 total_seconds = total_elapsed.to_i
 total_minutes = total_seconds / 60
 total_hours = total_minutes / 60
-seconds = total_elapsed % 60
+seconds = total_seconds % 60
 minutes = total_minutes % 60
 
 puts "All intermediate runs finished, merging to final files..."
