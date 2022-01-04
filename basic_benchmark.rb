@@ -116,8 +116,18 @@ RUBY_CONFIGS = {
 CONFIG_NAMES = RUBY_CONFIGS.keys
 
 SKIPPED_COMBOS = [
+    # HexaPDF not working with prerelease MJIT
+    # https://bugs.ruby-lang.org/issues/18277
     [ "prod_ruby_with_mjit", "hexapdf" ],
-    # [ "name_of_config", "name_of_benchmark" ],
+
+    # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
+    # https://github.com/Shopify/yjit-bench/issues/71
+    [ "prod_ruby_no_jit", "jekyll" ],
+    [ "prod_ruby_with_mjit", "jekyll" ],
+    [ "prod_ruby_with_yjit", "jekyll" ],
+
+    # [ "name_of_config", "name_of_benchmark" ] OR
+    # [ "*", "name_of_benchmark" ]
 ]
 
 # Default settings for benchmark sampling
@@ -312,7 +322,8 @@ all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
         benchmark_list.to_a.flat_map do |bench_info|
             bench_info[:name] = bench_info[:name].gsub(/\.rb$/, "")
-            if SKIPPED_COMBOS.include?([ config.to_s, bench_info[:name] ])
+            if SKIPPED_COMBOS.include?([ "*", bench_info[:name] ]) ||
+              SKIPPED_COMBOS.include?([ config.to_s, bench_info[:name] ])
                 puts "Skipping: #{config} / #{bench_info[:name]}..."
                 []
             else
