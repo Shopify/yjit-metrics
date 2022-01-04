@@ -122,9 +122,7 @@ SKIPPED_COMBOS = [
 
     # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
     # https://github.com/Shopify/yjit-bench/issues/71
-    [ "prod_ruby_no_jit", "jekyll" ],
-    [ "prod_ruby_with_mjit", "jekyll" ],
-    [ "prod_ruby_with_yjit", "jekyll" ],
+    [ "*", "jekyll" ],
 
     # [ "name_of_config", "name_of_benchmark" ] OR
     # [ "*", "name_of_benchmark" ]
