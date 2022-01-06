@@ -66,6 +66,12 @@ def ts_string_to_date(ts)
     DateTime.new year.to_i, month.to_i, day.to_i, hour.to_i, minute.to_i, second.to_i
 end
 
+def ruby_desc_to_sha(ruby_desc)
+  return $1 if ruby_desc =~ / ([a-z0-9]{10})\)/
+
+  raise "Could not extract Git SHA from RUBY_DESCRIPTION: #{ruby_desc.inspect}"
+end
+
 Dir.chdir(data_dir)
 
 files_in_dir = Dir["*"].grep(DATASET_FILENAME_RE)
@@ -81,10 +87,14 @@ puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
 filenames_by_ts = {}
+ruby_desc_by_ts = {}
 relevant_results.each do |filename, config_name, timestamp, run_num|
     benchmark_data = JSON.load(File.read(filename))
     filenames_by_ts[timestamp] ||= []
     filenames_by_ts[timestamp].push filename
+    if config_name == "prod_ruby_with_yjit"
+        ruby_desc_by_ts[timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
+    end
     begin
         result_set_by_ts[timestamp] ||= YJITMetrics::ResultSet.new
         result_set_by_ts[timestamp].add_for_config(config_name, benchmark_data)
@@ -115,6 +125,7 @@ benchmarks = benchmarks & all_benchmarks
 context = {
     result_set_by_timestamp: result_set_by_ts,
     summary_by_timestamp: summary_by_ts,
+    ruby_desc_by_timestamp: ruby_desc_by_ts,
 
     configs: configs,
     timestamps: all_timestamps,

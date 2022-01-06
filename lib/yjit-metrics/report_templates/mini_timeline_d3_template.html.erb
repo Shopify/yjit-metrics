@@ -63,14 +63,14 @@ var svg = realSVG.append("g")
           "translate(" + outerMargin + "," + outerMargin + ")");
 
 var timeParser = d3.timeParse("%Y %m %d %H %M %S"); // This should match the output format in the report
-var timePrinter = d3.timeFormat("%H:%M:%S"); // This is for tooltips
+var timePrinter = d3.timeFormat("%b %d %I%p"); // This is for tooltips
 var dataSeries = [
     <% @series.each_with_index do |this_series, color_index| %>
     {
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
-        data: [ <%= this_series[:data].map { |t, mean| "{ date: timeParser(#{t.inspect}), value: #{mean} }" }.join(", ") %> ],
+        data: [ <%= this_series[:data].map { |t, mean, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         timeRange: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
         valueRange: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
@@ -124,7 +124,7 @@ dataSeries.forEach(function(thisSeries) {
   var yAxis = d3.axisLeft(y)
     .ticks(6);
 
-  subgraph.append("g")
+  var group = subgraph.append("g")
     .attr("class", "subgraphLeftAxis")
     .call(yAxis)
     ;
@@ -139,6 +139,20 @@ dataSeries.forEach(function(thisSeries) {
       .y(function (d) { return y(d.value); })
       )
     ;
+
+  // Add a circle at each datapoint
+  var circles = group.selectAll("circle.tooltippage." + thisSeries.name)
+    .data(thisSeries.data);
+  circles.enter().append("circle")
+    .attr("class", "tooltippage " + thisSeries.name)
+    .attr("fill", thisSeries.color)
+    .attr("fill-opacity", 0.0)
+    .attr("r", 5.0)
+    .attr("cx", function(d) { return x(d.date) } )
+    .attr("cy", function(d) { return y(d.value) } )
+    .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+    ;
+
 });
 
 </script>
