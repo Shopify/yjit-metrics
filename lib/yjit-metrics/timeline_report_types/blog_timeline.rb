@@ -16,9 +16,10 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         @context[:benchmark_order].each do |benchmark|
             all_points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point
                     # These fields are from the ResultSet summary
-                    [ ts.strftime(time_format), this_point["mean"], this_point["stddev"] ]
+                    [ ts.strftime(time_format), this_point["mean"], this_point["stddev"], this_ruby_desc ]
                 else
                     nil
                 end
@@ -59,9 +60,10 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @context[:selected_benchmarks].each do |benchmark|
             all_points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point
                     # These fields are from the ResultSet summary
-                    [ ts.strftime(time_format), this_point["mean"] ]
+                    [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
                 else
                     nil
                 end

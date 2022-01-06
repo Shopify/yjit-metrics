@@ -71,7 +71,7 @@ var svg = d3.select("#timeline_rs_chart")
           "translate(" + margin.left + "," + margin.top + ")");
 
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
-var timePrinter = d3.timeFormat("%H:%M:%S");
+var timePrinter = d3.timeFormat("%b %d %I%p");
 var data_series = [
     <% @series.each_with_index do |this_series, color_index| %>
     {
@@ -79,7 +79,7 @@ var data_series = [
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
         visible: <%= this_series[:visible] ? "true" : "false" %>,
-        data: [ <%= this_series[:data].map { |t, mean, stddev| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev} }" }.join(", ") %> ],
+        data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
         value_range: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
@@ -142,7 +142,7 @@ data_series.forEach(function(item) {
       .attr("r", 5.0)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec"; } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
       ;
 
     var whiskerStrokeWidth = 1.0;
