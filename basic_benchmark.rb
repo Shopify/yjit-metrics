@@ -365,7 +365,7 @@ all_runs.each do |run_num, config, bench_info|
 
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
-    remaining_re_runs = 3
+    re_run_num = 0
 
     if num_runs > 1
         run_string = "%04d" % run_num + "_"
@@ -377,7 +377,10 @@ all_runs.each do |run_num, config, bench_info|
         exc = error_info[:exception]
         bench = error_info[:benchmark_name]
 
-        puts "Exception in benchmark: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
+        re_run_info = ""
+        re_run_info = " (retry ##{re_run_num + 1}/3)" if when_error == :re_run
+
+        puts "Exception in benchmark #{bench} w/ config #{config}#{re_run_info}: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
 
         # If we get a runtime error, we're not going to record this run's data.
         if [:die, :report].include?(when_error)
@@ -388,8 +391,8 @@ all_runs.each do |run_num, config, bench_info|
 
         # If we die on errors, raise or re-raise the exception.
         raise(exc) if when_error == :die
-        remaining_re_runs -= 1
-        raise(exc) if when_error == :re_run && remaining_re_runs < 1
+        re_run_num += 1
+        raise(exc) if when_error == :re_run && re_run_num > 3
     end
 
     shell_settings = YJITMetrics::ShellSettings.new({
