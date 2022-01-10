@@ -129,6 +129,11 @@ def run_benchmark(num_itrs_hint)
     ruby_metadata: ruby_metadata,
     peak_mem_bytes: peak_mem_bytes,
   }
+  mean = warmed_times.sum / warmed_times.size
+  stddev = Math.sqrt(warmed_times.map { |t| (t - mean) ** 2.0 }.sum / warmed_times.size)
+  rel_stddev_pct = stddev / mean * 100.0
+  puts "Non-warmup iteration mean time: #{"%.2f ms" % (mean * 1000.0)} +/- #{"%.2f%%" % rel_stddev_pct}"
+
   out_data[:yjit_stats] = YJIT_MODULE&.runtime_stats
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
