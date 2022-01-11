@@ -322,8 +322,9 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     ts_latest = ts_from_tripwire_filename(current_filename)
     ts_penultimate = ts_from_tripwire_filename(compared_filename)
 
-    latest_yjit_result_file = "raw_benchmark_data/#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
-    penultimate_yjit_result_file = "raw_benchmark_data/#{ts_penultimate}_basic_benchmark_prod_ruby_with_yjit.json"
+    # This expects to be called from the _includes/reports directory
+    latest_yjit_result_file = "../../raw_benchmark_data/#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
+    penultimate_yjit_result_file = "../../raw_benchmark_data/#{ts_penultimate}_basic_benchmark_prod_ruby_with_yjit.json"
     latest_yjit_data = JSON.parse File.read(latest_yjit_result_file)
     penultimate_yjit_data = JSON.parse File.read(penultimate_yjit_result_file)
     latest_yjit_ruby_desc = latest_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
