@@ -43,7 +43,7 @@ layout: basic
   <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
   <div style="text-align: center;">
-    <a href="{{ "timeline-deep" | relative_url }}"><button>Results-Over-Time Deep Dive</button></a>
+    <a href="{{ "timeline-deep#activerecord+liquid-render+optcarrot+railsbench" | relative_url }}"><button>Results-Over-Time Deep Dive</button></a>
   </div>
 
   <div class="timeline_report">
