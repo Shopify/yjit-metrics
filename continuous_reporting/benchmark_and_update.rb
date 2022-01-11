@@ -330,7 +330,7 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     penultimate_yjit_ruby_desc = penultimate_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
 
     puts "Filing Github issue - slower benchmark(s) found."
-    body = <<~BODY
+    body = <<~BODY_TOP
     Latest failing benchmark:
 
     * Time: #{timestr_from_ts(ts_latest)}
@@ -347,12 +347,19 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 
     [Timeline Graph](https://speed.yjit.org/timeline-deep)
 
-    <pre>
     Failure details:
 
-    #{JSON.pretty_generate check_failures}
-    </pre>
-    BODY
+    BODY_TOP
+
+    check_failures.each do |bench_hash|
+        # Indentation with here-docs is hard - use the old-style with extremely literal whitespace handling.
+        body += <<ONE_BENCH_REPORT
+* #{bench_hash[:benchmark]}:
+    * Speed before: #{"%.2f" % bench_hash[:current_mean]} +/- #{"%.1f" % bench_hash[:current_rsd_pct]}%
+    * Speed after: #{"%.2f" % bench_hash[:second_current_mean]} +/- #{"%.1f" % bench_hash[:second_current_rsd_pct]}%
+ONE_BENCH_REPORT
+    end
+
     file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
