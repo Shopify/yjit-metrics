@@ -212,6 +212,19 @@ def ts_from_tripwire_filename(filename)
     filename.split("blog_speed_details_")[1].split(".")[0]
 end
 
+def timestr_from_ts(ts)
+    if ts =~ /\A(\d{4}-\d{2}-\d{2})-(\d{6})\Z/
+        year_month_day = $1
+        hour   = $2[0..1]
+        minute = $2[2..3]
+        second = $2[4..5]
+
+        "#{year_month_day} #{hour}:#{minute}:#{second}"
+    else
+        raise "Could not parse timestamp: #{ts.inspect}"
+    end
+end
+
 # If something starts getting false positives, we'll ignore it. Example bad benchmark: jekyll
 EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
 
@@ -309,19 +322,45 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     ts_latest = ts_from_tripwire_filename(current_filename)
     ts_penultimate = ts_from_tripwire_filename(compared_filename)
 
+    # This expects to be called from the _includes/reports directory
+    latest_yjit_result_file = "../../raw_benchmark_data/#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
+    penultimate_yjit_result_file = "../../raw_benchmark_data/#{ts_penultimate}_basic_benchmark_prod_ruby_with_yjit.json"
+    latest_yjit_data = JSON.parse File.read(latest_yjit_result_file)
+    penultimate_yjit_data = JSON.parse File.read(penultimate_yjit_result_file)
+    latest_yjit_ruby_desc = latest_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
+    penultimate_yjit_ruby_desc = penultimate_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
+
     puts "Filing Github issue - slower benchmark(s) found."
-    body = <<~BODY
-    Latest failing benchmark: #{current_filename}
-    Compared to previous benchmark: #{compared_filename}
+    body = <<~BODY_TOP
+    Latest failing benchmark:
 
-    Failing benchmark names: #{check_failures.map { |h| h[:benchmark] }.inspect}
+    * Time: #{timestr_from_ts(ts_latest)}
+    * Ruby: #{latest_yjit_ruby_desc}
+    * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{latest_yjit_result_file})
 
-    <pre>
+    Compared to previous benchmark:
+
+    * Time: #{timestr_from_ts(ts_penultimate)}
+    * Ruby: #{penultimate_yjit_ruby_desc}
+    * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
+
+    Failing benchmarks: #{check_failures.map { |h| h[:benchmark] }.join(", ")}
+
+    [Timeline Graph](https://speed.yjit.org/timeline-deep)
+
     Failure details:
 
-    #{JSON.pretty_generate check_failures}
-    </pre>
-    BODY
+    BODY_TOP
+
+    check_failures.each do |bench_hash|
+        # Indentation with here-docs is hard - use the old-style with extremely literal whitespace handling.
+        body += <<ONE_BENCH_REPORT
+* #{bench_hash[:benchmark]}:
+    * Speed before: #{"%.2f" % bench_hash[:current_mean]} +/- #{"%.1f" % bench_hash[:current_rsd_pct]}%
+    * Speed after: #{"%.2f" % bench_hash[:second_current_mean]} +/- #{"%.1f" % bench_hash[:second_current_rsd_pct]}%
+ONE_BENCH_REPORT
+    end
+
     file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
