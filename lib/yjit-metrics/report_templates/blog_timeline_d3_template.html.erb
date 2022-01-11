@@ -14,9 +14,6 @@ colors = [
     '#3342c4',
     '#9362c4',
 ]
-
-# List of just the initially-visible series
-@vis_series = @series.select { |s| s[:visible] == true }
 %>
 
 <div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
@@ -24,9 +21,8 @@ colors = [
     <ul style="display:inline-block">
   <% @series.each_with_index do |this_series, color_index|
        color = colors[color_index % colors.size]
-       visible = this_series[:visible]
      %>
-  <li style="display: <%= visible ? "inline-block" : "none" %>" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+  <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
   <% end %>
     </ul>
   </div>
@@ -41,9 +37,8 @@ colors = [
   <ul>
     <% @series.each_with_index do |this_series, color_index|
          color = colors[color_index % colors.size]
-         visible = this_series[:visible]
      %>
-    <li><input type="checkbox" <%= visible ? "checked='checked'" : ""%> data-benchmark="<%= this_series[:benchmark]%>" /> <span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span>
+    <li><input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" /> <span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span>
     </li>
   <% end %>
   </ul>
@@ -78,7 +73,7 @@ var data_series = [
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
-        visible: <%= this_series[:visible] ? "true" : "false" %>,
+        visible: false,
         data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
@@ -92,15 +87,11 @@ data_series.pop();
 var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
 var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
 
-/* Only for initially-visible series */
-var vis_series_time_range = [ timeParser(<%= @vis_series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @vis_series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
-var vis_series_value_range = [ <%= @vis_series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @vis_series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
-
 document.timeline_data = {} // For sharing data w/ handlers
 
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
-  .domain(d3.extent(vis_series_time_range))
+  .domain(d3.extent(all_series_time_range))
   .range([ 0, width ]);
 document.timeline_data.x_axis_function = x; /* Export for the event handlers */
 svg.append("g")
@@ -112,7 +103,7 @@ svg.append("g")
 
 // Add Y axis
 var y = d3.scaleLinear()
-  .domain([0, d3.max(vis_series_value_range)])
+  .domain([0, d3.max(all_series_value_range)])
   .range([ height, 0 ]);
 document.timeline_data.y_axis_function = y; /* Export for the event handlers */
 document.timeline_data.y_axis = d3.axisLeft(y);
@@ -120,7 +111,7 @@ document.timeline_data.top_svg_group = svg.append("g")
   .call(document.timeline_data.y_axis);
 
 data_series.forEach(function(item) {
-    group = svg.append("g").attr("class", item.name).attr("visibility", item.visible == true ? "visible" : "hidden" )
+    group = svg.append("g").attr("class", item.name).attr("visibility", "hidden" )
 
     // Add the graph line
     group.append("path")
