@@ -146,6 +146,7 @@ layout: basic
     });
 
     setCheckboxesFromHashParam();
+    rescaleGraphFromCheckboxes();
 
     checkboxes.forEach(function (cb) {
         cb.addEventListener('change', function (event) {
