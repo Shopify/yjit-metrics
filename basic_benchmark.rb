@@ -93,11 +93,11 @@ RUBY_CONFIGS = {
     },
     prod_ruby_with_mjit: {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--mjit --disable-yjit --mjit-max-cache=10000 --mjit-min-calls=10" ],
+        opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ],
     },
     prod_ruby_with_mjit_verbose: {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--mjit --disable-yjit --mjit-max-cache=10000 --mjit-min-calls=10 --mjit-verbose=1" ],
+        opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10", "--mjit-verbose=1" ],
     },
     ruby_30: {
         build: "ruby-3.0.2",
@@ -105,7 +105,7 @@ RUBY_CONFIGS = {
     },
     ruby_30_with_mjit: {
         build: "ruby-3.0.0",
-        opts: [ "--jit --jit-max-cache=10000 --jit-min-calls=10" ],
+        opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
         install: "ruby-install",
     },
     truffleruby: {
