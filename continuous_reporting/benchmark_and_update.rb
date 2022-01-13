@@ -340,6 +340,8 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     latest_yjit_ruby_desc = latest_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
     penultimate_yjit_ruby_desc = penultimate_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
 
+    failing_benchmarks = check_failures.map { |h| h[:benchmark] }
+
     puts "Filing Github issue - slower benchmark(s) found."
     body = <<~BODY_TOP
     Latest failing benchmark:
@@ -354,9 +356,9 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     * Ruby: #{escape_markdown penultimate_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
 
-    Failing benchmarks: #{check_failures.map { |h| h[:benchmark] }.join(", ")}
+    Failing benchmarks: #{failing_benchmarks.join(", ")}
 
-    [Timeline Graph](https://speed.yjit.org/timeline-deep)
+    [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("&")})
 
     Failure details:
 
