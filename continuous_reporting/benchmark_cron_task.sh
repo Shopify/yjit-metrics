@@ -14,7 +14,7 @@ find . -wholename "*tmp/cache/bootsnap" -print0 | xargs -0 rm -r || echo OK
 cd ~ubuntu/ym/yjit-metrics/
 git pull
 gem install bundler:2.2.30
-bundle
+bundle _2.2.30_
 ruby continuous_reporting/benchmark_and_update.rb
 
 # Now we'll verify that we're not regenerating results when we shouldn't.
