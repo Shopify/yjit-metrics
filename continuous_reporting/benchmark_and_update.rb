@@ -139,22 +139,28 @@ def ghapi_post(api_uri, params, verb: :post)
 end
 
 def file_gh_issue(title, message)
-    return unless FILE_GH_ISSUE
-
     host = `uname -a`.chomp
     issue_body = <<~ISSUE
-        <pre>
         Error running benchmark CI job on #{host}:
 
         #{message}
-        </pre>
     ISSUE
 
+    unless FILE_GH_ISSUE
+        print "We would file a GitHub issue, but we were asked not to. Details:\n\n"
+
+        print "==============================\n"
+        print "Title: CI Benchmarking: #{title}\n"
+        puts issue_body
+        print "==============================\n"
+        return
+    end
+
+    # Note: if you're set up as the GitHub user, it's not gonna email you since it thinks you filed it yourself.
     ghapi_post "/repos/Shopify/yjit-metrics/issues",
         {
-            "title" => "YJIT-Metrics CI Benchmarking: #{title}",
-            "body" => issue_body,
-            "assignees" => [ GITHUB_USER ]
+            "title" => "CI Benchmarking: #{title}",
+            "body" => issue_body
         }
 end
 
