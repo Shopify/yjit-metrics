@@ -138,6 +138,10 @@ def ghapi_post(api_uri, params, verb: :post)
     JSON.load(result.body)
 end
 
+def escape_markdown(s)
+    s.gsub(/(\*|\_|\`)/, "\\\1").gsub("<", "&lt;")
+end
+
 def file_gh_issue(title, message)
     host = `uname -a`.chomp
     issue_body = <<~ISSUE
@@ -341,13 +345,13 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     Latest failing benchmark:
 
     * Time: #{timestr_from_ts(ts_latest)}
-    * Ruby: #{latest_yjit_ruby_desc}
+    * Ruby: #{escape_markdown latest_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{latest_yjit_result_file})
 
     Compared to previous benchmark:
 
     * Time: #{timestr_from_ts(ts_penultimate)}
-    * Ruby: #{penultimate_yjit_ruby_desc}
+    * Ruby: #{escape_markdown penultimate_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
 
     Failing benchmarks: #{check_failures.map { |h| h[:benchmark] }.join(", ")}
