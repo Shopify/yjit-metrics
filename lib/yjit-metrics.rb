@@ -297,7 +297,7 @@ module YJITMetrics
     # for each sampling run. That means which Ruby, which Ruby and shell options,
     # what env vars to set, whether core dumps are enabled, what to do on error and more.
     class ShellSettings
-        LEGAL_SETTINGS = [ :ruby_opts, :chruby, :enable_core_dumps, :on_error ]
+        LEGAL_SETTINGS = [ :ruby_opts, :chruby, :enable_core_dumps, :on_error, :bundler_version ]
 
         def initialize(settings)
             illegal_keys = settings.keys - LEGAL_SETTINGS
@@ -340,10 +340,11 @@ module YJITMetrics
         out_tempfile = Tempfile.new("yjit-metrics-single-run")
 
         env_vars = {
-            OUT_JSON_PATH:  out_tempfile.path,
-            WARMUP_ITRS:    harness_settings[:warmup_itrs],
-            MIN_BENCH_ITRS: harness_settings[:min_benchmark_itrs],
-            MIN_BENCH_TIME: harness_settings[:min_benchmark_time],
+            OUT_JSON_PATH:         out_tempfile.path,
+            WARMUP_ITRS:           harness_settings[:warmup_itrs],
+            MIN_BENCH_ITRS:        harness_settings[:min_benchmark_itrs],
+            MIN_BENCH_TIME:        harness_settings[:min_benchmark_time],
+            FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
         }
 
         with_chruby = shell_settings[:chruby]
@@ -356,6 +357,7 @@ module YJITMetrics
             env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
             ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
             script_path: benchmark_info[:script_path],
+            bundler_version: shell_settings[:bundler_version],
         }
         bench_script = script_template.result(binding) # Evaluate an Erb template with template_settings
 

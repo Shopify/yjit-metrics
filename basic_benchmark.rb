@@ -158,6 +158,7 @@ DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_CONFIGS
 when_error = :die
 output_path = "data"
+bundler_version = "2.2.30"
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -197,6 +198,10 @@ OptionParser.new do |opts|
 
     opts.on("--output DIR", "Write output files to the specified directory") do |dir|
         output_path = dir
+    end
+
+    opts.on("--bundler-version=VERSION", "Require a specific Bundler version") do |ver|
+        bundler_version = ver
     end
 
     opts.on("--on-errors=BEHAVIOUR", "When a benchmark fails, how do we respond? Options: #{ERROR_BEHAVIOURS.map(&:to_s).join(",")}") do |choice|
@@ -400,6 +405,7 @@ all_runs.each do |run_num, config, bench_info|
         chruby: ruby,
         on_error: on_error,
         enable_core_dumps: (when_error == :report ? true : false),
+        bundler_version: bundler_version,
     })
 
     single_run_results = nil

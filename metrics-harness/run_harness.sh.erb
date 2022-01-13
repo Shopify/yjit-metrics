@@ -11,8 +11,8 @@ fi
 
 <%= template_settings[:pre_benchmark_code] %>
 
-# Sometimes required - should happen *after* chruby, in pre-benchmark code
-gem install bundler:2.2.30
+# Make sure we're installing the version we want the benchmark to use
+gem install bundler:<%= template_settings[:bundler_version] %>
 
 <%= template_settings[:env_var_exports] %>
 

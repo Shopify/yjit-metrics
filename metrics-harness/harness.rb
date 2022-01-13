@@ -58,11 +58,18 @@ def use_gemfile(extra_setup_cmd: nil)
     chruby_stanza = "chruby && chruby #{ruby_name} && "
   end
 
+  env_bundler = ENV['FORCE_BUNDLER_VERSION']
+  bundler_cmd = "bundle"
+  if env_bundler # Should always be true in yjit-metrics
+    gem "bundler", env_bundler # Make sure requiring bundler/setup gets the right one
+    bundler_cmd = "bundle _#{env_bundler}_"
+  end
+
   # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
   # Use bash -l to propagate non-Shopify-style chruby config.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}bundle install'"
+  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}#{bundler_cmd} install'"
   if extra_setup_cmd
-    cmd += " && #{extra_setup_cmd}"
+    cmd += " && #{bundler_cmd} exec #{extra_setup_cmd}"
   end
   puts "Command: #{cmd}"
   success = system(cmd)
