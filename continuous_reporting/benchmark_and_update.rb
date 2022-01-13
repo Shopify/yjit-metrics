@@ -138,23 +138,33 @@ def ghapi_post(api_uri, params, verb: :post)
     JSON.load(result.body)
 end
 
-def file_gh_issue(title, message)
-    return unless FILE_GH_ISSUE
+def escape_markdown(s)
+    s.gsub(/(\*|\_|\`)/) { '\\' + $1 }.gsub("<", "&lt;")
+end
 
+def file_gh_issue(title, message)
     host = `uname -a`.chomp
     issue_body = <<~ISSUE
-        <pre>
         Error running benchmark CI job on #{host}:
 
         #{message}
-        </pre>
     ISSUE
 
+    unless FILE_GH_ISSUE
+        print "We would file a GitHub issue, but we were asked not to. Details:\n\n"
+
+        print "==============================\n"
+        print "Title: CI Benchmarking: #{title}\n"
+        puts issue_body
+        print "==============================\n"
+        return
+    end
+
+    # Note: if you're set up as the GitHub user, it's not gonna email you since it thinks you filed it yourself.
     ghapi_post "/repos/Shopify/yjit-metrics/issues",
         {
-            "title" => "YJIT-Metrics CI Benchmarking: #{title}",
-            "body" => issue_body,
-            "assignees" => [ GITHUB_USER ]
+            "title" => "CI Benchmarking: #{title}",
+            "body" => issue_body
         }
 end
 
@@ -251,7 +261,7 @@ def check_perf_tripwires
     end
 end
 
-def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE, verbose: VERBOSE)
+def check_one_perf_tripwire(current_filename, compared_filename, verbose: VERBOSE)
     current_data = JSON.parse File.read(current_filename)
     compared_data = JSON.parse File.read(compared_filename)
 
@@ -315,7 +325,7 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
     end
 
     puts "Failing benchmarks (#{current_filename}): #{check_failures.map { |h| h[:benchmark] }}"
-    file_perf_bug(current_filename, compared_filename, check_failures) if can_file_issue
+    file_perf_bug(current_filename, compared_filename, check_failures)
 end
 
 def file_perf_bug(current_filename, compared_filename, check_failures)
@@ -330,23 +340,25 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     latest_yjit_ruby_desc = latest_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
     penultimate_yjit_ruby_desc = penultimate_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
 
+    failing_benchmarks = check_failures.map { |h| h[:benchmark] }
+
     puts "Filing Github issue - slower benchmark(s) found."
     body = <<~BODY_TOP
     Latest failing benchmark:
 
     * Time: #{timestr_from_ts(ts_latest)}
-    * Ruby: #{latest_yjit_ruby_desc}
+    * Ruby: #{escape_markdown latest_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{latest_yjit_result_file})
 
     Compared to previous benchmark:
 
     * Time: #{timestr_from_ts(ts_penultimate)}
-    * Ruby: #{penultimate_yjit_ruby_desc}
+    * Ruby: #{escape_markdown penultimate_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
 
-    Failing benchmarks: #{check_failures.map { |h| h[:benchmark] }.join(", ")}
+    Failing benchmarks: #{failing_benchmarks.join(", ")}
 
-    [Timeline Graph](https://speed.yjit.org/timeline-deep)
+    [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("&")})
 
     Failure details:
 
