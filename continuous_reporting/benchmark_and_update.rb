@@ -257,7 +257,7 @@ def check_perf_tripwires
     end
 end
 
-def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue: FILE_GH_ISSUE, verbose: VERBOSE)
+def check_one_perf_tripwire(current_filename, compared_filename, verbose: VERBOSE)
     current_data = JSON.parse File.read(current_filename)
     compared_data = JSON.parse File.read(compared_filename)
 
@@ -321,7 +321,7 @@ def check_one_perf_tripwire(current_filename, compared_filename, can_file_issue:
     end
 
     puts "Failing benchmarks (#{current_filename}): #{check_failures.map { |h| h[:benchmark] }}"
-    file_perf_bug(current_filename, compared_filename, check_failures) if can_file_issue
+    file_perf_bug(current_filename, compared_filename, check_failures)
 end
 
 def file_perf_bug(current_filename, compared_filename, check_failures)
