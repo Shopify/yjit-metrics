@@ -139,7 +139,7 @@ def ghapi_post(api_uri, params, verb: :post)
 end
 
 def escape_markdown(s)
-    s.gsub(/(\*|\_|\`)/, '\\\1').gsub("<", "&lt;")
+    s.gsub(/(\*|\_|\`)/) { '\\' + $1 }.gsub("<", "&lt;")
 end
 
 def file_gh_issue(title, message)
