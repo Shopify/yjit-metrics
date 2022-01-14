@@ -6,7 +6,16 @@ set -e
 . ~/.bashrc
 
 # We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
+# Also we're gonna be messing with the installed prerelease Rubies a fair bit.
 chruby 3.0.2
+
+# This will uninstall all gems, among other side effects.
+rm -r ~/.rubies/ruby-yjit-metrics-debug/*
+rm -r ~/.rubies/ruby-yjit-metrics-prod/*
+
+# This isn't a 100% cleanup -- no ./configure, for instance.
+cd ~/ym/prod-yjit && make clean
+cd ~/ym/debug-yjit && make clean
 
 cd ~ubuntu/ym/yjit-bench
 find . -wholename "*tmp/cache/bootsnap" -print0 | xargs -0 rm -r || echo OK
