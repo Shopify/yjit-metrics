@@ -195,11 +195,12 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         end
     end
 
-    def initialize(config_names, results, default_settings: ::YJITMetrics::DEFAULT_CI_SETTINGS, benchmarks: [])
+    def initialize(config_names, results,
+        default_yjit_bench_settings: ::YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS, benchmarks: [])
         # Set up the parent class, look up relevant data
         super(config_names, results, benchmarks: benchmarks)
 
-        @default_settings = default_settings
+        @default_yjit_bench_settings = default_yjit_bench_settings
 
         look_up_data_by_ruby
         calc_stability_by_config
@@ -333,7 +334,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
     end
 
     def write_file(filename)
-        settings = iterations_for_configs_and_benchmarks(@default_settings)
+        settings = iterations_for_configs_and_benchmarks(@default_yjit_bench_settings)
 
         puts "Writing file: #{filename}.warmup_settings.json"
         File.open(filename + ".warmup_settings.json", "w") { |f| f.puts JSON.pretty_generate settings }

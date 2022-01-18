@@ -176,7 +176,7 @@ class YJITMetrics::ResultSet
     #
     # Note that this input structure doesn't represent runs (subgroups of iterations),
     # such as when restarting the benchmark and doing, say, 10 groups of 300
-    # niterations. To represent that, you would call this method 10 times, once per
+    # iterations. To represent that, you would call this method 10 times, once per
     # run. Runs will be kept separate internally, but by default are returned as a
     # combined single array.
     #
@@ -435,8 +435,8 @@ module YJITMetrics
     # Default settings for Benchmark CI.
     # This is used by benchmark_and_update.rb for CI reporting directly.
     # It's also used by the VariableWarmupReport when selecting appropriate
-    # benchmarking settings.
-    DEFAULT_CI_SETTINGS = {
+    # benchmarking settings. This is only for the default yjit-bench benchmarks.
+    DEFAULT_YJIT_BENCH_CI_SETTINGS = {
         # Config names and config-specific settings
         "configs" => {
             # Each config controls warmup individually. But the number of real iterations needs
