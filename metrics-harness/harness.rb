@@ -9,6 +9,7 @@ print "HARNESS PID: #{Process.pid} -\n"
 
 require 'benchmark'
 require 'json'
+require 'tempfile'
 require 'rbconfig'
 
 # Warmup iterations
@@ -32,6 +33,8 @@ IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" 
 
 YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
 
+yjit_metrics_using_gemfile = false
+
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
 # It shouldn't include timestamps or other data that changes from run to run.
 def ruby_metadata
@@ -52,10 +55,19 @@ end
 # Specify a Gemfile and directory to use; install gems; do any extra per-benchmark setup.
 # This varies from the yjit-bench harness method because it specifies one exact Bundler version.
 def use_gemfile(extra_setup_cmd: nil)
+  yjit_metrics_using_gemfile = true
+
+  setup_cmds([ "bundle install", extra_setup_cmd].compact)
+
+  # Need to be in the appropriate directory
+  require "bundler/setup"
+end
+
+def setup_cmds(c)
   chruby_stanza = ""
   if ENV['RUBY_ROOT']
     ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
-    chruby_stanza = "chruby && chruby #{ruby_name} && "
+    chruby_stanza = "chruby && chruby #{ruby_name}"
   end
 
   env_bundler = ENV['FORCE_BUNDLER_VERSION']
@@ -65,20 +77,37 @@ def use_gemfile(extra_setup_cmd: nil)
     bundler_cmd = "bundle _#{env_bundler}_"
   end
 
-  # Source Shopify-located chruby if it exists to make sure this works in Shopify Mac dev tools.
-  # Use bash -l to propagate non-Shopify-style chruby config.
-  cmd = "/bin/bash -l -c '[ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh; #{chruby_stanza}#{bundler_cmd} install'"
-  if extra_setup_cmd
-    cmd += " && #{bundler_cmd} exec #{extra_setup_cmd}"
-  end
-  puts "Command: #{cmd}"
-  success = system(cmd)
-  unless success
-    raise "Couldn't set up benchmark in #{Dir.pwd.inspect}!"
+  c = c.map do |cmd|
+    if cmd["bundle"]
+      cmd.gsub("bundle", bundler_cmd)
+    else
+      "#{bundler_cmd} exec #{cmd}"
+    end
   end
 
-  # Need to be in the appropriate directory
-  require "bundler/setup"
+  script = <<~SCRIPT
+    set -e # Die on errors
+
+    # If Shopify-specific devtools script exists on this computer, source it.
+    [ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh
+
+    #{chruby_stanza}
+
+    #{c.join("\n")}
+  SCRIPT
+
+  puts "Running script...\n============\n#{script}\n============\n"
+
+  t = Tempfile.new("yjit-metrics-harness")
+  begin
+    t.write(script)
+    t.close # Not closing/flushing your tempfile can mean successfully running an empty script
+    system("bash -l #{t.path}") || raise("Error running setup_cmds! Failing!")
+  ensure
+    t.close
+    t.unlink
+  end
+
 end
 
 # Takes a block as input
