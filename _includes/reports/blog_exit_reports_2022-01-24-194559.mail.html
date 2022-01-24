@@ -1,0 +1,56 @@
+method call exit reasons: 
+             args_splat     220027 (50.0%)
+                bmethod     154814 (35.2%)
+              block_arg      57027 (13.0%)
+    iseq_complex_callee       8141 ( 1.9%)
+
+leave exit reasons: 
+        interp_return   12452960 (99.7%)
+    start_pc_non_zero      32593 ( 0.3%)
+         se_interrupt        286 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          325
+compiled_block_count:        5311
+invalidation_count:           124
+constant_state_bumps:          39
+inline_code_size:          864465
+outlined_code_size:        648486
+
+total_exit_count:        14679292
+total_insns_count:     4330047671
+vm_insns_count:          42003098
+yjit_insns_count:      4290270905
+ratio_in_yjit:              99.0%
+avg_len_in_yjit:            292.1
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     742553 (33.4)
+        getblockparamproxy:     725229 (32.6)
+                      send:     309649 (13.9)
+               invokesuper:     122227 (5.5)
+               opt_empty_p:     105972 (4.8)
+       getinstancevariable:      89661 (4.0)
+               getconstant:      89641 (4.0)
+               invokeblock:      16445 (0.7)
+                  opt_ltlt:      16298 (0.7)
+               expandarray:       8148 (0.4)
+                     leave:        286 (0.0)
+          opt_regexpmatch2:        113 (0.0)
+        opt_getinlinecache:         51 (0.0)
+               objtostring:         39 (0.0)
+                   opt_neq:         10 (0.0)
+              branchunless:          6 (0.0)
+                  opt_plus:          3 (0.0)
+                opt_length:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
