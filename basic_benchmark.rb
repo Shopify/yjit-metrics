@@ -293,8 +293,8 @@ def harness_settings_for_config_and_bench(config, bench)
                 min_benchmark_itrs: @variable_warmup_settings[config][bench]["min_bench_itrs"] || 15,
                 min_benchmark_time: @variable_warmup_settings[config][bench]["min_bench_time"] || 0,
             })
-        elsif YJITMetrics::DEFAULT_CI_SETTINGS["configs"][config]
-            defaults = YJITMetrics::DEFAULT_CI_SETTINGS["configs"][config]
+        elsif YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"][config]
+            defaults = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"][config]
             # This benchmark hasn't been run before. Use default settings for this config until we've finished a run.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
                 warmup_itrs: defaults["max_warmup_itrs"] || 15,
@@ -304,8 +304,8 @@ def harness_settings_for_config_and_bench(config, bench)
         else
             # This benchmark hasn't been run before and we don't have config-specific defaults. Oof.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
-                warmup_itrs: YJITMetrics::DEFAULT_CI_SETTINGS["max_warmup_itrs"],
-                min_benchmark_itrs: YJITMetrics::DEFAULT_CI_SETTINGS["min_bench_itrs"],
+                warmup_itrs: YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["max_warmup_itrs"],
+                min_benchmark_itrs: YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["min_bench_itrs"],
                 min_benchmark_time: 0,
             })
         end

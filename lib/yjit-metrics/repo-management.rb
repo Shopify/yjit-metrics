@@ -9,6 +9,7 @@ module YJITMetrics::RepoManagement
         end
 
         Dir.chdir(path) do
+            check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
             check_call("git checkout #{git_branch}")
             check_call("git pull")
 
