@@ -547,6 +547,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     # The calculated number is rel stddev and is scaled by bar height.
                     stddev_ratio = bar_height_ratio * rsd_ratio
 
+                    tooltip_text = "#{"%.2f" % speedup}x baseline speed (#{human_name})"
+
                     bar_left = bars_width_start + config_idx * bar_width
                     bar_right = bar_left + bar_width
                     bar_lr_center = bar_left + 0.5 * bar_width
@@ -557,7 +559,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                         width: ratio_to_x(bar_width),
                         height: ratio_to_y(bar_height_ratio * plot_effective_height),
                         fill: ruby_config_bar_colour[config],
-                        data_tooltip: "#{"%.2f" % speedup}x No-JIT time (#{human_name})"
+                        data_tooltip: tooltip_text
 
                     # Whiskers should be centered around the top of the bar, at a distance of one stddev.
                     top_whisker_y = bar_top - stddev_ratio * plot_effective_height
