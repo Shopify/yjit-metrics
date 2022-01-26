@@ -138,6 +138,11 @@ YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
+# Configuration for yjit-extra-benchmarks
+YJIT_EXTRA_BENCH_GIT_URL = "https://github.com/Shopify/yjit-extra-benchmarks.git"
+YJIT_EXTRA_BENCH_GIT_BRANCH = "main"
+YJIT_EXTRA_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-extra-benchmarks")
+
 # Configuration for ruby-build
 RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
 RUBY_BUILD_GIT_BRANCH = "master"
@@ -269,8 +274,17 @@ unless skip_git_updates
         end
     end
 
-    ### Ensure an up-to-date local yjit-bench checkout
+    ### Ensure an up-to-date local yjit-bench and yjit-extra-benchmarks checkout
     YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+    YJITMetrics.clone_repo_with path: YJIT_EXTRA_BENCH_DIR, git_url: YJIT_EXTRA_BENCH_GIT_URL, git_branch: YJIT_EXTRA_BENCH_GIT_BRANCH
+
+    ### Any benchmarks in yjit-extra-benchmarks should be copied over
+    Dir.glob("#{YJIT_EXTRA_BENCH_DIR}/benchmarks/*") do |source_path|
+        bench_name = source_path.split("/")[-1]
+        dest_path = "#{YJIT_BENCH_DIR}/benchmarks/#{bench_name}"
+        FileUtils.rm_rf dest_path if File.exist?(dest_path)  # remove_destination: true below doesn't do this. Why not?
+        FileUtils.cp_r source_path, dest_path
+    end
 end
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
