@@ -358,7 +358,7 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 
     Failing benchmarks: #{failing_benchmarks.join(", ")}
 
-    [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("&")})
+    [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("+")})
 
     Failure details:
 
