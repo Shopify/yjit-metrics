@@ -171,7 +171,7 @@ end
 if File.exist?(PIDFILE)
     pid = File.read(PIDFILE).to_i
     if pid && pid > 0
-        ps_out = `ps -p #{pid}`
+        ps_out = `pgrep -F #{PIDFILE}`
         if ps_out.include?(pid.to_s)
             raise "When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!"
         end
@@ -360,7 +360,7 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 
     [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("+")})
 
-    Failure details:
+    Slowdown details:
 
     BODY_TOP
 
