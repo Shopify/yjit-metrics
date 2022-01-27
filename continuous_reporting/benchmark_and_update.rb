@@ -356,7 +356,7 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     * Ruby: #{escape_markdown penultimate_yjit_ruby_desc}
     * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
 
-    Failing benchmarks: #{failing_benchmarks.join(", ")}
+    Slower benchmarks: #{failing_benchmarks.join(", ")}
 
     [Timeline Graph](https://speed.yjit.org/timeline-deep##{failing_benchmarks.join("+")})
 
