@@ -368,8 +368,8 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
         # Indentation with here-docs is hard - use the old-style with extremely literal whitespace handling.
         body += <<ONE_BENCH_REPORT
 * #{bench_hash[:benchmark]}:
-    * Speed before: #{"%.2f" % bench_hash[:current_mean]} +/- #{"%.1f" % bench_hash[:current_rsd_pct]}%
-    * Speed after: #{"%.2f" % bench_hash[:second_current_mean]} +/- #{"%.1f" % bench_hash[:second_current_rsd_pct]}%
+    * Speed before: #{"%.2f" % bench_hash[:second_current_mean]} +/- #{"%.1f" % bench_hash[:second_current_rsd_pct]}%
+    * Speed after: #{"%.2f" % bench_hash[:current_mean]} +/- #{"%.1f" % bench_hash[:current_rsd_pct]}%
 ONE_BENCH_REPORT
     end
 
