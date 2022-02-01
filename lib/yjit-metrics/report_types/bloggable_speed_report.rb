@@ -495,7 +495,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
-                fill: top_legend_text_colour
+                fill: text_colour
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
@@ -519,7 +519,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
-                fill: text_colour
+                fill: top_legend_text_colour
         end
 
 
