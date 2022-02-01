@@ -397,6 +397,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         axis_colour = "#000"
         background_colour = "#EEE"
         text_colour = "#111"
+        top_legend_text_colour = "#EEE"
 
         # Reserve some width on the left for the axis. Include a bit of right-side whitespace.
         left_axis_width = 0.05
@@ -494,7 +495,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
-                fill: text_colour
+                fill: top_legend_text_colour
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
