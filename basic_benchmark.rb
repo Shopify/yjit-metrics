@@ -61,6 +61,9 @@ RUBY_BUILDS = {
     "ruby-3.0.0" => {
         install: "ruby-install",
     },
+    "ruby-3.0.2" => {
+        install: "ruby-install",
+    },
     "truffleruby+graalvm-21.2.0" => {
         install: "ruby-build",
     },
