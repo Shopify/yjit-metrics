@@ -1,0 +1,60 @@
+method call exit reasons: 
+    optimized_method_call    5957276 (26.8%)
+               args_splat    4850844 (21.8%)
+                block_arg    4705534 (21.2%)
+                  bmethod    3167279 (14.3%)
+      iseq_complex_callee    2374265 (10.7%)
+    optimized_method_send     994800 ( 4.5%)
+                 kw_splat     160517 ( 0.7%)
+                 keywords         92 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   55836570 (98.1%)
+    start_pc_non_zero    1083145 ( 1.9%)
+         se_interrupt        244 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range         98 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1297
+compiled_block_count:        9348
+invalidation_count:           268
+constant_state_bumps:          26
+inline_code_size:         2537169
+outlined_code_size:       1934051
+
+total_exit_count:        86158471
+total_insns_count:     2806412014
+vm_insns_count:         512083960
+yjit_insns_count:      2324649955
+ratio_in_yjit:              81.8%
+avg_len_in_yjit:             26.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   13097357 (43.2)
+                      send:    5822030 (19.2)
+               invokesuper:    3472565 (11.5)
+        getblockparamproxy:    3071924 (10.1)
+               invokeblock:    1840793 (6.1)
+               getconstant:     605939 (2.0)
+             getblockparam:     534598 (1.8)
+                  opt_aref:     490030 (1.6)
+                     throw:     362612 (1.2)
+               concatarray:     349188 (1.2)
+               expandarray:     348940 (1.2)
+             setlocal_WC_0:     208936 (0.7)
+                   opt_mod:      70090 (0.2)
+        opt_getinlinecache:      45576 (0.2)
+               opt_empty_p:       1049 (0.0)
+                     leave:        244 (0.0)
+                  opt_aset:          7 (0.0)
+                  opt_ltlt:          6 (0.0)
+                  branchif:          5 (0.0)
+               objtostring:          4 (0.0)
