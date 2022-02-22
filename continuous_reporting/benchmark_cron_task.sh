@@ -2,8 +2,6 @@
 
 set -e
 
-git pull # This wouldn't work in GitHub Actions, but this is run via SSH to an AWS host.
-
 # I'm sure this shouldn't be necessary. But let's make sure env vars and chruby are set up, shall we?
 . ~/.bashrc
 
