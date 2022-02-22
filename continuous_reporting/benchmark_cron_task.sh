@@ -12,6 +12,7 @@ chruby 3.0.2
 # This will uninstall all gems, among other side effects.
 rm -rf ~/.rubies/ruby-yjit-metrics-debug/*
 rm -rf ~/.rubies/ruby-yjit-metrics-prod/*
+rm -rf ~/.gem/ruby/3.2.0
 
 # This isn't a 100% cleanup -- no ./configure, for instance.
 cd ~/ym/prod-yjit && make clean
