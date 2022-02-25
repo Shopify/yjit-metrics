@@ -199,8 +199,8 @@ OptionParser.new do |opts|
         harness_params[:min_bench_itrs] = n.to_i
     end
 
-    opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1") do |n|
-        raise "Number of runs must be positive!" if n.to_i <= 0
+    opts.on("--runs=n", "Number of full process runs, with a new process and warmup iterations, default: 1 (0 to only install, no benchmarks)") do |n|
+        raise "Number of runs must be positive or zero!" if n.to_i < 0
         num_runs = n.to_i
     end
 
