@@ -14,8 +14,6 @@ module YJITMetrics::RepoManagement
             check_call("git clean -d -f")
             check_call("git checkout #{git_branch}")
             check_call("git pull")
-
-            # TODO: git clean?
         end
     end
 
