@@ -23,6 +23,6 @@ jobs:
           ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
-          ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "ls"
+          ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git pull"
           ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "./ym/yjit-metrics/continuous_reporting/benchmark_prep_task.sh"
           ssh -o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa ubuntu@$AWS_INSTANCE "BENCHMARK_CI_GITHUB_TOKEN=$BENCHMARK_CI_GITHUB_TOKEN BENCHMARK_CI_GITHUB_USER=$BENCHMARK_CI_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh"
