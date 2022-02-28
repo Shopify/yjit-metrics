@@ -11,6 +11,7 @@ set -e
 # Also we're gonna be messing with the installed prerelease Rubies a fair bit.
 chruby 3.0.2
 
+cd ~/ym/yjit-metrics
 ruby continuous_reporting/benchmark_and_update.rb
 
 # Now we'll verify that we're not regenerating results when we shouldn't.
