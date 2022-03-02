@@ -455,17 +455,12 @@ module YJITMetrics
                 # We're not currently using the warmup_type, but we may in the future.
                 warmup_type: :simple,
             },
-            "ruby_30_with_mjit" => {
-                max_warmup_itrs: 20,
-                # "Delayed" warmup means it may take arbitrary extra time before compilation, but it's a one-shot compile
-                warmup_type: :delayed,
-            },
-            "prod_ruby_with_mjit" => {
-                max_warmup_itrs: 75,
-                max_warmup_time: 300, # in seconds
-                # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
-                warmup_type: :complex,
-            },
+            #"prod_ruby_with_mjit" => {
+            #    max_warmup_itrs: 75,
+            #    max_warmup_time: 300, # in seconds
+            #    # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
+            #    warmup_type: :complex,
+            #},
         },
         # Basic settings, outside of all specific configs
         "min_bench_itrs" => 15,
