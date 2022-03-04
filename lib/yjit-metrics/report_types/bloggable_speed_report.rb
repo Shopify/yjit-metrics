@@ -948,7 +948,7 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
             [ bench_yjit_mean, bench_no_jit_mean ]
         end
         # Geometric mean of headlining benchmarks only
-        @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, _, no_jit_mean| no_jit_mean / yjit_mean }
+        @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, no_jit_mean| no_jit_mean / yjit_mean }
 
         @railsbench_idx = @benchmark_names.index("railsbench")
         if @railsbench_idx
