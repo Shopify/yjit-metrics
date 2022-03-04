@@ -50,10 +50,6 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         @with_mjit31_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT3.1", none_okay: true)
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
 
-        unless @with_mjit30_config || @with_mjit31_config
-            raise "We couldn't find an MJIT 3.0 or 3.1 config!"
-        end
-
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT.
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],

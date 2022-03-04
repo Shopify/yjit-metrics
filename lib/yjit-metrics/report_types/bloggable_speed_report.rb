@@ -141,10 +141,6 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
         @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle", none_okay: true)
 
-        unless @with_mjit30_config || @with_mjit31_config
-            raise "We couldn't find an MJIT 3.0 or 3.1 config!"
-        end
-
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],
@@ -948,18 +944,15 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
             bench_no_jit_mean = @mean_by_config[@no_jit_config][bench_idx]
             bench_yjit_mean = @mean_by_config[@with_yjit_config][bench_idx]
-            bench_mjit_mean = @mean_by_config[@with_mjit_config][bench_idx]
 
-            [ bench_yjit_mean, bench_mjit_mean, bench_no_jit_mean ]
+            [ bench_yjit_mean, bench_no_jit_mean ]
         end
         # Geometric mean of headlining benchmarks only
         @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, _, no_jit_mean| no_jit_mean / yjit_mean }
-        @yjit_vs_mjit_ratio = geomean headline_runtimes.map { |yjit_mean, mjit_mean, _| mjit_mean / yjit_mean }
 
         @railsbench_idx = @benchmark_names.index("railsbench")
         if @railsbench_idx
             @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
-            @yjit_vs_mjit_railsbench_ratio = @mean_by_config[@with_mjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
         end
     end
 
