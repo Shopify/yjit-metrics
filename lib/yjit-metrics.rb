@@ -29,7 +29,7 @@ module YJITMetrics
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
     # This structure is returned by the benchmarking harness from a run.
-    JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes benchmark_metadata ruby_metadata)
+    JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
     RunData = Struct.new(*JSON_RUN_FIELDS) do
         def times_ms
             self.times.map { |v| 1000.0 * v }
@@ -445,6 +445,7 @@ module YJITMetrics
             bench_data["warmups"][bench_name] ||= []
             bench_data["yjit_stats"][bench_name] ||= []
             bench_data["peak_mem_bytes"][bench_name] ||= []
+            bench_data["failures_before_success"][bench_name] ||= []
 
             # Return times and warmups in milliseconds, not seconds
             bench_data["times"][bench_name].push run_data.times_ms
@@ -452,10 +453,11 @@ module YJITMetrics
 
             bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats] if run_data.yjit_stats
             bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
+            bench_data["failures_before_success"][bench_name].push run_data.failures_before_success
 
             # Benchmark metadata should be unique per-benchmark. In other words,
             # we do *not* want to combine runs with different amounts of warmup,
-            # iterations, etc, into the same dataset.
+            # iterations, different env/gems, etc, into the same dataset.
             bench_data["benchmark_metadata"][bench_name] ||= run_data.benchmark_metadata
             if bench_data["benchmark_metadata"][bench_name] != run_data.benchmark_metadata
                 puts "#{bench_name} metadata 1: #{bench_data["benchmark_metadata"][bench_name].inspect}"

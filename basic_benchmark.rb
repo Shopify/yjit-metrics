@@ -387,6 +387,11 @@ all_runs.each do |run_num, config, bench_info|
 
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
+
+    # Right now we don't have a great place to put per-benchmark metrics that *change*
+    # for each run. "Benchmark" metadata means constant for each type of benchmark.
+    # Instead, like peak_mem_bytes, we just have to put it at the top-level.
+    # TODO: fix that.
     re_run_num = 0
 
     if num_runs > 1
@@ -448,6 +453,8 @@ all_runs.each do |run_num, config, bench_info|
     # Single-run results can be nil if we're reporting or ignoring errors.
     # If we die or re-run on error, we should raise an exception if we fail completely
     unless single_run_results.nil?
+        single_run_results["failures_before_success"] = re_run_num # Always 0 unless when_error is :re_run
+
         json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
         puts "Writing to JSON output file #{json_path}."
         File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
@@ -471,7 +478,7 @@ intermediate_by_config.each do |config, int_files|
     merged_data = YJITMetrics.merge_benchmark_data(run_data)
     next if merged_data.nil?  # No non-error results? Skip it.
 
-    # Extra per-benchmark metadata tags
+    # Extra metadata tags for overall benchmarks
     merged_data["benchmark_metadata"].each do |bench_name, metadata|
         metadata["runs"] = num_runs # how many runs we tried to do
 
