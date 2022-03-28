@@ -32,6 +32,9 @@ end
 YJIT_GIT_URL = "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = "master"
 
+RUST_YJIT_GIT_URL = "https://github.com/Shopify/ruby"
+RUST_YJIT_GIT_BRANCH = "rust-yjit"
+
 # The same build of Ruby (e.g. current prerelease Ruby 3.1) can
 # have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
 RUBY_BUILDS = {
@@ -57,6 +60,13 @@ RUBY_BUILDS = {
         git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+    },
+    "ruby-rust-yjit-prototype" => {
+        install: "repo",
+        git_url: RUST_YJIT_GIT_URL,
+        git_branch: RUST_YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../rust-yjit-proto"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
     },
     "ruby-3.0.0" => {
         install: "ruby-install",
@@ -84,6 +94,10 @@ RUBY_CONFIGS = {
     },
     yjit_prod_stats_disabled: {
         build: "ruby-yjit-metrics-stats",
+        opts: [ "--yjit" ],
+    },
+    yjit_rust_proto: {
+        build: "ruby-rust-yjit-prototype",
         opts: [ "--yjit" ],
     },
     prod_ruby_no_jit: {
