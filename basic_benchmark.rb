@@ -176,7 +176,7 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
+DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit, :yjit_rust_proto ]
 configs_to_test = DEFAULT_CONFIGS
 when_error = :die
 output_path = "data"
