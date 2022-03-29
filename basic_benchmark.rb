@@ -318,7 +318,7 @@ def harness_settings_for_config_and_bench(config, bench)
         @hs_by_config_and_bench ||= {}
         @hs_by_config_and_bench[config] ||= {}
 
-        if @variable_warmup_settings[config][bench]
+        if @variable_warmup_settings[config] && @variable_warmup_settings[config][bench]
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
                 warmup_itrs: @variable_warmup_settings[config][bench]["warmup_itrs"] || 15,
                 min_benchmark_itrs: @variable_warmup_settings[config][bench]["min_bench_itrs"] || 15,
