@@ -68,6 +68,13 @@ RUBY_BUILDS = {
         repo_path: File.expand_path("#{__dir__}/../rust-yjit-proto"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
     },
+    "ruby-rust-yjit-release" => {
+        install: "repo",
+        git_url: RUST_YJIT_GIT_URL,
+        git_branch: RUST_YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../rust-yjit-proto-release"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
+    },
     "ruby-3.0.0" => {
         install: "ruby-install",
     },
@@ -98,6 +105,10 @@ RUBY_CONFIGS = {
     },
     yjit_rust_proto: {
         build: "ruby-rust-yjit-prototype",
+        opts: [ "--yjit" ],
+    },
+    yjit_rust_proto_release: {
+        build: "ruby-rust-yjit-release",
         opts: [ "--yjit" ],
     },
     prod_ruby_no_jit: {
