@@ -43,7 +43,7 @@ RUBY_BUILDS = {
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
     },
     "ruby-yjit-metrics-stats" => {
@@ -51,7 +51,7 @@ RUBY_BUILDS = {
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
     },
     "ruby-yjit-metrics-prod" => {
@@ -59,7 +59,7 @@ RUBY_BUILDS = {
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc" ] + extra_config_options,
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
     },
     "ruby-rust-yjit-prototype" => {
         install: "repo",
