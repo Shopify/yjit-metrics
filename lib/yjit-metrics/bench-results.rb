@@ -461,10 +461,6 @@ module YJITMetrics
                 # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
                 warmup_type: :complex,
             },
-            "yjit_rust_proto" => {
-                max_warmup_itrs: 20,
-                warmup_type: :simple,
-            },
         },
         # Basic settings, outside of all specific configs
         "min_bench_itrs" => 15,
