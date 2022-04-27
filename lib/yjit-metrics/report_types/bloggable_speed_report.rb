@@ -39,6 +39,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             category: :micro,
             desc: "setivar tests the performance of setting instance variable values.",
         },
+        "str_concat" => {
+            single_file: true,
+            category: :micro,
+            desc: "str_concat tests the performance of string concatenation in multiple different encodings.",
+        },
         "respond_to" => {
             single_file: true,
             category: :micro,
