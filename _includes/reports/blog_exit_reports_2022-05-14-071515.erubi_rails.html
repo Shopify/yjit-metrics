@@ -1,0 +1,59 @@
+method call exit reasons: 
+                  bmethod    1192429 (28.3%)
+    optimized_method_call     874477 (20.8%)
+                block_arg     794940 (18.9%)
+               args_splat     715440 (17.0%)
+      iseq_complex_callee     556437 (13.2%)
+    optimized_method_send      79538 ( 1.9%)
+
+leave exit reasons: 
+        interp_return   22423351 (98.3%)
+    start_pc_non_zero     397495 ( 1.7%)
+         se_interrupt        259 ( 0.0%)
+
+getinstancevariable exit reasons: 
+         megamorphic          4 (50.0%)
+    idx_out_of_range          4 (50.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          300
+compiled_block_count:        1987
+invalidation_count:             4
+constant_state_bumps:           0
+inline_code_size:         1949467
+outlined_code_size:       1402233
+
+total_exit_count:        27989330
+total_insns_count:      923800409
+vm_insns_count:         126635452
+yjit_insns_count:       802730936
+ratio_in_yjit:              86.3%
+avg_len_in_yjit:             28.5
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    2544094 (45.7)
+                      send:    1033414 (18.6)
+               invokesuper:     795028 (14.3)
+               invokeblock:     557241 (10.0)
+        getblockparamproxy:     317964 (5.7)
+               getconstant:     158992 (2.9)
+                  opt_aref:      79491 (1.4)
+                   opt_mod:      79490 (1.4)
+                     leave:        259 (0.0)
+       getinstancevariable:          2 (0.0)
+                   opt_and:          2 (0.0)
+        opt_getinlinecache:          2 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
