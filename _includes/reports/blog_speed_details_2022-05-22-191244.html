@@ -1,0 +1,132 @@
+<!-- Minimal surrounding tags. We want maximum cut-and-paste potential and browsers do well even without them. -->
+
+<p>
+	The y axis is CRuby's pure-interpreter time for the benchmark divided by the named interpreter's time (YJIT, MJIT, TruffleRuby). Taller bars mean better performance. Each benchmark is scaled to the CRuby's interpreter's mean result, so CRuby's results are always exactly 1.0.
+</p>
+
+<table>
+	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>MJIT3.1 (ms)</th>  <th>MJIT3.1 RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT3.1 spd</th>  <th>MJIT3.1 spd RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
+	<tbody style="text-align: right;">
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td> <td> 154.1 </td> <td> 1.68% </td> <td> 176.7 </td> <td> 4.50% </td> <td> 104.6 </td> <td> 0.45% </td> <td> 0.87x </td> <td> 4.80% </td> <td> 1.47x </td> <td> 1.74% </td> <td> 85.54% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/hexapdf/benchmark.rb" title="hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.">hexapdf</a> </td> <td> 3239.5 </td> <td> 0.75% </td> <td>  </td> <td>  </td> <td> 2396.0 </td> <td> 1.46% </td> <td>  </td> <td>  </td> <td> 1.35x </td> <td> 1.64% </td> <td> 82.96% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/liquid-render/benchmark.rb" title="liquid-render renders a chosen-for-profiling Liquid theme repeatedly.">liquid-render</a> </td> <td> 212.8 </td> <td> 2.21% </td> <td> 202.3 </td> <td> 1.41% </td> <td> 143.7 </td> <td> 1.87% </td> <td> 1.05x </td> <td> 2.62% </td> <td> 1.48x </td> <td> 2.89% </td> <td> 85.70% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/mail/benchmark.rb" title="mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.">mail</a> </td> <td> 201.7 </td> <td> 2.01% </td> <td> 203.7 </td> <td> 3.27% </td> <td> 185.4 </td> <td> 2.72% </td> <td> 0.99x </td> <td> 3.84% </td> <td> 1.09x </td> <td> 3.38% </td> <td> 99.32% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/psych-load/benchmark.rb" title="psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.">psych-load</a> </td> <td> 2737.1 </td> <td> 0.02% </td> <td> 2402.9 </td> <td> 0.10% </td> <td> 2194.8 </td> <td> 0.04% </td> <td> 1.14x </td> <td> 0.11% </td> <td> 1.25x </td> <td> 0.05% </td> <td> 88.45% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/railsbench/benchmark.rb" title="railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.">railsbench</a> </td> <td> 3114.8 </td> <td> 0.54% </td> <td> 3497.2 </td> <td> 0.61% </td> <td> 2434.9 </td> <td> 0.95% </td> <td> 0.89x </td> <td> 0.81% </td> <td> 1.28x </td> <td> 1.09% </td> <td> 86.19% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/binarytrees/benchmark.rb" title="binarytrees from the Computer Language Benchmarks Game.">binarytrees</a> </td> <td> 482.7 </td> <td> 0.05% </td> <td> 315.2 </td> <td> 0.31% </td> <td> 373.3 </td> <td> 0.14% </td> <td> 1.53x </td> <td> 0.31% </td> <td> 1.29x </td> <td> 0.15% </td> <td> 84.27% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/chunky_png/benchmark.rb" title="(no description available)">chunky_png</a> </td> <td> 979.0 </td> <td> 0.28% </td> <td> 796.7 </td> <td> 0.52% </td> <td> 678.7 </td> <td> 0.50% </td> <td> 1.23x </td> <td> 0.60% </td> <td> 1.44x </td> <td> 0.58% </td> <td> 99.95% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/discourse/benchmark.rb" title="(no description available)">discourse</a> </td> <td> 586.6 </td> <td> 14.76% </td> <td> 609.8 </td> <td> 13.77% </td> <td> 529.4 </td> <td> 18.17% </td> <td> 0.96x </td> <td> 20.19% </td> <td> 1.11x </td> <td> 23.41% </td> <td> 73.52% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/erubi/benchmark.rb" title="erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.">erubi</a> </td> <td> 503.6 </td> <td> 0.39% </td> <td> 461.9 </td> <td> 1.07% </td> <td> 399.5 </td> <td> 0.90% </td> <td> 1.09x </td> <td> 1.14% </td> <td> 1.26x </td> <td> 0.98% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/erubi_rails/benchmark.rb" title="erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.">erubi_rails</a> </td> <td> 32.5 </td> <td> 39.84% </td> <td> 35.2 </td> <td> 42.12% </td> <td> 25.0 </td> <td> 55.58% </td> <td> 0.92x </td> <td> 57.98% </td> <td> 1.30x </td> <td> 68.39% </td> <td> 86.31% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fannkuchredux/benchmark.rb" title="fannkuchredux from the Computer Language Benchmarks Game.">fannkuchredux</a> </td> <td> 8604.5 </td> <td> 0.30% </td> <td> 4051.2 </td> <td> 0.16% </td> <td> 6985.8 </td> <td> 0.47% </td> <td> 2.12x </td> <td> 0.34% </td> <td> 1.23x </td> <td> 0.56% </td> <td> 0.02% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td> <td> 1249.1 </td> <td> 0.14% </td> <td> 1031.0 </td> <td> 0.49% </td> <td> 896.5 </td> <td> 1.70% </td> <td> 1.21x </td> <td> 0.51% </td> <td> 1.39x </td> <td> 1.71% </td> <td> 99.97% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/nbody/benchmark.rb" title="nbody from the Computer Language Benchmarks Game.">nbody</a> </td> <td> 122.2 </td> <td> 0.06% </td> <td> 73.1 </td> <td> 0.17% </td> <td> 87.2 </td> <td> 0.50% </td> <td> 1.67x </td> <td> 0.18% </td> <td> 1.40x </td> <td> 0.50% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/optcarrot/benchmark.rb" title="optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.">optcarrot</a> </td> <td> 6199.1 </td> <td> 0.43% </td> <td> 2718.6 </td> <td> 0.51% </td> <td> 3478.5 </td> <td> 0.59% </td> <td> 2.28x </td> <td> 0.67% </td> <td> 1.78x </td> <td> 0.73% </td> <td> 96.13% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/rubykon/benchmark.rb" title="Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.">rubykon</a> </td> <td> 13851.2 </td> <td> 1.83% </td> <td> 11623.3 </td> <td> 1.43% </td> <td> 7950.3 </td> <td> 3.27% </td> <td> 1.19x </td> <td> 2.32% </td> <td> 1.74x </td> <td> 3.75% </td> <td> 99.67% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_ifelse.rb" title="30_ifelse tests thousands of nested methods containing simple if/else statements.">30k_ifelse</a> </td> <td> 2276.2 </td> <td> 0.02% </td> <td> 3432.7 </td> <td> 3.74% </td> <td> 355.8 </td> <td> 0.19% </td> <td> 0.66x </td> <td> 3.74% </td> <td> 6.40x </td> <td> 0.19% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td> <td> 6221.4 </td> <td> 0.01% </td> <td> 10132.9 </td> <td> 15.49% </td> <td> 886.3 </td> <td> 0.07% </td> <td> 0.61x </td> <td> 15.49% </td> <td> 7.02x </td> <td> 0.07% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/cfunc_itself.rb" title="cfunc_itself just calls the 'itself' method many, many times.">cfunc_itself</a> </td> <td> 105.0 </td> <td> 0.12% </td> <td> 68.2 </td> <td> 1.38% </td> <td> 44.8 </td> <td> 1.02% </td> <td> 1.54x </td> <td> 1.38% </td> <td> 2.34x </td> <td> 1.03% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td> <td> 252.1 </td> <td> 0.06% </td> <td> 86.1 </td> <td> 0.03% </td> <td> 62.5 </td> <td> 0.60% </td> <td> 2.93x </td> <td> 0.07% </td> <td> 4.03x </td> <td> 0.61% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td> <td> 108.6 </td> <td> 0.17% </td> <td> 26.3 </td> <td> 68.40% </td> <td> 42.6 </td> <td> 0.72% </td> <td> 4.13x </td> <td> 68.40% </td> <td> 2.55x </td> <td> 0.75% </td> <td> 99.21% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/keyword_args.rb" title="keyword_args tests the performance of method calls with keyword arguments.">keyword_args</a> </td> <td> 281.9 </td> <td> 0.08% </td> <td> 228.8 </td> <td> 1.67% </td> <td> 53.4 </td> <td> 0.71% </td> <td> 1.23x </td> <td> 1.67% </td> <td> 5.28x </td> <td> 0.71% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td> <td> 270.4 </td> <td> 0.13% </td> <td> 229.0 </td> <td> 0.65% </td> <td> 187.5 </td> <td> 0.43% </td> <td> 1.18x </td> <td> 0.66% </td> <td> 1.44x </td> <td> 0.45% </td> <td> 100.00% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/setivar.rb" title="setivar tests the performance of setting instance variable values.">setivar</a> </td> <td> 79.3 </td> <td> 0.23% </td> <td> 10.7 </td> <td> 100.94% </td> <td> 50.6 </td> <td> 0.65% </td> <td> 7.41x </td> <td> 100.94% </td> <td> 1.57x </td> <td> 0.69% </td> <td> 99.55% </td>
+			</tr>
+		
+			<tr style="border: 1px solid black;">
+				 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/str_concat.rb" title="str_concat tests the performance of string concatenation in multiple different encodings.">str_concat</a> </td> <td> 134.2 </td> <td> 0.89% </td> <td> 102.3 </td> <td> 0.99% </td> <td> 108.0 </td> <td> 1.43% </td> <td> 1.31x </td> <td> 1.33% </td> <td> 1.24x </td> <td> 1.68% </td> <td> 99.68% </td>
+			</tr>
+		
+	</tbody>
+</table>
+
+<p>
+	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
+	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.<br/>
+	<strong>Speedup</strong> is relative to interpreted CRuby. So an "MJIT speedup" of 1.21x means it runs at 1.21 times the iters/second of CRuby with JIT disabled.
+</p>
+
+<p>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>. <br/>
+	Our benchmark-runner and reporting code is <a href="https://github.com/Shopify/yjit-metrics">in the yjit-metrics Github repo</a>.
+</p>
+
+<p>
+	Tested Ruby version for YJIT and No-JIT: <tt><strong>ruby 3.2.0dev (2022-05-22T06:26:42Z master e79983a448) +YJIT [x86_64-linux]</strong></tt> <br/>
+
+	Tested Ruby version for Ruby 3.1 MJIT: <tt><strong>ruby 3.2.0dev (2022-05-22T06:26:42Z master e79983a448) +MJIT [x86_64-linux]</strong></tt> <br/>
+
+
+	(We got much better MJIT results with released than prerelease, so we used those.)
+</p>
