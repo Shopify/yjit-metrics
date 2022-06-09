@@ -373,7 +373,9 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 ONE_BENCH_REPORT
     end
 
-    file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
+    # For now, stop filing perf bugs. This is simply not reliable enough to use as-is, at least
+    # over a significant time interval.
+    #file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
 begin
