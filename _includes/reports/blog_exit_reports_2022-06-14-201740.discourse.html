@@ -1,0 +1,64 @@
+method call exit reasons: 
+                block_arg    2587768 (36.9%)
+                  bmethod    2198271 (31.4%)
+      iseq_complex_callee     837389 (11.9%)
+    optimized_method_send     602925 ( 8.6%)
+    optimized_method_call     506262 ( 7.2%)
+               args_splat     151407 ( 2.2%)
+    cfunc_ruby_array_varg      68234 ( 1.0%)
+                 kw_splat      35984 ( 0.5%)
+           refined_method      12015 ( 0.2%)
+          ivar_set_method      11652 ( 0.2%)
+                 keywords         38 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   30115053 (96.1%)
+    start_pc_non_zero    1224228 ( 3.9%)
+         se_interrupt       6250 ( 0.0%)
+
+getinstancevariable exit reasons: 
+         megamorphic        347 (50.4%)
+    idx_out_of_range        341 (49.6%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           2
+bindings_set:                   0
+compiled_iseq_count:         3195
+compiled_block_count:       25546
+invalidation_count:            85
+constant_state_bumps:           0
+inline_code_size:         5931547
+outlined_code_size:       4405535
+
+total_exit_count:        53577004
+total_insns_count:     1366020496
+vm_insns_count:         360449710
+yjit_insns_count:      1029032737
+ratio_in_yjit:              73.6%
+avg_len_in_yjit:             18.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   13968751 (59.5)
+       getinstancevariable:    3077388 (13.1)
+                      send:    2691035 (11.5)
+        getblockparamproxy:    2262380 (9.6)
+               invokeblock:     379661 (1.6)
+               invokesuper:     327831 (1.4)
+        opt_getinlinecache:     291022 (1.2)
+               expandarray:     112345 (0.5)
+                 opt_nil_p:     104920 (0.4)
+             setlocal_WC_0:      94744 (0.4)
+                     throw:      40414 (0.2)
+               concatarray:      39029 (0.2)
+                    opt_lt:      26834 (0.1)
+                  opt_aref:      15903 (0.1)
+               opt_empty_p:       7345 (0.0)
+                     leave:       6250 (0.0)
+               getconstant:       6131 (0.0)
+                   opt_mod:       5457 (0.0)
+                   opt_and:       2436 (0.0)
+                    opt_eq:       1213 (0.0)
