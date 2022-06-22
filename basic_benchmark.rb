@@ -152,6 +152,10 @@ SKIPPED_COMBOS = [
     # https://github.com/Shopify/yjit-bench/issues/71
     [ "*", "jekyll" ],
 
+    # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
+    # Needs an update of dependency libraries.
+    [ "*", "discourse" ],
+
     # [ "name_of_config", "name_of_benchmark" ] OR
     # [ "*", "name_of_benchmark" ]
 ]
