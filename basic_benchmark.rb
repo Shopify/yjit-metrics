@@ -46,14 +46,15 @@ RUBY_BUILDS = {
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
     },
-    "ruby-yjit-metrics-stats" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
-        config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
-    },
+    # There is currently no Rust-YJIT equivalent to this older build type
+    #"ruby-yjit-metrics-stats" => {
+    #    install: "repo",
+    #    git_url: YJIT_GIT_URL,
+    #    git_branch: YJIT_GIT_BRANCH,
+    #    repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
+    #    config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
+    #    config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
+    #},
     "ruby-yjit-metrics-prod" => {
         install: "repo",
         git_url: YJIT_GIT_URL,
@@ -95,14 +96,15 @@ RUBY_CONFIGS = {
         build: "ruby-yjit-metrics-debug",
         opts: [ "--yjit", "--yjit-stats" ],
     },
-    yjit_prod_stats: {
-        build: "ruby-yjit-metrics-stats",
-        opts: [ "--yjit", "--yjit-stats" ],
-    },
-    yjit_prod_stats_disabled: {
-        build: "ruby-yjit-metrics-stats",
-        opts: [ "--yjit" ],
-    },
+    # There is currently no Rust-YJIT equivalent to this older build type
+    #yjit_prod_stats: {
+    #    build: "ruby-yjit-metrics-stats",
+    #    opts: [ "--yjit", "--yjit-stats" ],
+    #},
+    #yjit_prod_stats_disabled: {
+    #    build: "ruby-yjit-metrics-stats",
+    #    opts: [ "--yjit" ],
+    #},
     yjit_rust_proto: {
         build: "ruby-rust-yjit-prototype",
         opts: [ "--yjit" ],
