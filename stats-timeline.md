@@ -29,8 +29,7 @@ layout: basic
     function setCheckboxesFromHashParam() {
         var hash = window.location.hash;
         var benchmarks = hash.slice(1).split("+");
-        document.timeline_data.current_stat = benchmarks.unshift();
-        console.log("Setting current_stat from hash param", document.timeline_data.current_stat, hash);
+        document.timeline_data.current_stat = benchmarks.shift();
 
         var benchHash = {};
         benchmarks.forEach(function (bench) {
