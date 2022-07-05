@@ -41,7 +41,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         end
 
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks
-        overall = @context[:timestamps].map.with_index do |ts, t_idx|
+        summary = @context[:timestamps].map.with_index do |ts, t_idx|
             out = {
                 time: ts.strftime(time_format),
                 ruby_desc: @context[:ruby_desc_by_timestamp][ts] || "unknown",
@@ -59,8 +59,9 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 out[field] = geomean(points.compact)
             end
 
-            { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: out.compact }
+            out
         end
+        overall = { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: summary.compact }
 
         @series.sort_by! { |s| s[:name] }
         @series.prepend overall
