@@ -164,7 +164,7 @@ data_series.forEach(function(item) {
     circles.enter().append("circle")
       .attr("class", "centerdot " + item.name)
       .attr("fill", item.color)
-      .attr("r", 5.0)
+      .attr("r", 1.5)
       .attr("cx", function(d) { return x(d.time) } )
       .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
       .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + d[document.timeline_data.current_stat].toFixed(3) + "<br/>Ruby " + d.ruby_desc; } )
