@@ -30,6 +30,7 @@ layout: basic
         var hash = window.location.hash;
         var benchmarks = hash.slice(1).split("+");
         document.timeline_data.current_stat = benchmarks.shift();
+        stats_select.value = document.timeline_data.current_stat;
 
         var benchHash = {};
         benchmarks.forEach(function (bench) {
