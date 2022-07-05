@@ -90,7 +90,7 @@ var data_series = [
 ]
 data_series.pop();
 
-var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
+var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][:time] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][:time] }.max.inspect %>) ];
 
 document.timeline_data = {} // For sharing data w/ handlers
 document.timeline_data.current_stat = "<%= stats_fields[0] %>";
