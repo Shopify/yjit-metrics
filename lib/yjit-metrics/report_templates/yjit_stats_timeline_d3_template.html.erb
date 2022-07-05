@@ -79,12 +79,11 @@ var data_series = [
         benchmark: <%= this_series[:benchmark].inspect %>,
         visible: false,
         data: [ <%= this_series[:data].map do |hash|
-            hash[:time] = "timeParser(#{hash[:time].inspect})"
-            "{ " + hash.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") + " }"
+            "{ time: timeParser(#{hash[:time].inspect }), " + stats_fields.map { |k| "#{k}: #{hash[k].inspect}" }.join(", ") + ", ruby_desc: #{hash[:ruby_desc].inspect} }"
         end
         %>],
         color: <%= colors[color_index % colors.size].inspect %>,
-        time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
+        time_range: [ timeParser(<%= this_series[:data][0][:time].inspect %>), timeParser(<%= this_series[:data][-1][:time].inspect %>) ],
     },
     <% end %>
     {}

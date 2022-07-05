@@ -7,6 +7,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         super
 
         yjit_config = "prod_ruby_with_yjit"
+        stats_config = "yjit_stats"
         no_jit_config = "prod_ruby_no_jit"
 
         # This should match the JS parser in the template file
@@ -18,14 +19,15 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             all_points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
                 this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
+                this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point
                     # These fields are from the ResultSet summary
                     {
                         time: ts.strftime(time_format),
                         yjit_speedup: this_point_cruby["mean"] / this_point["mean"],
-                        ratio_in_yjit: this_point["yjit_ratio_pct"],
-                        side_exits: this_point["side_exits"],
+                        ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
+                        side_exits: this_point_stats["yjit_stats"]["side_exits"],
                         ruby_desc: this_ruby_desc,
                     }
                 else
