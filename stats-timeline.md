@@ -85,6 +85,7 @@ layout: basic
         var maxY = 1.0;
         data_series.forEach(function (series) {
             let valueRange = series.value_range[document.timeline_data.current_stat];
+            console.log("Finding value range for rescale", document.timeline_data.current_stat, valueRange);
             if(series.visible && valueRange[0] < minY) {
                 minY = valueRange[0];
             }
