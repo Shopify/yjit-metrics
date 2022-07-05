@@ -131,16 +131,16 @@ data_series.forEach(function(item) {
         );
 
     // Add a circle at each datapoint
-    var circles = group.selectAll("circle.centerdot." + item.name)
-      .data(item.data);
-    circles.enter().append("circle")
-      .attr("class", "centerdot " + item.name)
-      .attr("fill", item.color)
-      .attr("r", 5.0)
-      .attr("cx", function(d) { return x(d.date) } )
-      .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
-      ;
+    //var circles = group.selectAll("circle.centerdot." + item.name)
+    //  .data(item.data);
+    //circles.enter().append("circle")
+    //  .attr("class", "centerdot " + item.name)
+    //  .attr("fill", item.color)
+    //  .attr("r", 5.0)
+    //  .attr("cx", function(d) { return x(d.date) } )
+    //  .attr("cy", function(d) { return y(d.value) } )
+    //  .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+    //  ;
 });
 
 </script>
