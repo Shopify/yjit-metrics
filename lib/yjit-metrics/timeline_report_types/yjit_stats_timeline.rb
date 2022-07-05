@@ -63,7 +63,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         end
 
         @series.sort_by! { |s| s[:name] }
-        #@series.prepend overall
+        @series.prepend overall
     end
 
     def write_file(file_path)
