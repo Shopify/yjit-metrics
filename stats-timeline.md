@@ -117,7 +117,7 @@ layout: basic
                 // Rescale the circles
                 var svgCircles = svgGroup.selectAll("circle.centerdot." + seriesName)
                     .data(series.data)
-                    .attr("cy", function(d) { return yAxisFunc(d.value); })
+                    .attr("cy", function(d) { return yAxisFunc(d[document.timeline_data.current_stat]); })
                     ;
             }
         });
