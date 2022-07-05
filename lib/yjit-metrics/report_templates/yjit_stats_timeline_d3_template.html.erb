@@ -1,0 +1,147 @@
+<!-- This is the full-size timeline report, for the deep dive -->
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<div id="timeline_rs_chart"></div>
+
+<%
+# We want different colours, but we want them saturated so that white text shows up on top of them.
+# From: https://www.schemecolor.com/galaxy-rainbow.php
+colors = [
+    '#a80000',
+    '#fb6400',
+    '#ffc400',
+    '#62ba27',
+    '#3342c4',
+    '#9362c4',
+]
+%>
+
+<div id="stat_field_dropdown">
+  <% stats_fields = @series[1][:data][0].keys - [:time, :ruby_desc] %>
+  <select name="stat_types" id="stat_field_dropdown_select" selected="<%= stats_fields[0] %>">
+    <% stats_fields.each do |field| %> <option value="<%= field %>"><%= field %></option> <% end %>
+  </select>
+</div>
+
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+  <% @series.each_with_index do |this_series, color_index|
+       color = colors[color_index % colors.size]
+     %>
+  <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+  <% end %>
+    </ul>
+  </div>
+</div>
+
+<div id="bottom_selection_checkboxes" style="display: none;">
+  <ul>
+    <% @series.each_with_index do |this_series, color_index|
+         color = colors[color_index % colors.size]
+     %>
+    <li><input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" /> <span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span>
+    </li>
+  <% end %>
+  </ul>
+</div>
+
+<script>
+
+// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    //.attr("width", width + margin.left + margin.right)
+    //.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+var timeParser = d3.timeParse("%Y %m %d %H %M %S");
+var timePrinter = d3.timeFormat("%b %d %I%p");
+var data_series = [
+    <% @series.each_with_index do |this_series, color_index| %>
+    {
+        name: <%= this_series[:name].inspect %>,
+        config: <%= this_series[:config].inspect %>,
+        benchmark: <%= this_series[:benchmark].inspect %>,
+        visible: false,
+        data: [ <%= this_series[:data].map do |hash|
+            hash[:time] = "timeParser(#{hash[:time].inspect})"
+            "{ " + hash.map { |k, v| "#{k}: #{v.inspect}" }.join(", ") + " }"
+        end
+        %>],
+        color: <%= colors[color_index % colors.size].inspect %>,
+        time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
+    },
+    <% end %>
+    {}
+]
+data_series.pop();
+
+var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
+
+document.timeline_data = {} // For sharing data w/ handlers
+document.timeline_data.current_stat = "<%= stats_fields[0] %>";
+
+// Add X axis --> it is a date format
+var x = d3.scaleTime()
+  .domain(d3.extent(all_series_time_range))
+  .range([ 0, width ]);
+document.timeline_data.x_axis_function = x; /* Export for the event handlers */
+svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+  .selectAll("text")
+    .attr("transform", "rotate(-60)")
+    .style("text-anchor", "end");
+
+// Add Y axis
+var y = d3.scaleLinear()
+  .domain([0, 1.0])  // Dynamically generate later
+  .range([ height, 0 ]);
+document.timeline_data.y_axis_function = y; /* Export for the event handlers */
+document.timeline_data.y_axis = d3.axisLeft(y);
+document.timeline_data.top_svg_group = svg.append("g")
+  .call(document.timeline_data.y_axis);
+
+data_series.forEach(function(item) {
+    group = svg.append("g").attr("class", item.name).attr("visibility", "hidden" )
+
+    // Add the graph line
+    group.append("path")
+      .datum(item.data)
+      .attr("fill", "none")
+      .attr("stroke", item.color)
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.time) })
+        .y(function(d) { return y(d[document.timeline_data.current_stat]) })
+        );
+
+    // Add a circle at each datapoint
+    var circles = group.selectAll("circle.centerdot." + item.name)
+      .data(item.data);
+    circles.enter().append("circle")
+      .attr("class", "centerdot " + item.name)
+      .attr("fill", item.color)
+      .attr("r", 5.0)
+      .attr("cx", function(d) { return x(d.date) } )
+      .attr("cy", function(d) { return y(d.value) } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+      ;
+});
+
+</script>

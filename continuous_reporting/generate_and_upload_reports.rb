@@ -54,6 +54,10 @@ REPORTS_AND_FILES = {
         report_type: :timeline_report,
         extensions: [ "html" ],
     },
+    "yjit_stats_timeline" => {
+        report_type: :timeline_report,
+        extensions: [ "html" ],
+    },
 }
 
 def report_filenames(report_name, ts, prefix="_includes/reports")
