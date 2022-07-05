@@ -83,11 +83,12 @@ layout: basic
         var minY = 0.0;
         var maxY = 1.0;
         data_series.forEach(function (series) {
-            if(series.visible && series.value_range[0] < minY) {
-                minY = series.value_range[0];
+            let valueRange = series.value_range[document.timeline_data.current_stat];
+            if(series.visible && valueRange[0] < minY) {
+                minY = valueRange[0];
             }
-            if(series.visible && series.value_range[1] > maxY) {
-                maxY = series.value_range[1];
+            if(series.visible && valueRange[1] > maxY) {
+                maxY = valueRange[1];
             }
         });
         var yAxis = document.timeline_data.y_axis;
