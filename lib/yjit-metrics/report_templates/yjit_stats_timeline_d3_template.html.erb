@@ -108,7 +108,7 @@ var data_series = [
         color: <%= colors[color_index % colors.size].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][:time].inspect %>), timeParser(<%= this_series[:data][-1][:time].inspect %>) ],
         value_range: { <% stats_fields.each do |field| %>
-            <%= field %>: [ <%= this_series[:data].map { |pt| pt[field] }.min %>, <%= this_series[:data].map { |pt| pt[field] }.max %> ],
+            <%= field %>: [ <%= this_series[:data].map { |pt| pt[field] }.compact.min %>, <%= this_series[:data].map { |pt| pt[field] }.compact.max %> ],
             <% end %>
             last: []
         }

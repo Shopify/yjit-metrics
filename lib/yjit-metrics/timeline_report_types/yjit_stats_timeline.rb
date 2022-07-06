@@ -28,6 +28,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                         yjit_speedup: this_point_cruby["mean"] / this_point["mean"],
                         ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                         side_exits: this_point_stats["yjit_stats"]["side_exits"],
+                        invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"],
                         ruby_desc: this_ruby_desc,
                     }
                 else
@@ -40,13 +41,14 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", visible: visible, data: all_points.compact })
         end
 
+        stats_fields = @series[0][:data][0].keys - [:time, :ruby_desc]
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks
         summary = @context[:timestamps].map.with_index do |ts, t_idx|
             out = {
                 time: ts.strftime(time_format),
                 ruby_desc: @context[:ruby_desc_by_timestamp][ts] || "unknown",
             }
-            [:yjit_speedup, :ratio_in_yjit, :side_exits].each do |field|
+            stats_fields.each do |field|
                 begin
                     points = @context[:benchmark_order].map.with_index do |bench, b_idx|
                         t_in_series = @series[b_idx][:data][t_idx]
@@ -56,7 +58,9 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                     STDERR.puts "Error in yjit_stats_timeline calculating field #{field} for TS #{ts.inspect} for all benchmarks"
                     raise
                 end
-                out[field] = mean(points.compact)
+                points.compact!
+                raise("No data points for stat #{field.inspect} for TS #{ts.inspect}") if points.empty?
+                out[field] = mean(points)
             end
 
             out
