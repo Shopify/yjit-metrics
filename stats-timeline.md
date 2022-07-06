@@ -8,6 +8,10 @@ layout: basic
 {% include reports/yjit_stats_timeline.html %}
 </div>
 
+<div>
+  "Overall" is a mean of all listed benchmarks.
+</div>
+
 <script>
     document.getElementById("bottom_selection_checkboxes").style.display = "block";
     var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
@@ -117,8 +121,12 @@ layout: basic
                 var svgCircles = svgGroup.selectAll("circle.centerdot." + seriesName)
                     .data(series.data)
                     .attr("cy", function(d) { return yAxisFunc(d[document.timeline_data.current_stat]); })
+                    // Update the tooltips
+                    .attr("data-tooltip", function(d) { return series.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]).toFixed(1) + "<br/>Ruby " + d.ruby_desc; })
+
                     ;
-            }
+
+                }
         });
 
     }
