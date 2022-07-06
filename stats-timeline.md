@@ -4,12 +4,12 @@ layout: basic
 
 <h2 style="text-align: center;">YJIT Stats Over Time</h2>
 
-<div class="timeline_report">
-{% include reports/yjit_stats_timeline.html %}
+<div>
+  "Overall" is a mean (arithmetic, not geometric) of all listed benchmarks.
 </div>
 
-<div>
-  "Overall" is a mean of all listed benchmarks.
+<div class="timeline_report">
+{% include reports/yjit_stats_timeline.html %}
 </div>
 
 <script>
