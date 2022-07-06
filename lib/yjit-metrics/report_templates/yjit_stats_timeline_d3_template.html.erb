@@ -141,6 +141,8 @@ var y = d3.scaleLinear()
   .range([ height, 0 ]);
 document.timeline_data.y_axis_function = y; /* Export for the event handlers */
 document.timeline_data.y_axis = d3.axisLeft(y);
+let formatValue = d3.format(".2s");
+document.timeline_data.y_axis.tickFormat(function (d) { return formatValue(d); });
 document.timeline_data.top_svg_group = svg.append("g")
   .call(document.timeline_data.y_axis);
 
@@ -167,7 +169,7 @@ data_series.forEach(function(item) {
       .attr("r", 1.5)
       .attr("cx", function(d) { return x(d.time) } )
       .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]).toFixed(2) + "<br/>Ruby " + d.ruby_desc; } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]) + "<br/>Ruby " + d.ruby_desc; } )
       ;
 });
 

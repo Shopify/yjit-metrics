@@ -56,7 +56,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                     STDERR.puts "Error in yjit_stats_timeline calculating field #{field} for TS #{ts.inspect} for all benchmarks"
                     raise
                 end
-                out[field] = geomean(points.compact)
+                out[field] = mean(points.compact)
             end
 
             out
