@@ -28,7 +28,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                         yjit_speedup: this_point_cruby["mean"] / this_point["mean"],
                         ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                         side_exits: this_point_stats["yjit_stats"]["side_exits"],
-                        invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"],
+                        invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"] || 0,
                         ruby_desc: this_ruby_desc,
                     }
                 else
