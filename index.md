@@ -51,6 +51,13 @@ layout: basic
   </div>
 </div>
 
+<!-- Stats timeline -->
+<div class="stats-timeline-report">
+  <div style="text-align: center;">
+    <a href="{{ "stats-timeline#yjit_speedup+overall+activerecord+liquid-render+optcarrot+railsbench" | relative_url }}"><button>YJIT Speedup and Statistics Over Time</button></a>
+  </div>
+</div>
+
 <p style="text-align: center; margin-top: 3em;">
   Do you love extensive details? <br/>
   <a href="{{ "history" | relative_url }}"> <button>See All the Benchmark History</button></a>
