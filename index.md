@@ -53,7 +53,7 @@ layout: basic
 
 <!-- Stats timeline -->
 <div class="stats-timeline-report">
-  <div style="text-align: center;">
+  <div style="text-align: center; margin-top: 3em;">
     <a href="{{ "stats-timeline#yjit_speedup+overall+activerecord+liquid-render+optcarrot+railsbench" | relative_url }}"><button>YJIT Speedup and Statistics Over Time</button></a>
   </div>
 </div>
