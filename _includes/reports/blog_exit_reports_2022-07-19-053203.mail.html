@@ -1,0 +1,57 @@
+method call exit reasons: 
+             args_splat     195741 (50.0%)
+                bmethod     137714 (35.2%)
+              block_arg      50729 (13.0%)
+    iseq_complex_callee       7241 ( 1.8%)
+
+leave exit reasons: 
+        interp_return   10489792 (99.7%)
+    start_pc_non_zero      29010 ( 0.3%)
+         se_interrupt        277 ( 0.0%)
+
+getinstancevariable exit reasons: 
+         megamorphic         10 (90.9%)
+    idx_out_of_range          1 ( 9.1%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          374
+compiled_block_count:        5594
+invalidation_count:            17
+constant_state_bumps:           0
+inline_code_size:          930907
+outlined_code_size:        679293
+
+total_exit_count:        12571627
+total_insns_count:     3860795689
+vm_insns_count:          25604666
+yjit_insns_count:      3837272858
+ratio_in_yjit:              99.3%
+avg_len_in_yjit:            305.1
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:     747577 (35.9)
+        getblockparamproxy:     645092 (31.0)
+                      send:     275460 (13.2)
+               invokesuper:     152214 (7.3)
+               opt_empty_p:      94242 (4.5)
+               getconstant:      79741 (3.8)
+       getinstancevariable:      50739 (2.4)
+               invokeblock:      14627 (0.7)
+                  opt_ltlt:      14504 (0.7)
+               expandarray:       7248 (0.3)
+                     leave:        277 (0.0)
+          opt_regexpmatch2:         67 (0.0)
+               objtostring:         21 (0.0)
+                   opt_neq:         12 (0.0)
+        opt_getinlinecache:          9 (0.0)
+              branchunless:          5 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
