@@ -1,0 +1,57 @@
+method call exit reasons: 
+               args_splat    4514946 (29.6%)
+      iseq_complex_callee    3654938 (23.9%)
+                block_arg    3439938 (22.5%)
+                  bmethod    2579829 (16.9%)
+    optimized_method_send     860000 ( 5.6%)
+                 kw_splat     214992 ( 1.4%)
+
+leave exit reasons: 
+        interp_return   40849827 (99.0%)
+    start_pc_non_zero     430028 ( 1.0%)
+         se_interrupt        423 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          131
+compiled_block_count:        1283
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:         1038107
+outlined_code_size:        781227
+
+total_exit_count:        60201026
+total_insns_count:     1564567357
+vm_insns_count:         219969899
+yjit_insns_count:      1363948657
+ratio_in_yjit:              85.9%
+avg_len_in_yjit:             22.3
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    9030410 (46.7)
+                      send:    7524910 (38.9)
+               invokeblock:    1720191 (8.9)
+               invokesuper:     430273 (2.2)
+                     throw:     215000 (1.1)
+               opt_empty_p:     214993 (1.1)
+               concatarray:     214989 (1.1)
+                     leave:        423 (0.0)
+                  opt_aref:          6 (0.0)
+                  branchif:          4 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+             concatstrings:          0 (0.0)
+               defineclass:          0 (0.0)
+                   defined:          0 (0.0)
