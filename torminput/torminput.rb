@@ -34,7 +34,7 @@ RUBY_IMPL_ARGS = {
 inputs = %w{1 5 3.7 nil true false @undefined :s} +
   %w{"" "".force_encoding("ascii-8bit") "".force_encoding("binary")} +
   %w{"a" "a".force_encoding("ascii-8bit") "a".force_encoding("binary")} +
-  %w{[] [1,"a"] {} {a:1} Object.new}
+  %w{[] [1,"a"] {} {a:1}}
 
 snippet_operations = {
   "simple_plus" => "a + b",
@@ -81,7 +81,7 @@ def perform_run(source_path, description)
     impl_output = outfiles[idx].path
     text_diff = `diff -c #{key_impl_output} #{impl_output}`.strip
     unless text_diff == ""
-      puts "Output diffs between #{key_impl} and #{impl} for #{description}:"
+      puts "Output diffs between #{key_impl} and #{impl_name} for #{description}:"
       puts text_diff
       print "\n\n==============\n\n"
       raise "Different output! Error!"
