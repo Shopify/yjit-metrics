@@ -4,10 +4,21 @@
 require "erb"
 require "tempfile"
 require "fileutils"
+require "optparse"
 
+OPTIONS = {
+  ruby: "./miniruby",
+}
+OptionParser.new do |opts|
+  opts.banner = "Usage: torminput.rb [options]"
 
-
-RUBY = "./miniruby"
+  opts.on("-r RUBY", "Run with a specific Ruby (default: #{OPTIONS[:ruby]})") do |r|
+    OPTIONS[:ruby] = r
+  end
+end.parse!
+if ARGV.length > 0
+  raise "Unexpected arguments: #{ARGV.inspect}!"
+end
 
 # These are strings, not Ruby objects. No spaces in each item inside %w!
 inputs = %w{1 5 3.7 nil true false :s} +
@@ -37,8 +48,8 @@ inputs.each do |receiver|
 
       cruby_outfile = Tempfile.open("torminput_cruby_out")
       yjit_outfile = Tempfile.open("torminput_yjit_out")
-      system("#{RUBY} #{sourcefile.path}>#{cruby_outfile.path}") || raise("Failed running CRuby source for #{receiver} / #{first_time_arg}!")
-      system("#{RUBY} --yjit-call-threshold=1 #{sourcefile.path}>#{yjit_outfile.path}") || raise("Failed running YJIT source for #{receiver} / #{first_time_arg}!")
+      system("#{OPTIONS[:ruby]} #{sourcefile.path}>#{cruby_outfile.path}") || raise("Failed running CRuby source for #{receiver} / #{first_time_arg}!")
+      system("#{OPTIONS[:ruby]} --yjit-call-threshold=1 #{sourcefile.path}>#{yjit_outfile.path}") || raise("Failed running YJIT source for #{receiver} / #{first_time_arg}!")
 
       # If we cut out whitespace, is there any diff?
       text_diff = `diff -c #{cruby_outfile.path} #{yjit_outfile.path}`.strip
