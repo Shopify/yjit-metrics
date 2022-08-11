@@ -57,7 +57,7 @@ end
 def use_gemfile(extra_setup_cmd: nil)
   yjit_metrics_using_gemfile = true
 
-  setup_cmds([ "bundle install", extra_setup_cmd].compact)
+  setup_cmds([ "bundle install --quiet", extra_setup_cmd].compact)
 
   # Need to be in the appropriate directory
   require "bundler/setup"
