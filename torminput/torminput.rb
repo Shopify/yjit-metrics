@@ -34,13 +34,20 @@ RUBY_IMPL_ARGS = {
 inputs = %w{1 5 3.7 nil true false @undefined :s} +
   %w{"" "".force_encoding("ascii-8bit") "".force_encoding("binary")} +
   %w{"a" "a".force_encoding("ascii-8bit") "a".force_encoding("binary")} +
-  %w{[] [1,"a"] {} {a:1}}
+  %w{[] [1,"a"] {} {a:1} +"" Array.new String.new Hash.new}
 
 snippet_operations = {
   "simple_plus" => "a + b",
+  "simple_minus" => "a - b",
+  "simple_times" => "a * b",
+  "simple_slash" => "a / b",
   "simple_shovel" => "a << b",
   "simple_lt" => "a < b",
   "simple_gt" => "a > b",
+  "simple_mod" => "a % b",
+  "simple_eq" => "a == b",
+  "range" => "a..b",
+  "local_and_proc" => "x = a; -> { -> { x = b }.() }.()",
 }
 
 # TODO: add method operations
