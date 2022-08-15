@@ -1,0 +1,60 @@
+method call exit reasons: 
+    optimized_method_call    6316423 (53.2%)
+                block_arg    4109993 (34.6%)
+    optimized_method_send     779626 ( 6.6%)
+               args_splat     257444 ( 2.2%)
+      iseq_complex_callee     200351 ( 1.7%)
+            zsuper_method     140139 ( 1.2%)
+                 kw_splat      67829 ( 0.6%)
+    cfunc_ruby_array_varg         26 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  215720682 (99.6%)
+    start_pc_non_zero     795019 ( 0.4%)
+         se_interrupt        149 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    megamorphic      84634 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          682
+compiled_block_count:        8051
+invalidation_count:             9
+constant_state_bumps:           0
+inline_code_size:         1153051
+outlined_code_size:        926153
+
+total_exit_count:       253207792
+total_insns_count:     9535334997
+vm_insns_count:        1653990610
+yjit_insns_count:      7918831497
+ratio_in_yjit:              82.7%
+avg_len_in_yjit:             31.1
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   15130499 (40.4)
+                 opt_minus:    9085359 (24.2)
+               invokeblock:    4803311 (12.8)
+                      send:    4196658 (11.2)
+          opt_newarray_min:    2990131 (8.0)
+                 opt_nil_p:     427837 (1.1)
+        getblockparamproxy:     228587 (0.6)
+               invokesuper:     228239 (0.6)
+                    opt_eq:     199450 (0.5)
+                     throw:      85639 (0.2)
+             setlocal_WC_0:      85443 (0.2)
+          opt_newarray_max:      25409 (0.1)
+                    opt_le:        174 (0.0)
+                     leave:        149 (0.0)
+       getinstancevariable:        121 (0.0)
+                  opt_aref:         68 (0.0)
+               getconstant:         26 (0.0)
+        opt_getinlinecache:          7 (0.0)
+                  opt_mult:          2 (0.0)
+                  opt_plus:          1 (0.0)
