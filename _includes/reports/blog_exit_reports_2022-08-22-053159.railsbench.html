@@ -1,0 +1,60 @@
+method call exit reasons: 
+                block_arg    7933551 (29.3%)
+               args_splat    6253179 (23.1%)
+    optimized_method_call    5957283 (22.0%)
+                  bmethod    3287342 (12.1%)
+      iseq_complex_callee    2444885 ( 9.0%)
+    optimized_method_send     994840 ( 3.7%)
+                 kw_splat     230055 ( 0.8%)
+                 keywords         92 ( 0.0%)
+    cfunc_ruby_array_varg         16 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   56312982 (96.2%)
+    start_pc_non_zero    2209476 ( 3.8%)
+         se_interrupt        324 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1436
+compiled_block_count:       10033
+invalidation_count:            16
+constant_state_bumps:           0
+inline_code_size:         2655643
+outlined_code_size:       1966530
+
+total_exit_count:        88313900
+total_insns_count:     2850373039
+vm_insns_count:         388179072
+yjit_insns_count:      2494194885
+ratio_in_yjit:              86.4%
+avg_len_in_yjit:             27.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   13287600 (41.5)
+                      send:   10337000 (32.3)
+               invokesuper:    3658066 (11.4)
+               invokeblock:    2236059 (7.0)
+               getconstant:     605939 (1.9)
+                  opt_aref:     490025 (1.5)
+                     throw:     362612 (1.1)
+               concatarray:     349185 (1.1)
+               expandarray:     348939 (1.1)
+             setlocal_WC_0:     208936 (0.7)
+        getblockparamproxy:      69642 (0.2)
+        opt_getinlinecache:      45511 (0.1)
+               opt_empty_p:       1053 (0.0)
+                     leave:        324 (0.0)
+               objtostring:          6 (0.0)
+                  opt_aset:          6 (0.0)
+                  branchif:          5 (0.0)
+       getinstancevariable:          3 (0.0)
+                   opt_and:          3 (0.0)
+                opt_length:          2 (0.0)
