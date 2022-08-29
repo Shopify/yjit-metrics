@@ -1,11 +1,14 @@
 # YJIT Metrics
 
-YJIT-metrics is intended to check speedups and internal statistics for YJIT,
-an experimental open-source JIT for CRuby. You can find out more about YJIT
-[at yjit.org](https://yjit.org).
+YJIT-metrics monitors speedups and internal statistics for Ruby JIT,
+and especially for YJIT, an included JIT in CRuby. You can see
+the latest YJIT statistics, gathered with yjit-metrics,
+[at speed.yjit.org](https://speed.yjit.org).
 
 YJIT-metrics uses the benchmarks in the
-[yjit-bench repository](https://github.com/Shopify/yjit-bench).
+[yjit-bench repository](https://github.com/Shopify/yjit-bench) and
+the [yjit-extra-benchmarks repository](https://github.com/Shopify/yjit-extra-benchmarks).
+
 
 You can see the latest benchmark reports
 [at speed.yjit.org](https://speed.yjit.org).
@@ -31,13 +34,15 @@ For that reason, where we-the-authors provide official numbers they will usually
 
 You can run ./basic_benchmark.rb to clone appropriate other repositories (yjit, yjit-bench) and run the benchmarks. You can also specify one or more benchmark names on the command line to run only those benchmarks: `./basic_benchmark.rb activerecord`
 
-basic_benchmark.rb also accepts a --skip-git-updates parameter for runs after the first to not "git pull" its repos and rebuild Ruby. To see full parameters, try `basic_benchmark.rb --help`
+basic_benchmark.rb also accepts many other parameters, such as a --skip-git-updates parameter for runs after the first to not "git pull" its repos and rebuild Ruby.
 
-By default, basic_benchmark.rb will write JSON data files into the data directory after successful runs. You can then use reporting (see below) to get descriptions of those results.
+To see full parameters, try `basic_benchmark.rb --help`
 
-Try `basic_report.rb` and `basic_report.rb --help` to get started. There are several different reports, and you can specify which data files to include and which benchmarks to show. By default basic_report will load all data files that have the exact same, most recent timestamp. So if basic_benchmark.rb writes several files, basic_report.rb will use them all by default.
+By default, basic_benchmark.rb will write JSON data files into the data directory after successful runs. You can then use reporting (see below) to get summaries of those results.
 
-You can find examples of data-gathering scripts in the "runners" directory and postprocessing scripts in the "formatters" directory.
+Use `basic_report.rb --help` to get started. There are several different reports, and you can specify which data files to include and which benchmarks to show. By default basic_report will load all data files that have the exact same, most recent timestamp. So if basic_benchmark.rb writes several files, basic_report.rb will use them all by default.
+
+You can find older examples of data-gathering scripts in the "runners" directory and postprocessing scripts in the "formatters" directory.
 
 ## TruffleRuby
 
