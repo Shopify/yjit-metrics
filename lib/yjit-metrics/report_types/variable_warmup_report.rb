@@ -47,7 +47,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
     def look_up_data_by_ruby
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit30_config = exactly_one_config_with_name(@config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
-        @with_mjit31_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT3.1", none_okay: true)
+        @with_mjit31_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT.
@@ -55,7 +55,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             ["No JIT", @no_jit_config],
         ]
         @configs_with_human_names.push(["MJIT3.0", @with_mjit30_config]) if @with_mjit30_config
-        @configs_with_human_names.push(["MJIT3.1", @with_mjit31_config]) if @with_mjit31_config
+        @configs_with_human_names.push(["MJIT", @with_mjit31_config]) if @with_mjit31_config
         @configs_with_human_names.push(["YJIT", @with_yjit_config])
 
         # Grab relevant data from the ResultSet
