@@ -133,6 +133,7 @@ RUBY_CONFIGS = {
         build: "ruby-3.0.2",
         opts: [],
     },
+    # This is arguably the fastest-tuned MJIT to have existed. We definitely used it as a competitive benchmark for YJIT.
     ruby_30_with_mjit: {
         build: "ruby-3.0.0",
         opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
@@ -151,6 +152,7 @@ SKIPPED_COMBOS = [
     [ "prod_ruby_with_mjit", "hexapdf" ],
 
     # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
+    # Just in general, Jekyll had some serious issues as a benchmark :-/
     # https://github.com/Shopify/yjit-bench/issues/71
     [ "*", "jekyll" ],
 
@@ -212,7 +214,7 @@ OptionParser.new do |opts|
         harness_params[:warmup_itrs] = harness_params[:min_bench_itrs] = harness_params[:min_bench_time] = nil
     end
 
-    opts.on("--warmup-itrs=n", "Number of warmup iterations that do not have recorded per-run timings") do |n|
+    opts.on("--warmup-itrs=n", "Number of warmup iterations that do not count in per-run summaries") do |n|
         raise "Must not specify warmup/itrs configuration along with a warmup config file!" if harness_params[:variable_warmup_config_file]
         raise "Number of warmup iterations must be zero or positive!" if n.to_i < 0
         harness_params[:warmup_itrs] = n.to_i
@@ -239,7 +241,7 @@ OptionParser.new do |opts|
         output_path = dir
     end
 
-    opts.on("--bundler-version=VERSION", "Require a specific Bundler version") do |ver|
+    opts.on("--bundler-version=VERSION", "Require a specific Bundler version (default: 2.2.30)") do |ver|
         bundler_version = ver
     end
 

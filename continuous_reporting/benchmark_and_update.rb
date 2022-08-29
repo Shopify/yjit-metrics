@@ -15,6 +15,10 @@ require "optparse"
 
 # We want to run our benchmarks, then update GitHub Pages appropriately.
 
+# The tolerances below are for detecting big drops in benchmark performance. So far I haven't
+# had good luck with that -- it's either too sensitive and files spurious bugs a lot, or it's
+# too insensitive and doesn't notice real bugs. Right now, auto-filing bugs is turned off.
+
 # The STDDEV_TOLERANCE is what multiple of the standard deviation it's okay to drop on
 # a given run. That effectively determines the false-positive rate since we're comparing samples
 # from a Gaussian-ish distribution.
@@ -24,12 +28,10 @@ NORMAL_STDDEV_TOLERANCE = 1.5
 # on the more permissive of the two mean values. All four must be outside of tolerance
 # for us to count a failure.
 NORMAL_DROP_TOLERANCE = 0.07
-
 # A microbenchmark will normally have a very small stddev from run to run. That means
 # it's actually *less* tolerant of noise on the host, since "twice the stddev" is a
 # significantly smaller absolute value.
 MICRO_STDDEV_TOLERANCE = 2.0
-
 # A microbenchmark will routinely show persistent speed changes of much larger magnitude
 # than a larger, more varied benchmark. For example, setivar is surprisingly prone to
 # large swings in time taken depending on tiny changes to memory layout. So the drop
