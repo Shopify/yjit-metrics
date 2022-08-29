@@ -200,10 +200,11 @@ end
 
 def report_and_upload
     Dir.chdir __dir__ do
-        # This should copy the data directory into the Jekyll directories,
+        # This should copy the data directory into the Jekyll directories for generating reports,
         # run any reports it needs to and check the results into Git.
         YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data"
 
+        # Delete the files from this run since they've now been processed.
         old_data_files = Dir["continuous_reporting/data/*"].to_a
         unless old_data_files.empty?
             old_data_files.each { |f| FileUtils.rm f }
@@ -377,6 +378,7 @@ ONE_BENCH_REPORT
 
     # For now, stop filing perf bugs. This is simply not reliable enough to use as-is, at least
     # over a significant time interval.
+    puts "For now, we're not auto-filing performance bugs."
     #file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
