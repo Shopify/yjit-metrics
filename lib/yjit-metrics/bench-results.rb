@@ -239,14 +239,26 @@ class YJITMetrics::ResultSet
         end
 
         @ruby_metadata[config_name] ||= benchmark_results["ruby_metadata"]
-        if @ruby_metadata[config_name] != benchmark_results["ruby_metadata"] && !@printed_ruby_metadata_warning
+        ruby_meta = @ruby_metadata[config_name]
+        if ruby_meta != benchmark_results["ruby_metadata"] && !@printed_ruby_metadata_warning
             print "Ruby metadata is meant to *only* include information that should always be\n" +
               "  the same for the same Ruby executable. Please verify that you have not added\n" +
               "  inappropriate Ruby metadata or accidentally used the same name for two\n" +
               "  different Ruby executables. (Additional mismatches in this result set won't show warnings.)\n"
-            puts "Metadata 1: #{@ruby_metadata[config_name].inspect}"
+            puts "Metadata 1: #{ruby_meta.inspect}"
             puts "Metadata 2: #{benchmark_results["ruby_metadata"].inspect}"
             @printed_ruby_metadata_warning = true
+        end
+        unless ruby_meta["arch"]
+            # Our harness didn't record arch until adding ARM64 support. If a collected data file doesn't set it,
+            # autodetect from RUBY_DESCRIPTION.
+            if ruby_meta["RUBY_DESCRIPTION"].include?("x86_64")
+                ruby_meta["arch"] = "x86_64-unknown"
+            elsif ruby_meta["RUBY_DESCRIPTION"].include?("arm64")
+                ruby_meta["arch"] = "arm64-unknown" # This case shouldn't be needed for benchmark CI
+            else
+                raise "No arch provided in data file, and neither x86_64 nor arm64 detected in RUBY_DESCRIPTION!"
+            end
         end
 
         @peak_mem[config_name] ||= {}
