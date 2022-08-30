@@ -11,7 +11,7 @@ report_class_by_name = YJITMetrics::Report.report_name_hash
 all_report_names = report_class_by_name.keys.sort
 
 # Default settings
-use_all_in_dir = false
+use_all_in_dirs = false
 reports = [ "per_bench_compare" ]
 data_dir = "data"
 output_dir = "."
@@ -25,8 +25,8 @@ OptionParser.new do |opts|
         If no files are specified, report on all results that have the latest timestamp.
     BANNER
 
-    opts.on("--all", "Use all files in the directory, not just latest or arguments") do
-        use_all_in_dir = true
+    opts.on("--all", "Use all files in the directory and all subdirs, not just latest or arguments") do
+        use_all_in_dirs = true
     end
 
     opts.on("--reports=REPORTS", "Run these reports on the data (known reports: #{all_report_names.join(", ")})") do |str|
@@ -79,10 +79,10 @@ end
 
 Dir.chdir(data_dir)
 
-files_in_dir = Dir["*"].grep(DATASET_FILENAME_RE)
+files_in_dir = Dir["**/*"].grep(DATASET_FILENAME_RE) # Check all subdirectories
 file_data = files_in_dir.map { |filename| parse_dataset_filename(filename) }
 
-if use_all_in_dir
+if use_all_in_dirs
     unless ARGV.empty?
         raise "Don't use --all with specified filenames!"
     end
