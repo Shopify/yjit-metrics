@@ -20,7 +20,7 @@ only_benchmarks = []  # Empty list means use all benchmarks present in the data 
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
-      Usage: basic_report.rb [options] [<filenames>]
+      Usage: basic_report.rb [options] [<files>]
         Reports available: #{all_report_names.join(", ")}
         If no files are specified, report on all results that have the latest timestamp.
     BANNER
@@ -59,16 +59,17 @@ end.parse!
 output_dir = File.expand_path(output_dir)
 
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
-# Return the information from the filename - run_num is nil if the file isn't in multi-run format
-def parse_dataset_filename(filename)
-    filename = filename.split("/")[-1]
+DATASET_PATHNAME_RE = /^(.*\/)?(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
+# Return the information from the file path - run_num is nil if the file isn't in multi-run format
+def parse_dataset_filepath(filepath)
+    filename = filepath.split("/")[-1]
     unless filename =~ DATASET_FILENAME_RE
         raise "Internal error! Filename #{filename.inspect} doesn't match expected naming of data files!"
     end
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    return [ filename, config_name, timestamp, run_num ]
+    return [ filepath, config_name, timestamp, run_num ]
 end
 
 def ts_string_to_date(ts)
@@ -79,12 +80,12 @@ end
 
 Dir.chdir(data_dir)
 
-files_in_dir = Dir["**/*"].grep(DATASET_FILENAME_RE) # Check all subdirectories
-file_data = files_in_dir.map { |filename| parse_dataset_filename(filename) }
+files_in_dir = Dir["**/*"].grep(DATASET_PATHNAME_RE) # Check all subdirectories
+file_data = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
 
 if use_all_in_dirs
     unless ARGV.empty?
-        raise "Don't use --all with specified filenames!"
+        raise "Don't use --all with specified files!"
     end
     relevant_results = file_data
 else
@@ -94,8 +95,8 @@ else
 
         relevant_results = file_data.select { |_, _, timestamp, _| timestamp == latest_ts }
     else
-        # One or more named files? Use that set of timestamps.
-        timestamps = ARGV.map { |filepath| parse_dataset_filename(filepath)[2] }.uniq
+        # One or more files on the command line? Use that set of timestamps.
+        timestamps = ARGV.map { |filepath| parse_dataset_filepath(filepath)[2] }.uniq
         relevant_results = file_data.select { |_, _, timestamp, _| timestamps.include?(timestamp) }
     end
 end
@@ -108,17 +109,17 @@ end
 latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
-relevant_results.each do |filename, config_name, timestamp, run_num|
-    benchmark_data = JSON.load(File.read(filename))
+relevant_results.each do |filepath, config_name, timestamp, run_num|
+    benchmark_data = JSON.load(File.read(filepath))
     begin
         RESULT_SET.add_for_config(config_name, benchmark_data)
     rescue
-        puts "Error adding data from #{filename.inspect}!"
+        puts "Error adding data from #{filepath.inspect}!"
         raise
     end
 end
 
-filenames = relevant_results.map(&:first)
+filepaths = relevant_results.map(&:first)
 config_names = relevant_results.map { |_, config_name, _, _| config_name }.uniq
 timestamps = relevant_results.map { |_, _, timestamp, _| timestamp }.uniq
 
@@ -126,7 +127,7 @@ reports.each do |report_name|
     report_type = report_class_by_name[report_name]
     report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
     report.set_extra_info({
-        filenames: filenames,
+        filenames: filepaths,
         timestamps: timestamps,
     })
 

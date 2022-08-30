@@ -48,16 +48,16 @@ end.parse!
 output_dir = File.expand_path(output_dir)
 
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
-# Return the information from the filename - run_num is nil if the file isn't in multi-run format
-def parse_dataset_filename(filename)
-    filename = filename.split("/")[-1]
+# Return the information from the file path - run_num is nil if the file isn't in multi-run format
+def parse_dataset_filepath(filepath)
+    filename = filepath.split("/")[-1]
     unless filename =~ DATASET_FILENAME_RE
         raise "Internal error! Filename #{filename.inspect} doesn't match expected naming of data files!"
     end
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    return [ filename, config_name, timestamp, run_num ]
+    return [ filepath, config_name, timestamp, run_num ]
 end
 
 def ts_string_to_date(ts)
@@ -74,8 +74,8 @@ end
 
 Dir.chdir(data_dir)
 
-files_in_dir = Dir["*"].grep(DATASET_FILENAME_RE)
-relevant_results = files_in_dir.map { |filename| parse_dataset_filename(filename) }
+files_in_dir = Dir["**/*"].grep(DATASET_FILENAME_RE)
+relevant_results = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
 
 if relevant_results.size == 0
     puts "No relevant data files found for directory #{data_dir.inspect} and specified arguments!"
@@ -86,12 +86,12 @@ latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
-filenames_by_ts = {}
+filepaths_by_ts = {}
 ruby_desc_by_ts = {}
-relevant_results.each do |filename, config_name, timestamp, run_num|
-    benchmark_data = JSON.load(File.read(filename))
-    filenames_by_ts[timestamp] ||= []
-    filenames_by_ts[timestamp].push filename
+relevant_results.each do |filepath, config_name, timestamp, run_num|
+    benchmark_data = JSON.load(File.read(filepath))
+    filepaths_by_ts[timestamp] ||= []
+    filepaths_by_ts[timestamp].push filepath  # Is this used? I'm not sure this is used.
     if config_name == "prod_ruby_with_yjit"
         ruby_desc_by_ts[timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
     end
@@ -99,7 +99,7 @@ relevant_results.each do |filename, config_name, timestamp, run_num|
         result_set_by_ts[timestamp] ||= YJITMetrics::ResultSet.new
         result_set_by_ts[timestamp].add_for_config(config_name, benchmark_data)
     rescue
-        puts "Error adding data from #{filename.inspect}!"
+        puts "Error adding data from #{filepath.inspect}!"
         raise
     end
 end
