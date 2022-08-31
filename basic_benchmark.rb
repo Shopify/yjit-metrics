@@ -32,9 +32,6 @@ end
 YJIT_GIT_URL = "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = "master"
 
-RUST_YJIT_GIT_URL = "https://github.com/Shopify/ruby"
-RUST_YJIT_GIT_BRANCH = "rust-yjit"
-
 # The same build of Ruby (e.g. current prerelease Ruby 3.1) can
 # have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
 RUBY_BUILDS = {
@@ -46,34 +43,18 @@ RUBY_BUILDS = {
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
     },
-    # There is currently no Rust-YJIT equivalent to this older build type
-    #"ruby-yjit-metrics-stats" => {
-    #    install: "repo",
-    #    git_url: YJIT_GIT_URL,
-    #    git_branch: YJIT_GIT_BRANCH,
-    #    repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
-    #    config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
-    #    config_env: ["CPPFLAGS=-DYJIT_STATS=1"],
-    #},
+    "ruby-yjit-metrics-stats" => {
+        install: "repo",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
+    },
     "ruby-yjit-metrics-prod" => {
         install: "repo",
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
         repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
-    },
-    "ruby-rust-yjit-prototype" => {
-        install: "repo",
-        git_url: RUST_YJIT_GIT_URL,
-        git_branch: RUST_YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../rust-yjit-proto"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
-    },
-    "ruby-rust-yjit-release" => {
-        install: "repo",
-        git_url: RUST_YJIT_GIT_URL,
-        git_branch: RUST_YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../rust-yjit-proto-release"),
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
     },
     "ruby-3.0.0" => {
@@ -96,21 +77,12 @@ RUBY_CONFIGS = {
         build: "ruby-yjit-metrics-debug",
         opts: [ "--yjit", "--yjit-stats" ],
     },
-    # There is currently no Rust-YJIT equivalent to this older build type
-    #yjit_prod_stats: {
-    #    build: "ruby-yjit-metrics-stats",
-    #    opts: [ "--yjit", "--yjit-stats" ],
-    #},
-    #yjit_prod_stats_disabled: {
-    #    build: "ruby-yjit-metrics-stats",
-    #    opts: [ "--yjit" ],
-    #},
-    yjit_rust_proto: {
-        build: "ruby-rust-yjit-prototype",
-        opts: [ "--yjit" ],
+    yjit_prod_stats: {
+        build: "ruby-yjit-metrics-stats",
+        opts: [ "--yjit", "--yjit-stats" ],
     },
-    yjit_rust_proto_release: {
-        build: "ruby-rust-yjit-release",
+    yjit_prod_stats_disabled: {
+        build: "ruby-yjit-metrics-stats",
         opts: [ "--yjit" ],
     },
     prod_ruby_no_jit: {
@@ -195,7 +167,7 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit, :yjit_rust_proto ]
+DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
 configs_to_test = DEFAULT_CONFIGS
 when_error = :die
 output_path = "data"
