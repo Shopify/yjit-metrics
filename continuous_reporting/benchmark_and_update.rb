@@ -56,7 +56,7 @@ end
 DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
     (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
         "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
-        "--warmup-itrs=50 --min-bench-time=30.0 --min-bench-itrs=15") +
+        "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
     " --configs=#{YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys.join(",")}"
 
 BENCH_TYPES = {
