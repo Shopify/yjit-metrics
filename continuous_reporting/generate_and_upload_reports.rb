@@ -204,7 +204,8 @@ json_timestamps.each do |ts, test_files|
         # If the HTML report doesn't already exist, build it.
         if run_report
             puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
+            # TODO: pass in RAW_BENCHMARK_ROOT so we can report on non-x86 benchmarks
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -267,7 +268,8 @@ end
 unless die_on_regenerate
     timeline_reports = REPORTS_AND_FILES.select { |report_name, details| details[:report_type] == :timeline_report }
 
-    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
+    # TODO: pass in RAW_BENCHMARK_ROOT so we can do non-x86 timelines too
+    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
 
     timeline_reports.each do |report_name, details|
         rf = details[:extensions].map { |ext| "_includes/reports/#{report_name}.#{ext}" }
