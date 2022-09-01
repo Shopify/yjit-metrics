@@ -17,15 +17,15 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
         @context[:benchmark_order].each do |benchmark|
             all_points = @context[:timestamps].map do |ts|
-                this_point = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
+                this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
                 this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
                 this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
-                if this_point
+                if this_point_yjit
                     # These fields are from the ResultSet summary
                     {
                         time: ts.strftime(time_format),
-                        yjit_speedup: this_point_cruby["mean"] / this_point["mean"],
+                        yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
                         ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                         side_exits: this_point_stats["yjit_stats"]["side_exits"],
                         invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"] || 0,
@@ -65,7 +65,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
             out
         end
-        overall = { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: summary.compact }
+        overall = { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: summary }
 
         @series.sort_by! { |s| s[:name] }
         @series.prepend overall
