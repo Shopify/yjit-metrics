@@ -7,15 +7,6 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-# This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
-
-# We want to check into the repo and file issues, so we need credentials.
-raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token!" unless ENV["BENCHMARK_CI_GITHUB_TOKEN"]
-GITHUB_TOKEN = ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp
-YJIT_METRICS_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
-YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git"
-YJIT_METRICS_PAGES_BRANCH = "pages"
-
 REPORTS_AND_FILES = {
     "blog_speed_headline" => {
         report_type: :basic_report,
@@ -95,18 +86,29 @@ OptionParser.new do |opts|
     end
 end.parse!
 
+# If want to check into the repo and file issues, we need credentials.
+YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
+GITHUB_TOKEN = ENV["BENCHMARK_CI_GITHUB_TOKEN"] ? ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp : nil
+unless GITHUB_TOKEN || (no_push && File.exist?(YJIT_METRICS_PAGES_DIR))
+    raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or clone yjit-metrics-pages!"
+end
+
+# This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
+YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git"
+YJIT_METRICS_PAGES_BRANCH = "pages"
+
 # Clone YJIT repo on "pages" branch, updated to latest version
-YJITMetrics.clone_repo_with path: YJIT_METRICS_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH
+YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH
 
 # We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
-#Dir.chdir(YJIT_METRICS_DIR) { YJITMetrics.check_call "git clean -d -f" }
+#Dir.chdir(YJIT_METRICS_PAGES_DIR) { YJITMetrics.check_call "git clean -d -f" }
 
 # Copy JSON and report files into the branch
 copy_from.each do |dir_to_copy|
     Dir.chdir(dir_to_copy) do
         # Copy raw data files to a place we can link them rather than include them in pages
         Dir["*.json"].each do |filename|
-            FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "raw_benchmark_data/#{filename}"))
+            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "raw_benchmark_data/#{filename}"))
         end
 
         # Copy report files to somewhere we can include them in other Jekyll pages
@@ -114,7 +116,7 @@ copy_from.each do |dir_to_copy|
             Dir["#{report_name}_*\.([^.]+)"].each do |filename|
                 ext = $1
                 if REPORTS_AND_FILES[report_name][:extensions].include?(ext)
-                    FileUtils.cp(filename, File.join(YJIT_METRICS_DIR, "_includes/reports/#{filename}"))
+                    FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "_includes/reports/#{filename}"))
                 end
             end
         end
@@ -122,7 +124,7 @@ copy_from.each do |dir_to_copy|
 end
 
 # From here on out, we're just in the yjit-metrics checkout of "pages"
-Dir.chdir(YJIT_METRICS_DIR)
+Dir.chdir(YJIT_METRICS_PAGES_DIR)
 
 starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 
