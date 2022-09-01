@@ -60,3 +60,11 @@ Please see LICENSE.md, CODE_OF_CONDUCT.md and CONTRIBUTING.md for more informati
 
 Or, y'know, just talk to us. The authors have significant online presences and we love normal GitHub interaction like issues, pull requests and so on.
 
+## Debugging Tips, Miscellaneous
+
+Are you making changes to reporting, or otherwise making sure you're correctly handling benchmark data? generate_and_upload_reports has a --no-push argument that lets you verify before you commit anything:
+
+    chruby 3.0.2
+    ruby continuous_reporting/generate_and_upload_reports.rb --no-push
+
+Then a quick "git diff" in the pages directory can show you what, if anything, changed. The script will also print whether it found any pushable changes.
