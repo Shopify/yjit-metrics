@@ -25,6 +25,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                     # These fields are from the ResultSet summary
                     {
                         time: ts.strftime(time_format),
+                        ts: ts,
                         yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
                         ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                         side_exits: this_point_stats["yjit_stats"]["side_exits"],
@@ -41,7 +42,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", visible: visible, data: all_points.compact })
         end
 
-        stats_fields = @series[0][:data][0].keys - [:time, :ruby_desc]
+        stats_fields = @series[0][:data][0].keys - [:time, :ts, :ruby_desc]
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks
         summary = @context[:timestamps].map.with_index do |ts, t_idx|
             out = {
@@ -51,7 +52,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             stats_fields.each do |field|
                 begin
                     points = @context[:benchmark_order].map.with_index do |bench, b_idx|
-                        t_in_series = @series[b_idx][:data][t_idx]
+                        t_in_series = @series[b_idx][:data].detect { |point_info| point_info[:ts] == ts }
                         t_in_series ? t_in_series[field] : nil
                     end
                 rescue
@@ -67,7 +68,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         end
         overall = { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: summary }
 
-        @series.sort_by! { |s| s[:name] }
+        #@series.sort_by! { |s| s[:name] }
         @series.prepend overall
     end
 
