@@ -163,6 +163,7 @@ class YJITMetrics::ResultSet
         @ruby_metadata = {}
         @yjit_stats = {}
         @peak_mem = {}
+        @platform = nil
     end
 
     # A ResultSet normally expects to see results with this structure:
@@ -259,6 +260,11 @@ class YJITMetrics::ResultSet
             else
                 raise "No arch provided in data file, and neither x86_64 nor arm64 detected in RUBY_DESCRIPTION!"
             end
+        end
+        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| ruby_meta["arch"].downcase.include?(platform) }
+        @platform ||= ruby_meta["platform"]
+        if @platform != ruby_meta["platform"]
+            raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
         end
 
         @peak_mem[config_name] ||= {}

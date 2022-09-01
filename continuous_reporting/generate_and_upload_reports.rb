@@ -7,6 +7,22 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
+# Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories.
+RAW_BENCHMARK_ROOT = "raw_benchmark_data"
+RAW_BENCHMARK_PLATFORM_ROOT = "raw_benchmark_data/#{YJITMetrics::PLATFORM}"
+
+def benchmark_file_out_path(filename)
+    if filename =~ /^(.*)_basic_benchmark_(.*).json$/
+        ts = $1
+        config = $2
+
+        year, month, day, tm = ts.split("-")
+        "#{RAW_BENCHMARK_PLATFORM_ROOT}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
+    else
+        raise "Can't parse filename: #{filename}!"
+    end
+end
+
 REPORTS_AND_FILES = {
     "blog_speed_headline" => {
         report_type: :basic_report,
@@ -30,7 +46,7 @@ REPORTS_AND_FILES = {
     },
     "blog_exit_reports" => {
         report_type: :basic_report,
-        extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but only one with a fixed name.
+        extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but rarely with a fixed name.
     },
     "iteration_count" => {
         report_type: :basic_report,
@@ -108,7 +124,8 @@ copy_from.each do |dir_to_copy|
     Dir.chdir(dir_to_copy) do
         # Copy raw data files to a place we can link them rather than include them in pages
         Dir["*.json"].each do |filename|
-            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "raw_benchmark_data/#{filename}"))
+            out_file = benchmark_file_out_path(filename)
+            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, out_file))
         end
 
         # Copy report files to somewhere we can include them in other Jekyll pages
@@ -129,12 +146,13 @@ Dir.chdir(YJIT_METRICS_PAGES_DIR)
 starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 
 # Turn JSON files into reports where outdated - first, find out what test results we have
+# json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
 json_timestamps = {}
-Dir["*_basic_benchmark_*.json", base: "raw_benchmark_data"].each do |filename|
-    unless filename =~ /^(.*)_basic_benchmark_/
+Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_ROOT].each do |filename|
+    unless filename =~ /^((.*)\/)?(.*)_basic_benchmark_/
         raise "Problem parsing test-result filename #{filename.inspect}!"
     end
-    ts = $1
+    ts = $3
     json_timestamps[ts] ||= []
     json_timestamps[ts] << filename
 end
@@ -183,9 +201,8 @@ json_timestamps.each do |ts, test_files|
 
         # If the HTML report doesn't already exist, build it.
         if run_report
-            files_for_report = test_files.map { |f| "raw_benchmark_data/#{f}" }
-            puts "Running basic_report for timestamp #{ts} with data files #{files_for_report.inspect}"
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d raw_benchmark_data --report=#{report_name} -o _includes/reports -w #{files_for_report.join(" ")}")
+            puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -207,7 +224,7 @@ json_timestamps.each do |ts, test_files|
                 raise "Error parsing JSON filename #{file.inspect}!"
             end
             config = $1
-            test_results_by_config[config] = "raw_benchmark_data/#{file}"
+            test_results_by_config[config] = file
         end
 
         generated_reports = {}
@@ -248,7 +265,7 @@ end
 unless die_on_regenerate
     timeline_reports = REPORTS_AND_FILES.select { |report_name, details| details[:report_type] == :timeline_report }
 
-    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d raw_benchmark_data --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
+    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
 
     timeline_reports.each do |report_name, details|
         rf = details[:extensions].map { |ext| "_includes/reports/#{report_name}.#{ext}" }
@@ -266,7 +283,7 @@ YJITMetrics.check_call "bundle"  # Make sure all gems are installed
 YJITMetrics.check_call "bundle exec jekyll build"
 puts "Jekyll seems to build correctly. That means that GHPages should do the right thing on push."
 
-dirs_to_commit = %w(_benchmarks _includes raw_benchmark_data)
+dirs_to_commit = %w(_benchmarks _includes RAW_BENCHMARK_ROOT)
 
 # Commit if there is something to commit
 diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
