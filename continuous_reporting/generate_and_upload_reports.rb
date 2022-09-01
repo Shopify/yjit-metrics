@@ -125,6 +125,8 @@ copy_from.each do |dir_to_copy|
         # Copy raw data files to a place we can link them rather than include them in pages
         Dir["*.json"].each do |filename|
             out_file = benchmark_file_out_path(filename)
+            dir = File.join(YJIT_METRICS_PAGES_DIR, File.dirname(out_file))
+            FileUtils.mkdir_p dir
             FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, out_file))
         end
 
