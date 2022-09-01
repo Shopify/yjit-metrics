@@ -224,7 +224,7 @@ json_timestamps.each do |ts, test_files|
                 raise "Error parsing JSON filename #{file.inspect}!"
             end
             config = $1
-            test_results_by_config[config] = file
+            test_results_by_config[config] = File.join(RAW_BENCHMARK_ROOT, file)
         end
 
         generated_reports = {}
