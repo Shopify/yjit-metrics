@@ -114,7 +114,6 @@ VERBOSE = is_verbose
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
-GITHUB_USER=ENV["BENCHMARK_CI_GITHUB_USER"]
 GITHUB_TOKEN=ENV["BENCHMARK_CI_GITHUB_TOKEN"]
 if FILE_GH_ISSUE && !GITHUB_TOKEN
     raise "Set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token to allow auto-filing issues! (or set --no-gh-issue)"
@@ -124,9 +123,10 @@ def ghapi_post(api_uri, params, verb: :post)
     uri = URI("https://api.github.com" + api_uri)
 
     req = Net::HTTP::Post.new(uri)
-    req.basic_auth GITHUB_USER, GITHUB_TOKEN
+    #req.basic_auth GITHUB_USER, GITHUB_TOKEN
     req['Accept'] = "application/vnd.github.v3+json"
     req['Content-Type'] = "application/json"
+    req['Authorization'] = "Bearer #{GITHUB_TOKEN}"
     req.body = JSON.dump(params)
     result = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }
 
