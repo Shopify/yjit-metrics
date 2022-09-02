@@ -5,17 +5,37 @@ on:
     - cron: '05 5,20 * * *'
 
 jobs:
-  checks:
+  benchmarks_x86:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           ref: main
-      - name: SSH to CI instance to start benchmarking and publication
+      - name: SSH to CI instance to run benchmarks
         run: |
           set -e
           set -x
-          git pull
+          export AWS_INSTANCE=${{ secrets.CI_AWS_INSTANCE }}
+          cat << EOF > ./id_benchmark_ci_rsa
+          ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
+          EOF
+          chmod go-rwx ./id_benchmark_ci_rsa
+          export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git pull"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c './ym/yjit-metrics/continuous_reporting/benchmark_prep_task.sh'"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c './ym/yjit-metrics/continuous_reporting/benchmark_only_cron_task.sh'"
+  reporting_and_upload:
+    runs-on: ubuntu-latest
+    needs:
+      - benchmarks_x86
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: SSH to CI instance to run reports and upload results
+        run: |
+          set -e
+          set -x
           export BENCHMARK_CI_GITHUB_TOKEN=${{ secrets.BENCHMARK_CI_GITHUB_TOKEN }}
           export BENCHMARK_CI_GITHUB_USER=${{ secrets.BENCHMARK_CI_GITHUB_USER }}
           export AWS_INSTANCE=${{ secrets.CI_AWS_INSTANCE }}
@@ -25,5 +45,4 @@ jobs:
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git pull"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c './ym/yjit-metrics/continuous_reporting/benchmark_prep_task.sh'"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c 'BENCHMARK_CI_GITHUB_TOKEN=$BENCHMARK_CI_GITHUB_TOKEN BENCHMARK_CI_GITHUB_USER=$BENCHMARK_CI_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_cron_task.sh'"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c 'BENCHMARK_CI_GITHUB_TOKEN=$BENCHMARK_CI_GITHUB_TOKEN BENCHMARK_CI_GITHUB_USER=$BENCHMARK_CI_GITHUB_USER ./ym/yjit-metrics/continuous_reporting/benchmark_upload_cron_task.sh'"

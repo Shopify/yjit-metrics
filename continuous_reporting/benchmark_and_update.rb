@@ -116,8 +116,8 @@ PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
 GITHUB_USER=ENV["BENCHMARK_CI_GITHUB_USER"]
 GITHUB_TOKEN=ENV["BENCHMARK_CI_GITHUB_TOKEN"]
-unless GITHUB_USER && GITHUB_TOKEN
-    raise "Set BENCHMARK_CI_GITHUB_USER and BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub username/token for repo access and opening issues!"
+if FILE_GH_ISSUE && !GITHUB_TOKEN
+    raise "Set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token to allow auto-filing issues! (or set --no-gh-issue)"
 end
 
 def ghapi_post(api_uri, params, verb: :post)
@@ -201,8 +201,9 @@ end
 def report_and_upload
     Dir.chdir __dir__ do
         # This should copy the data directory into the Jekyll directories for generating reports,
-        # run any reports it needs to and check the results into Git.
-        YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data"
+        # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
+        # GitHub tokens. The push can be done explicitly, later, not from this script.
+        YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push"
 
         # Delete the files from this run since they've now been processed.
         old_data_files = Dir["continuous_reporting/data/*"].to_a
@@ -376,10 +377,7 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 ONE_BENCH_REPORT
     end
 
-    # For now, stop filing perf bugs. This is simply not reliable enough to use as-is, at least
-    # over a significant time interval.
-    puts "For now, we're not auto-filing performance bugs."
-    #file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
+    file_gh_issue("Benchmark at #{ts_latest} is significantly slower than the one before (#{ts_penultimate})!", body)
 end
 
 begin
