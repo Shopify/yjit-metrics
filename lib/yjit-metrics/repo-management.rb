@@ -3,7 +3,7 @@
 
 module YJITMetrics; end
 module YJITMetrics::RepoManagement
-    def clone_repo_with(path:, git_url:, git_branch:)
+    def clone_repo_with(path:, git_url:, git_branch:, do_clean: true)
         unless File.exist?(path)
             check_call("git clone '#{git_url}' '#{path}'")
         end
@@ -11,7 +11,7 @@ module YJITMetrics::RepoManagement
         Dir.chdir(path) do
             check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
             check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
-            check_call("git clean -d -f")
+            check_call("git clean -d -f") if do_clean
             check_call("git checkout #{git_branch}")
             check_call("git pull")
         end
