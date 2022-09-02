@@ -47,6 +47,7 @@ def ruby_metadata
         "ec2 instance id" => `wget -q --timeout 1 --tries 2 -O - http://169.254.169.254/latest/meta-data/instance-id`,
         "ec2 instance type" => `wget -q --timeout 1 --tries 2 -O - http://169.254.169.254/latest/meta-data/instance-type`,
         "arch" => RbConfig::CONFIG["arch"],
+        "uname -a" => `uname -a`,
 
         # Ruby compile-time settings: do we want to record more of them?
         "RbConfig configure_args" => RbConfig::CONFIG["configure_args"],

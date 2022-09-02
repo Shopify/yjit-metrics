@@ -28,7 +28,7 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
-    PLATFORMS = ["x86_64", "arm64"]
+    PLATFORMS = ["x86_64", "arm", "aarch64"]
 
     uname_platform = `uname -p`.chomp.downcase
     PLATFORM = PLATFORMS.detect { |platform| uname_platform.include?(platform) }

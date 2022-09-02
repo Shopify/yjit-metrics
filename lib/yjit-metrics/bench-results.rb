@@ -252,16 +252,16 @@ class YJITMetrics::ResultSet
         end
         unless ruby_meta["arch"]
             # Our harness didn't record arch until adding ARM64 support. If a collected data file doesn't set it,
-            # autodetect from RUBY_DESCRIPTION.
+            # autodetect from RUBY_DESCRIPTION. We only check x86_64 since all older data should only be on x86_64,
+            # which was all we supported.
             if ruby_meta["RUBY_DESCRIPTION"].include?("x86_64")
                 ruby_meta["arch"] = "x86_64-unknown"
-            elsif ruby_meta["RUBY_DESCRIPTION"].include?("arm64")
-                ruby_meta["arch"] = "arm64-unknown" # This case shouldn't be needed for benchmark CI
             else
-                raise "No arch provided in data file, and neither x86_64 nor arm64 detected in RUBY_DESCRIPTION!"
+                raise "No arch provided in data file, and no x86_64 detected in RUBY_DESCRIPTION!"
             end
         end
-        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| ruby_meta["arch"].downcase.include?(platform) }
+        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
+        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
         @platform ||= ruby_meta["platform"]
         if @platform != ruby_meta["platform"]
             raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
