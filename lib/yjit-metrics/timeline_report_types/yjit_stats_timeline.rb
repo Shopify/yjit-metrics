@@ -43,11 +43,14 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
         stats_fields = @series[0][:data][0].keys - [:time, :ruby_desc]
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks
-        summary = @context[:timestamps].map.with_index do |ts, t_idx|
-            out = {
+        data_mean = []
+        data_geomean = []
+        @context[:timestamps].map.with_index do |ts, t_idx|
+            point_mean = {
                 time: ts.strftime(time_format),
                 ruby_desc: @context[:ruby_desc_by_timestamp][ts] || "unknown",
             }
+            point_geomean = point_mean.dup
             stats_fields.each do |field|
                 begin
                     points = @context[:benchmark_order].map.with_index do |bench, b_idx|
@@ -61,15 +64,18 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 end
                 points.compact!
                 raise("No data points for stat #{field.inspect} for TS #{ts.inspect}") if points.empty?
-                out[field] = mean(points)
+                point_mean[field] = mean(points)
+                point_geomean[field] = geomean(points)
             end
 
-            out
+            data_mean.push(point_mean)
+            data_geomean.push(point_geomean)
         end
-        overall = { config: yjit_config, benchmark: "overall", name: "#{yjit_config}-overall", visible: true, data: summary }
+        overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config}-overall-mean", visible: true, data: data_mean }
+        overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config}-overall-geomean", visible: true, data: data_geomean }
 
-        #@series.sort_by! { |s| s[:name] }
-        @series.prepend overall
+        @series.prepend overall_geomean
+        @series.prepend overall_mean
     end
 
     def write_file(file_path)
