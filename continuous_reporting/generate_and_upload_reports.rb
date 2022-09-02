@@ -114,7 +114,7 @@ YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.
 YJIT_METRICS_PAGES_BRANCH = "pages"
 
 # Clone YJIT repo on "pages" branch, updated to latest version
-YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH
+YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH, do_clean: false
 
 # We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
 #Dir.chdir(YJIT_METRICS_PAGES_DIR) { YJITMetrics.check_call "git clean -d -f" }
