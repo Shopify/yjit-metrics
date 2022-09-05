@@ -140,6 +140,29 @@ def ghapi_post(api_uri, params, verb: :post)
     JSON.load(result.body)
 end
 
+class BenchmarkDetails
+    def initialize(timestamp)
+        pages_dir = File.expand_path(File.join(__dir__, "../../raw_benchmark_data"))
+        benchmark_details_file = File.join(pages_dir, "_benchmarks", "bench_#{timestamp}.md")
+        "#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
+        @data = YAML.load File.read(benchmark_details_file)
+    end
+
+    def raw_data
+        @data["test_results"]
+    end
+
+    def yjit_test_result
+        @data["test_results"].select { |file_path| file_path.include?("_with_yjit.json") }
+    end
+
+    def yjit_permalink
+        local_path = yjit_test_result
+        relative_path = local_path.split("raw_benchmark_data", 2)[1]
+        "https://speed.yjit.org/raw_benchmark_data/#{relative_path}"
+    end
+end
+
 def escape_markdown(s)
     s.gsub(/(\*|\_|\`)/) { '\\' + $1 }.gsub("<", "&lt;")
 end
@@ -337,8 +360,10 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
     ts_penultimate = ts_from_tripwire_filename(compared_filename)
 
     # This expects to be called from the _includes/reports directory
-    latest_yjit_result_file = "../../raw_benchmark_data/#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
-    penultimate_yjit_result_file = "../../raw_benchmark_data/#{ts_penultimate}_basic_benchmark_prod_ruby_with_yjit.json"
+    latest_yjit_results = BenchmarkDetails.new(ts_latest)
+    latest_yjit_result_file = latest_yjit_results.yjit_test_result
+    penultimate_yjit_results = BenchmarkDetails.new(ts_penultimate)
+    penultimate_yjit_result_file = penultimate_yjit_results.yjit_test_result
     latest_yjit_data = JSON.parse File.read(latest_yjit_result_file)
     penultimate_yjit_data = JSON.parse File.read(penultimate_yjit_result_file)
     latest_yjit_ruby_desc = latest_yjit_data["ruby_metadata"]["RUBY_DESCRIPTION"]
@@ -352,13 +377,13 @@ def file_perf_bug(current_filename, compared_filename, check_failures)
 
     * Time: #{timestr_from_ts(ts_latest)}
     * Ruby: #{escape_markdown latest_yjit_ruby_desc}
-    * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{latest_yjit_result_file})
+    * [Raw YJIT prod data](#{latest_yjit_results.yjit_permalink})
 
     Compared to previous benchmark:
 
     * Time: #{timestr_from_ts(ts_penultimate)}
     * Ruby: #{escape_markdown penultimate_yjit_ruby_desc}
-    * [Raw YJIT prod data](https://speed.yjit.org/raw_benchmark_data/#{penultimate_yjit_result_file})
+    * [Raw YJIT prod data](#{penultimate_yjit_results.yjit_permalink})
 
     Slower benchmarks: #{failing_benchmarks.join(", ")}
 
