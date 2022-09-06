@@ -5,6 +5,7 @@ require_relative "../lib/yjit-metrics"
 require 'fileutils'
 require 'net/http'
 
+require "yaml"
 require "optparse"
 
 # TODO: should the benchmark-run and perf-check parts of this script be separated? Probably.
@@ -38,7 +39,10 @@ MICRO_STDDEV_TOLERANCE = 2.0
 # tolerance needs to be significantly larger to avoid frequent false positives.
 MICRO_DROP_TOLERANCE = 0.20
 
-YM_REPORT_DIR = File.expand_path "#{__dir__}/../../yjit-metrics-pages/_includes/reports/"
+YM_PAGES_DIR = File.expand_path "#{__dir__}/../../yjit-metrics-pages"
+YM_RAW_DATA_DIR = "#{YM_PAGES_DIR}/raw_benchmark_data"
+
+YM_REPORT_DIR = File.expand_path "#{YM_PAGES_DIR}/_includes/reports/"
 if File.exist?(YM_REPORT_DIR)
     var_warmup_reports = Dir.glob(YM_REPORT_DIR + "/variable_warmup_*.warmup_settings.json").to_a
     if var_warmup_reports.empty?
@@ -142,9 +146,8 @@ end
 
 class BenchmarkDetails
     def initialize(timestamp)
-        pages_dir = File.expand_path(File.join(__dir__, "../../raw_benchmark_data"))
-        benchmark_details_file = File.join(pages_dir, "_benchmarks", "bench_#{timestamp}.md")
-        "#{ts_latest}_basic_benchmark_prod_ruby_with_yjit.json"
+        @timestamp = timestamp
+        benchmark_details_file = File.join(YM_PAGES_DIR, "_benchmarks", "bench_#{timestamp}.md")
         @data = YAML.load File.read(benchmark_details_file)
     end
 
@@ -153,7 +156,9 @@ class BenchmarkDetails
     end
 
     def yjit_test_result
-        @data["test_results"].select { |file_path| file_path.include?("_with_yjit.json") }
+        yjit_file = @data["test_results"]["prod_ruby_with_yjit"]
+        raise("Cannot locate latest YJIT data file for timestamp #{@timestamp}") unless yjit_file
+        File.join YM_PAGES_DIR, yjit_file
     end
 
     def yjit_permalink
