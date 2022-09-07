@@ -105,8 +105,13 @@ end.parse!
 # If want to check into the repo and file issues, we need credentials.
 YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
 GITHUB_TOKEN = ENV["BENCHMARK_CI_GITHUB_TOKEN"] ? ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp : nil
-unless GITHUB_TOKEN || (no_push && File.exist?(YJIT_METRICS_PAGES_DIR))
-    raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or clone yjit-metrics-pages!"
+
+if no_push && !File.exist?(YJIT_METRICS_PAGES_DIR)
+    raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
+end
+
+unless GITHUB_TOKEN || no_push
+    raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or use --no-push"
 end
 
 # This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics

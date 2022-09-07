@@ -30,7 +30,7 @@ module YJITMetrics
 
     PLATFORMS = ["x86_64", "arm", "aarch64"]
 
-    uname_platform = `uname -p`.chomp.downcase
+    uname_platform = `uname -m`.chomp.downcase
     PLATFORM = PLATFORMS.detect { |platform| uname_platform.include?(platform) }
     raise("yjit-metrics only supports running on x86_64 and arm64!") if !PLATFORM
 
