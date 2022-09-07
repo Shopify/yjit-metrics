@@ -128,7 +128,7 @@ var x = d3.scaleTime()
   .domain(d3.extent(all_series_time_range))
   .range([ 0, width ]);
 document.timeline_data.x_axis_function = x; /* Export for the event handlers */
-svg.append("g")
+var xAxis = svg.append("g")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x))
   .selectAll("text")
@@ -146,31 +146,96 @@ document.timeline_data.y_axis.tickFormat(function (d) { return formatValue(d); }
 document.timeline_data.top_svg_group = svg.append("g")
   .call(document.timeline_data.y_axis);
 
+var clip = svg.append("defs").append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("width", width + 30 )
+    .attr("height", height )
+    .attr("x", 0)
+    .attr("y", 0);
+
+
+
+
+// Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
+var idleTimeout = null;
+
+function idled() { idleTimeout = null; }
+
+
+function updateChart() {
+
+  const extent = d3.event.selection
+
+  // If no selection, back to initial coordinate. Otherwise, update X axis domain
+  if (!extent) {
+    if (!idleTimeout) {
+      return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
+    }
+    x.domain(d3.extent(all_series_time_range));
+  } else {
+    x.domain([x.invert(extent[0]), x.invert(extent[1])]);
+    document.timeline_data.top_svg_group.select(".brush").call(brush.move, null); // This remove the grey brush area as soon as the selection has been done
+  }
+  // Update axis and circle position
+  xAxis.transition().duration(1000).call(d3.axisBottom(x))
+  svg
+    .selectAll(".circle")
+    .transition().duration(1000)
+      .attr("cx", function(d) { return x(d.time) } )
+      .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
+
+
+  svg
+    .selectAll(".line")
+    .transition().duration(1000)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.time) })
+        .y(function(d) { return y(d[document.timeline_data.current_stat]) })
+      );
+
+
+}
+
+var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
+  .extent( [ [0,0], [width,height] ] ) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+  .on("end", updateChart)
+
+document.timeline_data.top_svg_group
+  .append("g")
+  .attr("class", "brush")
+  .call(brush);
+
+
 data_series.forEach(function(item) {
     group = svg.append("g").attr("class", item.name).attr("visibility", "hidden" )
 
+
+
     // Add the graph line
-    group.append("path")
+    var lines = group.append("path")
       .datum(item.data)
+      .attr("class", "line")
       .attr("fill", "none")
       .attr("stroke", item.color)
       .attr("stroke-width", 1.5)
       .attr("d", d3.line()
         .x(function(d) { return x(d.time) })
         .y(function(d) { return y(d[document.timeline_data.current_stat]) })
-        );
+      ).attr("clip-path", "url(#clip)");
 
     // Add a circle at each datapoint
     var circles = group.selectAll("circle.centerdot." + item.name)
       .data(item.data);
+
     circles.enter().append("circle")
-      .attr("class", "centerdot " + item.name)
+      .attr("class", "centerdot " + item.name + " circle")
       .attr("fill", item.color)
       .attr("r", 1.5)
       .attr("cx", function(d) { return x(d.time) } )
       .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
       .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]) + "<br/>Ruby " + d.ruby_desc; } )
-      ;
+      .attr("clip-path", "url(#clip)");
 });
 
 </script>
