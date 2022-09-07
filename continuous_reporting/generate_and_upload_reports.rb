@@ -185,14 +185,14 @@ json_timestamps.each do |ts, test_files|
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
-        rf = report_filenames(report_name, ts)
+        #rf = report_filenames(report_name, ts)
         required_files = details[:extensions].map { |ext| "#{report_name}_#{ts}.#{ext}" }
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
             !report_timestamps[ts] ||
             !report_timestamps[ts][report_name] ||
-            !(required_files - report_timestamps[ts][report_name]).empty?
+            !((required_files - report_timestamps[ts][report_name]).empty?)
 
         if run_report && die_on_regenerate
             puts "Report: #{report_name.inspect}, ts: #{ts.inspect}"
@@ -201,7 +201,7 @@ json_timestamps.each do |ts, test_files|
             raise "Regenerating reports isn't allowed! Failing on report #{report_name.inspect} for timestamp #{ts} with files #{report_timestamps[ts][report_name].inspect}!"
         end
 
-        # If the HTML report doesn't already exist, build it.
+        # If the report output doesn't already exist, build it.
         if run_report
             puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
             # TODO: pass in RAW_BENCHMARK_ROOT so we can report on non-x86 benchmarks
@@ -272,6 +272,7 @@ unless die_on_regenerate
     YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
 
     timeline_reports.each do |report_name, details|
+        # No timestamps in timeline report names, can't use report_filename above
         rf = details[:extensions].map { |ext| "_includes/reports/#{report_name}.#{ext}" }
         files_not_found = rf.select { |f| !File.exist? f }
 
