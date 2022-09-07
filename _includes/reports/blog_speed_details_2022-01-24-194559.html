@@ -5,7 +5,7 @@
 </p>
 
 <table>
-	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>MJIT3.0 (ms)</th>  <th>MJIT3.0 RSD</th>  <th>MJIT3.1 (ms)</th>  <th>MJIT3.1 RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT3.0 spd</th>  <th>MJIT3.0 spd RSD</th>  <th>MJIT3.1 spd</th>  <th>MJIT3.1 spd RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
+	<thead>  <th>bench</th>  <th>No JIT (ms)</th>  <th>No JIT RSD</th>  <th>MJIT3.0 (ms)</th>  <th>MJIT3.0 RSD</th>  <th>MJIT (ms)</th>  <th>MJIT RSD</th>  <th>YJIT (ms)</th>  <th>YJIT RSD</th>  <th>MJIT3.0 spd</th>  <th>MJIT3.0 spd RSD</th>  <th>MJIT spd</th>  <th>MJIT spd RSD</th>  <th>YJIT spd</th>  <th>YJIT spd RSD</th>  <th>% in YJIT</th>  </thead>
 	<tbody style="text-align: right;">
 		
 			<tr style="border: 1px solid black;">
@@ -102,21 +102,23 @@
 <p>
 	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
 	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.<br/>
-	<strong>Speedup</strong> is relative to interpreted CRuby. So an "MJIT speedup" of 1.21x means it runs at 1.21 times the iters/second of CRuby with JIT disabled.
+	<strong>Speedup</strong> is relative to interpreted CRuby. So an "MJIT speedup" of 1.21x means MJIT runs at 1.21 times the iters/second of CRuby with JIT disabled.
 </p>
 
 <p>
-	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a>. <br/>
+	You can find our benchmark code <a href="https://github.com/Shopify/yjit-bench">in the yjit-bench Github repo</a> and the <a href="https://github.com/Shopify/yjit-extra-benchmarks">yjit-extra-benchmarks</a> Github repo. <br/>
 	Our benchmark-runner and reporting code is <a href="https://github.com/Shopify/yjit-metrics">in the yjit-metrics Github repo</a>.
 </p>
 
 <p>
 	Tested Ruby version for YJIT and No-JIT: <tt><strong>ruby 3.2.0dev (2022-01-24T19:34:12Z master 87784fdeb2) +YJIT [x86_64-linux]</strong></tt> <br/>
 
-	Tested Ruby version for Ruby 3.1 MJIT: <tt><strong>ruby 3.2.0dev (2022-01-24T19:34:12Z master 87784fdeb2) +MJIT [x86_64-linux]</strong></tt> <br/>
+	Tested Ruby version for Ruby latest MJIT: <tt><strong>ruby 3.2.0dev (2022-01-24T19:34:12Z master 87784fdeb2) +MJIT [x86_64-linux]</strong></tt> <br/>
 
 
 	Tested Ruby version for Ruby 3.0 MJIT: <tt><strong>ruby 3.0.0p0 (2020-12-25 revision 95aff21468) +JIT [x86_64-linux]</strong></tt> <br/>
 
-	(We got much better MJIT results with released than prerelease, so we used those.)
+
+	For many older releases we got much better results with released MJIT 3.0 than latest prerelease, so we compared against both.
+
 </p>

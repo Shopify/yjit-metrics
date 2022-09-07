@@ -37,10 +37,10 @@
     },
     "nbody": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 343,
+      "min_bench_itrs": 335,
       "min_bench_time": 0,
       "itr_time_ms": 101.8072115123318,
-      "estimated_time": 36
+      "estimated_time": 35
     },
     "fib": {
       "warmup_itrs": 5,
@@ -149,10 +149,10 @@
     },
     "binarytrees": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 85,
+      "min_bench_itrs": 75,
       "min_bench_time": 0,
       "itr_time_ms": 394.68433463206406,
-      "estimated_time": 36
+      "estimated_time": 32
     }
   },
   "prod_ruby_with_mjit": {
@@ -192,7 +192,7 @@
     },
     "nbody": {
       "warmup_itrs": 75,
-      "min_bench_itrs": 343,
+      "min_bench_itrs": 335,
       "min_bench_time": 0,
       "itr_time_ms": 59.530426128685974,
       "estimated_time": 25
@@ -304,10 +304,10 @@
     },
     "binarytrees": {
       "warmup_itrs": 75,
-      "min_bench_itrs": 85,
+      "min_bench_itrs": 75,
       "min_bench_time": 0,
       "itr_time_ms": 264.38963052624945,
-      "estimated_time": 43
+      "estimated_time": 40
     }
   },
   "prod_ruby_with_yjit": {
@@ -348,10 +348,10 @@
     },
     "nbody": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 343,
+      "min_bench_itrs": 335,
       "min_bench_time": 0,
       "itr_time_ms": 72.8283339730225,
-      "estimated_time": 27
+      "estimated_time": 26
     },
     "fib": {
       "warmup_itrs": 20,
@@ -460,166 +460,10 @@
     },
     "binarytrees": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 85,
+      "min_bench_itrs": 75,
       "min_bench_time": 0,
       "itr_time_ms": 289.46059959570823,
-      "estimated_time": 31
-    }
-  },
-  "ruby_30_with_mjit": {
-    "setivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 2187,
-      "min_bench_time": 0,
-      "itr_time_ms": 10.697951287432083,
-      "estimated_time": 24
-    },
-    "optcarrot": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 2244.1857262553335,
-      "estimated_time": 79
-    },
-    "hexapdf": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 2714.5816715434194,
-      "estimated_time": 96
-    },
-    "cfunc_itself": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 525,
-      "min_bench_time": 0,
-      "itr_time_ms": 57.2988699557304,
-      "estimated_time": 32
-    },
-    "30k_methods": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 26,
-      "min_bench_time": 0,
-      "itr_time_ms": 9164.963132257712,
-      "estimated_time": 422
-    },
-    "nbody": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 343,
-      "min_bench_time": 0,
-      "itr_time_ms": 58.18560180381896,
-      "estimated_time": 22
-    },
-    "fib": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 384,
-      "min_bench_time": 0,
-      "itr_time_ms": 64.08679062168068,
-      "estimated_time": 26
-    },
-    "mail": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 143,
-      "min_bench_time": 0,
-      "itr_time_ms": 148.3729784733813,
-      "estimated_time": 25
-    },
-    "keyword_args": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 450,
-      "min_bench_time": 0,
-      "itr_time_ms": 192.5612286666588,
-      "estimated_time": 91
-    },
-    "liquid-render": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 177,
-      "min_bench_time": 0,
-      "itr_time_ms": 176.7592032527479,
-      "estimated_time": 35
-    },
-    "fannkuchredux": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 1957.2996874766734,
-      "estimated_time": 69
-    },
-    "erubi_rails": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 979,
-      "min_bench_time": 0,
-      "itr_time_ms": 28.083622464881582,
-      "estimated_time": 29
-    },
-    "activerecord": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 189,
-      "min_bench_time": 0,
-      "itr_time_ms": 150.38711603645007,
-      "estimated_time": 32
-    },
-    "getivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 954,
-      "min_bench_time": 0,
-      "itr_time_ms": 25.259346865598797,
-      "estimated_time": 25
-    },
-    "psych-load": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 2033.8643868647825,
-      "estimated_time": 72
-    },
-    "30k_ifelse": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 64,
-      "min_bench_time": 0,
-      "itr_time_ms": 3387.3871544858575,
-      "estimated_time": 285
-    },
-    "rubykon": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 6699.108283602011,
-      "estimated_time": 235
-    },
-    "railsbench": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": 2998.4592456021346,
-      "estimated_time": 105
-    },
-    "lee": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 25,
-      "min_bench_time": 0,
-      "itr_time_ms": 913.8286497282724,
-      "estimated_time": 42
-    },
-    "respond_to": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 120,
-      "min_bench_time": 0,
-      "itr_time_ms": 187.16104950354338,
-      "estimated_time": 27
-    },
-    "erubi": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 54,
-      "min_bench_time": 0,
-      "itr_time_ms": 411.7495833428243,
-      "estimated_time": 31
-    },
-    "binarytrees": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 85,
-      "min_bench_time": 0,
-      "itr_time_ms": 233.03198641618056,
-      "estimated_time": 25
+      "estimated_time": 28
     }
   },
   "yjit_stats": {
@@ -655,7 +499,7 @@
     },
     "nbody": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 343,
+      "min_bench_itrs": 335,
       "min_bench_time": 0,
       "estimated_time": 0
     },
@@ -751,10 +595,10 @@
     },
     "binarytrees": {
       "warmup_itrs": 20,
-      "min_bench_itrs": 85,
+      "min_bench_itrs": 75,
       "min_bench_time": 0,
       "estimated_time": 0
     }
   },
-  "estimated_time": 8844
+  "estimated_time": 6999
 }

@@ -95,7 +95,6 @@
 </p>
 
 <p>
-    By default, YJIT allocates an additional 256MiB for generated code. The additional size
-    allocated can be tuned with a command-line parameter, but allocating too little memory
-    will result in YJIT no longer JITting new functions, so performance reverts toward interpreter speeds.
+    Older YJIT allocated an additional 256MiB for generated code. Current YJIT allocates
+    executable memory on demand, so this overhead should no longer be present.
 </p>
