@@ -142,7 +142,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     def look_up_data_by_ruby(in_runs: false)
         @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
         @with_mjit30_config = exactly_one_config_with_name(@config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
-        @with_mjit31_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
+        @with_mjit_latest_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
         @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
         @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle", none_okay: true)
 
@@ -151,7 +151,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             ["No JIT", @no_jit_config],
         ]
         @configs_with_human_names.push(["MJIT3.0", @with_mjit30_config]) if @with_mjit30_config
-        @configs_with_human_names.push(["MJIT", @with_mjit31_config]) if @with_mjit31_config
+        @configs_with_human_names.push(["MJIT", @with_mjit_latest_config]) if @with_mjit_latest_config
         @configs_with_human_names.push(["YJIT", @with_yjit_config])
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
 
@@ -178,9 +178,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             end
             no_result_benchmarks = @benchmark_names.select { |bench_name| config_results[bench_name].nil? || config_results[bench_name].empty? }
             unless no_result_benchmarks.empty?
-                # We allow MJIT 3.1 ONLY to have some benchmarks skipped... (empty is also fine)
-                if config_name == @with_mjit31_config
-                    @mjit_31_is_incomplete = true
+                # We allow MJIT latest ONLY to have some benchmarks skipped... (empty is also fine)
+                if config_name == @with_mjit_latest_config
+                    @mjit_is_incomplete = true
                 else
                     raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
                 end
@@ -923,11 +923,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         look_up_data_by_ruby
 
-        # For now, report the headlining speed comparisons versus current prerelease MJIT
-        if @mjit_31_is_incomplete
+        # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
+        if @mjit_is_incomplete
             @with_mjit_config = @with_mjit30_config
         else
-            @with_mjit_config = @with_mjit31_config || @with_mjit30_config
+            @with_mjit_config = @with_mjit_latest_config || @with_mjit30_config
         end
         @mjit_name = "MJIT"
         @mjit_name = "MJIT (3.0)" if @with_mjit_config == @with_mjit30_config
