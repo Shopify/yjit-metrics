@@ -1,0 +1,60 @@
+method call exit reasons: 
+                block_arg    8003097 (29.1%)
+               args_splat    6601333 (24.0%)
+    optimized_method_call    5957283 (21.6%)
+                  bmethod    3287343 (11.9%)
+      iseq_complex_callee    2444891 ( 8.9%)
+    optimized_method_send     994842 ( 3.6%)
+                 kw_splat     231100 ( 0.8%)
+                 keywords         92 ( 0.0%)
+    cfunc_ruby_array_varg         16 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   56312960 (96.2%)
+    start_pc_non_zero    2209476 ( 3.8%)
+         se_interrupt        320 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1436
+compiled_block_count:       10105
+invalidation_count:            16
+constant_state_bumps:           0
+inline_code_size:         2761143
+outlined_code_size:       1967890
+
+total_exit_count:        88313851
+total_insns_count:     2851527579
+vm_insns_count:         387757712
+yjit_insns_count:      2495770758
+ratio_in_yjit:              86.4%
+avg_len_in_yjit:             27.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   13428106 (42.0)
+                      send:   10406571 (32.5)
+               invokesuper:    3866699 (12.1)
+               invokeblock:    2236063 (7.0)
+               getconstant:     605939 (1.9)
+                  opt_aref:     490029 (1.5)
+                     throw:     362612 (1.1)
+               expandarray:     348934 (1.1)
+             setlocal_WC_0:     208936 (0.7)
+      opt_getconstant_path:      45512 (0.1)
+               opt_empty_p:       1046 (0.0)
+                     leave:        320 (0.0)
+        getblockparamproxy:         97 (0.0)
+                  branchif:          9 (0.0)
+                opt_length:          6 (0.0)
+       getinstancevariable:          3 (0.0)
+               objtostring:          3 (0.0)
+                  opt_aset:          3 (0.0)
+                   opt_and:          2 (0.0)
+                  opt_plus:          1 (0.0)
