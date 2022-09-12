@@ -4,9 +4,13 @@ layout: basic
 
 <h2 style="text-align: center;">YJIT Stats Over Time</h2>
 
-<div>
+<p>
   "Overall" is a mean (arithmetic, not geometric) of all listed benchmarks.
-</div>
+</p>
+
+<p>
+  To zoom in, drag over the time range you want to see. Double-click to zoom back out.
+</p>
 
 <div class="timeline_report">
 {% include reports/yjit_stats_timeline.html %}
