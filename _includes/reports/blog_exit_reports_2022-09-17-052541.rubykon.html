@@ -1,0 +1,52 @@
+method call exit reasons: 
+    block_arg      22365 (100.0%)
+
+leave exit reasons: 
+        interp_return  744672434 (100.0%)
+    start_pc_non_zero      79729 ( 0.0%)
+         se_interrupt      15133 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          144
+compiled_block_count:        1575
+invalidation_count:             2
+constant_state_bumps:           0
+inline_code_size:          329015
+outlined_code_size:        255181
+
+total_exit_count:       796412650
+total_insns_count:     65345259894
+vm_insns_count:         125588484
+yjit_insns_count:      65271411626
+ratio_in_yjit:              99.8%
+avg_len_in_yjit:             81.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+                    opt_eq:   25663349 (49.6)
+               invokeblock:   25282652 (48.9)
+                  opt_plus:     756401 (1.5)
+                      send:      22405 (0.0)
+                     leave:      15133 (0.0)
+    opt_send_without_block:        215 (0.0)
+                  opt_ltlt:         42 (0.0)
+                  opt_size:         14 (0.0)
+                  opt_aref:          3 (0.0)
+      opt_getconstant_path:          2 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+               concatarray:          0 (0.0)
+             concatstrings:          0 (0.0)
