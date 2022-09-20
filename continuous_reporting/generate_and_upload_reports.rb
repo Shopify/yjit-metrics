@@ -77,6 +77,7 @@ copy_from = []
 no_push = false
 regenerate_reports = false
 die_on_regenerate = false
+only_reports = nil
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -100,7 +101,17 @@ OptionParser.new do |opts|
     opts.on("-p", "--prevent-regenerate", "Fail if reports would be regenerated") do
         die_on_regenerate = true
     end
+
+    opts.on("-o REPORTS", "--only-reports REPORTS", "Only run this specific set of reports") do |reports|
+        only_reports = reports.split(",").map(&:strip)
+    end
 end.parse!
+
+if only_reports
+    bad_report_names = only_reports - REPORTS_AND_FILES.keys
+    raise("Unknown report names: #{bad_report_names.inspect} not found in #{REPORTS_AND_FILES.keys.inspect}!") unless bad_report_names.empty?
+    REPORTS_AND_FILES.select! { |k, _| only_reports.include?(k) }
+end
 
 # If want to check into the repo and file issues, we need credentials.
 YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
@@ -115,11 +126,16 @@ unless GITHUB_TOKEN || no_push
 end
 
 # This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
-YJIT_METRICS_GIT_URL = "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git"
+YJIT_METRICS_GIT_URL = GITHUB_TOKEN ? "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git" : "https://github.com/Shopify/yjit-metrics.git"
 YJIT_METRICS_PAGES_BRANCH = "pages"
 
 # Clone YJIT repo on "pages" branch, updated to latest version
 YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH, do_clean: false
+if GITHUB_TOKEN
+  Dir.chdir(YJIT_METRICS_PAGES_DIR) do
+    system("git pull") or raise("Error trying to git pull in pages dir!") # use check_call
+  end
+end
 
 # We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
 #Dir.chdir(YJIT_METRICS_PAGES_DIR) { YJITMetrics.check_call "git clean -d -f" }
@@ -128,7 +144,7 @@ YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_
 copy_from.each do |dir_to_copy|
     Dir.chdir(dir_to_copy) do
         # Copy raw data files to a place we can link them rather than include them in pages
-        Dir["*.json"].each do |filename|
+        Dir["*_basic_benchmark_*.json"].each do |filename|
             out_file = benchmark_file_out_path(filename)
             dir = File.join(YJIT_METRICS_PAGES_DIR, File.dirname(out_file))
             FileUtils.mkdir_p dir
@@ -152,10 +168,10 @@ Dir.chdir(YJIT_METRICS_PAGES_DIR)
 
 starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 
-# Turn JSON files into reports where outdated - first, find out what test results we have
+# Turn JSON files into reports where outdated - first, find out what test results we have.
 # json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
 json_timestamps = {}
-Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_ROOT].each do |filename|
+Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_PLATFORM_ROOT].each do |filename|
     unless filename =~ /^((.*)\/)?(.*)_basic_benchmark_/
         raise "Problem parsing test-result filename #{filename.inspect}!"
     end
@@ -209,7 +225,7 @@ json_timestamps.each do |ts, test_files|
         # If the report output doesn't already exist, build it.
         if run_report
             puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
-            # TODO: pass in RAW_BENCHMARK_ROOT so we can report on non-x86 benchmarks
+            # TODO: pass in RAW_BENCHMARK_ROOT so we can report on multiple platforms of benchmarks at once
             YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
@@ -273,8 +289,11 @@ end
 unless die_on_regenerate
     timeline_reports = REPORTS_AND_FILES.select { |report_name, details| details[:report_type] == :timeline_report }
 
-    # TODO: pass in RAW_BENCHMARK_ROOT so we can do non-x86 timelines too
-    YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
+    # It's possible to run only specific non-timeline reports -- then this would be empty.
+    unless timeline_reports.empty?
+        # TODO: pass in RAW_BENCHMARK_ROOT so we can do non-x86 timelines too
+        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
+    end
 
     timeline_reports.each do |report_name, details|
         # No timestamps in timeline report names, can't use report_filename above

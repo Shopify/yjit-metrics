@@ -81,6 +81,7 @@ end
 Dir.chdir(data_dir)
 
 files_in_dir = Dir["**/*"].grep(DATASET_PATHNAME_RE) # Check all subdirectories
+files_in_dir.select { |path| path.include?("x86_64") } # temporarily ignore all ARM64 data files!
 file_data = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
 
 if use_all_in_dirs

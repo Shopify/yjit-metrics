@@ -55,13 +55,22 @@ else
     VAR_WARMUP_FILE = nil
 end
 
+DEFAULT_CI_X86_CONFIGS = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys
+DEFAULT_CI_ARM_CONFIGS = DEFAULT_CI_X86_CONFIGS - [ "yjit_stats", "prod_ruby_with_mjit" ] # Stop removing these when they work reliably
+
+DEFAULT_CI_CONFIGS = if YJITMetrics::PLATFORM == "x86_64"
+    DEFAULT_CI_X86_CONFIGS
+else
+    DEFAULT_CI_ARM_CONFIGS
+end
+
 # If we have a config file from the variable warmup report, we should use it. If not,
 # we should have defaults to fall back on.
 DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
     (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
         "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
         "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
-    " --configs=#{YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys.join(",")}"
+    " --configs=#{DEFAULT_CI_CONFIGS.join(",")}"
 
 BENCH_TYPES = {
     "none"       => nil,
@@ -71,8 +80,10 @@ BENCH_TYPES = {
 }
 benchmark_args = BENCH_TYPES["default"]
 should_file_gh_issue = true
+no_perf_tripwires = false
 all_perf_tripwires = false
 single_perf_tripwire = nil
+run_reports = true
 is_verbose = false
 
 OptionParser.new do |opts|
@@ -97,12 +108,33 @@ OptionParser.new do |opts|
     end
 
     opts.on("-a", "--all-perf-tripwires", "Check performance tripwires on all pairs of benchmarks (implies --no-gh-issue)") do
+        if no_perf_tripwires || single_perf_tripwire
+            raise "Error! Please do not specify --all-perf-tripwires along with --no-perf-tripwires or --single-perf-tripwire!"
+        end
         all_perf_tripwires = true
         should_file_gh_issue = false
     end
 
     opts.on("-t TS", "--perf-timestamp TIMESTAMP", "Check performance tripwire at this specific timestamp") do |ts|
+        if all_perf_tripwires || no_perf_tripwires
+            raise "Error! Please do not specify a specific perf tripwire along with --no-perf-tripwires or --all-perf-tripwires!"
+        end
         single_perf_tripwire = ts.strip
+    end
+
+    opts.on("-np", "--no-perf-tripwires", "Do not check performance tripwires") do
+        if all_perf_tripwires || single_perf_tripwire
+            raise "Error! Please do not specify --no-perf-tripwires along with --single-perf-tripwire or --all-perf-tripwires!"
+        end
+        no_perf_tripwires = true
+    end
+
+    # Normally we run reports with the benchmark data. This updates timeline reports, and tests that the data is
+    # "correct enough" for later reporting stages. In some cases (e.g. cheaper AWS Graviton instances) we can't
+    # collect stats data, which means we can't do a lot of the reporting we'd normally want. So: skip the
+    # reporting, we'll do it on other machines later.
+    opts.on("-nr", "--no-run-reports", "Do not run reports with the benchmark data") do
+        run_reports = false
     end
 
     opts.on("-v", "--verbose", "Print verbose output about tripwire checks") do
@@ -114,6 +146,7 @@ BENCHMARK_ARGS = benchmark_args
 FILE_GH_ISSUE = should_file_gh_issue
 ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
+RUN_REPORTS = run_reports
 VERBOSE = is_verbose
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
@@ -231,7 +264,7 @@ def report_and_upload
         # This should copy the data directory into the Jekyll directories for generating reports,
         # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
         # GitHub tokens. The push can be done explicitly, later, not from this script.
-        YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push"
+        YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push --no-report"
 
         # Delete the files from this run since they've now been processed.
         old_data_files = Dir["continuous_reporting/data/*"].to_a
@@ -412,9 +445,11 @@ end
 
 begin
     run_benchmarks
-    report_and_upload
-    check_perf_tripwires
-    clear_latest_data
+    if RUN_REPORTS
+        report_and_upload
+        check_perf_tripwires
+        clear_latest_data
+    end
 rescue
     host = `uname -a`.chomp
     puts $!.full_message

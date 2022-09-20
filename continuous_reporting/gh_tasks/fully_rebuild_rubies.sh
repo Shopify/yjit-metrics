@@ -1,9 +1,7 @@
-#!/bin/bash
+#!/bin/bash -l
+# Note: may need a login shell, depending how chruby is installed.
 
 set -e
-
-# I'm sure this shouldn't be necessary. But let's make sure env vars and chruby are set up, shall we?
-. ~/.bashrc
 
 # We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
 # Also we're gonna be messing with the installed prerelease Rubies a fair bit.
@@ -14,7 +12,7 @@ rm -rf ~/.rubies/ruby-yjit-metrics-debug/*
 rm -rf ~/.rubies/ruby-yjit-metrics-prod/*
 rm -rf ~/.gem/ruby/3.2.0
 
-# This isn't a 100% cleanup -- no ./configure, for instance.
+# This isn't a 100% cleanup -- no ./configure, for instance and no "git clean -d -f"
 cd ~/ym/prod-yjit && make clean
 cd ~/ym/debug-yjit && make clean
 
@@ -27,4 +25,4 @@ gem install bundler:2.2.30
 bundle _2.2.30_
 ./basic_benchmark.rb -r 0  # No benchmarking, but build and install everything
 
-echo "Preparation stage completed successfully."
+echo "Benchmark CI Ruby reinstall completed successfully."
