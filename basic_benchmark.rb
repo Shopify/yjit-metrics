@@ -172,6 +172,8 @@ configs_to_test = DEFAULT_CONFIGS
 when_error = :die
 output_path = "data"
 bundler_version = "2.2.30"
+# For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
+timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -222,6 +224,10 @@ OptionParser.new do |opts|
         unless ERROR_BEHAVIOURS.include?(when_error)
             raise "Unknown behaviour on error: #{choice.inspect}!"
         end
+    end
+
+    opts.on("--timestamp=TS", "Output-file timestamp, format: #{timestamp}, default: right now") do |ts|
+        timestamp = ts
     end
 
     config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
@@ -298,9 +304,6 @@ end
 # This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
 # It needs to happen *after* yjit-bench is cloned and updated.
 benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: YJIT_BENCH_DIR
-
-# For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
-timestamp = Time.now.getgm.strftime('%F-%H%M%S')
 
 def harness_settings_for_config_and_bench(config, bench)
     config = config.to_s

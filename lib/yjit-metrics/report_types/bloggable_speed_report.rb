@@ -156,19 +156,25 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
 
         # Grab relevant data from the ResultSet
-        @times_by_config = {}
-        @warmups_by_config = {}
-        @ruby_metadata_by_config = {}
-        @bench_metadata_by_config = {}
-        @peak_mem_by_config = {}
-        @configs_with_human_names.map { |name, config| config }.each do |config|
-            @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: in_runs)
-            @warmups_by_config[config] = @result_set.warmups_for_config_by_benchmark(config, in_runs: in_runs)
-            @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
-            @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
-            @peak_mem_by_config[config] = @result_set.peak_mem_bytes_for_config_by_benchmark(config)
+        @times_by_platform_and_config = {}
+        @warmups_by_platform_and_config = {}
+        @ruby_metadata_by_platform_and_config = {}
+        @bench_metadata_by_platform_and_config = {}
+        @peak_mem_by_platform_and_config = {}
+        @yjit_stats = {}
+        YJITMetrics::PLATFORMS.each do |platform|
+            @configs_with_human_names.map { |name, config| config }.each do |config|
+                @times_by_platform_and_config[platform][config] = @result_set[platform].times_for_config_by_benchmark(config, in_runs: in_runs)
+                @warmups_by_platform_and_config[platform][config] = @result_set[platform].warmups_for_config_by_benchmark(config, in_runs: in_runs)
+                @ruby_metadata_by_platform_and_config[platform][config] = @result_set[platform].metadata_for_config(config)
+                @bench_metadata_by_platform_and_config[platform][config] = @result_set[platform].benchmark_metadata_for_config_by_benchmark(config)
+                @peak_mem_by_platform_and_config[platform][config] = @result_set[platform].peak_mem_bytes_for_config_by_benchmark(config)
+            end
+
+            if @result_set[platform].available_configs.include?(@stats_config)
+                @yjit_stats[platform] = @result_set[platform].yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
+            end
         end
-        @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
         @benchmark_names = filter_benchmark_names(@times_by_config[@with_yjit_config].keys)
 
@@ -300,12 +306,19 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         "blog_speed_details"
     end
 
-    def initialize(config_names, results, benchmarks: [])
-        # Set up the parent class, look up relevant data
-        super
+    def self.report_extensions
+        [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
+    end
 
+    def initialize(config_names, results, benchmarks: [])
         # This can be set up using set_extra_info later.
         @filename_permalinks = {}
+
+        # Set up the parent class, look up relevant data
+        super
+        return if @inactive # Can't get stats? Bail out.
+
+        raise "Not yet updated for multi-platform!"
 
         look_up_data_by_ruby
 
@@ -614,6 +627,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     end
 
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         require "victor"
 
         head_bench = headline_benchmarks
@@ -671,10 +692,16 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         "blog_memory_details"
     end
 
+    def self.report_extensions
+        [ "html" ]
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+        return if @inactive
 
+        raise "Not yet updated for multi-platform!"
         look_up_data_by_ruby
 
         # Sort benchmarks by headline/micro category, then alphabetically
@@ -731,6 +758,14 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
     end
 
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         # Memory details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
         html_output = script_template.result(binding)
@@ -746,16 +781,22 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
         "iteration_count"
     end
 
+    def self.report_extensions
+        ["html"]
+    end
+
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+        return if @inactive
 
         look_up_data_by_ruby
+
+        raise "Not yet updated for multi-platform!"
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
             [ benchmark_category_index(bench_name),
-              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
 
         @headings = [ "bench" ] +
@@ -784,6 +825,14 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
     end
 
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         # Memory details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/iteration_count.html.erb")
         html_output = script_template.result(binding)
@@ -798,6 +847,10 @@ end
 class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
     def self.report_name
         "blog_yjit_stats"
+    end
+
+    def self.report_extensions
+        ["html"]
     end
 
     def set_extra_info(info)
@@ -815,9 +868,11 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+        return if @inactive
 
         look_up_data_by_ruby
 
+        raise "Not yet updated for multi-platform!"
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
             [ benchmark_category_index(bench_name),
@@ -878,6 +933,14 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
     end
 
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         # Memory details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_yjit_stats.html.erb")
         html_output = script_template.result(binding)
@@ -891,7 +954,19 @@ class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
         "blog_exit_reports"
     end
 
+    def self.report_extensions
+        ["bench_list.html"]
+    end
+
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         @benchmark_names.each do |bench_name|
             File.open("#{filename}.#{bench_name}.html", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
         end
@@ -907,6 +982,10 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         "blog_speed_headline"
     end
 
+    def self.report_extensions
+        ["html"]
+    end
+
     def format_speedup(ratio)
         if ratio >= 1.01
             "%.1f%% faster" % ((ratio - 1.0) * 100)
@@ -920,8 +999,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+        return if @inactive # Can't get stats? Bail out.
 
         look_up_data_by_ruby
+
+        raise "Not yet updated for multi-platform!"
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
         if @mjit_is_incomplete
@@ -967,6 +1049,14 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
     end
 
     def write_file(filename)
+        if @inactive
+            # Can't get stats? Write an empty file.
+            self.class.report_extensions.each do |ext|
+                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+            end
+            return
+        end
+
         html_output = self.to_s
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end

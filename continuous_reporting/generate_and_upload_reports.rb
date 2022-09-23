@@ -23,6 +23,7 @@ def benchmark_file_out_path(filename)
     end
 end
 
+# TODO: load the extensions out of the class objects
 REPORTS_AND_FILES = {
     "blog_speed_headline" => {
         report_type: :basic_report,
@@ -42,7 +43,7 @@ REPORTS_AND_FILES = {
     },
     "variable_warmup" => {
         report_type: :basic_report,
-        extensions: [ "warmup_settings.json", "stats_of_interest.json" ],
+        extensions: [ "warmup_settings.json" ],
     },
     "blog_exit_reports" => {
         report_type: :basic_report,
@@ -184,7 +185,7 @@ end
 report_timestamps = {}
 report_files = Dir["*", base: "_includes/reports"].to_a
 REPORTS_AND_FILES.each do |report_name, details|
-    next unless details[:report_type] == :basic_report # No timestamped files for timeline reports
+    next unless details[:report_type] == :basic_report # Timeline reports don't produce a series of timestamped files
     this_report_files = report_files.select { |filename| filename.include?(report_name) }
     this_report_files.each do |filename|
         unless filename =~ /(.*)_(\d{4}-\d{2}-\d{2}-\d{6}).([a-zA-Z_0-9]+)/
@@ -201,7 +202,8 @@ REPORTS_AND_FILES.each do |report_name, details|
     end
 end
 
-# Check timestamped raw data versus the expected set of reports each basic_report can generate
+# Check timestamped raw data versus the expected set of reports each basic_report can generate.
+# Generate any basic reports that need it.
 json_timestamps.each do |ts, test_files|
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report

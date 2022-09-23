@@ -6,6 +6,8 @@ class YJITMetrics::WarmupReport < YJITMetrics::Report
     end
 
     def initialize(config_names, results, benchmarks: [])
+        raise "Not yet updated for multi-platform!"
+
         super
 
         @headings_by_config = {}
@@ -104,6 +106,8 @@ class YJITMetrics::TotalToIterReport < YJITMetrics::Report
     end
 
     def initialize(config_names, results, benchmarks: [])
+        raise "Not yet updated for multi-platform!"
+
         super
 
         @headings_by_config = {}

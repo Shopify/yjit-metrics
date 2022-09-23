@@ -72,7 +72,8 @@ def parse_dataset_filepath(filepath)
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    return [ filepath, config_name, timestamp, run_num ]
+    platform = filepath.split("/")[0]
+    return [ filepath, config_name, timestamp, run_num, platform ]
 end
 
 def ts_string_to_date(ts)
@@ -84,8 +85,8 @@ end
 Dir.chdir(data_dir)
 
 files_in_dir = Dir["**/*"].grep(DATASET_PATHNAME_RE) # Check all subdirectories
-files_in_dir.select { |path| path.include?("x86_64") } # temporarily ignore all ARM64 data files!
 file_data = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
+latest_ts = nil
 
 if use_all_in_dirs
     unless ARGV.empty?
@@ -97,11 +98,11 @@ else
         # No args? Use latest set of results
         latest_ts = file_data.map { |_, _, timestamp, _| timestamp }.max
 
-        relevant_results = file_data.select { |_, _, timestamp, _| timestamp == latest_ts }
+        relevant_results = file_data.select { |_, _, ts, _, _| ts == latest_ts }
     else
         # One or more files on the command line? Use that set of timestamps.
         timestamps = ARGV.map { |filepath| parse_dataset_filepath(filepath)[2] }.uniq
-        relevant_results = file_data.select { |_, _, timestamp, _| timestamps.include?(timestamp) }
+        relevant_results = file_data.select { |_, _, timestamp, _, _| timestamps.include?(timestamp) }
     end
 end
 
@@ -109,14 +110,13 @@ if relevant_results.size == 0
     puts "No relevant data files found for directory #{data_dir.inspect} and specified arguments!"
     exit -1
 end
-
 latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
+
 puts "Loading #{relevant_results.size} data files..."
 
-relevant_results.each do |filepath, config_name, timestamp, run_num|
+relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
     begin
-        platform = filepath.split("/")[0]
         RESULT_SETS[platform].add_for_config(config_name, benchmark_data)
     rescue
         puts "Error adding data from #{filepath.inspect}!"
@@ -125,20 +125,19 @@ relevant_results.each do |filepath, config_name, timestamp, run_num|
 end
 
 filepaths = relevant_results.map(&:first)
-config_names = relevant_results.map { |_, config_name, _, _| config_name }.uniq
-timestamps = relevant_results.map { |_, _, timestamp, _| timestamp }.uniq
+config_names = relevant_results.map { |_, config_name, _, _, _| config_name }.uniq
+timestamps = relevant_results.map { |_, _, timestamp, _, _| timestamp }.uniq
 
 reports.each do |report_name|
     report_type = report_class_by_name[report_name]
-    this_report_configs = config_names & RESULT_SETS["x86_64"].config_names
-    next if this_report_configs.empty?
-    report = report_type.new(this_report_configs, RESULT_SETS["x86_64"], benchmarks: only_benchmarks)
+    report = report_type.new(config_names, RESULT_SETS, benchmarks: only_benchmarks)
     report.set_extra_info({
         filenames: filepaths,
         timestamps: timestamps,
     })
 
     if write_output_files && report.respond_to?(:write_file)
+        # Name the report by the latest timestamp it contains
         ts_str = latest_ts.strftime('%F-%H%M%S')
         report.write_file("#{output_dir}/#{report_name}_#{ts_str}")
     end

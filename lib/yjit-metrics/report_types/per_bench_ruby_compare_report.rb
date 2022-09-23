@@ -11,6 +11,8 @@ class YJITMetrics::PerBenchRubyComparison < YJITMetrics::Report
     end
 
     def initialize(config_names, results, benchmarks: [])
+        raise "Not yet updated for multi-platform!"
+
         super
 
         @headings = [ "bench" ] + config_names.flat_map { |config| [ "#{config}", "RSD" ] } + alt_configs.map { |config| "#{config}/#{base_config}" }

@@ -85,6 +85,7 @@ all_perf_tripwires = false
 single_perf_tripwire = nil
 run_reports = true
 is_verbose = false
+output_ts = Time.now.getgm.strftime('%F-%H%M%S')
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -135,6 +136,10 @@ OptionParser.new do |opts|
     # reporting, we'll do it on other machines later.
     opts.on("-nr", "--no-run-reports", "Do not run reports with the benchmark data") do
         run_reports = false
+    end
+
+    opts.on("-ot TS", "--output-timestamp TS") do |ts|
+        output_ts = ts
     end
 
     opts.on("-v", "--verbose", "Print verbose output about tripwire checks") do
@@ -255,7 +260,7 @@ def run_benchmarks
         end
 
         # This is a much faster set of tests, more suitable for quick testing
-        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/"
+        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/ --timestamp=#{output_ts}"
     end
 end
 

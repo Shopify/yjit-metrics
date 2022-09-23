@@ -5,25 +5,36 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     # the data files. This is that final list of benchmarks.
     attr_reader :benchmark_names
 
+    # If we can't get stats data, we can't usefully run this report.
+    attr_reader :inactive
+
     def initialize(stats_configs, results, benchmarks: [])
         super
 
-        bad_configs = stats_configs - results.available_configs
+        all_configs = results.values.map(&:available_configs).sum([]).uniq
+        bad_configs = stats_configs - all_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
 
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
-        filtered_stats_configs = results.configs_containing_full_yjit_stats & stats_configs
-        raise "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!" if filtered_stats_configs.size > 1
-        raise "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
+        filtered_stats_configs = results.values.map(&:configs_containing_full_yjit_stats).uniq & stats_configs
+        @inactive = false
+        if filtered_stats_configs.size > 1
+            puts "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!"
+            @inactive = true
+            return
+        elsif filtered_stats_configs.empty?
+            puts "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
+            @inactive = true
+            return
+        end
         @stats_config = filtered_stats_configs[0]
 
-        @stats_config = stats_config
         @result_set = results
         @only_benchmarks = benchmarks
 
-        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(stats_config)
-        raise("Config #{stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
+        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config)
+        raise("Config #{@stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements
         @benchmark_names = filter_benchmark_names(bench_yjit_stats.keys)
@@ -32,6 +43,8 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     # Pretend that all these listed benchmarks ran inside a single Ruby process. Combine their statistics, as though you were
     # about to print an exit report.
     def combined_stats_data_for_benchmarks(benchmark_names)
+        raise("Can't query stats for an inactive stats-based report!") if @inactive
+
         unless benchmark_names.all? { |benchmark_name| @benchmark_names.include?(benchmark_name) }
             raise "No data found for benchmark #{benchmark_name.inspect}!"
         end
@@ -210,6 +223,8 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
     end
 
     def initialize(config_names, results, benchmarks: [])
+        raise "Not yet updated for multi-platform!"
+
         # Set up the YJIT stats parent class
         super
 

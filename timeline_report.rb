@@ -107,6 +107,7 @@ end
 
 configs = relevant_results.map { |_, config_name, _, _| config_name }.uniq.sort
 all_timestamps = result_set_by_ts.keys.sort
+stats_timestamps = relevant_results.flat_map { |_, config_name, timestamp, _| config_name == "yjit_stats" ? [timestamp] : [] }
 
 # This should match the JS parser in the template files
 TIME_FORMAT = "%Y %m %d %H %M %S"
@@ -130,6 +131,7 @@ context = {
 
     configs: configs,
     timestamps: all_timestamps,
+    timestamps_with_stats: stats_timestamps,
 
     selected_benchmarks: benchmarks,
     benchmark_order: all_benchmarks,

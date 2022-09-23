@@ -16,12 +16,12 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:benchmark_order].each do |benchmark|
-            all_points = @context[:timestamps].map do |ts|
+            all_points = @context[:timestamps_with_stats].map do |ts|
                 this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
                 this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
                 this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
-                if this_point_yjit
+                if this_point_yjit && this_point_stats
                     # These fields are from the ResultSet summary
                     {
                         time: ts.strftime(time_format),
@@ -45,7 +45,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks
         data_mean = []
         data_geomean = []
-        @context[:timestamps].map.with_index do |ts, t_idx|
+        @context[:timestamps_with_stats].map.with_index do |ts, t_idx|
             point_mean = {
                 time: ts.strftime(time_format),
                 ruby_desc: @context[:ruby_desc_by_timestamp][ts] || "unknown",

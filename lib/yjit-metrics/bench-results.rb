@@ -164,6 +164,11 @@ class YJITMetrics::ResultSet
         @yjit_stats = {}
         @peak_mem = {}
         @platform = nil
+        @empty = true
+    end
+
+    def empty?
+        @empty
     end
 
     def config_names
@@ -206,6 +211,8 @@ class YJITMetrics::ResultSet
         else
             # JSON file is marked as version 2, so all's well.
         end
+
+        @empty = false
 
         @times[config_name] ||= {}
         benchmark_results["times"].each do |benchmark_name, times|
@@ -521,7 +528,8 @@ class YJITMetrics::Report
     def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 
-        bad_configs = config_names - results.available_configs
+        all_configs = results.values.flat_map(&:available_configs).uniq
+        bad_configs = config_names - all_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
 
         @config_names = config_names
