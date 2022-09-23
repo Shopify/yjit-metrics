@@ -166,6 +166,10 @@ class YJITMetrics::ResultSet
         @platform = nil
     end
 
+    def config_names
+        @times.keys
+    end
+
     # A ResultSet normally expects to see results with this structure:
     #
     # {

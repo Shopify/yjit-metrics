@@ -4,7 +4,10 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
-RESULT_SET = YJITMetrics::ResultSet.new
+RESULT_SETS = {}
+YJITMetrics::PLATFORMS.each do |platform|
+    RESULT_SETS[platform] = YJITMetrics::ResultSet.new
+end
 
 report_class_by_name = YJITMetrics::Report.report_name_hash
 # By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
@@ -113,7 +116,8 @@ puts "Loading #{relevant_results.size} data files..."
 relevant_results.each do |filepath, config_name, timestamp, run_num|
     benchmark_data = JSON.load(File.read(filepath))
     begin
-        RESULT_SET.add_for_config(config_name, benchmark_data)
+        platform = filepath.split("/")[0]
+        RESULT_SETS[platform].add_for_config(config_name, benchmark_data)
     rescue
         puts "Error adding data from #{filepath.inspect}!"
         raise
@@ -126,7 +130,9 @@ timestamps = relevant_results.map { |_, _, timestamp, _| timestamp }.uniq
 
 reports.each do |report_name|
     report_type = report_class_by_name[report_name]
-    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
+    this_report_configs = config_names & RESULT_SETS["x86_64"].config_names
+    next if this_report_configs.empty?
+    report = report_type.new(this_report_configs, RESULT_SETS["x86_64"], benchmarks: only_benchmarks)
     report.set_extra_info({
         filenames: filepaths,
         timestamps: timestamps,

@@ -171,7 +171,7 @@ starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
 # Turn JSON files into reports where outdated - first, find out what test results we have.
 # json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
 json_timestamps = {}
-Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_PLATFORM_ROOT].each do |filename|
+Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_ROOT].each do |filename|
     unless filename =~ /^((.*)\/)?(.*)_basic_benchmark_/
         raise "Problem parsing test-result filename #{filename.inspect}!"
     end
@@ -225,8 +225,7 @@ json_timestamps.each do |ts, test_files|
         # If the report output doesn't already exist, build it.
         if run_report
             puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
-            # TODO: pass in RAW_BENCHMARK_ROOT so we can report on multiple platforms of benchmarks at once
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -291,8 +290,7 @@ unless die_on_regenerate
 
     # It's possible to run only specific non-timeline reports -- then this would be empty.
     unless timeline_reports.empty?
-        # TODO: pass in RAW_BENCHMARK_ROOT so we can do non-x86 timelines too
-        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_PLATFORM_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
+        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o _includes/reports")
     end
 
     timeline_reports.each do |report_name, details|
