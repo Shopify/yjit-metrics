@@ -163,18 +163,22 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @peak_mem_by_platform_and_config = {}
         @yjit_stats = {}
         YJITMetrics::PLATFORMS.each do |platform|
+            @times_by_platform_and_config[platform] = {}
+            @warmups_by_platform_and_config[platform] = {}
+            @ruby_metadata_by_platform_and_config[platform] = {}
+            @bench_metadata_by_platform_and_config[platform] = {}
+            @peak_mem_by_platform_and_config[platform] = {}
             @configs_with_human_names.map { |name, config| config }.each do |config|
+                next unless @result_set[platform].available_configs.include?(config)
                 @times_by_platform_and_config[platform][config] = @result_set[platform].times_for_config_by_benchmark(config, in_runs: in_runs)
                 @warmups_by_platform_and_config[platform][config] = @result_set[platform].warmups_for_config_by_benchmark(config, in_runs: in_runs)
                 @ruby_metadata_by_platform_and_config[platform][config] = @result_set[platform].metadata_for_config(config)
                 @bench_metadata_by_platform_and_config[platform][config] = @result_set[platform].benchmark_metadata_for_config_by_benchmark(config)
                 @peak_mem_by_platform_and_config[platform][config] = @result_set[platform].peak_mem_bytes_for_config_by_benchmark(config)
             end
-
-            if @result_set[platform].available_configs.include?(@stats_config)
-                @yjit_stats[platform] = @result_set[platform].yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
-            end
         end
+
+        @yjit_stats = @result_set[@stats_platform].yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
 
         @benchmark_names = filter_benchmark_names(@times_by_config[@with_yjit_config].keys)
 

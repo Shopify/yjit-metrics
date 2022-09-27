@@ -156,6 +156,8 @@ end
 class YJITMetrics::ResultSet
     include YJITMetrics::Stats
 
+    attr_reader :platform
+
     def initialize
         @times = {}
         @warmups = {}
@@ -173,6 +175,12 @@ class YJITMetrics::ResultSet
 
     def config_names
         @times.keys
+    end
+
+    # These objects have absolutely enormous internal data, and we don't want it printed out with
+    # every exception.
+    def inspect
+        "YJITMetrics::ResultSet<#{object_id}>"
     end
 
     # A ResultSet normally expects to see results with this structure:
