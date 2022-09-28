@@ -11,32 +11,28 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     def initialize(stats_configs, results, benchmarks: [])
         super
 
-        all_configs = results.values.map(&:available_configs).sum([]).uniq
-        bad_configs = stats_configs - all_configs
+        bad_configs = stats_configs - results.available_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
 
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
-        stats_platform_and_configs = results.values.map { |rs| [rs.platform, rs.configs_containing_full_yjit_stats] }
-        stats_platform_and_configs.select! { |platform, configs| !((configs & stats_configs).empty?) }
-        filtered_stats_configs = results.values.flat_map(&:configs_containing_full_yjit_stats).uniq & stats_configs
+        filtered_stats_configs = results.configs_containing_full_yjit_stats & stats_configs
         @inactive = false
-        if stats_platform_and_configs.empty?
+        if filtered_stats_configs.empty?
             puts "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?
             @inactive = true
             return
-        elsif stats_platform_and_configs.size > 1 || stats_platform_and_configs[0][1].size > 1
+        elsif filtered_stats_configs.size > 1
             puts "We found more than one config with YJIT stats (#{filtered_stats_configs.inspect}) in this result set!"
             @inactive = true
             return
         end
-        @stats_platform_and_config = [ stats_platform_and_configs[0][0], stats_platform_and_configs[0][1][0] ]
-        @stats_platform, @stats_config = *@stats_platform_and_config
+        @stats_config = filtered_stats_configs.first
 
         @result_set = results
         @only_benchmarks = benchmarks
 
-        bench_yjit_stats = @result_set[@stats_platform].yjit_stats_for_config_by_benchmark(@stats_config)
+        bench_yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config)
         raise("Config #{@stats_config.inspect} collected no YJIT stats!") if bench_yjit_stats.nil? || bench_yjit_stats.values.all?(&:empty?)
 
         # Only run benchmarks if there is no list of "only run these" benchmarks, or if the benchmark name starts with one of the list elements

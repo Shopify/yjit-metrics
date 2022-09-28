@@ -46,30 +46,29 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         @ruby_metadata_by_config = {}
         @bench_metadata_by_config = {}
 
-        YJITMetrics::PLATFORMS.each do |platform|
-            next if @result_set[platform].empty?
+        @configs_with_human_names.map { |name, config| config }.each do |config|
+            @warmups_by_config[config] = @result_set.warmups_for_config_by_benchmark(config, in_runs: true)
+            @times_by_config[config] = @result_set.times_for_config_by_benchmark(config, in_runs: true)
 
-            platform_configs = @result_set[platform].config_names
-            @configs_with_human_names.map { |name, config| config }.each do |config|
-                next unless platform_configs.include?(config)
-
-                @warmups_by_platform_and_config[platform][config] = @result_set[platform].warmups_for_config_by_benchmark(config, in_runs: true)
-                @times_by_platform_and_config[platform][config] = @result_set[platform].times_for_config_by_benchmark(config, in_runs: true)
-
-                @warmups_by_platform_and_config[platform][config].keys.each do |bench_name|
-                    @iters_by_platform_and_config[platform][config] ||= {}
-                    # For each run, add its warmups to its timed iterations in a single array.
-                    runs = @warmups_by_platform_and_config[platform][config][bench_name].zip(@times_by_platform_and_config[platform][config][bench_name]).map { |a, b| a + b }
-                    @iters_by_platform_and_config[platform][config][bench_name] = runs
-                end
-
-                @ruby_metadata_by_platform_and_config[platform][config] = @result_set[platform].metadata_for_config(config)
-                @bench_metadata_by_platform_and_config[platform][config] = @result_set[platform].benchmark_metadata_for_config_by_benchmark(config)
+            @warmups_by_config[config].keys.each do |bench_name|
+                @iters_by_config[config] ||= {}
+                # For each run, add its warmups to its timed iterations in a single array.
+                runs = @warmups_by_config[config][bench_name].zip(@times_by_config[config][bench_name]).map { |a, b| a + b }
+                @iters_by_config[config][bench_name] = runs
             end
+
+            @ruby_metadata_by_config[config] = @result_set.metadata_for_config(config)
+            @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
         end
 
-        all_bench_names = @times_by_platform_and_config.values.map { |configs_hash| configs_hash[@with_yjit_config].keys }.sum([]).uniq
+        all_bench_names = @times_by_config.values.map { |configs_hash| configs_hash[@with_yjit_config].keys }.sum([]).uniq
         @benchmark_names = filter_benchmark_names(all_bench_names)
+
+        @times_by_config.each do |config_name, config_results|
+            if config_results.nil? || config_results.empty?
+                raise("No results for configuration #{config_name.inspect} in #{self.class}!")
+            end
+        end
     end
 
     def initialize(config_names, results,
@@ -109,48 +108,44 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             idx = @benchmark_names.index(bench_name)
 
             # Number of iterations is chosen per-benchmark, but stays the same across all configs.
-            # Find the fastest mean iteration across all platforms and configs.
-            fastest_itr_time_ms = YJITMetrics::PLATFORMS.map do |platform|
-                summary = @result_set[platform].summary_by_config_and_benchmark
-                default_configs.map { |config| summary.dig(config, bench_name, "mean") }.compact.min
+            # Find the fastest mean iteration across all configs.
+            summary = @result_set.summary_by_config_and_benchmark
+            fastest_itr_time_ms = default_configs.map do |config|
+                summary.dig(config, bench_name, "mean")
             end.compact.min || 10_000_000.0
 
             min_itrs_needed = (default_settings["min_bench_time"] * 1000.0 / fastest_itr_time_ms).to_i
             min_itrs_needed = [ min_itrs_needed, default_settings["min_bench_itrs"] ].max
 
-            YJITMetrics::PLATFORMS.each do |platform|
-                summary = @result_set[platform].summary_by_config_and_benchmark
+            default_configs.each do |config|
+                config_settings = default_settings["configs"][config]
 
-                default_configs.each do |config|
-                    config_settings = default_settings["configs"][config]
+                itr_time_ms = summary.dig(config, bench_name, "mean")
+                ws = warmup_settings[config][bench_name]
+                raise "No warmup settings found for #{config.inspect}/#{bench_name.inspect}!" if ws.nil?
 
-                    itr_time_ms = summary.dig(config, bench_name, "mean")
-                    ws = warmup_settings[config][bench_name]
-                    raise "No warmup settings found for #{config.inspect}/#{bench_name.inspect}!" if ws.nil?
+                ws[:min_bench_itrs] = min_itrs_needed
 
-                    ws[:min_bench_itrs] = min_itrs_needed
+                # Do we have an estimate of how long this takes per iteration? If so, include it.
+                ws[:itr_time_ms] = ("%.2f" % [ws[:itr_time_ms], itr_time_ms].compact.max) unless itr_time_ms.nil?
 
-                    # Do we have an estimate of how long this takes per iteration? If so, include it.
-                    ws[:itr_time_ms] = ("%.2f" % [ws[:itr_time_ms], itr_time_ms].compact.max) unless itr_time_ms.nil?
-
-                    # Warmup is chosen per-config to reduce unneeded warmup for low-warmup configs
-                    ws[:warmup_itrs] = config_settings[:max_warmup_itrs]
-                    if config_settings[:max_warmup_time] && itr_time_ms
-                        # itr_time_ms is in milliseconds, while max_warmup_time is in seconds
-                        max_allowed_warmup = config_settings[:max_warmup_time] * 1000.0 / itr_time_ms
-                        # Choose the tighter of the two warmup limits
-                        ws[:warmup_itrs] = max_allowed_warmup if ws[:warmup_itrs] > max_allowed_warmup
-                    end
-
-                    if itr_time_ms
-                        itrs = ws[:warmup_itrs] + ws[:min_bench_itrs]
-                        est_time_ms = itrs * (itr_time_ms || 0.0)
-                        ws[:estimated_time] = ((est_time_ms + 999.0) / 1000).to_i  # Round up for elapsed time
-                    else
-                        ws[:estimated_time] = 0 unless ws[:estimated_time]
-                    end
-                    #puts "Est time #{config.inspect} #{bench_name.inspect}: #{itrs} * #{"%.1f" % (itr_time_ms || 0.0)}ms = #{ws[:estimated_time].inspect}sec"
+                # Warmup is chosen per-config to reduce unneeded warmup for low-warmup configs
+                ws[:warmup_itrs] = config_settings[:max_warmup_itrs]
+                if config_settings[:max_warmup_time] && itr_time_ms
+                    # itr_time_ms is in milliseconds, while max_warmup_time is in seconds
+                    max_allowed_warmup = config_settings[:max_warmup_time] * 1000.0 / itr_time_ms
+                    # Choose the tighter of the two warmup limits
+                    ws[:warmup_itrs] = max_allowed_warmup if ws[:warmup_itrs] > max_allowed_warmup
                 end
+
+                if itr_time_ms
+                    itrs = ws[:warmup_itrs] + ws[:min_bench_itrs]
+                    est_time_ms = itrs * (itr_time_ms || 0.0)
+                    ws[:estimated_time] = ((est_time_ms + 999.0) / 1000).to_i  # Round up for elapsed time
+                else
+                    ws[:estimated_time] = 0 unless ws[:estimated_time]
+                end
+                #puts "Est time #{config.inspect} #{bench_name.inspect}: #{itrs} * #{"%.1f" % (itr_time_ms || 0.0)}ms = #{ws[:estimated_time].inspect}sec"
             end
         end
 

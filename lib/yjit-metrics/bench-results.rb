@@ -534,8 +534,7 @@ class YJITMetrics::Report
     def initialize(config_names, results, benchmarks: [])
         raise "No Rubies specified!" if config_names.empty?
 
-        all_configs = results.values.flat_map(&:available_configs).uniq
-        bad_configs = config_names - all_configs
+        bad_configs = config_names - results.available_configs
         raise "Unknown configurations in report: #{bad_configs.inspect}!" unless bad_configs.empty?
 
         @config_names = config_names

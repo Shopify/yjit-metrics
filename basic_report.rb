@@ -83,7 +83,6 @@ Dir.chdir(data_dir)
 
 files_in_dir = Dir["**/*"].grep(DATASET_PATHNAME_RE) # Check all subdirectories
 file_data = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
-latest_ts = nil
 
 if use_all_in_dirs
     unless ARGV.empty?
@@ -93,13 +92,13 @@ if use_all_in_dirs
 else
     if ARGV.empty?
         # No args? Use latest set of results
-        latest_ts = file_data.map { |_, _, timestamp, _| timestamp }.max
+        latest_ts = file_data.map { |_, _, ts, _| ts }.max
 
         relevant_results = file_data.select { |_, _, ts, _, _| ts == latest_ts }
     else
         # One or more files on the command line? Use that set of timestamps.
         timestamps = ARGV.map { |filepath| parse_dataset_filepath(filepath)[2] }.uniq
-        relevant_results = file_data.select { |_, _, timestamp, _, _| timestamps.include?(timestamp) }
+        relevant_results = file_data.select { |_, _, ts, _, _| timestamps.include?(ts) }
     end
 end
 
@@ -127,7 +126,7 @@ timestamps = relevant_results.map { |_, _, timestamp, _, _| timestamp }.uniq
 
 reports.each do |report_name|
     report_type = report_class_by_name[report_name]
-    report = report_type.new(config_names, RESULT_SETS, benchmarks: only_benchmarks)
+    report = report_type.new(config_names, RESULT_SET, benchmarks: only_benchmarks)
     report.set_extra_info({
         filenames: filepaths,
         timestamps: timestamps,
