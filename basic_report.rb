@@ -4,10 +4,7 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
-RESULT_SETS = {}
-YJITMetrics::PLATFORMS.each do |platform|
-    RESULT_SETS[platform] = YJITMetrics::ResultSet.new
-end
+RESULT_SET = YJITMetrics::ResultSet.new
 
 report_class_by_name = YJITMetrics::Report.report_name_hash
 # By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
@@ -117,7 +114,7 @@ puts "Loading #{relevant_results.size} data files..."
 relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
     begin
-        RESULT_SETS[platform].add_for_config(config_name, benchmark_data)
+        RESULT_SET.add_for_config(config_name, benchmark_data)
     rescue
         puts "Error adding data from #{filepath.inspect}!"
         raise

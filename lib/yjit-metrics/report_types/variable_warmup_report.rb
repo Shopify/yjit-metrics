@@ -40,20 +40,14 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         @configs_with_human_names.push(["YJIT", @with_yjit_config])
 
         # Grab relevant data from the ResultSet
-        @warmups_by_platform_and_config = {}
-        @times_by_platform_and_config = {}
-        @iters_by_platform_and_config = {}
-        @ruby_metadata_by_platform_and_config = {}
-        @bench_metadata_by_platform_and_config = {}
+        @warmups_by_config = {}
+        @times_by_config = {}
+        @iters_by_config = {}
+        @ruby_metadata_by_config = {}
+        @bench_metadata_by_config = {}
 
         YJITMetrics::PLATFORMS.each do |platform|
             next if @result_set[platform].empty?
-
-            @warmups_by_platform_and_config[platform] = {}
-            @times_by_platform_and_config[platform] = {}
-            @iters_by_platform_and_config[platform] = {}
-            @ruby_metadata_by_platform_and_config[platform] = {}
-            @bench_metadata_by_platform_and_config[platform] = {}
 
             platform_configs = @result_set[platform].config_names
             @configs_with_human_names.map { |name, config| config }.each do |config|

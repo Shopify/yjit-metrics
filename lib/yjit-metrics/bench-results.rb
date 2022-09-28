@@ -156,8 +156,6 @@ end
 class YJITMetrics::ResultSet
     include YJITMetrics::Stats
 
-    attr_reader :platform
-
     def initialize
         @times = {}
         @warmups = {}
@@ -165,7 +163,6 @@ class YJITMetrics::ResultSet
         @ruby_metadata = {}
         @yjit_stats = {}
         @peak_mem = {}
-        @platform = nil
         @empty = true
     end
 
@@ -281,10 +278,11 @@ class YJITMetrics::ResultSet
         end
         ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
         ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
-        @platform ||= ruby_meta["platform"]
-        if @platform != ruby_meta["platform"]
-            raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
-        end
+        #@platform ||= ruby_meta["platform"]
+
+        #if @platform != ruby_meta["platform"]
+        #    raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
+        #end
 
         @peak_mem[config_name] ||= {}
         benchmark_results["peak_mem_bytes"].each do |benchmark_name, mem_bytes|

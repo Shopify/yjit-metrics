@@ -56,7 +56,7 @@ else
 end
 
 DEFAULT_CI_X86_CONFIGS = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys
-DEFAULT_CI_ARM_CONFIGS = DEFAULT_CI_X86_CONFIGS - [ "yjit_stats", "prod_ruby_with_mjit" ] # Stop removing these when they work reliably
+DEFAULT_CI_ARM_CONFIGS = DEFAULT_CI_X86_CONFIGS - [ "prod_ruby_with_mjit" ] # Stop removing this when it works reliably
 
 DEFAULT_CI_CONFIGS = if YJITMetrics::PLATFORM == "x86_64"
     DEFAULT_CI_X86_CONFIGS
