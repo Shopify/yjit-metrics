@@ -6,9 +6,9 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
     def initialize(context)
         super
 
-        yjit_config = "prod_ruby_with_yjit"
-        stats_config = "yjit_stats"
-        no_jit_config = "prod_ruby_no_jit"
+        yjit_config_x86 = "x86_64_prod_ruby_with_yjit"
+        stats_config_x86 = "x86_64_yjit_stats"
+        no_jit_config_x86 = "x86_64_prod_ruby_no_jit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -17,9 +17,9 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
         @context[:benchmark_order].each do |benchmark|
             all_points = @context[:timestamps_with_stats].map do |ts|
-                this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
-                this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
-                this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
+                this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config_x86, benchmark)
+                this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config_x86, benchmark)
+                this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config_x86, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point_yjit && this_point_stats
                     # These fields are from the ResultSet summary
@@ -38,7 +38,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
             visible = @context[:selected_benchmarks].include?(benchmark)
 
-            @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", visible: visible, data: all_points.compact })
+            @series.push({ config: yjit_config_x86, benchmark: benchmark, name: "#{yjit_config_x86}-#{benchmark}", visible: visible, data: all_points.compact })
         end
 
         stats_fields = @series[0][:data][0].keys - [:time, :ruby_desc]
@@ -71,8 +71,8 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             data_mean.push(point_mean)
             data_geomean.push(point_geomean)
         end
-        overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config}-overall-mean", visible: true, data: data_mean }
-        overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config}-overall-geomean", visible: true, data: data_geomean }
+        overall_mean = { config: yjit_config_x86, benchmark: "overall-mean", name: "#{yjit_config_x86}-overall-mean", visible: true, data: data_mean }
+        overall_geomean = { config: yjit_config_x86, benchmark: "overall-geomean", name: "#{yjit_config_x86}-overall-geomean", visible: true, data: data_geomean }
 
         @series.prepend overall_geomean
         @series.prepend overall_mean

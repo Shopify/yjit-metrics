@@ -6,7 +6,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
     def initialize(context)
         super
 
-        config = "prod_ruby_with_yjit"
+        config_x86 = "x86_64_prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -15,7 +15,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
 
         @context[:benchmark_order].each do |benchmark|
             all_points = @context[:timestamps].map do |ts|
-                this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                this_point = @context[:summary_by_timestamp].dig(ts, config_x86, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point
                     # These fields are from the ResultSet summary
@@ -27,7 +27,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
 
             visible = @context[:selected_benchmarks].include?(benchmark)
 
-            @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", visible: visible, data: all_points.compact })
+            @series.push({ config: config_x86, benchmark: benchmark, name: "#{config_x86}-#{benchmark}", visible: visible, data: all_points.compact })
         end
         @series.sort_by! { |s| s[:name] }
     end
@@ -47,7 +47,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
     def initialize(context)
         super
 
-        config = "prod_ruby_with_yjit"
+        config_x86 = "x86_64_prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -56,7 +56,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
 
         @context[:selected_benchmarks].each do |benchmark|
             all_points = @context[:timestamps].map do |ts|
-                this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                this_point = @context[:summary_by_timestamp].dig(ts, config_x86, benchmark)
                 this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
                 if this_point
                     # These fields are from the ResultSet summary
@@ -66,7 +66,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
                 end
             end
 
-            @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: all_points.compact })
+            @series.push({ config: config_x86, benchmark: benchmark, name: "#{config_x86}-#{benchmark}", data: all_points.compact })
         end
     end
 

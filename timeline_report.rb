@@ -13,7 +13,6 @@ data_dir = "data"
 output_dir = "."
 
 # Default benchmarks and configs to compare
-configs = [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "ruby_30_with_mjit" ]
 benchmarks = [ "railsbench", "optcarrot", "liquid-render", "activerecord" ]
 reports = all_report_names.dup
 
@@ -114,7 +113,7 @@ end
 
 configs = relevant_results.map { |_, config_name, _, _, _| config_name }.uniq.sort
 all_timestamps = result_set_by_ts.keys.sort
-stats_timestamps = relevant_results.flat_map { |_, config_name, timestamp, _, _| config_name == "yjit_stats" ? [timestamp] : [] }
+stats_timestamps = relevant_results.flat_map { |_, config_name, timestamp, _, _| config_name.include?("yjit_stats") ? [timestamp] : [] }
 
 # This should match the JS parser in the template files
 TIME_FORMAT = "%Y %m %d %H %M %S"
