@@ -61,7 +61,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
         end
 
-        all_bench_names = @times_by_config.values.map { |configs_hash| configs_hash[@with_yjit_config].keys }.sum([]).uniq
+        all_bench_names = @times_by_config[@with_yjit_config].keys
         @benchmark_names = filter_benchmark_names(all_bench_names)
 
         @times_by_config.each do |config_name, config_results|

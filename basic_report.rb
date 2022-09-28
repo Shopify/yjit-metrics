@@ -105,6 +105,7 @@ else
     else
         # One or more files on the command line? Use that set of timestamps.
         timestamps = ARGV.map { |filepath| parse_dataset_filepath(filepath)[2] }.uniq
+        raise "Could not parse supplied filenames!" if timestamps.empty?
         relevant_results = file_data.select { |_, _, ts, _, _| timestamps.include?(ts) }
     end
 end

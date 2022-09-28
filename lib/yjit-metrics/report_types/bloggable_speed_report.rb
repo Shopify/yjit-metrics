@@ -313,14 +313,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         super
         return if @inactive # Can't get stats? Bail out.
 
-        raise "Not yet updated for multi-platform!"
-
         look_up_data_by_ruby
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
             [ benchmark_category_index(bench_name),
-              #-@yjit_stats[bench_name][0]["compiled_iseq_count"],
               bench_name ] }
 
         @headings = [ "bench" ] +
@@ -696,7 +693,6 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         super
         return if @inactive
 
-        raise "Not yet updated for multi-platform!"
         look_up_data_by_ruby
 
         # Sort benchmarks by headline/micro category, then alphabetically
@@ -783,11 +779,10 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
     def initialize(config_names, results, benchmarks: [])
         # Set up the parent class, look up relevant data
         super
+
         return if @inactive
 
         look_up_data_by_ruby
-
-        raise "Not yet updated for multi-platform!"
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
@@ -867,7 +862,6 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
 
         look_up_data_by_ruby
 
-        raise "Not yet updated for multi-platform!"
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
             [ benchmark_category_index(bench_name),
@@ -997,8 +991,6 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         return if @inactive # Can't get stats? Bail out.
 
         look_up_data_by_ruby
-
-        raise "Not yet updated for multi-platform!"
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
         if @mjit_is_incomplete

@@ -174,6 +174,10 @@ class YJITMetrics::ResultSet
         @times.keys
     end
 
+    def platforms
+        @ruby_metadata.map { |config, hash| hash["platform"] }.uniq
+    end
+
     # These objects have absolutely enormous internal data, and we don't want it printed out with
     # every exception.
     def inspect
@@ -362,6 +366,10 @@ class YJITMetrics::ResultSet
     # What Ruby configurations does this ResultSet contain data for?
     def available_configs
         @ruby_metadata.keys
+    end
+
+    def benchmarks
+        @benchmark_metadata.values.flat_map(&:keys).uniq
     end
 
     # Sometimes you just want all the yjit_stats fields added up.
