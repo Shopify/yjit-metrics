@@ -70,6 +70,13 @@ def parse_dataset_filepath(filepath)
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
     platform = filepath.split("/")[0]
+
+    # We want to include the platform in the filename, which will put it in the config name.
+    # If that's not done yet, patch it here.
+    unless config_name.include?(platform)
+        config_name = platform + "_" + config_name
+    end
+
     return [ filepath, config_name, timestamp, run_num, platform ]
 end
 

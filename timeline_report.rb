@@ -58,7 +58,13 @@ def parse_dataset_filepath(filepath)
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    return [ filepath, config_name, timestamp, run_num ]
+    platform = filepath.split("/")[0]
+
+    unless config_name.include?(platform)
+        config_name = platform + "_" + config_name
+    end
+
+    return [ filepath, config_name, timestamp, run_num, platform ]
 end
 
 def ts_string_to_date(ts)
@@ -83,17 +89,18 @@ if relevant_results.size == 0
     exit -1
 end
 
-latest_ts = relevant_results.map { |_, _, timestamp, _| timestamp }.max
+latest_ts = relevant_results.map { |_, _, timestamp, _, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
 filepaths_by_ts = {}
 ruby_desc_by_ts = {}
-relevant_results.each do |filepath, config_name, timestamp, run_num|
+relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
     filepaths_by_ts[timestamp] ||= []
     filepaths_by_ts[timestamp].push filepath  # Is this used? I'm not sure this is used.
-    if config_name == "prod_ruby_with_yjit"
+    if config_name.include?("prod_ruby_with_yjit")
+        # FIXME: right now, it's actually possible for the x86 and ARM Rubies to use different SHAs since they may git pull at slightly different times...
         ruby_desc_by_ts[timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
     end
     begin
@@ -105,9 +112,9 @@ relevant_results.each do |filepath, config_name, timestamp, run_num|
     end
 end
 
-configs = relevant_results.map { |_, config_name, _, _| config_name }.uniq.sort
+configs = relevant_results.map { |_, config_name, _, _, _| config_name }.uniq.sort
 all_timestamps = result_set_by_ts.keys.sort
-stats_timestamps = relevant_results.flat_map { |_, config_name, timestamp, _| config_name == "yjit_stats" ? [timestamp] : [] }
+stats_timestamps = relevant_results.flat_map { |_, config_name, timestamp, _, _| config_name == "yjit_stats" ? [timestamp] : [] }
 
 # This should match the JS parser in the template files
 TIME_FORMAT = "%Y %m %d %H %M %S"
