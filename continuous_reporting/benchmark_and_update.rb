@@ -153,6 +153,7 @@ ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
 RUN_REPORTS = run_reports
 VERBOSE = is_verbose
+OUTPUT_TS = output_ts
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
@@ -260,7 +261,7 @@ def run_benchmarks
         end
 
         # This is a much faster set of tests, more suitable for quick testing
-        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/ --timestamp=#{output_ts}"
+        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/ --timestamp=#{OUTPUT_TS}"
     end
 end
 
