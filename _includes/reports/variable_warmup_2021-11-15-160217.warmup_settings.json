@@ -1,5 +1,65 @@
 {
-  "prod_ruby_no_jit": {
+  "aarch64_prod_ruby_no_jit": {
+    "lee": {
+      "warmup_itrs": 5,
+      "min_bench_itrs": 24,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "30k_methods": {
+      "warmup_itrs": 5,
+      "min_bench_itrs": 26,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "activerecord": {
+      "warmup_itrs": 5,
+      "min_bench_itrs": 189,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    }
+  },
+  "aarch64_prod_ruby_with_yjit": {
+    "lee": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 24,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "30k_methods": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 26,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "activerecord": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 189,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    }
+  },
+  "aarch64_yjit_stats": {
+    "lee": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 24,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "30k_methods": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 26,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    },
+    "activerecord": {
+      "warmup_itrs": 20,
+      "min_bench_itrs": 189,
+      "min_bench_time": 0,
+      "estimated_time": 0
+    }
+  },
+  "x86_64_prod_ruby_no_jit": {
     "lee": {
       "warmup_itrs": 5,
       "min_bench_itrs": 24,
@@ -22,7 +82,7 @@
       "estimated_time": 29
     }
   },
-  "prod_ruby_with_mjit": {
+  "x86_64_prod_ruby_with_mjit": {
     "lee": {
       "warmup_itrs": 75,
       "min_bench_itrs": 24,
@@ -42,7 +102,7 @@
       "estimated_time": 0
     }
   },
-  "prod_ruby_with_yjit": {
+  "x86_64_prod_ruby_with_yjit": {
     "lee": {
       "warmup_itrs": 20,
       "min_bench_itrs": 24,
@@ -65,7 +125,7 @@
       "estimated_time": 23
     }
   },
-  "yjit_stats": {
+  "x86_64_yjit_stats": {
     "lee": {
       "warmup_itrs": 20,
       "min_bench_itrs": 24,
@@ -88,5 +148,5 @@
       "estimated_time": 44
     }
   },
-  "estimated_time": 454
+  "estimated_time": 583
 }
