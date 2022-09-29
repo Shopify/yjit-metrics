@@ -32,7 +32,7 @@ end
 YJIT_GIT_URL = "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = "master"
 
-# The same build of Ruby (e.g. current prerelease Ruby 3.1) can
+# The same build of Ruby (e.g. current prerelease Ruby) can
 # have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
 RUBY_BUILDS = {
     "ruby-yjit-metrics-debug" => {
@@ -68,54 +68,72 @@ RUBY_BUILDS = {
     },
 }
 
-RUBY_CONFIGS = {
-    debug_ruby_no_yjit: {
+# These are "config roots" because they define a configuration
+# in a non-platform-specific way. They're really several *variables*
+# that partially define a configuration.
+#
+# In this case they define how the Ruby was built, and then what
+# command-line params we run it with.
+#
+# Right now we use the config name itself to communicate this data
+# to the reporting tasks. That's bad and we should stop :-/
+RUBY_CONFIG_ROOTS = {
+    "debug_ruby_no_yjit" => {
         build: "ruby-yjit-metrics-debug",
         opts: [ "--disable-yjit" ],
     },
-    yjit_stats: {
+    "yjit_stats" => {
         build: "ruby-yjit-metrics-debug",
         opts: [ "--yjit", "--yjit-stats" ],
     },
-    yjit_prod_stats: {
+    "yjit_prod_stats" => {
         build: "ruby-yjit-metrics-stats",
         opts: [ "--yjit", "--yjit-stats" ],
     },
-    yjit_prod_stats_disabled: {
+    "yjit_prod_stats_disabled" => {
         build: "ruby-yjit-metrics-stats",
         opts: [ "--yjit" ],
     },
-    prod_ruby_no_jit: {
+    "prod_ruby_no_jit" => {
         build: "ruby-yjit-metrics-prod",
         opts: [ "--disable-yjit" ],
     },
-    prod_ruby_with_yjit: {
+    "prod_ruby_with_yjit" => {
         build: "ruby-yjit-metrics-prod",
         opts: [ "--yjit" ],
     },
-    prod_ruby_with_mjit: {
+    "prod_ruby_with_mjit" => {
         build: "ruby-yjit-metrics-prod",
         opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ],
     },
-    prod_ruby_with_mjit_verbose: {
+    "prod_ruby_with_mjit_verbose" => {
         build: "ruby-yjit-metrics-prod",
         opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10", "--mjit-verbose=1" ],
     },
-    ruby_30: {
+    "ruby_30" => {
         build: "ruby-3.0.2",
         opts: [],
     },
-    # This is arguably the fastest-tuned MJIT to have existed. We definitely used it as a competitive benchmark for YJIT.
-    ruby_30_with_mjit: {
+    # This is arguably the fastest-tuned MJIT to have existed. We used it as a competitive benchmark for YJIT.
+    "ruby_30_with_mjit" => {
         build: "ruby-3.0.0",
         opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
         install: "ruby-install",
     },
-    truffleruby: {
+    "truffleruby" => {
         build: "truffleruby+graalvm-21.2.0",
         opts: [ "--jvm" ],
     },
 }
+
+RUBY_CONFIGS = {}
+YJITMetrics::PLATFORMS.each do |platform|
+    RUBY_CONFIG_ROOTS.each do |config_root, data|
+        config_name = "#{platform}_#{config_root}"
+        RUBY_CONFIGS[config_name] = data
+    end
+end
+
 CONFIG_NAMES = RUBY_CONFIGS.keys
 
 SKIPPED_COMBOS = [
@@ -126,10 +144,13 @@ SKIPPED_COMBOS = [
     # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
     # Just in general, Jekyll had some serious issues as a benchmark :-/
     # https://github.com/Shopify/yjit-bench/issues/71
+    # Now it's gone from yjit-bench, though we leave this to keep from running it
+    # with an older yjit-bench.
     [ "*", "jekyll" ],
 
     # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
     # Needs an update of dependency libraries.
+    # Note: check back to see when/if Discourse runs with head-of-master Ruby again...
     [ "*", "discourse" ],
 
     # [ "name_of_config", "name_of_benchmark" ] OR
@@ -167,8 +188,8 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = [ :yjit_stats, :prod_ruby_with_yjit, :prod_ruby_no_jit ]
-configs_to_test = DEFAULT_CONFIGS
+DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit)
+configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
 when_error = :die
 output_path = "data"
 bundler_version = "2.2.30"
@@ -232,7 +253,7 @@ OptionParser.new do |opts|
 
     config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
     opts.on("--configs=CONFIGS", config_desc) do |configs|
-        configs_to_test = configs.split(",").map(&:strip).map(&:to_sym).uniq
+        configs_to_test = configs.split(",").map(&:strip).uniq
         bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
     end
@@ -306,7 +327,6 @@ end
 benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: YJIT_BENCH_DIR
 
 def harness_settings_for_config_and_bench(config, bench)
-    config = config.to_s
     if HARNESS_PARAMS[:variable_warmup_config_file]
         @variable_warmup_settings ||= JSON.parse(File.read HARNESS_PARAMS[:variable_warmup_config_file])
         @hs_by_config_and_bench ||= {}
@@ -351,7 +371,7 @@ all_runs = (0...num_runs).flat_map do |run_num|
         benchmark_list.to_a.flat_map do |bench_info|
             bench_info[:name] = bench_info[:name].gsub(/\.rb$/, "")
             if SKIPPED_COMBOS.include?([ "*", bench_info[:name] ]) ||
-              SKIPPED_COMBOS.include?([ config.to_s, bench_info[:name] ])
+              SKIPPED_COMBOS.include?([ config, bench_info[:name] ])
                 puts "Skipping: #{config} / #{bench_info[:name]}..."
                 []
             else
