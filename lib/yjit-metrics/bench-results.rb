@@ -178,6 +178,118 @@ class YJITMetrics::ResultSet
         @ruby_metadata.map { |config, hash| hash["platform"] }.uniq
     end
 
+    CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
+        "with_yjit" => "YJIT",
+        "prod_ruby_with_mjit" => "MJIT",
+        "no_jit" => "No JIT",
+        "truffle" => "TruffleRuby",
+    }
+    def table_of_configs_by_fragment(configs)
+        configs_by_fragment = {}
+        frag_by_length = CONFIG_NAME_SPECIAL_CASE_FRAGMENTS.keys.sort_by { |k| -k.length } # Sort longest-first
+        configs.each do |config|
+            longest_frag = frag_by_length.detect { |k| config.include?(k) }
+            unless longest_frag
+                raise "Trying to sort config #{config.inspect} by fragment, but no fragment matches!"
+            end
+            configs_by_fragment[longest_frag] ||= []
+            configs_by_fragment[longest_frag] << config
+        end
+        configs_by_fragment
+    end
+
+    # Add a table of configurations, distinguished by platform, compile-time config, runtime config and whatever
+    # else we can determine from config names and/or result data. Only include configurations for which we have
+    # results. Order by the req_configs order, if supplied, otherwise by order results were added in (internal
+    # hash table order.)
+    def configs_with_human_names(req_configs = nil)
+        # Only use requested configs for which we have data
+        if req_configs
+            # Preserve req_configs order
+            c_n = config_names
+            only_configs = req_configs.select {|config| c_n.include?(config) }
+        else
+            only_configs = config_names()
+        end
+
+        if only_configs.size == 0
+            puts "No requested configurations have any data..."
+            puts "Requested configurations: #{req_configs.inspect} #{req_configs == nil ? "(nil means use all)" : ""}"
+            puts "Configs we have data for: #{@times.keys.inspect}"
+            raise("Can't generate human names table without any configurations!")
+        end
+
+        configs_by_platform = {}
+        only_configs.each do |config|
+            config_platform = @ruby_metadata[config]["platform"]
+            configs_by_platform[config_platform] ||= []
+            configs_by_platform[config_platform] << config
+        end
+
+        # If each configuration only exists for a single platform, we'll use the platform names as human-readable names.
+        if configs_by_platform.values.map(&:size).max == 1
+            out = {}
+            # Order output by req_config
+            req_configs.each do |config|
+                platform = configs_by_platform.detect { |platform, plat_configs| plat_configs.include?(config) }
+                out[platform] = config
+            end
+            return out
+        end
+
+        # If all configurations are on the *same* platform, we'll use names like YJIT and MJIT and MJIT(3.0)
+        if configs_by_platform.size == 1
+            # Sort list of configs by what fragments (Ruby version plus runtime config) they contain
+            by_fragment = table_of_configs_by_fragment(only_configs)
+
+            # If no two configs have the same Ruby version plus runtime config, then that's how we'll name them.
+            frags_with_multiple_configs = by_fragment.keys.select { |frag| (by_fragment[frag] || []).length > 1 }
+            if frags_with_multiple_configs.empty?
+                out = {}
+                # Order by req_configs
+                req_configs.each do |config|
+                    fragment = by_fragment.select { |frag, configs| configs[0] == config }
+                    human_name = CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment]
+                    out[human_name] = config
+                end
+                return out
+            end
+
+            unsortable_configs = frags_with_multiple_configs.flat_map { |frag| by_fragment[frag] }
+            puts "Fragments with multiple configs: #{frags_with_multiple_configs.inspect}"
+            puts "Configs we can't sort by fragment: #{unsortable_configs.inspect}"
+            raise "We only have one platform, but we can't sort by fragment... Need finer distinctions!"
+        end
+
+        # Okay. We have at least two platforms. Now things get stickier.
+        by_platform_and_fragment = {}
+        configs_by_platform.each do |platform, configs|
+            by_platform_and_fragment[platform] = table_of_configs_by_fragment(configs)
+        end
+        hard_to_name_configs = by_platform_and_fragment.values.flat_map { |fragment, configs| configs.size > 1 ? configs : [] }
+
+        # If no configuration shares *both* platform *and* fragment, we can name by platform and fragment.
+        if hard_to_name_configs.empty?
+            plat_frag_table = {}
+            by_platform_and_fragment.each do |platform, frag_table|
+                CONFIG_NAME_SPECIAL_CASE_FRAGMENTS.each do |fragment, human_name|
+                    next unless frag_table[fragment]
+                    single_config = frag_table[fragment][0]
+                    plat_frag_table[single_config] = "#{human_name} #{platform}"
+                end
+            end
+
+            # Now reorder the table by req_configs
+            out = {}
+            req_configs.each do |config|
+                out[config] = plat_frag_table[config]
+            end
+            return out
+        end
+
+        raise "Complicated case in configs_with_human_names! Hard to distinguish between: #{hard_to_name_configs.inspect}!"
+    end
+
     # These objects have absolutely enormous internal data, and we don't want it printed out with
     # every exception.
     def inspect
@@ -484,33 +596,35 @@ module YJITMetrics
         "configs" => {
             # Each config controls warmup individually. But the number of real iterations needs
             # to match across all configs, so it's not set per-config.
-            "yjit_stats" => {
+            "x86_64_yjit_stats" => {
                 max_warmup_itrs: 20,
-                warmup_type: :simple,
             },
-            "prod_ruby_no_jit" => {
+            "x86_64_prod_ruby_no_jit" => {
                 max_warmup_itrs: 5,
-                warmup_type: :simple,
             },
-            "prod_ruby_with_yjit" => {
+            "x86_64_prod_ruby_with_yjit" => {
                 max_warmup_itrs: 20,
-                # "Simple" warmup means after X iterations, we know everything relevant is fully warmed up.
-                # We're not currently using the warmup_type, but we may in the future.
-                warmup_type: :simple,
             },
-            "prod_ruby_with_mjit" => {
+            "x86_64_prod_ruby_with_mjit" => {
                 max_warmup_itrs: 75,
-                max_warmup_time: 300, # in seconds
-                # "Complex" warmup means there can be multiple levels of warmup. We don't know how long it takes, and we never really know we're done.
-                warmup_type: :complex,
+                max_warmup_time: 300, # in seconds; we try to let MJIT warm up "enough," but time and iters vary by workload
+            },
+            "aarch64_yjit_stats" => {
+                max_warmup_itrs: 20,
+            },
+            "aarch64_prod_ruby_no_jit" => {
+                max_warmup_itrs: 5,
+            },
+            "aarch64_prod_ruby_with_yjit" => {
+                max_warmup_itrs: 20,
             },
         },
-        # Basic settings, outside of all specific configs
+        # Non-config-specific settings
         "min_bench_itrs" => 15,
         "min_bench_time" => 20,
         "min_warmup_itrs" => 5,
         "max_warmup_itrs" => 75,
-        "max_itr_time" => 300 * 60,  # GitHub Actions cuts off at 360 minutes, so allow 300 expected minutes of non-overhead iteration time
+        "max_itr_time" => 300 * 60,  # GitHub Actions stop at 360 minutes. Allow 300 expected minutes of non-overhead iteration time.
     }
 end
 

@@ -17,27 +17,22 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         "warmup_settings.json"
     end
 
-    CORRELATION_THRESHOLD = 0.1
-
-    def exactly_one_config_with_name(configs, substring, description, none_okay: false)
-        matching_configs = configs.select { |name| name.include?(substring) }
-        raise "We found more than one candidate #{description} config (#{matching_configs.inspect}) in this result set!" if matching_configs.size > 1
-        raise "We didn't find any #{description} config among #{configs.inspect}!" if matching_configs.empty? && !none_okay
-        matching_configs[0]
+    # The internal state of these is huge - reduce the size of debug output when calling a bad
+    # method...
+    def inspect
+        "VariableWarmupReport<#{self.object_id}>"
     end
 
-    # We could probably make this a lot more flexible and just evaluate *every* config and benchmark.
-    def look_up_data_by_ruby
-        @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
-        @with_mjit_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
-        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
+    CORRELATION_THRESHOLD = 0.1
 
-        # Order matters here - we push No-JIT, then MJIT(s), then YJIT.
-        @configs_with_human_names = [
-            ["No JIT", @no_jit_config],
-        ]
-        @configs_with_human_names.push(["MJIT", @with_mjit_config]) if @with_mjit_config
-        @configs_with_human_names.push(["YJIT", @with_yjit_config])
+    def look_up_data_by_ruby
+        # Order matters here - we push No-JIT, then MJIT(s), then YJIT. For each one we sort by platform name.
+        bench_configs = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"]
+        configs = @result_set.config_names
+        config_order = configs.select { |c| c["prod_ruby_no_jit"] }.sort
+        config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
+        config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort
+        @configs_with_human_names = @result_set.configs_with_human_names(config_order)
 
         # Grab relevant data from the ResultSet
         @warmups_by_config = {}
@@ -61,7 +56,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             @bench_metadata_by_config[config] = @result_set.benchmark_metadata_for_config_by_benchmark(config)
         end
 
-        all_bench_names = @times_by_config[@with_yjit_config].keys
+        all_bench_names = @times_by_config[config_order[-1]].keys
         @benchmark_names = filter_benchmark_names(all_bench_names)
 
         @times_by_config.each do |config_name, config_results|
@@ -86,10 +81,12 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
     def iterations_for_configs_and_benchmarks(default_settings)
         # Initial "blank" settings for each relevant config and benchmark
         looked_up_configs = @configs_with_human_names.map { |_, config| config }.sort
+
+        # Note: default_configs are config *roots*, not full configurations
         default_configs = default_settings["configs"].keys.sort
         all_configs = (looked_up_configs + default_configs).uniq.sort
 
-        warmup_settings = all_configs.to_h do |config|
+        warmup_settings = default_configs.to_h do |config|
             [ config, @benchmark_names.to_h do |bench_name|
                     [ bench_name,
                         {
