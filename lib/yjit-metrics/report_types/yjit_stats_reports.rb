@@ -222,8 +222,6 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
     end
 
     def initialize(config_names, results, benchmarks: [])
-        raise "Not yet updated for multi-platform!"
-
         # Set up the YJIT stats parent class
         super
 
