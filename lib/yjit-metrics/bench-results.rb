@@ -189,6 +189,7 @@ class YJITMetrics::ResultSet
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
         "with_yjit" => "YJIT",
         "prod_ruby_with_mjit" => "MJIT",
+        "ruby_30_with_mjit" => "MJIT-3.0",
         "no_jit" => "No JIT",
         "truffle" => "TruffleRuby",
         "with_stats" => "YJIT Stats",
