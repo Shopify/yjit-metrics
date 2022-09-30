@@ -998,7 +998,9 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         super
         return if @inactive # Can't get stats? Bail out.
 
-        look_up_data_by_ruby
+        # Give the headline data for x86 processors, not ARM64.
+        # Note: as written, this will break for any data *not* including x86. Do we care?
+        look_up_data_by_ruby(only_platforms: ["x86_64"])
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
         if @mjit_is_incomplete
