@@ -597,26 +597,26 @@ module YJITMetrics
             # Each config controls warmup individually. But the number of real iterations needs
             # to match across all configs, so it's not set per-config.
             "x86_64_yjit_stats" => {
-                max_warmup_itrs: 20,
+                max_warmup_itrs: 5,
             },
             "x86_64_prod_ruby_no_jit" => {
                 max_warmup_itrs: 5,
             },
             "x86_64_prod_ruby_with_yjit" => {
-                max_warmup_itrs: 20,
+                max_warmup_itrs: 5,
             },
             #"x86_64_prod_ruby_with_mjit" => {
             #    max_warmup_itrs: 75,
             #    max_warmup_time: 300, # in seconds; we try to let MJIT warm up "enough," but time and iters vary by workload
             #},
             #"aarch64_yjit_stats" => {
-            #    max_warmup_itrs: 20,
+            #    max_warmup_itrs: 5,
             #},
             "aarch64_prod_ruby_no_jit" => {
                 max_warmup_itrs: 5,
             },
             "aarch64_prod_ruby_with_yjit" => {
-                max_warmup_itrs: 20,
+                max_warmup_itrs: 5,
             },
         },
         # Non-config-specific settings

@@ -68,6 +68,10 @@ RUBY_BUILDS = {
     },
 }
 
+YJIT_ENABLED_OPTS = [ "--yjit-call-threshold=1", "--disable-mjit" ]
+MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
+NO_JIT_OPTS = [ "--disable-yjit" ]
+
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
 # that partially define a configuration.
@@ -80,35 +84,35 @@ RUBY_BUILDS = {
 RUBY_CONFIG_ROOTS = {
     "debug_ruby_no_yjit" => {
         build: "ruby-yjit-metrics-debug",
-        opts: [ "--disable-yjit" ],
+        opts: NO_JIT_OPTS,
     },
     "yjit_stats" => {
         build: "ruby-yjit-metrics-debug",
-        opts: [ "--yjit", "--yjit-stats" ],
+        opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
     },
     "yjit_prod_stats" => {
         build: "ruby-yjit-metrics-stats",
-        opts: [ "--yjit", "--yjit-stats" ],
+        opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
     },
     "yjit_prod_stats_disabled" => {
         build: "ruby-yjit-metrics-stats",
-        opts: [ "--yjit" ],
+        opts: YJIT_ENABLED_OPTS,
     },
     "prod_ruby_no_jit" => {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--disable-yjit" ],
+        opts: NO_JIT_OPTS,
     },
     "prod_ruby_with_yjit" => {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--yjit" ],
+        opts: YJIT_ENABLED_OPTS,
     },
     "prod_ruby_with_mjit" => {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ],
+        opts: MJIT_ENABLED_OPTS,
     },
     "prod_ruby_with_mjit_verbose" => {
         build: "ruby-yjit-metrics-prod",
-        opts: [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10", "--mjit-verbose=1" ],
+        opts: MJIT_ENABLED_OPTS + [ "--mjit-verbose=1" ],
     },
     "ruby_30" => {
         build: "ruby-3.0.2",
