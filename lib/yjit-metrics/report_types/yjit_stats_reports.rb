@@ -215,6 +215,7 @@ class YJITMetrics::YJITStatsExitReport < YJITMetrics::YJITStatsReport
     end
 end
 
+# Note: this is now unused in normal operation, but is still in unit tests for reporting.
 # This report is to compare YJIT's time-in-JIT versus its speedup for various benchmarks.
 class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
     def self.report_name

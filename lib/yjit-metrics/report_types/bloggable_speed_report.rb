@@ -139,12 +139,16 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
     # Include Truffle data only if we can find it, use MJIT 3.0 and/or 3.1 depending on what's available.
     # YJIT and No-JIT are mandatory.
-    def look_up_data_by_ruby(in_runs: false)
-        @with_yjit_config = exactly_one_config_with_name(@config_names, "with_yjit", "with-YJIT")
-        @with_mjit30_config = exactly_one_config_with_name(@config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
-        @with_mjit_latest_config = exactly_one_config_with_name(@config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
-        @no_jit_config    = exactly_one_config_with_name(@config_names, "no_jit", "no-JIT")
-        @truffle_config   = exactly_one_config_with_name(@config_names, "truffleruby", "Truffle", none_okay: true)
+    def look_up_data_by_ruby(only_platforms: YJITMetrics::PLATFORMS, in_runs: false)
+        only_platforms = [only_platforms].flatten
+        # Filter config names by given platform(s)
+        config_names = @config_names.select { |name| only_platforms.any? { |plat| name.include?(plat) } }
+
+        @with_yjit_config = exactly_one_config_with_name(config_names, "with_yjit", "with-YJIT")
+        @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
+        @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
+        @no_jit_config    = exactly_one_config_with_name(config_names, "no_jit", "no-JIT")
+        @truffle_config   = exactly_one_config_with_name(config_names, "truffleruby", "Truffle", none_okay: true)
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
@@ -782,7 +786,9 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
 
         return if @inactive
 
-        look_up_data_by_ruby
+        # This report can just run with one platform's data and everything's fine.
+        # The iteration counts should be identical on other platforms.
+        look_up_data_by_ruby only_platforms: results.platforms[0]
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
