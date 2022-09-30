@@ -866,7 +866,9 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
         super
         return if @inactive
 
-        look_up_data_by_ruby
+        # This report can just run with one platform's data and everything's fine.
+        # The iteration counts should be identical on other platforms.
+        look_up_data_by_ruby only_platforms: results.platforms[0]
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
