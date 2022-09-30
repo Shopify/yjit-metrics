@@ -27,11 +27,13 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
 
     def look_up_data_by_ruby
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT. For each one we sort by platform name.
+        # It matters because we want the output reports to be stable with no churn in Git.
         bench_configs = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"]
         configs = @result_set.config_names
         config_order = configs.select { |c| c["prod_ruby_no_jit"] }.sort
         config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
         config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort
+        config_order += configs.select { |c| c["with_stats"] }.sort # Stats configs *also* take time to run
         @configs_with_human_names = @result_set.configs_with_human_names(config_order)
 
         # Grab relevant data from the ResultSet
@@ -146,20 +148,26 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
             end
         end
 
-        # How much total time have we allocated to running benchmarks?
-        est_time = default_configs.map do |config|
-            # Pretend yjit_stats iterations will take as long as prod YJIT, though it's really longer
-            config = @with_yjit_config if config == "yjit_stats"
+        platform_configs = {}
+        @configs_with_human_names.values.each do |config|
+            config_platform = YJITMetrics::PLATFORMS.detect { |platform| config.start_with?(platform) }
+            platform_configs[config_platform] ||= []
+            platform_configs[config_platform] << config
+        end
 
-            warmup_settings[config].values.map { |s| s[:estimated_time] || 0.0 }.sum
-        end.sum
-        warmup_settings["estimated_time"] = est_time
+        # How much total time have we allocated to running benchmarks per platform?
+        platform_configs.each do |platform, configs|
+            est_time = configs.map do |config|
+                warmup_settings[config].values.map { |s| s[:estimated_time] || 0.0 }.sum
+            end.sum
+            warmup_settings["#{platform}_estimated_time"] = est_time
 
-        # Do we need to reduce the time taken?
-        if est_time > default_settings["max_itr_time"]
-            puts "Maximum allowed time: #{default_settings["max_itr_time"].inspect}sec"
-            puts "Estimated run time: #{est_time.inspect}sec"
-            raise "This is where logic to do something statistical and clever would go!"
+            # Do we need to reduce the time taken?
+            if est_time > default_settings["max_itr_time"]
+                puts "Maximum allowed time: #{default_settings["max_itr_time"].inspect}sec"
+                puts "Estimated run time on #{platform}: #{est_time.inspect}sec"
+                raise "This is where logic to do something statistical and clever would go!"
+            end
         end
 
         warmup_settings

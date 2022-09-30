@@ -178,11 +178,20 @@ class YJITMetrics::ResultSet
         @ruby_metadata.map { |config, hash| hash["platform"] }.uniq
     end
 
+    # "Fragments" are, in effect, a quick human-readable way to summarise a particular
+    # compile-time-plus-run-time Ruby configuration. Doing this in general would
+    # require serious AI, but we don't need it in general. We have a few specific
+    # cases we care about.
+    #
+    # Right now we're just checking the config name. It would be better, but harder,
+    # to actually verify the configuration from the config's Ruby metadata (and other
+    # metadata?) and make sure the config does what it's labelled as.
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
         "with_yjit" => "YJIT",
         "prod_ruby_with_mjit" => "MJIT",
         "no_jit" => "No JIT",
         "truffle" => "TruffleRuby",
+        "with_stats" => "YJIT Stats",
     }
     def table_of_configs_by_fragment(configs)
         configs_by_fragment = {}
