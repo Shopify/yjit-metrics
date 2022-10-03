@@ -619,9 +619,9 @@ module YJITMetrics
             #    max_warmup_itrs: 75,
             #    max_warmup_time: 300, # in seconds; we try to let MJIT warm up "enough," but time and iters vary by workload
             #},
-            #"aarch64_yjit_stats" => {
-            #    max_warmup_itrs: 5,
-            #},
+            "aarch64_yjit_stats" => {
+                max_warmup_itrs: 5,
+            },
             "aarch64_prod_ruby_no_jit" => {
                 max_warmup_itrs: 5,
             },
