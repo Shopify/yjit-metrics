@@ -680,11 +680,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         # And then the "no normal person would ever care" details report, with raw everything
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_raw_details.html.erb")
         html_output = script_template.result(binding)
-        File.open(filename + "#{@platform}.raw_details.html", "w") { |f| f.write(html_output) }
+        File.open(filename + ".#{@platform}.raw_details.html", "w") { |f| f.write(html_output) }
 
         # The Tripwire report is used to tell when benchmark performance drops suddenly
         json_data = speedup_tripwires
-        File.open(filename + "#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
+        File.open(filename + ".#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
         write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
