@@ -25,7 +25,7 @@ def benchmark_file_out_path(filename)
         if ts == "" || year == "" || day == ""
             raise "Empty string when parsing timestamp: #{ts.inspect}!"
         end
-        "#{RAW_BENCHMARK_PLATFORM_ROOT}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
+        "#{RAW_BENCHMARK_ROOT}/#{config_platform}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
     else
         raise "Can't parse filename: #{filename}!"
     end
