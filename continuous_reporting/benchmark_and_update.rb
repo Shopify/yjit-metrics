@@ -55,13 +55,18 @@ else
     VAR_WARMUP_FILE = nil
 end
 
-DEFAULT_CI_X86_CONFIGS = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys
-DEFAULT_CI_ARM_CONFIGS = DEFAULT_CI_X86_CONFIGS - [ "prod_ruby_with_mjit" ] # Stop removing this when it works reliably
+def platform_for_config(config_name)
+    p = YJITMetrics::PLATFORMS.detect { |platform| config_name.start_with?(platform) }
+    raise("No platform name for config: #{config_name.inspect}!") unless p
+    p
+end
 
-DEFAULT_CI_CONFIGS = if YJITMetrics::PLATFORM == "x86_64"
-    DEFAULT_CI_X86_CONFIGS
-else
-    DEFAULT_CI_ARM_CONFIGS
+DEFAULT_CI_CONFIGS_ALL = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys
+DEFAULT_CI_CONFIGS = {}
+DEFAULT_CI_CONFIGS_ALL.each do |config|
+    p = platform_for_config(config)
+    DEFAULT_CI_CONFIGS[p] ||= []
+    DEFAULT_CI_CONFIGS[p] << config
 end
 
 # If we have a config file from the variable warmup report, we should use it. If not,
@@ -70,7 +75,7 @@ DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
     (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
         "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
         "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
-    " --configs=#{DEFAULT_CI_CONFIGS.join(",")}"
+    " --configs=#{DEFAULT_CI_CONFIGS[YJITMetrics::PLATFORM].join(",")}"
 
 BENCH_TYPES = {
     "none"       => nil,

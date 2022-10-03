@@ -139,6 +139,10 @@ YJITMetrics::PLATFORMS.each do |platform|
 end
 
 CONFIG_NAMES = RUBY_CONFIGS.keys
+THIS_PLATFORM_CONFIGS = RUBY_CONFIGS.keys.select do |config|
+    config_platform = YJITMetrics::PLATFORMS.detect { |plat| config.start_with?(plat) }
+    config_platform == YJITMetrics::PLATFORM
+end
 
 SKIPPED_COMBOS = [
     # HexaPDF not working with prerelease MJIT
@@ -260,6 +264,8 @@ OptionParser.new do |opts|
         configs_to_test = configs.split(",").map(&:strip).uniq
         bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
+        wrong_platform_configs = configs_to_test - THIS_PLATFORM_CONFIGS
+        raise "Requested configuration(s) are for other platforms: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
     end
 end.parse!
 
