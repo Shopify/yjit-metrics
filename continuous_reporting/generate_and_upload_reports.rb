@@ -16,7 +16,15 @@ def benchmark_file_out_path(filename)
         ts = $1
         config = $2
 
+        config_platform = YJITMetrics::PLATFORMS.detect { |platform| config.start_with?(platform) }
+        if !config_platform
+            raise "Can't parse platform from config in filename: #{filename.inspect} / #{config.inspect}!"
+        end
+
         year, month, day, tm = ts.split("-")
+        if year.empty? || month.empty? || ts.empty?
+            raise "Empty string when parsing timestamp: #{ts.inspect}!"
+        end
         "#{RAW_BENCHMARK_PLATFORM_ROOT}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
     else
         raise "Can't parse filename: #{filename}!"
@@ -150,6 +158,7 @@ copy_from.each do |dir_to_copy|
             dir = File.join(YJIT_METRICS_PAGES_DIR, File.dirname(out_file))
             FileUtils.mkdir_p dir
             FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, out_file))
+            puts "Copying data file: #{filename.inspect} to #{out_file.inspect} in dir #{dir.inspect}"
         end
 
         # Copy report files to somewhere we can include them in other Jekyll pages
