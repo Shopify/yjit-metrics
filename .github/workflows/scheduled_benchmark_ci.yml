@@ -11,13 +11,14 @@ jobs:
   gen_job_id:
     runs-on: ubuntu-latest
     outputs:
-      ts: ${{ steps.step1.outputs.ts }}
+      ts:
+        description: "A timestamp to use for all benchmark output files"
+        value: ${{ steps.step1.outputs.ts }}
     steps:
       - name: Generate a job ID
         id: step1
-        run: |
-          export TS=`date +"%Y-%m-%d-%H%M%S"`
-          echo "::set-output name=ts::$TS"
+        run: echo "::set-output name=ts::$(date +"%Y-%m-%d-%H%M%S")"
+        shell: bash
   benchmarks_x86:
     runs-on: ubuntu-latest
     needs: gen_job_id
