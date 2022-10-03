@@ -7,6 +7,7 @@ set -e
 chruby 3.0.2
 
 cd ~/ym/yjit-metrics
+git pull
 
 # If we uncomment this, it'll run reporting but not benchmarking. That will file GH issues for perf drops.
 # ruby continuous_reporting/benchmark_and_update.rb -b none

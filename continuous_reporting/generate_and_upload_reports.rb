@@ -22,7 +22,7 @@ def benchmark_file_out_path(filename)
         end
 
         year, month, day, tm = ts.split("-")
-        if year.empty? || month.empty? || ts.empty?
+        if ts == "" || year == "" || day == ""
             raise "Empty string when parsing timestamp: #{ts.inspect}!"
         end
         "#{RAW_BENCHMARK_PLATFORM_ROOT}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
