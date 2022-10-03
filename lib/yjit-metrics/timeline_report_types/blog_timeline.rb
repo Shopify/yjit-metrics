@@ -78,7 +78,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
                 @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: points })
             end
         end
-        @series.sort_by! { |s| s[:name] }
+        #@series.sort_by! { |s| s[:name] }
     end
 
     def write_file(file_path)
