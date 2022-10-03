@@ -256,6 +256,9 @@ OptionParser.new do |opts|
     end
 
     opts.on("--timestamp=TS", "Output-file timestamp, format: #{timestamp}, default: right now") do |ts|
+        unless ts =~ /\A\d{4}-\d{2}-\d{2}-\d{6}\Z/
+            raise "Bad format for given timestamp: #{ts.inspect}!"
+        end
         timestamp = ts
     end
 
