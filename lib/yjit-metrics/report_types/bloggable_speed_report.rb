@@ -301,20 +301,30 @@ end
 # This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
 class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
-    def self.report_name
-        "blog_speed_details"
-    end
+    # This report requires a platform name and can't be auto-instantiated by basic_report.rb.
+    # Instead, its child report(s) can instantiate it for a specific platform.
+    #def self.report_name
+    #    "blog_speed_details"
+    #end
+
+    # If we can't get stats, the report won't produce sensible results.
+    attr_reader :inactive
 
     def self.report_extensions
         [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(config_names, results, benchmarks: [])
+    def initialize(config_names, platform, results, benchmarks: [])
+        unless YJITMetrics::PLATFORMS.include?(platform)
+            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+        end
+        @platform = platform
+
         # This can be set up using set_extra_info later.
         @filename_permalinks = {}
 
         # Set up the parent class, look up relevant data
-        super
+        super(config_names, results, benchmarks: benchmarks)
         return if @inactive # Can't get stats? Bail out.
 
         look_up_data_by_ruby
@@ -626,7 +636,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         if @inactive
             # Can't get stats? Write an empty file.
             self.class.report_extensions.each do |ext|
-                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+                File.open(filename + ".{@platform}.#{ext}", "w") { |f| f.write("") }
             end
             return
         end
@@ -659,42 +669,95 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 contents = svg_object(benchmarks: bench_names).render
             end
 
-            File.open(filename + extension, "w") { |f| f.write(contents) }
+            File.open(filename + "." + @platform + extension, "w") { |f| f.write(contents) }
         end
 
         # First the 'regular' details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
         html_output = script_template.result(binding)
-        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+        File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
 
         # And then the "no normal person would ever care" details report, with raw everything
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_raw_details.html.erb")
         html_output = script_template.result(binding)
-        File.open(filename + ".raw_details.html", "w") { |f| f.write(html_output) }
+        File.open(filename + "#{@platform}.raw_details.html", "w") { |f| f.write(html_output) }
 
         # The Tripwire report is used to tell when benchmark performance drops suddenly
         json_data = speedup_tripwires
-        File.open(filename + ".tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
+        File.open(filename + "#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
         write_to_csv(filename + ".csv", [@headings] + report_table_data)
     end
 
 end
 
+class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
+    def self.report_name
+        "blog_speed_details"
+    end
+
+    # Report-extensions tries to be data-agnostic. That doesn't work very well here.
+    # It turns out that the platforms in the result set determine a lot of the
+    # files we generate. So we approximate by generating (sometimes-empty) indicator
+    # files. That way we still rebuild all the platform-specific files if they have
+    # been removed or a new type is added.
+    def self.report_extensions
+        ::YJITMetrics::SpeedDetailsReport.report_extensions
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # We need to instantiate N sub-reports for N platforms
+        @platforms = results.platforms
+        @sub_reports = {}
+        @platforms.each do |platform|
+            platform_config_names = config_names.select { |name| name.start_with?(platform) }
+            @sub_reports[platform] = ::YJITMetrics::SpeedDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
+            if @sub_reports[platform].inactive
+                raise "Unable to produce stats-capable report for platform #{platform.inspect} in SpeedDetailsMultiplatformReport!"
+            end
+        end
+    end
+
+    def write_file(filename)
+        # First, write out per-platform reports
+        @sub_reports.each do |platform, report|
+            # Each sub-report will add the platform name for itself
+            report.write_file(filename)
+        end
+
+        # extensions:
+
+        # For each of these types, we'll just include for each platform and we can switch display
+        # in the Jekyll site. They exist, but there's no combined multiplatform version.
+        # We'll create an empty 'tracker' file for the combined version.
+        ::YJITMetrics::SpeedDetailsReport.report_extensions.each do |ext|
+            outfile = "#{filename}.#{ext}"
+            File.open(outfile, "w") { |f| f.write("") }
+        end
+    end
+end
+
 # This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
 class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
-    def self.report_name
-        "blog_memory_details"
-    end
+    # This report requires a platform name and can't be auto-instantiated by basic_report.rb.
+    # Instead, its child report(s) can instantiate it for a specific platform.
+    #def self.report_name
+    #    "blog_memory_details"
+    #end
 
     def self.report_extensions
         [ "html" ]
     end
 
-    def initialize(config_names, results, benchmarks: [])
+    def initialize(config_names, platform, results, benchmarks: [])
+        unless YJITMetrics::PLATFORMS.include?(platform)
+            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+        end
+        @platform = platform
+
         # Set up the parent class, look up relevant data
-        super
+        super(config_names, results, benchmarks: benchmarks)
         return if @inactive
 
         look_up_data_by_ruby
@@ -767,6 +830,47 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end
 
+end
+
+class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::Report
+    def self.report_name
+        "blog_memory_details"
+    end
+
+    # Report-extensions tries to be data-agnostic. That doesn't work very well here.
+    # It turns out that the platforms in the result set determine a lot of the
+    # files we generate. So we approximate by generating (sometimes-empty) indicator
+    # files. That way we still rebuild all the platform-specific files if they have
+    # been removed or a new type is added.
+    def self.report_extensions
+        ::YJITMetrics::MemoryDetailsReport.report_extensions
+    end
+
+    def initialize(config_names, results, benchmarks: [])
+        # We need to instantiate N sub-reports for N platforms
+        @platforms = results.platforms
+        @sub_reports = {}
+        @platforms.each do |platform|
+            platform_config_names = config_names.select { |name| name.start_with?(platform) }
+            @sub_reports[platform] = ::YJITMetrics::MemoryDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
+            if @sub_reports[platform].inactive
+                raise "Unable to produce stats-capable report for platform #{platform.inspect} in MemoryDetailsMultiplatformReport!"
+            end
+        end
+    end
+
+    def write_file(filename)
+        # First, write out per-platform reports
+        @sub_reports.each do |platform, report|
+            # Each sub-report will add the platform name for itself
+            report.write_file(filename)
+        end
+
+        # For each of these types, we'll just include for each platform and we can switch display
+        # in the Jekyll site. They exist, but there's no combined multiplatform version.
+        # We'll create an empty 'tracker' file for the combined version.
+        File.open("#{filename}.html", "w") { |f| f.write("") }
+    end
 end
 
 # Count up number of iterations and warmups for each Ruby and benchmark configuration.
@@ -867,7 +971,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
         return if @inactive
 
         # This report can just run with one platform's data and everything's fine.
-        # The iteration counts should be identical on other platforms.
+        # The stats data should be basically identical on other platforms.
         look_up_data_by_ruby only_platforms: results.platforms[0]
 
         # Sort benchmarks by headline/micro category, then alphabetically
