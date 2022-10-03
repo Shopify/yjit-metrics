@@ -7,6 +7,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         super
 
         config_x86 = "x86_64_prod_ruby_with_yjit"
+        config_arm = "aarch64_prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -14,20 +15,24 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:benchmark_order].each do |benchmark|
-            all_points = @context[:timestamps].map do |ts|
-                this_point = @context[:summary_by_timestamp].dig(ts, config_x86, benchmark)
-                this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
-                if this_point
-                    # These fields are from the ResultSet summary
-                    [ ts.strftime(time_format), this_point["mean"], this_point["stddev"], this_ruby_desc ]
-                else
-                    nil
+            [config_x86, config_arm].each do |config|
+                points = @context[:timestamps].map do |ts|
+                    this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                    if this_point
+                        this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
+                        # These fields are from the ResultSet summary
+                        [ ts.strftime(time_format), this_point["mean"], this_point["stddev"], this_ruby_desc ]
+                    else
+                        nil
+                    end
                 end
+                points.compact!
+                next if points.empty?
+
+                visible = @context[:selected_benchmarks].include?(benchmark)
+
+                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", visible: visible, data: points })
             end
-
-            visible = @context[:selected_benchmarks].include?(benchmark)
-
-            @series.push({ config: config_x86, benchmark: benchmark, name: "#{config_x86}-#{benchmark}", visible: visible, data: all_points.compact })
         end
         @series.sort_by! { |s| s[:name] }
     end
@@ -48,6 +53,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         super
 
         config_x86 = "x86_64_prod_ruby_with_yjit"
+        config_arm = "aarch64_prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -55,19 +61,24 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:selected_benchmarks].each do |benchmark|
-            all_points = @context[:timestamps].map do |ts|
-                this_point = @context[:summary_by_timestamp].dig(ts, config_x86, benchmark)
-                this_ruby_desc = @context[:ruby_desc_by_timestamp][ts] || "unknown"
-                if this_point
-                    # These fields are from the ResultSet summary
-                    [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
-                else
-                    nil
+            [config_x86, config_arm].each do |config|
+                points = @context[:timestamps].map do |ts|
+                    this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                    if this_point
+                        this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
+                        # These fields are from the ResultSet summary
+                        [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
+                    else
+                        nil
+                    end
                 end
-            end
+                points.compact!
+                next if points.empty?
 
-            @series.push({ config: config_x86, benchmark: benchmark, name: "#{config_x86}-#{benchmark}", data: all_points.compact })
+                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: points })
+            end
         end
+        @series.sort_by! { |s| s[:name] }
     end
 
     def write_file(file_path)

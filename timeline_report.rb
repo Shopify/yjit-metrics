@@ -93,15 +93,15 @@ puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
 filepaths_by_ts = {}
-ruby_desc_by_ts = {}
+ruby_desc_by_config_and_ts = {}
 relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
     filepaths_by_ts[timestamp] ||= []
     filepaths_by_ts[timestamp].push filepath  # Is this used? I'm not sure this is used.
-    if config_name.include?("prod_ruby_with_yjit")
-        # FIXME: right now, it's actually possible for the x86 and ARM Rubies to use different SHAs since they may git pull at slightly different times...
-        ruby_desc_by_ts[timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
-    end
+
+    ruby_desc_by_config_and_ts[config_name] ||= {}
+    ruby_desc_by_config_and_ts[config_name][timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
+
     begin
         result_set_by_ts[timestamp] ||= YJITMetrics::ResultSet.new
         result_set_by_ts[timestamp].add_for_config(config_name, benchmark_data)
@@ -133,7 +133,7 @@ benchmarks = benchmarks & all_benchmarks
 context = {
     result_set_by_timestamp: result_set_by_ts,
     summary_by_timestamp: summary_by_ts,
-    ruby_desc_by_timestamp: ruby_desc_by_ts,
+    ruby_desc_by_config_and_timestamp: ruby_desc_by_config_and_ts,
 
     configs: configs,
     timestamps: all_timestamps,
