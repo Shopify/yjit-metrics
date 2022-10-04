@@ -18,8 +18,11 @@ jobs:
     steps:
       - name: Generate a job ID
         id: step1
-        run: echo "::set-output name=timestamp::$(date +"%Y-%m-%d-%H%M%S")"
         shell: bash
+        run: |
+          export JOB_TIMESTAMP=$(date +"%Y-%m-%d-%H%M%S")
+          echo "Timestamp is \"$JOB_TIMESTAMP\""
+          echo "::set-output name=timestamp::$JOB_TIMESTAMP"
   benchmarks_x86:
     runs-on: ubuntu-latest
     needs: gen_job_id
