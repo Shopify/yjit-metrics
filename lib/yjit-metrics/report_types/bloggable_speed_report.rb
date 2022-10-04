@@ -320,6 +320,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
         @platform = platform
 
+        config_names = config_names.select { |name| name.start_with?(platform) }
         # This can be set up using set_extra_info later.
         @filename_permalinks = {}
 
@@ -686,7 +687,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         json_data = speedup_tripwires
         File.open(filename + ".#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
-        write_to_csv(filename + ".csv", [@headings] + report_table_data)
+        write_to_csv(filename + ".#{@platform}.csv", [@headings] + report_table_data)
     end
 
 end
@@ -720,7 +721,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
 
     def write_file(filename)
         # First, write out per-platform reports
-        @sub_reports.each do |platform, report|
+        @sub_reports.values.each do |report|
             # Each sub-report will add the platform name for itself
             report.write_file(filename)
         end
@@ -757,6 +758,7 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         @platform = platform
 
         # Set up the parent class, look up relevant data
+        config_names = config_names.select { |name| name.start_with?(platform) }
         super(config_names, results, benchmarks: benchmarks)
         return if @inactive
 
@@ -819,7 +821,7 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         if @inactive
             # Can't get stats? Write an empty file.
             self.class.report_extensions.each do |ext|
-                File.open(filename + ".#{ext}", "w") { |f| f.write("") }
+                File.open(filename + ".#{@platform}.#{ext}", "w") { |f| f.write("") }
             end
             return
         end
@@ -827,7 +829,7 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         # Memory details report, with tables and text descriptions
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
         html_output = script_template.result(binding)
-        File.open(filename + ".html", "w") { |f| f.write(html_output) }
+        File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
     end
 
 end
