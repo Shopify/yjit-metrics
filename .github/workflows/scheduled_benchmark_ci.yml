@@ -41,7 +41,7 @@ jobs:
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git pull"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c 'BENCH_TS=$BENCH_TS . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'"
           rm -f id_benchmark_ci_rsa
   benchmarks_arm:
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git pull"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c 'BENCH_TS=$BENCH_TS . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'"
           rm -f id_benchmark_ci_rsa
   benchmarks_test_reports_x86:
     runs-on: ubuntu-latest
