@@ -27,7 +27,7 @@ jobs:
       - name: SSH to x86_64 CI instance to run benchmarks
         env:
           AWS_INSTANCE: ${{ secrets.CI_AWS_INSTANCE }}
-          BENCH_TS: ${{ jobs.gen_job_id.outputs.job_timestamp }}
+          BENCH_TS: ${{ needs.gen_job_id.outputs.job_timestamp }}
         run: |
           set -e
           set -x
