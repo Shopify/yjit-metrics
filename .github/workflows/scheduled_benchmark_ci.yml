@@ -11,9 +11,7 @@ jobs:
   gen_job_id:
     runs-on: ubuntu-latest
     outputs:
-      ts:
-        description: "A timestamp to use for all benchmark output files"
-        value: ${{ steps.step1.outputs.ts }}
+      ts: ${{ steps.step1.outputs.ts }}
     steps:
       - name: Generate a job ID
         id: step1
