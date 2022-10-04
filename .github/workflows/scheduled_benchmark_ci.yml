@@ -14,11 +14,11 @@ jobs:
   gen_job_id:
     runs-on: ubuntu-latest
     outputs:
-      ts: ${{ steps.step1.outputs.ts }}
+      job_timestamp: ${{ steps.step1.outputs.timestamp }}
     steps:
       - name: Generate a job ID
         id: step1
-        run: echo "::set-output name=ts::$(date +"%Y-%m-%d-%H%M%S")"
+        run: echo "::set-output name=timestamp::$(date +"%Y-%m-%d-%H%M%S")"
         shell: bash
   benchmarks_x86:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
       - name: SSH to x86_64 CI instance to run benchmarks
         env:
           AWS_INSTANCE: ${{ secrets.CI_AWS_INSTANCE }}
-          BENCH_TS: ${{ needs.gen_job_id.outputs.ts }}
+          BENCH_TS: ${{ jobs.gen_job_id.outputs.job_timestamp }}
         run: |
           set -e
           set -x
