@@ -119,7 +119,7 @@ jobs:
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'AARCH64 benchmark results' && git push --allow-empty"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'AARCH64 benchmark results' --allow-empty && git push"
           rm -f id_benchmark_ci_rsa
   benchmarks_checkin_x86:
     runs-on: ubuntu-latest
@@ -139,7 +139,7 @@ jobs:
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'x86 benchmark results' && git push --allow-empty"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'x86 benchmark results' --allow-empty && git push"
           rm -f id_benchmark_ci_rsa
   reporting_and_upload:
     runs-on: ubuntu-latest
