@@ -5,13 +5,9 @@ layout: basic
 Here's a full historical listing of raw results of YJIT benchmark runs, including comparison
 with other Rubies.
 
-{% assign first_dates = site.benchmarks | map: "date_str" | uniq | reverse | slice 0,49 %}
-{% assign later_dates = site.benchmarks | map: "date_str" | uniq | reverse | slice 50,-1 %}
+{% assign dates = site.benchmarks | map: "date_str" | uniq | reverse %}
 
-<!-- {% for day in first_dates %} {{day}} {% endfor %} -->
-<!-- {% for day in later_dates %} {{day}} {% endfor %} -->
-
-{% for day in first_dates %} <!-- <h3>{{ day }}</h3> -->
+{% for day in dates | slice: 0,49 %} <!-- <h3>{{ day }}</h3> -->
 {% assign date_benchmarks = site.benchmarks | where: "date_str", day | sort: "timestamp" %}
 {% for benchmark in date_benchmarks reversed %}
 
@@ -31,7 +27,7 @@ Raw JSON data:<br/>
 {% endfor %}
 {% endfor %}
 
-{% for day in later_dates %}
+{% for day in dates | slice: 50,-1 %}
 {% for benchmark in date_benchmarks reversed %}
 <h4 id="{{benchmark.timestamp}}">{{benchmark.date_str}} {{benchmark.time_str}}</h4>
 
