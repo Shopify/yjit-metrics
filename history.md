@@ -9,6 +9,9 @@ with other Rubies.
 {% assign first_dates = dates | slice 0, 49 %}
 {% assign later_dates = dates | slice 50, -1 %}
 
+<!-- {% for day in first_dates %} {{day}} {% endfor %} -->
+<!-- {% for day in later_dates %} {{day}} {% endfor %} -->
+
 {% for day in first_dates %} <!-- <h3>{{ day }}</h3> -->
 {% assign date_benchmarks = site.benchmarks | where: "date_str", day | sort: "timestamp" %}
 {% for benchmark in date_benchmarks reversed %}
