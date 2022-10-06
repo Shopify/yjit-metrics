@@ -107,7 +107,6 @@ jobs:
     steps:
       - name: SSH to AARCH64 CI instance and commit/push benchmark raw data
         env:
-          BENCHMARK_CI_GITHUB_TOKEN: ${{ secrets.BENCHMARK_CI_GITHUB_TOKEN }}
           AWS_INSTANCE: ${{ secrets.CI_AWS_ARM_INSTANCE }}
         run: |
           set -e
@@ -117,8 +116,6 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'AARCH64 benchmark results' --allow-empty && git push"
           rm -f id_benchmark_ci_rsa
   benchmarks_checkin_x86:
@@ -127,7 +124,6 @@ jobs:
     steps:
       - name: SSH to AARCH64 CI instance and commit/push benchmark raw data
         env:
-          BENCHMARK_CI_GITHUB_TOKEN: ${{ secrets.BENCHMARK_CI_GITHUB_TOKEN }}
           AWS_INSTANCE: ${{ secrets.CI_AWS_INSTANCE }}
         run: |
           set -e
@@ -137,8 +133,6 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git pull && git add raw_benchmark_data && git commit -m 'x86 benchmark results' --allow-empty && git push"
           rm -f id_benchmark_ci_rsa
   reporting_and_upload:
@@ -149,8 +143,6 @@ jobs:
         with:
           ref: main
       - name: SSH to x86_64 CI instance to run reports and upload results
-        env:
-          BENCHMARK_CI_GITHUB_TOKEN: ${{ secrets.BENCHMARK_CI_GITHUB_TOKEN }}
         run: |
           set -e
           set -x
@@ -160,7 +152,7 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git pull"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c 'BENCHMARK_CI_GITHUB_TOKEN=$BENCHMARK_CI_GITHUB_TOKEN ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'"
+          # This process needs a GitHub token if we start automatically filing perf issues again; also if we clone/modify the repo's remote.
+          # But the one we could get here doesn't work - it's guaranteed stale. Can we use the one *from* the .git directory?
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'"

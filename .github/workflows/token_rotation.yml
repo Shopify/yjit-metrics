@@ -1,0 +1,36 @@
+name: GitHub token rotation for checking in benchmark results and reports
+on:
+  schedule:
+    # Run every 10 minutes.
+    # Fresh tokens are generated every 15 minutes and last an hour.
+    # When this runs, we should have at least 45 minutes of freshness
+    # left, so a token-needing job should always get at least 35 minutes
+    # of 'fresh time' from start-of-run. Also, we might actually SSH in
+    # and update *as* it runs.
+    - cron: '*/10 * * * *'
+  # Can also run on-demand
+  workflow_dispatch:
+
+jobs:
+  token_update:
+    runs-on: ubuntu-latest
+    needs: [benchmarks_test_reports_arm]
+    steps:
+      - name: SSH to AARCH64 CI instance and update token in repo
+        env:
+          BENCHMARK_CI_GITHUB_TOKEN: ${{ secrets.BENCHMARK_CI_GITHUB_TOKEN }}
+          AWS_X86_INSTANCE: ${{ secrets.CI_AWS_INSTANCE }}
+          AWS_ARM_INSTANCE: ${{ secrets.CI_AWS_ARM_INSTANCE }}
+        run: |
+          set -e
+          set -x
+          cat << EOF > ./id_benchmark_ci_rsa
+          ${{ secrets.AWS_INSTANCE_PRIVATE_KEY }}
+          EOF
+          chmod go-rwx ./id_benchmark_ci_rsa
+          export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
+          ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
+          ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
+          ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
+          ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
+          rm -f id_benchmark_ci_rsa
