@@ -199,8 +199,8 @@ subGraphs.forEach(function(subGraph) {
     var tr1 = subGraph.series[0].timeRange;
     var tr2 = subGraph.series[1].timeRange;
     extent = [ Math.min(tr1[0], tr2[0]), Math.max(tr1[1], tr2[1]) ]
-    value vr1 = subGraph.series[0].valueRange;
-    value vr2 = subGraph.series[1].valueRange;
+    var vr1 = subGraph.series[0].valueRange;
+    var vr2 = subGraph.series[1].valueRange;
     valueMin = Math.min(vr1[0], vr2[0]);
     valueMax = Math.max(vr1[1], vr2[1]);
   }
