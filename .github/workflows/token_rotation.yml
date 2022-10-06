@@ -1,13 +1,17 @@
 name: GitHub token rotation for checking in benchmark results and reports
 on:
-  schedule:
+  # For now, the tokens gotten from token rotation don't work.
+  # They either require a password I don't have or (more likely)
+  # they're just unusable somehow. So for now I'm manually
+  # reinstalling the old personal token.
+  #schedule:
     # Run every 10 minutes.
     # Fresh tokens are generated every 15 minutes and last an hour.
     # When this runs, we should have at least 45 minutes of freshness
     # left, so a token-needing job should always get at least 35 minutes
     # of 'fresh time' from start-of-run. Also, we might actually SSH in
     # and update *as* it runs.
-    - cron: '*/10 * * * *'
+    #- cron: '*/10 * * * *'
   # Can also run on-demand
   workflow_dispatch:
 
