@@ -80,15 +80,23 @@ layout: basic
 
         if(cb.checked) {
             /* Make series visible */
-            thisDataSeries1.visible = true;
-            thisDataSeries2.visible = true;
+            if(thisDataSeries1) {
+                thisDataSeries1.visible = true;
+            }
+            if(thisDataSeries2) {
+                thisDataSeries2.visible = true;
+            }
             legendBox.style.display = "inline-block";
             graphSeries1.style.visibility = "visible";
             graphSeries2.style.visibility = "visible";
         } else {
             /* Make series invisible */
-            thisDataSeries1.visible = false;
-            thisDataSeries2.visible = false;
+            if(thisDataSeries1) {
+                thisDataSeries1.visible = false;
+            }
+            if(thisDataSeries2) {
+                thisDataSeries2.visible = false;
+            }
             legendBox.style.display = "none";
             graphSeries1.style.visibility = "hidden";
             graphSeries2.style.visibility = "hidden";
