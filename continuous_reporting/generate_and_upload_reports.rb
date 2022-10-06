@@ -76,10 +76,12 @@ REPORTS_AND_FILES = {
     },
 }
 
-def report_filenames(report_name, ts, prefix="_includes/reports")
+# Note: we use extensions *directly* for timeline reports, and they don't use timestamps.
+# So this is only for basic reports.
+def report_filenames(report_name, ts, prefix="_includes/reports/")
     exts = REPORTS_AND_FILES[report_name][:extensions]
 
-    exts.map { |ext| "#{prefix}/#{report_name}_#{ts}.#{ext}" }
+    exts.map { |ext| "#{prefix}#{report_name}_#{ts}.#{ext}" }
 end
 
 copy_from = []
@@ -161,15 +163,17 @@ copy_from.each do |dir_to_copy|
             puts "Copying data file: #{filename.inspect} to #{out_file.inspect} in dir #{dir.inspect}"
         end
 
+        # We used to copy report files from the data dir. We probably shouldn't.
+
         # Copy report files to somewhere we can include them in other Jekyll pages
-        REPORTS_AND_FILES.keys.each do |report_name|
-            Dir["#{report_name}_*\.([^.]+)"].each do |filename|
-                ext = $1
-                if REPORTS_AND_FILES[report_name][:extensions].include?(ext)
-                    FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "_includes/reports/#{filename}"))
-                end
-            end
-        end
+        #REPORTS_AND_FILES.keys.each do |report_name|
+        #    Dir["#{report_name}_*\.([^.]+)"].each do |filename|
+        #        ext = $1
+        #        if REPORTS_AND_FILES[report_name][:extensions].include?(ext)
+        #            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "_includes/reports/#{filename}"))
+        #        end
+        #    end
+        #end
     end
 end
 
@@ -217,8 +221,7 @@ json_timestamps.each do |ts, test_files|
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
-        #rf = report_filenames(report_name, ts)
-        required_files = details[:extensions].map { |ext| "#{report_name}_#{ts}.#{ext}" }
+        required_files = report_filenames(report_name, ts, prefix: "")
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
@@ -264,9 +267,19 @@ json_timestamps.each do |ts, test_files|
         generated_reports = {}
         REPORTS_AND_FILES.each do |report_name, details|
             next unless details[:report_type] == :basic_report
+
+            # Add a field like blog_speed_details_svg
             details[:extensions].each do |ext|
                 # Don't include the leading "_includes" - Jekyll checks there by default.
                 generated_reports[report_name + "_" + ext.gsub(".", "_")] = "reports/#{report_name}_#{ts}.#{ext}"
+
+                # Add a field like blog_speed_details_x86_64_svg
+                YJITMetrics::PLATFORMS.each do |platform|
+                    report_filename = "reports/#{report_name}_#{ts}.#{platform}.#{ext}"
+                    if File.exist?("_includes/#{report_filename}")
+                        generated_reports[report_name + "_" + platform + "_" + ext.gsub(".", "_")] = report_filename
+                    end
+                end
             end
         end
 
