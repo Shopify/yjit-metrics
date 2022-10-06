@@ -14,7 +14,6 @@ on:
 jobs:
   token_update:
     runs-on: ubuntu-latest
-    needs: [benchmarks_test_reports_arm]
     steps:
       - name: SSH to AARCH64 CI instance and update token in repo
         env:
