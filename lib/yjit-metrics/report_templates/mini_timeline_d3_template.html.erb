@@ -3,8 +3,8 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 
-<% if @series.size != 4
-       raise "The mini_timeline graph assumes a 2x2 grid of benchmarks!"
+<% if @series.size != 4 && @series.size != 8
+       raise "The mini_timeline graph assumes a 2x2 grid of benchmarks - either 4 series or 8 for multiplatform!"
    end %>
 
 <%
@@ -82,14 +82,34 @@ var dataSeries = [
 ]
 dataSeries.pop();
 
-dataSeries[0].xOffset = 0;
-dataSeries[0].yOffset = 0;
-dataSeries[1].xOffset = width / 2.0;
-dataSeries[1].yOffset = 0;
-dataSeries[2].xOffset = 0;
-dataSeries[2].yOffset = height / 2.0;
-dataSeries[3].xOffset = width / 2.0;
-dataSeries[3].yOffset = height / 2.0;
+<% if @series.size == 4 %>
+  dataSeries[0].xOffset = 0;
+  dataSeries[0].yOffset = 0;
+  dataSeries[1].xOffset = width / 2.0;
+  dataSeries[1].yOffset = 0;
+  dataSeries[2].xOffset = 0;
+  dataSeries[2].yOffset = height / 2.0;
+  dataSeries[3].xOffset = width / 2.0;
+  dataSeries[3].yOffset = height / 2.0;
+<% else %>
+  // For each benchmark, we get the x86 series and then the ARM series
+  dataSeries[0].xOffset = 0;
+  dataSeries[0].yOffset = 0;
+  dataSeries[1].xOffset = 0;
+  dataSeries[1].yOffset = 0;
+  dataSeries[2].xOffset = width / 2.0;
+  dataSeries[2].yOffset = 0;
+  dataSeries[3].xOffset = width / 2.0;
+  dataSeries[3].yOffset = 0;
+  dataSeries[4].xOffset = 0;
+  dataSeries[4].yOffset = height / 2.0;
+  dataSeries[5].xOffset = 0;
+  dataSeries[5].yOffset = height / 2.0;
+  dataSeries[6].xOffset = width / 2.0;
+  dataSeries[6].yOffset = height / 2.0;
+  dataSeries[7].xOffset = width / 2.0;
+  dataSeries[7].yOffset = height / 2.0;
+<% end %>
 
 dataSeries.forEach(function(thisSeries) {
 

@@ -276,7 +276,7 @@ class YJITMetrics::ResultSet
         configs_by_platform.each do |platform, configs|
             by_platform_and_fragment[platform] = table_of_configs_by_fragment(configs)
         end
-        hard_to_name_configs = by_platform_and_fragment.values.flat_map { |fragment, configs| configs.size > 1 ? configs : [] }
+        hard_to_name_configs = by_platform_and_fragment.values.flat_map(&:values).select { |configs| configs.size > 1 }.inject([], &:+).uniq
 
         # If no configuration shares *both* platform *and* fragment, we can name by platform and fragment.
         if hard_to_name_configs.empty?
@@ -292,7 +292,7 @@ class YJITMetrics::ResultSet
             # Now reorder the table by req_configs
             out = {}
             req_configs.each do |config|
-                out[config] = plat_frag_table[config]
+                out[plat_frag_table[config]] = config
             end
             return out
         end

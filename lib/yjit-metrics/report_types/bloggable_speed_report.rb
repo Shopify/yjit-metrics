@@ -320,7 +320,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
         @platform = platform
 
-        config_names = config_names.select { |name| name.start_with?(platform) }
+        # Permit non-same-platform stats config
+        config_names = config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
         # This can be set up using set_extra_info later.
         @filename_permalinks = {}
 
@@ -712,8 +713,18 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
         @sub_reports = {}
         @platforms.each do |platform|
             platform_config_names = config_names.select { |name| name.start_with?(platform) }
+
+            # If we can't find a config with stats for this platform, is there one in x86_64?
+            unless platform_config_names.detect { |config| config.include?("yjit_stats") }
+                x86_stats_config = config_names.detect { |config| config.start_with?("x86_64") && config.include?("yjit_stats") }
+                puts "Can't find #{platform} stats config, falling back to using x86_64 stats"
+                platform_config_names << x86_stats_config if x86_stats_config
+            end
+
             @sub_reports[platform] = ::YJITMetrics::SpeedDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
             if @sub_reports[platform].inactive
+                puts "Platform config names: #{platform_config_names.inspect}"
+                puts "All config names: #{config_names.inspect}"
                 raise "Unable to produce stats-capable report for platform #{platform.inspect} in SpeedDetailsMultiplatformReport!"
             end
         end
@@ -758,7 +769,8 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         @platform = platform
 
         # Set up the parent class, look up relevant data
-        config_names = config_names.select { |name| name.start_with?(platform) }
+        # Permit non-same-platform stats config
+        config_names = config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
         super(config_names, results, benchmarks: benchmarks)
         return if @inactive
 
@@ -854,6 +866,14 @@ class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::Report
         @sub_reports = {}
         @platforms.each do |platform|
             platform_config_names = config_names.select { |name| name.start_with?(platform) }
+
+            # If we can't find a config with stats for this platform, is there one in x86_64?
+            unless platform_config_names.detect { |config| config.include?("yjit_stats") }
+                x86_stats_config = config_names.detect { |config| config.start_with?("x86_64") && config.include?("yjit_stats") }
+                puts "Can't find #{platform} stats config, falling back to using x86_64 stats"
+                platform_config_names << x86_stats_config if x86_stats_config
+            end
+
             @sub_reports[platform] = ::YJITMetrics::MemoryDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
             if @sub_reports[platform].inactive
                 raise "Unable to produce stats-capable report for platform #{platform.inspect} in MemoryDetailsMultiplatformReport!"
