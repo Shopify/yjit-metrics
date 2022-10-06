@@ -82,44 +82,67 @@ var dataSeries = [
 ]
 dataSeries.pop();
 
+subGraphs = [
+  {
+    xOffset: 0,
+    yOffset: 0,
+    series: [],
+  },
+  {
+    xOffset: width / 2.0,
+    yOffset: 0,
+    series: [],
+  },
+  {
+    xOffset: 0,
+    yOffset: height / 2.0,
+    series: [],
+  },
+  {
+    xOffset: width / 2.0,
+    yOffset: height / 2.0,
+    series: [],
+  },
+];
+
 <% if @series.size == 4 %>
-  dataSeries[0].xOffset = 0;
-  dataSeries[0].yOffset = 0;
-  dataSeries[1].xOffset = width / 2.0;
-  dataSeries[1].yOffset = 0;
-  dataSeries[2].xOffset = 0;
-  dataSeries[2].yOffset = height / 2.0;
-  dataSeries[3].xOffset = width / 2.0;
-  dataSeries[3].yOffset = height / 2.0;
+subGraphs[0].series = [dataSeries[0]];
+subGraphs[1].series = [dataSeries[1]];
+subGraphs[2].series = [dataSeries[2]];
+subGraphs[3].series = [dataSeries[3]];
 <% else %>
-  // For each benchmark, we get the x86 series and then the ARM series
-  dataSeries[0].xOffset = 0;
-  dataSeries[0].yOffset = 0;
-  dataSeries[1].xOffset = 0;
-  dataSeries[1].yOffset = 0;
-  dataSeries[2].xOffset = width / 2.0;
-  dataSeries[2].yOffset = 0;
-  dataSeries[3].xOffset = width / 2.0;
-  dataSeries[3].yOffset = 0;
-  dataSeries[4].xOffset = 0;
-  dataSeries[4].yOffset = height / 2.0;
-  dataSeries[5].xOffset = 0;
-  dataSeries[5].yOffset = height / 2.0;
-  dataSeries[6].xOffset = width / 2.0;
-  dataSeries[6].yOffset = height / 2.0;
-  dataSeries[7].xOffset = width / 2.0;
-  dataSeries[7].yOffset = height / 2.0;
+// For each benchmark, we get the x86 series and then the ARM series
+subGraphs[0].series = [dataSeries[0], dataSeries[1]];
+subGraphs[1].series = [dataSeries[2], dataSeries[3]];
+subGraphs[2].series = [dataSeries[4], dataSeries[5]];
+subGraphs[3].series = [dataSeries[6], dataSeries[7]];
 <% end %>
 
-dataSeries.forEach(function(thisSeries) {
-
+subGraphs.forEach(function(subGraph) {
   var quadrant = svg.append("g")
     .attr("class", "quadrant")
     .attr("transform",
-          "translate(" + thisSeries.xOffset + "," + thisSeries.yOffset + ")");
+          "translate(" + subGraph.xOffset + "," + subGraph.yOffset + ")");
+
+  var extent;
+  var valueMin;
+  var valueMax;
+  if(subGraph.series.length == 1) {
+    extent = subGraph.series[0].timeRange;
+    valueMin = subGraph.series[0].valueRange[0];
+    valueMax = subGraph.series[0].valueRange[1];
+  } else {
+    var tr1 = subGraph.series[0].timeRange;
+    var tr2 = subGraph.series[1].timeRange;
+    extent = [ Math.min(tr1[0], tr2[0]), Math.max(tr1[1], tr2[1]) ]
+    var vr1 = subGraph.series[0].valueRange;
+    var vr2 = subGraph.series[1].valueRange;
+    valueMin = Math.min(vr1[0], vr2[0]);
+    valueMax = Math.max(vr1[1], vr2[1]);
+  }
 
   var x = d3.scaleTime()
-    .domain(d3.extent(thisSeries.timeRange))
+    .domain(d3.extent(extent))
     .range([ 0, subgraphWidth ]);
 
   var subgraph = quadrant.append("g")
@@ -135,8 +158,6 @@ dataSeries.forEach(function(thisSeries) {
         .attr("transform", "rotate(-60)")
         .style("text-anchor", "end");
 
-  var valueMin = thisSeries.valueRange[0];
-  var valueMax = thisSeries.valueRange[1];
   var valueSpan = valueMax - valueMin;
   var scaledValueRange = [ valueMin - 0.1 * valueSpan, valueMax + 0.1 * valueSpan ];
 
@@ -151,30 +172,32 @@ dataSeries.forEach(function(thisSeries) {
     .call(yAxis)
     ;
 
-  var graphLine = subgraph.append("path")
-    .datum(thisSeries.data)
-    .attr("fill", "none")
-    .attr("stroke", thisSeries.color)
-    .attr("stroke-width", 2.5)
-    .attr("d", d3.line()
-      .x(function (d) { return x(d.date); })
-      .y(function (d) { return y(d.value); })
-      )
-    ;
+  subGraph.series.forEach(function(thisSeries) {
+    var graphLine = subgraph.append("path")
+      .datum(thisSeries.data)
+      .attr("fill", "none")
+      .attr("stroke", thisSeries.color)
+      .attr("stroke-width", 2.5)
+      .attr("d", d3.line()
+        .x(function (d) { return x(d.date); })
+        .y(function (d) { return y(d.value); })
+        )
+      ;
 
-  // Add a circle at each datapoint
-  var circles = group.selectAll("circle.tooltippage." + thisSeries.name)
-    .data(thisSeries.data);
-  circles.enter().append("circle")
-    .attr("class", "tooltippage " + thisSeries.name)
-    .attr("fill", thisSeries.color)
-    .attr("fill-opacity", 0.0)
-    .attr("r", 5.0)
-    .attr("cx", function(d) { return x(d.date) } )
-    .attr("cy", function(d) { return y(d.value) } )
-    .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
-    ;
+    // Add a circle at each datapoint
+    var circles = group.selectAll("circle.tooltippage." + thisSeries.name)
+      .data(thisSeries.data);
+    circles.enter().append("circle")
+      .attr("class", "tooltippage " + thisSeries.name)
+      .attr("fill", thisSeries.color)
+      .attr("fill-opacity", 0.0)
+      .attr("r", 5.0)
+      .attr("cx", function(d) { return x(d.date) } )
+      .attr("cy", function(d) { return y(d.value) } )
+      .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+      ;
 
+  })
 });
 
 </script>
