@@ -62,6 +62,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
 
         @context[:selected_benchmarks].each do |benchmark|
             [config_x86, config_arm].each do |config|
+                platform = (config == config_x86) ? "x86_64" : "aarch64"
                 points = @context[:timestamps].map do |ts|
                     this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
                     if this_point
@@ -75,7 +76,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
                 points.compact!
                 next if points.empty?
 
-                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", data: points })
+                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, data: points })
             end
         end
         #@series.sort_by! { |s| s[:name] }
