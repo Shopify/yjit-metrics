@@ -2,7 +2,7 @@
   "aarch64_prod_ruby_no_jit": {
     "getivar": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 770,
+      "min_bench_itrs": 470,
       "min_bench_time": 0,
       "estimated_time": 0
     },
@@ -92,7 +92,7 @@
     },
     "nbody": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 275,
+      "min_bench_itrs": 223,
       "min_bench_time": 0,
       "estimated_time": 0
     },
@@ -104,7 +104,7 @@
     },
     "binarytrees": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 64,
+      "min_bench_itrs": 54,
       "min_bench_time": 0,
       "estimated_time": 0
     },
@@ -122,7 +122,7 @@
     },
     "setivar": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 1764,
+      "min_bench_itrs": 405,
       "min_bench_time": 0,
       "estimated_time": 0
     },
@@ -147,291 +147,145 @@
   },
   "aarch64_prod_ruby_with_yjit": {
     "getivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 770,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 470,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "railsbench": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "activerecord": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 185,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "psych-load": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "liquid-render": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 156,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "mail": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 121,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "fib": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 320,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "chunky_png": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 30,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "optcarrot": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "erubi": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 46,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "30k_methods": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 22,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "hexapdf": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "lee": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 21,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "cfunc_itself": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 423,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "rubykon": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "nbody": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 275,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 223,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "erubi_rails": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 974,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "binarytrees": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 64,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 54,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "keyword_args": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 370,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "respond_to": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 107,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "setivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 1764,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 405,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "30k_ifelse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 56,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "fannkuchredux": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "estimated_time": 0
     },
     "discourse": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 35,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    }
-  },
-  "aarch64_yjit_stats": {
-    "getivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 770,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "railsbench": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "activerecord": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 185,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "psych-load": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "liquid-render": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 156,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "mail": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 121,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "fib": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 320,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "chunky_png": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 30,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "optcarrot": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "erubi": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 46,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "30k_methods": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 22,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "hexapdf": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "lee": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 21,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "cfunc_itself": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 423,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "rubykon": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "nbody": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 275,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "erubi_rails": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 974,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "binarytrees": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 64,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "keyword_args": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 370,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "respond_to": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 107,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "setivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 1764,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "30k_ifelse": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 56,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "fannkuchredux": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "discourse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 35,
       "min_bench_time": 0,
       "estimated_time": 0
@@ -440,10 +294,10 @@
   "x86_64_prod_ruby_no_jit": {
     "getivar": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 770,
+      "min_bench_itrs": 470,
       "min_bench_time": 0,
       "itr_time_ms": "105.47",
-      "estimated_time": 82
+      "estimated_time": 51
     },
     "railsbench": {
       "warmup_itrs": 5,
@@ -545,10 +399,10 @@
     },
     "nbody": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 275,
+      "min_bench_itrs": 223,
       "min_bench_time": 0,
       "itr_time_ms": "120.22",
-      "estimated_time": 34
+      "estimated_time": 28
     },
     "erubi_rails": {
       "warmup_itrs": 5,
@@ -559,10 +413,10 @@
     },
     "binarytrees": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 64,
+      "min_bench_itrs": 54,
       "min_bench_time": 0,
       "itr_time_ms": "477.90",
-      "estimated_time": 33
+      "estimated_time": 29
     },
     "keyword_args": {
       "warmup_itrs": 5,
@@ -580,10 +434,10 @@
     },
     "setivar": {
       "warmup_itrs": 5,
-      "min_bench_itrs": 1764,
+      "min_bench_itrs": 405,
       "min_bench_time": 0,
       "itr_time_ms": "78.98",
-      "estimated_time": 140
+      "estimated_time": 33
     },
     "30k_ifelse": {
       "warmup_itrs": 5,
@@ -607,514 +461,345 @@
       "estimated_time": 23
     }
   },
-  "x86_64_prod_ruby_with_mjit": {
-    "getivar": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 770,
-      "min_bench_time": 0,
-      "itr_time_ms": "25.94",
-      "estimated_time": 22
-    },
-    "railsbench": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": "3215.87",
-      "estimated_time": 290
-    },
-    "activerecord": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 185,
-      "min_bench_time": 0,
-      "itr_time_ms": "172.65",
-      "estimated_time": 45
-    },
-    "psych-load": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": "2292.78",
-      "estimated_time": 207
-    },
-    "liquid-render": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 156,
-      "min_bench_time": 0,
-      "itr_time_ms": "187.30",
-      "estimated_time": 44
-    },
-    "mail": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 121,
-      "min_bench_time": 0,
-      "itr_time_ms": "179.63",
-      "estimated_time": 36
-    },
-    "fib": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 320,
-      "min_bench_time": 0,
-      "itr_time_ms": "86.18",
-      "estimated_time": 35
-    },
-    "chunky_png": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 30,
-      "min_bench_time": 0,
-      "itr_time_ms": "785.84",
-      "estimated_time": 83
-    },
-    "optcarrot": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": "2553.79",
-      "estimated_time": 230
-    },
-    "erubi": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 46,
-      "min_bench_time": 0,
-      "itr_time_ms": "429.80",
-      "estimated_time": 53
-    },
-    "30k_methods": {
-      "warmup_itrs": 29.347830221506573,
-      "min_bench_itrs": 22,
-      "min_bench_time": 0,
-      "itr_time_ms": "10222.22",
-      "estimated_time": 525
-    },
-    "hexapdf": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "estimated_time": 0
-    },
-    "lee": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 21,
-      "min_bench_time": 0,
-      "itr_time_ms": "999.65",
-      "estimated_time": 96
-    },
-    "cfunc_itself": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 423,
-      "min_bench_time": 0,
-      "itr_time_ms": "67.97",
-      "estimated_time": 34
-    },
-    "rubykon": {
-      "warmup_itrs": 28.323819120632454,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": "10591.79",
-      "estimated_time": 459
-    },
-    "nbody": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 275,
-      "min_bench_time": 0,
-      "itr_time_ms": "72.72",
-      "estimated_time": 26
-    },
-    "erubi_rails": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 974,
-      "min_bench_time": 0,
-      "itr_time_ms": "29.35",
-      "estimated_time": 31
-    },
-    "binarytrees": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 64,
-      "min_bench_time": 0,
-      "itr_time_ms": "311.39",
-      "estimated_time": 44
-    },
-    "keyword_args": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 370,
-      "min_bench_time": 0,
-      "itr_time_ms": "227.31",
-      "estimated_time": 102
-    },
-    "respond_to": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 107,
-      "min_bench_time": 0,
-      "itr_time_ms": "251.06",
-      "estimated_time": 46
-    },
-    "setivar": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 1764,
-      "min_bench_time": 0,
-      "itr_time_ms": "11.33",
-      "estimated_time": 21
-    },
-    "30k_ifelse": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 56,
-      "min_bench_time": 0,
-      "itr_time_ms": "3400.47",
-      "estimated_time": 446
-    },
-    "fannkuchredux": {
-      "warmup_itrs": 74.58074550122906,
-      "min_bench_itrs": 15,
-      "min_bench_time": 0,
-      "itr_time_ms": "4022.49",
-      "estimated_time": 361
-    },
-    "discourse": {
-      "warmup_itrs": 75,
-      "min_bench_itrs": 35,
-      "min_bench_time": 0,
-      "itr_time_ms": "560.92",
-      "estimated_time": 62
-    }
-  },
   "x86_64_prod_ruby_with_yjit": {
     "getivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 770,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 470,
       "min_bench_time": 0,
       "itr_time_ms": "42.55",
-      "estimated_time": 34
+      "estimated_time": 21
     },
     "railsbench": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "2181.78",
-      "estimated_time": 77
+      "estimated_time": 44
     },
     "activerecord": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 185,
       "min_bench_time": 0,
       "itr_time_ms": "108.08",
-      "estimated_time": 23
+      "estimated_time": 21
     },
     "psych-load": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "2039.97",
-      "estimated_time": 72
+      "estimated_time": 41
     },
     "liquid-render": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 156,
       "min_bench_time": 0,
       "itr_time_ms": "127.88",
-      "estimated_time": 23
+      "estimated_time": 21
     },
     "mail": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 121,
       "min_bench_time": 0,
       "itr_time_ms": "165.15",
-      "estimated_time": 24
+      "estimated_time": 21
     },
     "fib": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 320,
       "min_bench_time": 0,
       "itr_time_ms": "62.48",
-      "estimated_time": 22
+      "estimated_time": 21
     },
     "chunky_png": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 30,
       "min_bench_time": 0,
       "itr_time_ms": "656.81",
-      "estimated_time": 33
+      "estimated_time": 23
     },
     "optcarrot": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "3590.55",
-      "estimated_time": 126
+      "estimated_time": 72
     },
     "erubi": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 46,
       "min_bench_time": 0,
       "itr_time_ms": "425.84",
-      "estimated_time": 29
+      "estimated_time": 22
     },
     "30k_methods": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 22,
       "min_bench_time": 0,
       "itr_time_ms": "877.07",
-      "estimated_time": 37
+      "estimated_time": 24
     },
     "hexapdf": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "2416.42",
-      "estimated_time": 85
+      "estimated_time": 49
     },
     "lee": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 21,
       "min_bench_time": 0,
       "itr_time_ms": "918.53",
-      "estimated_time": 38
+      "estimated_time": 24
     },
     "cfunc_itself": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 423,
       "min_bench_time": 0,
       "itr_time_ms": "47.21",
       "estimated_time": 21
     },
     "rubykon": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "7873.39",
-      "estimated_time": 276
+      "estimated_time": 158
     },
     "nbody": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 275,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 223,
       "min_bench_time": 0,
       "itr_time_ms": "89.38",
-      "estimated_time": 27
+      "estimated_time": 21
     },
     "erubi_rails": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 974,
       "min_bench_time": 0,
       "itr_time_ms": "20.53",
       "estimated_time": 21
     },
     "binarytrees": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 64,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 54,
       "min_bench_time": 0,
       "itr_time_ms": "368.79",
-      "estimated_time": 31
+      "estimated_time": 22
     },
     "keyword_args": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 370,
       "min_bench_time": 0,
       "itr_time_ms": "53.96",
-      "estimated_time": 22
+      "estimated_time": 21
     },
     "respond_to": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 107,
       "min_bench_time": 0,
       "itr_time_ms": "185.97",
-      "estimated_time": 24
+      "estimated_time": 21
     },
     "setivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 1764,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 405,
       "min_bench_time": 0,
       "itr_time_ms": "49.32",
-      "estimated_time": 88
+      "estimated_time": 21
     },
     "30k_ifelse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 56,
       "min_bench_time": 0,
       "itr_time_ms": "354.49",
-      "estimated_time": 27
+      "estimated_time": 22
     },
     "fannkuchredux": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "7036.48",
-      "estimated_time": 247
+      "estimated_time": 141
     },
     "discourse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 35,
       "min_bench_time": 0,
       "itr_time_ms": "711.69",
-      "estimated_time": 40
+      "estimated_time": 29
     }
   },
   "x86_64_yjit_stats": {
     "getivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 770,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 470,
       "min_bench_time": 0,
       "itr_time_ms": "467.80",
-      "estimated_time": 370
+      "estimated_time": 223
     },
     "railsbench": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "3788.99",
-      "estimated_time": 133
+      "estimated_time": 76
     },
     "activerecord": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 185,
       "min_bench_time": 0,
       "itr_time_ms": "240.74",
-      "estimated_time": 50
+      "estimated_time": 46
     },
     "psych-load": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "5556.52",
-      "estimated_time": 195
+      "estimated_time": 112
     },
     "liquid-render": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 156,
       "min_bench_time": 0,
       "itr_time_ms": "372.97",
-      "estimated_time": 66
+      "estimated_time": 61
     },
     "mail": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 121,
       "min_bench_time": 0,
       "itr_time_ms": "411.78",
-      "estimated_time": 59
+      "estimated_time": 52
     },
     "fib": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 320,
       "min_bench_time": 0,
       "itr_time_ms": "676.05",
-      "estimated_time": 230
+      "estimated_time": 220
     },
     "chunky_png": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 30,
       "min_bench_time": 0,
       "itr_time_ms": "3046.72",
-      "estimated_time": 153
+      "estimated_time": 107
     },
     "optcarrot": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "19218.24",
-      "estimated_time": 673
+      "estimated_time": 385
     },
     "erubi": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 46,
       "min_bench_time": 0,
       "itr_time_ms": "1221.84",
-      "estimated_time": 81
+      "estimated_time": 63
     },
     "30k_methods": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 22,
       "min_bench_time": 0,
       "itr_time_ms": "2138.80",
-      "estimated_time": 90
+      "estimated_time": 58
     },
     "hexapdf": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "6930.48",
-      "estimated_time": 243
+      "estimated_time": 139
     },
     "lee": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 21,
       "min_bench_time": 0,
       "itr_time_ms": "2794.49",
-      "estimated_time": 115
+      "estimated_time": 73
     },
     "cfunc_itself": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 423,
       "min_bench_time": 0,
       "itr_time_ms": "178.91",
-      "estimated_time": 80
+      "estimated_time": 77
     },
     "rubykon": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "27754.54",
-      "estimated_time": 972
+      "estimated_time": 556
     },
     "nbody": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 275,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 223,
       "min_bench_time": 0,
       "itr_time_ms": "310.71",
-      "estimated_time": 92
+      "estimated_time": 71
     },
     "erubi_rails": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 974,
       "min_bench_time": 0,
       "itr_time_ms": "42.41",
-      "estimated_time": 43
+      "estimated_time": 42
     },
     "binarytrees": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 64,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 54,
       "min_bench_time": 0,
       "itr_time_ms": "1502.07",
-      "estimated_time": 127
+      "estimated_time": 89
     },
     "keyword_args": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 370,
       "min_bench_time": 0,
       "itr_time_ms": "409.15",
-      "estimated_time": 160
+      "estimated_time": 154
     },
     "respond_to": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 107,
       "min_bench_time": 0,
       "itr_time_ms": "416.93",
-      "estimated_time": 53
+      "estimated_time": 47
     },
     "setivar": {
-      "warmup_itrs": 20,
-      "min_bench_itrs": 1764,
+      "warmup_itrs": 5,
+      "min_bench_itrs": 405,
       "min_bench_time": 0,
       "itr_time_ms": "318.35",
-      "estimated_time": 568
+      "estimated_time": 131
     },
     "30k_ifelse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 56,
       "min_bench_time": 0,
       "itr_time_ms": "1357.33",
-      "estimated_time": 104
+      "estimated_time": 83
     },
     "fannkuchredux": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 15,
       "min_bench_time": 0,
       "itr_time_ms": "41707.54",
-      "estimated_time": 1460
+      "estimated_time": 835
     },
     "discourse": {
-      "warmup_itrs": 20,
+      "warmup_itrs": 5,
       "min_bench_itrs": 35,
       "min_bench_time": 0,
       "itr_time_ms": "1266.30",
-      "estimated_time": 70
+      "estimated_time": 51
     }
   },
-  "estimated_time": 12740
+  "x86_64_estimated_time": 902
 }
