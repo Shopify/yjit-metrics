@@ -32,7 +32,7 @@ layout: basic
 
   <div style="text-align: center;">
   <a href="{{ last_bench.url | relative_url }}">
-  {% include {{last_bench.reports.blog_speed_details_head_svg}} %}
+  {% include {{last_bench.reports.blog_speed_details_x86_64_head_svg}} %}
   </a>
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
   </div>
