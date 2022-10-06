@@ -17,7 +17,7 @@ with other Rubies.
 
 <div style="width: 800px;">
 <a href="{{ benchmark.url | relative_url }}">
-{% include {{benchmark.reports.blog_speed_details_svg}} %}
+{% include {{benchmark.reports.blog_speed_details_x86_64_svg}} %}
 <button>Full Details for This Time</button>
 </a>
 </div>
