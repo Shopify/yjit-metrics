@@ -20,40 +20,40 @@ As of {{page.date_str}} {{page.time_str}}:
 </p>
 
 <div style="width: 800px;">
-{% include {{page.reports.blog_speed_details_head_svg}} %}
+{% include {{page.reports.blog_speed_details_x86_64_head_svg}} %}
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
 
 <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
 
 <div style="width: 800px;">
-{% include {{page.reports.blog_speed_details_micro_svg}} %}
+{% include {{page.reports.blog_speed_details_x86_64_micro_svg}} %}
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
 
 <h2 id="other-graph">Other Benchmarks</h2>
 
 <div style="width: 800px;">
-{% include {{page.reports.blog_speed_details_back_svg}} %}
+{% include {{page.reports.blog_speed_details_x86_64_back_svg}} %}
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
 
 <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
 
 <ul>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.head.svg">Headlining benchmarks</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.svg">All benchmarks</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_{{page.timestamp}}.html">HTML "headline" speed comparison</a>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.csv">CSV speed results</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.head.svg">Headlining benchmarks</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.svg">All benchmarks</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_{{page.timestamp}}.x86_64.html">HTML "headline" speed comparison</a>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.csv">CSV speed results</a></li>
 </ul>
 
 <h2 id="speed-table">Benchmarks Speed Details</h2>
 
-{% include {{page.reports.blog_speed_details_html}} %}
+{% include {{page.reports.blog_speed_details_x86_64_html}} %}
 
 <h2 id="memory-table">Benchmark Memory Usage Details</h2>
 
-{% include {{page.reports.blog_memory_details_html}} %}
+{% include {{page.reports.blog_memory_details_x86_64_html}} %}
 
 <h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
 
@@ -78,7 +78,7 @@ As of {{page.date_str}} {{page.time_str}}:
 <button onclick="document.getElementById('too_many_details').style.display = 'block'">Show Too Many Details</button>
 <div id="too_many_details" style="display: none">
   <hr/>
-  {% include {{page.reports.blog_speed_details_raw_details_html}} %}
+  {% include {{page.reports.blog_speed_details_x86_64_raw_details_html}} %}
   <hr/>
 </div>
 
