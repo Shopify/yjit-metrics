@@ -64,25 +64,34 @@ layout: basic
     function updateCheckbox(cb) {
         var bench = cb.getAttribute("data-benchmark");
         var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
-        var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
+        var graphSeries1 = document.querySelector("svg g.x86_64_prod_ruby_with_yjit-" + bench);
+        var graphSeries2 = document.querySelector("svg g.aarch64_prod_ruby_with_yjit-" + bench);
 
-        var thisDataSeries;
+        var thisDataSeries1;
+        var thisDataSeries2;
         data_series.forEach(function (series) {
-            if(series.name == "prod_ruby_with_yjit-" + bench) {
-                thisDataSeries = series;
+            if(series.name == "x86_64_prod_ruby_with_yjit-" + bench) {
+                thisDataSeries1 = series;
+            }
+            if(series.name == "aarch64_prod_ruby_with_yjit-" + bench) {
+                thisDataSeries2 = series;
             }
         });
 
         if(cb.checked) {
             /* Make series visible */
-            thisDataSeries.visible = true;
+            thisDataSeries1.visible = true;
+            thisDataSeries2.visible = true;
             legendBox.style.display = "inline-block";
-            graphSeries.style.visibility = "visible";
+            graphSeries1.style.visibility = "visible";
+            graphSeries2.style.visibility = "visible";
         } else {
             /* Make series invisible */
-            thisDataSeries.visible = false;
+            thisDataSeries1.visible = false;
+            thisDataSeries2.visible = false;
             legendBox.style.display = "none";
-            graphSeries.style.visibility = "hidden";
+            graphSeries1.style.visibility = "hidden";
+            graphSeries2.style.visibility = "hidden";
         }
 
     }
@@ -111,7 +120,7 @@ layout: basic
         // Rescale the visible graph lines
         data_series.forEach(function (series) {
             if(series.visible) {
-                var seriesName = "prod_ruby_with_yjit-" + series.benchmark;
+                var seriesName = series.name;
                 var svgGroup = d3.select("svg g." + seriesName);
 
                 // Rescale the graph line
