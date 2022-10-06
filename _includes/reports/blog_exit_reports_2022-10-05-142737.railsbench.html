@@ -1,0 +1,63 @@
+method call exit reasons: 
+                block_arg    8574653 (39.9%)
+    optimized_method_call    5957389 (27.7%)
+      iseq_complex_callee    4453918 (20.7%)
+    optimized_method_send    1113885 ( 5.2%)
+                 kw_splat     439776 ( 2.0%)
+         args_splat_cfunc     417439 ( 1.9%)
+              iseq_zsuper     371141 ( 1.7%)
+      args_splat_non_iseq      70459 ( 0.3%)
+      iseq_ruby2_keywords      70000 ( 0.3%)
+                 keywords        101 ( 0.0%)
+    cfunc_ruby_array_varg         18 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   56535578 (97.2%)
+    start_pc_non_zero    1610447 ( 2.8%)
+         se_interrupt        291 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    idx_out_of_range          7 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1784
+compiled_block_count:       12530
+invalidation_count:           470
+constant_state_bumps:           0
+inline_code_size:         5398417
+outlined_code_size:       3449846
+
+total_exit_count:        84641676
+total_insns_count:     2886815274
+vm_insns_count:         437516974
+yjit_insns_count:      2477404398
+ratio_in_yjit:              84.8%
+avg_len_in_yjit:             28.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   11242816 (40.0)
+                      send:    8830240 (31.4)
+               invokesuper:    2415389 (8.6)
+               invokeblock:    2121194 (7.5)
+      opt_getconstant_path:    1408534 (5.0)
+               getconstant:     605955 (2.2)
+                  opt_aref:     490042 (1.7)
+                     throw:     362637 (1.3)
+               expandarray:     348951 (1.2)
+             setlocal_WC_0:     278952 (1.0)
+               opt_empty_p:       1061 (0.0)
+                     leave:        291 (0.0)
+       getinstancevariable:         10 (0.0)
+                  branchif:          7 (0.0)
+               objtostring:          5 (0.0)
+             definesmethod:          4 (0.0)
+                opt_length:          3 (0.0)
+                  opt_plus:          3 (0.0)
+                  opt_aset:          2 (0.0)
+                   opt_and:          1 (0.0)
