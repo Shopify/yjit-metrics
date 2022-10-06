@@ -317,7 +317,9 @@ EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
 # If benchmark results drop noticeably, file a Github issue
 def check_perf_tripwires
     Dir.chdir(__dir__ + "/../../yjit-metrics-pages/_includes/reports") do
-        tripwire_files = Dir["*.tripwires.json"].to_a.sort
+        # Grab only non-platform-specific tripwire files that do *not* have a platform name in them,
+        # but instead end in a six-digit timestamp.
+        tripwire_files = Dir["*.tripwires.json"].to_a.select {|f| f =~ /\d{6}\.tripwires\.json\Z/}.sort
 
         if ALL_PERF_TRIPWIRES
             (tripwire_files.size - 1).times do |index|
@@ -338,6 +340,13 @@ def check_perf_tripwires
 end
 
 def check_one_perf_tripwire(current_filename, compared_filename, verbose: VERBOSE)
+    YJITMetrics::PLATFORMS.each do |platform|
+        platform_current_filename = current_filename.gsub(".tripwires.json", ".#{platform}.tripwires.json")
+    end
+
+end
+
+def check_one_perf_tripwire_file(current_filename, compared_filename, verbose: VERBOSE)
     current_data = JSON.parse File.read(current_filename)
     compared_data = JSON.parse File.read(compared_filename)
 
