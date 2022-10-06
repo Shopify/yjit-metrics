@@ -78,7 +78,7 @@ REPORTS_AND_FILES = {
 
 # Note: we use extensions *directly* for timeline reports, and they don't use timestamps.
 # So this is only for basic reports.
-def report_filenames(report_name, ts, prefix="_includes/reports/")
+def report_filenames(report_name, ts, prefix: "_includes/reports/")
     exts = REPORTS_AND_FILES[report_name][:extensions]
 
     exts.map { |ext| "#{prefix}#{report_name}_#{ts}.#{ext}" }
@@ -222,6 +222,7 @@ json_timestamps.each do |ts, test_files|
         next unless details[:report_type] == :basic_report
 
         required_files = report_filenames(report_name, ts, prefix: "")
+        missing_files = required_files - ((report_timestamps[ts] || {})[report_name] || [])
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
@@ -238,7 +239,9 @@ json_timestamps.each do |ts, test_files|
 
         # If the report output doesn't already exist, build it.
         if run_report
-            puts "Running basic_report for timestamp #{ts} with data files #{test_files.inspect}"
+            reason = regenerate_reports ? "we're regenerating everything" : "we're missing files: #{missing_files.inspect}"
+
+            puts "Running basic_report for timestamp #{ts} because #{reason} with data files #{test_files.inspect}"
             YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
