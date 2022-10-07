@@ -87,8 +87,12 @@ layout: basic
                 thisDataSeries2.visible = true;
             }
             legendBox.style.display = "inline-block";
-            graphSeries1.style.visibility = "visible";
-            graphSeries2.style.visibility = "visible";
+            if(graphSeries1) {
+                graphSeries1.style.visibility = "visible";
+            }
+            if(graphSeries2) {
+                graphSeries2.style.visibility = "visible";
+            }
         } else {
             /* Make series invisible */
             if(thisDataSeries1) {
@@ -98,8 +102,12 @@ layout: basic
                 thisDataSeries2.visible = false;
             }
             legendBox.style.display = "none";
-            graphSeries1.style.visibility = "hidden";
-            graphSeries2.style.visibility = "hidden";
+            if(graphSeries1) {
+                graphSeries1.style.visibility = "hidden";
+            }
+            if(graphSeries2) {
+                graphSeries2.style.visibility = "hidden";
+            }
         }
 
     }
