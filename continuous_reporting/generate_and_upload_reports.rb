@@ -126,15 +126,40 @@ end
 
 # If want to check into the repo and file issues, we need credentials.
 YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
-GITHUB_TOKEN = ENV["BENCHMARK_CI_GITHUB_TOKEN"] ? ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp : nil
+github_token = ENV["BENCHMARK_CI_GITHUB_TOKEN"] ? ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp : nil
 
 if no_push && !File.exist?(YJIT_METRICS_PAGES_DIR)
     raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
 end
 
-unless GITHUB_TOKEN || no_push
-    raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or use --no-push"
+unless github_token || no_push
+    # Unless the token is set explicitly, we hope and expect that it will be part of the URL in the
+    # pages repository, so "git push" just works. So we'll read it from there.
+
+    git_config = File.join(YJIT_METRICS_PAGES_DIR, ".git", "config")
+    if File.exist?(git_config)
+        contents = File.read(git_config)
+        before, after = contents.split('[remote "origin"]', 2)
+        if after
+            if after =~ /url = https:\/\/([^@]+)@github\.com/
+                github_token = $1
+            else
+                puts "Content that was unparseable: #{after.inspect}"
+                puts "Found .git/config, but couldn't parse git URL with token from remote 'origin'!"
+            end
+        else
+            puts "Found .git/config, but couldn't find remote origin inside it!"
+        end
+    else
+        puts "Looking for .git/config in #{git_config.inspect}, but can't find it to load token!"
+    end
+
+    unless github_token
+        raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or use --no-push"
+    end
 end
+
+GITHUB_TOKEN = github_token
 
 # This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
 YJIT_METRICS_GIT_URL = GITHUB_TOKEN ? "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git" : "https://github.com/Shopify/yjit-metrics.git"
