@@ -100,6 +100,7 @@ var data_series = [
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
+        platform: <%= this_series[:platform].inspect %>,
         visible: false,
         data: [ <%= this_series[:data].map do |hash|
             "{time: timeParser(#{hash[:time].inspect })," + stats_fields.map { |k| "#{k}: #{hash[k].inspect}" }.join(",") + ", ruby_desc: #{hash[:ruby_desc].inspect} }"
@@ -234,7 +235,7 @@ data_series.forEach(function(item) {
       .attr("r", 1.5)
       .attr("cx", function(d) { return x(d.time) } )
       .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]) + "<br/>Ruby " + d.ruby_desc; } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + (d[document.timeline_data.current_stat]) + "<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
       .attr("clip-path", "url(#clip)");
 });
 

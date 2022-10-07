@@ -98,6 +98,7 @@ var data_series = [
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
+        platform: <%= this_series[:platform].inspect %>,
         visible: false,
         data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
@@ -158,7 +159,7 @@ data_series.forEach(function(item) {
       .attr("r", 5.0)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
       ;
 
     var whiskerStrokeWidth = 1.0;

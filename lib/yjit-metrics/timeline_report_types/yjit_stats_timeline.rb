@@ -45,7 +45,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
                 visible = @context[:selected_benchmarks].include?(benchmark)
 
-                @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", visible: visible, data: points })
+                @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", platform: platform, visible: visible, data: points })
             end
         end
 
@@ -89,8 +89,8 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 data_mean.push(point_mean)
                 data_geomean.push(point_geomean)
             end
-            overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config}-overall-mean", visible: true, data: data_mean }
-            overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config}-overall-geomean", visible: true, data: data_geomean }
+            overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config}-overall-mean", platform: platform, visible: true, data: data_mean }
+            overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config}-overall-geomean", platform: platform, visible: true, data: data_geomean }
 
             @series.prepend overall_geomean
             @series.prepend overall_mean

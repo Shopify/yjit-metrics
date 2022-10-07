@@ -95,6 +95,7 @@ var dataSeries = [
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
         benchmark: <%= this_series[:benchmark].inspect %>,
+        platform: <%= this_series[:platform].inspect %>,
         data: [ <%= this_series[:data].map { |t, mean, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
         color: <%= colors[color_index % colors.size].inspect %>,
         timeRange: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
@@ -217,7 +218,7 @@ subGraphs.forEach(function(subGraph) {
       .attr("r", 5.0)
       .attr("cx", function(d) { return x(d.date) } )
       .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>Ruby " + d.ruby_desc; } )
+      .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + thisSeries.platform + " Ruby " + d.ruby_desc; } )
       ;
 
   })
