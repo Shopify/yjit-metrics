@@ -39,15 +39,20 @@ colors = [
     '#cc6699',
     '#999900'
 ];
+
+benchmarks = @benchmark_series.keys
+color_by_config = {}
+@series.each.with_index do |s, idx|
+  color_by_config[s[:config]] = colors[idx % colors.size]
+end
 %>
 
 <div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
   <div id="timeline_legend_child">
     <ul style="display:inline-block">
-  <% @series.each_with_index do |this_series, color_index|
-       color = colors[color_index % colors.size]
-     %>
-  <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>"><span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span> </li>
+  <% @benchmark_series.each do |benchmark, multi_series| %>
+  <li style="display: none" data-benchmark="<%= benchmark %>">&nbsp;&nbsp;<%= benchmark %>&nbsp;&nbsp;<strong style="color: white;">
+    <% multi_series.map { |s| %><span style='background: <%= color_by_config[s[:config]] %>'>&nbsp;<%= s[:platform] %>&nbsp;</span><% } %></strong> </li>
   <% end %>
     </ul>
   </div>
@@ -60,10 +65,8 @@ colors = [
 
 <div id="bottom_selection_checkboxes" style="display: none;">
   <ul>
-    <% @series.each_with_index do |this_series, color_index|
-         color = colors[color_index % colors.size]
-     %>
-    <li><input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" /> <span style='background: <%= color %>'>&nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;</span>
+    <% benchmarks.each do |benchmark| %>
+    <li><input type="checkbox" data-benchmark="<%= benchmark %>" /> <%= benchmark %>
     </li>
   <% end %>
   </ul>
@@ -93,7 +96,7 @@ var svg = d3.select("#timeline_rs_chart")
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
 var data_series = [
-    <% @series.each_with_index do |this_series, color_index| %>
+    <% @series.each do |this_series| %>
     {
         name: <%= this_series[:name].inspect %>,
         config: <%= this_series[:config].inspect %>,
@@ -101,7 +104,7 @@ var data_series = [
         platform: <%= this_series[:platform].inspect %>,
         visible: false,
         data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
-        color: <%= colors[color_index % colors.size].inspect %>,
+        color: <%= color_by_config[this_series[:config]].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
         value_range: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
     },

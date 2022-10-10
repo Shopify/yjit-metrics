@@ -3,6 +3,11 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         "yjit_stats_timeline"
     end
 
+    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
+    def inspect
+        "YJITSpeedupTimelineReport<#{object_id}>"
+    end
+
     REPORT_PLATFORMS = ["x86_64", "aarch64"]
     def initialize(context)
         super

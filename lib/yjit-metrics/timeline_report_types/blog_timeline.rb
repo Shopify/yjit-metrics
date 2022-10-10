@@ -3,6 +3,11 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         "blog_timeline"
     end
 
+    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
+    def inspect
+        "BlogTimelineReport<#{object_id}>"
+    end
+
     def initialize(context)
         super
 
@@ -13,8 +18,10 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         time_format = "%Y %m %d %H %M %S"
 
         @series = []
+        @benchmark_series = {}
 
         @context[:benchmark_order].each do |benchmark|
+            @benchmark_series[benchmark] = []
             [config_x86, config_arm].each do |config|
                 platform = (config == config_x86) ? "x86_64" : "aarch64"
                 points = @context[:timestamps].map do |ts|
@@ -33,9 +40,10 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
                 visible = @context[:selected_benchmarks].include?(benchmark)
 
                 @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, visible: visible, data: points })
+                @benchmark_series[benchmark] << @series[-1]
             end
         end
-        @series.sort_by! { |s| s[:name] }
+        @series.sort_by! { |s| [s[:benchmark], s[:platform]] }
     end
 
     def write_file(file_path)
