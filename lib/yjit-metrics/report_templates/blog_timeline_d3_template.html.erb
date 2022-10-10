@@ -41,9 +41,9 @@ colors = [
 ];
 
 benchmarks = @benchmark_series.keys
-color_by_config = {}
+color_by_name = {}
 @series.each.with_index do |s, idx|
-  color_by_config[s[:config]] = colors[idx % colors.size]
+  color_by_name[s[:name]] = colors[idx % colors.size]
 end
 %>
 
@@ -52,7 +52,7 @@ end
     <ul style="display:inline-block">
   <% @benchmark_series.each do |benchmark, multi_series| %>
   <li style="display: none" data-benchmark="<%= benchmark %>">&nbsp;&nbsp;<%= benchmark %>&nbsp;&nbsp;<strong style="color: white;">
-    <% multi_series.map { |s| %><span style='background: <%= color_by_config[s[:config]] %>'>&nbsp;<%= s[:platform] %>&nbsp;</span><% } %></strong> </li>
+    <% multi_series.map { |s| %><span style='background: <%= color_by_name[s[:name]] %>'>&nbsp;<%= s[:platform] %>&nbsp;</span><% } %></strong> </li>
   <% end %>
     </ul>
   </div>
@@ -104,7 +104,7 @@ var data_series = [
         platform: <%= this_series[:platform].inspect %>,
         visible: false,
         data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
-        color: <%= color_by_config[this_series[:config]].inspect %>,
+        color: <%= color_by_name[this_series[:name]].inspect %>,
         time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
         value_range: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
     },
