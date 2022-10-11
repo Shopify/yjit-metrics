@@ -15,13 +15,16 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         yjit_config_root = "prod_ruby_with_yjit"
         stats_config_root = "yjit_stats"
         no_jit_config_root = "prod_ruby_no_jit"
+        x86_stats_config = "x86_64_#{yjit_config_root}"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
 
         @series = []
+        @benchmark_series = {}
 
         @context[:benchmark_order].each do |benchmark|
+            @benchmark_series[benchmark] = []
             REPORT_PLATFORMS.each do |platform|
                 yjit_config = "#{platform}_#{yjit_config_root}"
                 stats_config = "#{platform}_#{stats_config_root}"
@@ -30,6 +33,10 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                     this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
                     this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
                     this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
+                    unless this_point_stats
+                        # No native stats? Try to fall back to x86_64 stats.
+                        this_point_stats = @context[:summary_by_timestamp].dig(ts, x86_stats_config, benchmark)
+                    end
                     if this_point_yjit && this_point_stats
                         this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
                         # These fields are from the ResultSet summary
@@ -51,6 +58,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 visible = @context[:selected_benchmarks].include?(benchmark)
 
                 @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", platform: platform, visible: visible, data: points })
+                @benchmark_series[benchmark] << @series[-1]
             end
         end
 
@@ -65,7 +73,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             data_mean = []
             data_geomean = []
             @context[:timestamps_with_stats].map.with_index do |ts, t_idx|
-                # No Ruby desc for this platform/timestamp combo? If so, that means no results for this platform.
+                # No Ruby desc for this platform/timestamp combo? If so, that means no results for this platform and timestamp.
                 next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts]
 
                 ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
