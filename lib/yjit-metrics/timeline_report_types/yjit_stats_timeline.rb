@@ -32,15 +32,13 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 points = @context[:timestamps_with_stats].map do |ts|
                     this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
                     this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
-                    this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
-                    unless this_point_stats
-                        # No native stats? Try to fall back to x86_64 stats.
-                        this_point_stats = @context[:summary_by_timestamp].dig(ts, x86_stats_config, benchmark)
-                    end
+                    # If no same-platform stats, fall back to x86_64 stats if available
+                    this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark) ||
+                        @context[:summary_by_timestamp].dig(ts, x86_stats_config, benchmark)
                     if this_point_yjit && this_point_stats
                         this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
                         # These fields are from the ResultSet summary
-                        {
+                        out = {
                             time: ts.strftime(time_format),
                             yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
                             ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
@@ -48,6 +46,12 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                             invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"] || 0,
                             ruby_desc: this_ruby_desc,
                         }
+                        if out[:ratio_in_yjit].nil? || out[:side_exits].nil? || out[:invalidation_count].nil?
+                            puts "Problem location: Benchmark #{benchmark.inspect} platform #{platform.inspect} timestamp #{ts.inspect}"
+                            puts "Bad output sample: #{out.inspect}"
+                            raise("Found point with nil as summary!")
+                        end
+                        out
                     else
                         nil
                     end
