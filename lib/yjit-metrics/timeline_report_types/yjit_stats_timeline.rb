@@ -15,7 +15,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         yjit_config_root = "prod_ruby_with_yjit"
         stats_config_root = "yjit_stats"
         no_jit_config_root = "prod_ruby_no_jit"
-        x86_stats_config = "x86_64_#{yjit_config_root}"
+        x86_stats_config = "x86_64_#{stats_config_root}"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -48,7 +48,9 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                         }
                         if out[:ratio_in_yjit].nil? || out[:side_exits].nil? || out[:invalidation_count].nil?
                             puts "Problem location: Benchmark #{benchmark.inspect} platform #{platform.inspect} timestamp #{ts.inspect}"
+                            puts "Stats config(s): #{stats_config.inspect} / #{x86_stats_config.inspect}"
                             puts "Bad output sample: #{out.inspect}"
+                            puts "Stats array: #{this_point_stats["yjit_stats"]}"
                             raise("Found point with nil as summary!")
                         end
                         out
