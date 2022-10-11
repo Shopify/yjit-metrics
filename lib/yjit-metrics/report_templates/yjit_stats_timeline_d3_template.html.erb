@@ -68,7 +68,13 @@ end
 <div id="bottom_selection_checkboxes" style="display: none;">
   <ul>
     <% @benchmark_series.each do |benchmark, multi_series| %>
-    <li><input type="checkbox" data-benchmark="<%= benchmark %>" /><%= benchmark %></strong> </span>
+    <li>
+      <span>
+        <strong>
+          <input type="checkbox" data-benchmark="<%= benchmark %>" />
+          <%= benchmark %>
+        </strong>
+      </span>
     </li>
   <% end %>
   </ul>
