@@ -32,9 +32,9 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          #ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
-          #ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
-          #ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
-          #ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
-          ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/token_archive && echo ${{secrets.BENCHMARK_CI_GITHUB_TOKEN}} >> token_`date +"%Y-%m-%d-%H%M%S"`.txt"
+          ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://x-access-token:$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
+          ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
+          ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git remote set-url origin https://x-access-token:$BENCHMARK_CI_GITHUB_TOKEN@github.com/Shopify/yjit-metrics"
+          ssh $SSH_ARGS ubuntu@$AWS_ARM_INSTANCE "cd ym/yjit-metrics-pages && git branch --set-upstream-to=origin/pages pages"
+          #ssh $SSH_ARGS ubuntu@$AWS_X86_INSTANCE "cd ym/token_archive && echo ${{secrets.BENCHMARK_CI_GITHUB_TOKEN}} >> token_`date +"%Y-%m-%d-%H%M%S"`.txt"
           rm -f id_benchmark_ci_rsa
