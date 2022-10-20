@@ -95,11 +95,13 @@ layout: basic
 
 <script>
   // Show and hide tooltips on graphs
-  document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
-    elt.addEventListener("mousemove", (e) => { showSVGTooltip(e, e.target.getAttribute("data-tooltip")); });
+  document.addEventListener("mousemove", function (e) {
+    if(!e.target.matches('svg [data-tooltip]')) return;
+    showSVGTooltip(e, e.target.getAttribute("data-tooltip"));
   });
-  document.querySelectorAll("svg [data-tooltip]").forEach(function (elt) {
-    elt.addEventListener("mouseout", (e) => { hideSVGTooltip(); });
+  document.addEventListener("mouseout", function (e) {
+    if(!e.target.matches('svg [data-tooltip]')) return;
+    hideSVGTooltip();
   });
 
   // Create platform-selector DOM elements
