@@ -14,7 +14,10 @@ layout: basic
   <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
 
   <div class="headline-button">
-    <a href="{{ last_bench.url | relative_url }}"><button>Latest Full Details</button></a>
+    <a href="{{ last_bench.url | relative_url }}#x86_64"><button>Latest Full Details (x86_64 Xeon)</button></a>
+  </div>
+  <div class="headline-button">
+    <a href="{{ last_bench.url | relative_url }}#aarch64"><button>Latest Full Details (ARM64 Graviton)</button></a>
   </div>
 </div>
 

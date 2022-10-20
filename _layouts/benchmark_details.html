@@ -178,10 +178,45 @@ layout: basic
     prevPlatform[platCtr] = platform;
   }
 
+  function getPlatformFromHashParam() {
+    var hash = window.location.hash;
+    var platform = hash.slice(1);
+
+    document.querySelectorAll(".platformError").forEach(function(elt) { elt.parentNode.removeChild(elt); });
+    if(platform == "aarch64" || platform == "x86_64") {
+      return platform;
+    } else if (!platform || platform == "") {
+      return "x86_64";
+    } else {
+      document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
+        var msg = document.createElement("p");
+        msg.className = "platformError";
+        msg.innerHTML = "<b style='color: red'>Error in URL hash parameter, please fix platform name!</b>"
+        elt.prepend(msg);
+      });
+      return "x86_64";
+    }
+  }
+
+  function updatePageFromCurrentPlatform() {
+    document.querySelectorAll(".plat-select-fieldset input[type=radio]").forEach(function(elt) {
+      if(elt.value == currentPlatform) {
+        elt.checked = true;
+      }
+    });
+    document.querySelectorAll(".plat-graph-fetch-dest").forEach(function(elt) {
+      makePlatGraphRequest(elt, currentPlatform);
+    });
+  }
+
   // We have DOM elements in place. Now we start AJAX-fetching all the detail graphs.
-  var currentPlatform = "x86_64"; // For now, always default to x86_64 on page load
-  document.querySelectorAll(".plat-graph-fetch-dest").forEach(function(elt) {
-    makePlatGraphRequest(elt, currentPlatform);
+  var currentPlatform = getPlatformFromHashParam(); // For now, always default to x86_64 on page load
+  updatePageFromCurrentPlatform();
+
+  // If a platform hash parameter is added (or equivalently, clicked), change the platform to the new one.
+  window.addEventListener("hashchange", function () {
+    currentPlatform = getPlatformFromHashParam();
+    updatePageFromCurrentPlatform();
   });
 
   // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
