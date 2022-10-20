@@ -262,6 +262,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @peak_mb_by_config[config] = []
             @mem_ratio_by_config[config] = []
         end
+        @mem_overhead_factor_by_benchmark = []
         @inline_mem_used = []
         @outline_mem_used = []
 
@@ -294,6 +295,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                     end
                 end
             end
+            yjit_mem_usage = @peak_mem_by_config[@with_yjit_config][benchmark_name].sum
+            no_jit_mem_usage = @peak_mem_by_config[@no_jit_config][benchmark_name].sum
+            @mem_overhead_factor_by_benchmark[idx] = (yjit_mem_usage.to_f / no_jit_mem_usage) - 1.0
         end
     end
 end
@@ -783,13 +787,13 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
               bench_name ] }
 
         @headings = [ "bench" ] +
-            @configs_with_human_names.map { |name, config| "#{name} mem (MiB)"}
-            #[ "Inline Code", "Outlined Code", "YJIT Mem Breakdown" ]
+            @configs_with_human_names.map { |name, config| "#{name} mem (MiB)"} +
+            [ "Inline Code", "Outlined Code", "YJIT Mem overhead" ]
             #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
         # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                               # Benchmark name
-            [ "%d" ] * @configs_with_human_names.size           # Mem usage per-Ruby
-            #[ "%d", "%d", "%s" ]                                # YJIT mem breakdown
+            [ "%d" ] * @configs_with_human_names.size +         # Mem usage per-Ruby
+            [ "%d", "%d", "%.1f%%" ]                            # YJIT mem breakdown
             #[ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
 
         calc_mem_stats_by_config
@@ -816,8 +820,8 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
-                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] }
-                #[ @inline_mem_used[idx], @outline_mem_used[idx] ] +
+                @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
+                [ @inline_mem_used[idx], @outline_mem_used[idx], @mem_overhead_factor_by_benchmark[idx] * 100.0 ]
                 #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
                 #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
