@@ -1,0 +1,61 @@
+method call exit reasons: 
+                block_arg    4899989 (42.1%)
+    optimized_method_call    3483370 (29.9%)
+      iseq_complex_callee    2477542 (21.3%)
+                 kw_splat     251302 ( 2.2%)
+         args_splat_cfunc     238538 ( 2.0%)
+              iseq_zsuper     212081 ( 1.8%)
+      args_splat_non_iseq      40265 ( 0.3%)
+      iseq_ruby2_keywords      40000 ( 0.3%)
+                 keywords        101 ( 0.0%)
+    cfunc_ruby_array_varg         18 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   31897248 (97.2%)
+    start_pc_non_zero     919108 ( 2.8%)
+         se_interrupt        164 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:         1777
+compiled_block_count:       12888
+invalidation_count:           475
+constant_state_bumps:           0
+inline_code_size:        10228160
+outlined_code_size:      10234997
+
+total_exit_count:        47607403
+total_insns_count:     1666470751
+vm_insns_count:         245388870
+yjit_insns_count:      1436792036
+ratio_in_yjit:              85.3%
+avg_len_in_yjit:             29.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    6003644 (38.2)
+                      send:    5046042 (32.1)
+               invokesuper:    1380314 (8.8)
+               invokeblock:    1212313 (7.7)
+      opt_getconstant_path:     804985 (5.1)
+               getconstant:     346260 (2.2)
+                  opt_aref:     280021 (1.8)
+                     throw:     207282 (1.3)
+               expandarray:     199403 (1.3)
+             setlocal_WC_0:     159402 (1.0)
+       getinstancevariable:      69700 (0.4)
+               opt_empty_p:        605 (0.0)
+                     leave:        164 (0.0)
+               objtostring:          5 (0.0)
+             definesmethod:          4 (0.0)
+                opt_length:          4 (0.0)
+                  branchif:          3 (0.0)
+                   opt_and:          3 (0.0)
+                  opt_size:          1 (0.0)
+               adjuststack:          0 (0.0)
