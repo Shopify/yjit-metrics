@@ -1,17 +1,17 @@
 <table>
-    <thead>  <th>bench</th>  <th>No JIT mem (MiB)</th>  <th>MJIT3.0 mem (MiB)</th>  <th>YJIT mem (MiB)</th>  </thead>
+    <thead>  <th>bench</th>  <th>No JIT mem (MiB)</th>  <th>MJIT3.0 mem (MiB)</th>  <th>YJIT mem (MiB)</th>  <th>Inline Code</th>  <th>Outlined Code</th>  <th>YJIT Mem overhead</th>  </thead>
     <tbody style="text-align: right;">
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td> <td> 63 </td> <td> 60 </td> <td> 322 </td>
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td> <td> 63 </td> <td> 60 </td> <td> 322 </td> <td> 1 </td> <td> 1 </td> <td> 404.4% </td>
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td> <td> 33 </td> <td> 32 </td> <td> 293 </td>
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td> <td> 33 </td> <td> 32 </td> <td> 293 </td> <td> 1 </td> <td> 1 </td> <td> 772.1% </td>
             </tr>
         
             <tr style="border: 1px solid black;">
-                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td> <td> 54 </td> <td> 55 </td> <td> 322 </td>
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td> <td> 54 </td> <td> 55 </td> <td> 322 </td> <td> 1 </td> <td> 1 </td> <td> 490.2% </td>
             </tr>
         
     </tbody>
