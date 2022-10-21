@@ -1,0 +1,55 @@
+method call exit reasons: 
+              block_arg    6896956 (67.3%)
+    iseq_complex_callee    2716971 (26.5%)
+               kw_splat     417959 ( 4.1%)
+            iseq_zsuper     209000 ( 2.0%)
+
+leave exit reasons: 
+        interp_return   29051484 (99.3%)
+    start_pc_non_zero     209018 ( 0.7%)
+         se_interrupt        328 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           23
+compiled_block_count:         316
+invalidation_count:             6
+constant_state_bumps:           0
+inline_code_size:         4676514
+outlined_code_size:       4682465
+
+total_exit_count:        42846463
+total_insns_count:     1562482800
+vm_insns_count:         205047137
+yjit_insns_count:      1371230642
+ratio_in_yjit:              86.9%
+avg_len_in_yjit:             31.7
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:    6897009 (50.0)
+    opt_send_without_block:    4180505 (30.3)
+               invokeblock:    1671969 (12.1)
+               invokesuper:     418079 (3.0)
+      opt_getconstant_path:     209005 (1.5)
+               opt_empty_p:     209000 (1.5)
+                     throw:     209000 (1.5)
+                     leave:        328 (0.0)
+                  opt_aref:         60 (0.0)
+                  opt_ltlt:         18 (0.0)
+                  branchif:          6 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+               concatarray:          0 (0.0)
+             concatstrings:          0 (0.0)
