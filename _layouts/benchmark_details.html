@@ -94,16 +94,6 @@ layout: basic
 {{ content | markdownify }}
 
 <script>
-  // Show and hide tooltips on graphs
-  document.addEventListener("mousemove", function (e) {
-    if(!e.target.matches('svg [data-tooltip]')) return;
-    showSVGTooltip(e, e.target.getAttribute("data-tooltip"));
-  });
-  document.addEventListener("mouseout", function (e) {
-    if(!e.target.matches('svg [data-tooltip]')) return;
-    hideSVGTooltip();
-  });
-
   // Create platform-selector DOM elements
   function addPlatformSelector(elt) {
     var top_element = document.createElement('div');
