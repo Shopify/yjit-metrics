@@ -4,6 +4,8 @@ require "json"
 require "optparse"
 require_relative "lib/yjit-metrics"
 
+require_relative "lib/yjit-metrics/timeline_report_types/all_timeline_reports_lib"
+
 report_class_by_name = YJITMetrics::TimelineReport.report_name_hash
 # By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
 all_report_names = report_class_by_name.keys.sort
@@ -25,7 +27,7 @@ OptionParser.new do |opts|
         data_dir = dir
     end
 
-    opts.on("-o DIR", "--output-dir DIR", "Directory for writing output files (default: current dir)") do |dir|
+    opts.on("-o DIR", "--output-dir DIR", "Jekyll root dir for writing output files (default: current dir)") do |dir|
         output_dir = dir
     end
 
@@ -145,5 +147,5 @@ context = {
 
 reports.each do |report_name|
     report = report_class_by_name[report_name].new context
-    report.write_file(output_dir + "/#{report_name}")
+    report.write_files(output_dir)
 end

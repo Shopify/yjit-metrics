@@ -8,6 +8,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         "YJITSpeedupTimelineReport<#{object_id}>"
     end
 
+    NUM_RECENT=100
     REPORT_PLATFORMS = ["x86_64", "aarch64"]
     def initialize(context)
         super
@@ -20,11 +21,10 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
 
-        @series = []
-        @benchmark_series = {}
+        @series = {}
+        REPORT_PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
         @context[:benchmark_order].each do |benchmark|
-            @benchmark_series[benchmark] = []
             REPORT_PLATFORMS.each do |platform|
                 yjit_config = "#{platform}_#{yjit_config_root}"
                 stats_config = "#{platform}_#{stats_config_root}"
@@ -63,12 +63,15 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
                 visible = @context[:selected_benchmarks].include?(benchmark)
 
-                @series.push({ config: yjit_config, benchmark: benchmark, name: "#{yjit_config}-#{benchmark}", platform: platform, visible: visible, data: points })
-                @benchmark_series[benchmark] << @series[-1]
+                s = { config: yjit_config, benchmark: benchmark, name: "#{yjit_config_root}-#{benchmark}", platform: platform, visible: visible, data: points }
+                s_recent = { config: yjit_config, benchmark: benchmark, name: "#{yjit_config_root}-#{benchmark}", platform: platform, visible: visible, data: points.last(NUM_RECENT) }
+                @series[platform][:all_time].push s
+                @series[platform][:recent].push s_recent
             end
         end
 
-        stats_fields = @series[0][:data][0].keys - [:time, :ruby_desc]
+        # Grab the stats fields from the first stats point
+        @stats_fields = @series.values[0][:all_time][0][:data][0].keys - [:time, :ruby_desc]
 
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks per-platform
         REPORT_PLATFORMS.each do |platform|
@@ -88,15 +91,20 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                     ruby_desc: ruby_desc,
                 }
                 point_geomean = point_mean.dup
-                stats_fields.each do |field|
+                @stats_fields.each do |field|
                     begin
                         points = @context[:benchmark_order].map.with_index do |bench, b_idx|
                             t_str = ts.strftime(time_format)
-                            t_in_series = @series[b_idx][:data].detect { |point_info| point_info[:time] == t_str }
-                            t_in_series ? t_in_series[field] : nil
+                            this_bench_data = @series[platform][:all_time][b_idx]
+                            if this_bench_data
+                                t_in_series = this_bench_data[:data].detect { |point_info| point_info[:time] == t_str }
+                                t_in_series ? t_in_series[field] : nil
+                            else
+                                nil
+                            end
                         end
                     rescue
-                        STDERR.puts "Error in yjit_stats_timeline calculating field #{field} for TS #{ts.inspect} for all benchmarks"
+                        STDERR.puts "Error in yjit_stats_timeline calculating field #{field} for TS #{ts.inspect} for all #{platform} benchmarks"
                         raise
                     end
                     points.compact!
@@ -108,18 +116,54 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
                 data_mean.push(point_mean)
                 data_geomean.push(point_geomean)
             end
-            overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config}-overall-mean", platform: platform, visible: true, data: data_mean }
-            overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config}-overall-geomean", platform: platform, visible: true, data: data_geomean }
+            overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config_root}-overall-mean", platform: platform, visible: true, data: data_mean }
+            overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config_root}-overall-geomean", platform: platform, visible: true, data: data_geomean }
+            overall_mean_recent = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config_root}-overall-mean", platform: platform, visible: true, data: data_mean.last(NUM_RECENT) }
+            overall_geomean_recent = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config_root}-overall-geomean", platform: platform, visible: true, data: data_geomean.last(NUM_RECENT) }
 
-            @series.prepend overall_geomean
-            @series.prepend overall_mean
+            @series[platform][:all_time].prepend overall_geomean
+            @series[platform][:all_time].prepend overall_mean
+            @series[platform][:recent].prepend overall_geomean_recent
+            @series[platform][:recent].prepend overall_mean_recent
+        end
+
+        # Recent and all-time series have different numbers of benchmarks. To keep everybody in sync, we set
+        # the colours here in Ruby and pass them through.
+        color_by_benchmark = {}
+        (["overall-mean", "overall-geomean"] + @context[:benchmark_order]).each.with_index do |bench, idx|
+            color_by_benchmark[bench] = MUNIN_PALETTE[idx % MUNIN_PALETTE.size]
+        end
+        @series.each do |platform, hash|
+            hash.each do |duration, all_series|
+                all_series.each.with_index do |series, idx|
+                    series[:color] = color_by_benchmark[series[:benchmark]]
+                    if series[:color].nil?
+                        raise "Error for #{platform} #{duration} w/ bench #{series[:benchmark].inspect}!"
+                    end
+                end
+            end
         end
     end
 
-    def write_file(file_path)
+    def write_files(out_dir)
+        [:recent, :all_time].each do |duration|
+            REPORT_PLATFORMS.each do |platform|
+                begin
+                    @data_series = @series[platform][duration]
+
+                    script_template = ERB.new File.read(__dir__ + "/../report_templates/yjit_stats_timeline_data_template.js.erb")
+                    text = script_template.result(binding)
+                    File.open("#{out_dir}/reports/timeline/yjit_stats_timeline.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
+                rescue
+                    puts "Error writing data file for #{platform} #{duration} data!"
+                    raise
+                end
+            end
+        end
+
         script_template = ERB.new File.read(__dir__ + "/../report_templates/yjit_stats_timeline_d3_template.html.erb")
         #File.write("/tmp/erb_template.txt", script_template.src)
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-        File.open(file_path + ".html", "w") { |f| f.write(html_output) }
+        File.open("#{out_dir}/_includes/reports/yjit_stats_timeline.html", "w") { |f| f.write(html_output) }
     end
 end

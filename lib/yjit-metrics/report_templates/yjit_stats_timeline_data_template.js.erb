@@ -1,0 +1,26 @@
+data_series = [
+    <% @data_series.each.with_index do |this_series, idx| %>
+    {
+        name: <%= this_series[:name].inspect %>,
+        config: <%= this_series[:config].inspect %>,
+        benchmark: <%= this_series[:benchmark].inspect %>,
+        platform: <%= this_series[:platform].inspect %>,
+        visible: false,
+        data: [ <%= this_series[:data].map do |hash|
+            "{time: timeParser(#{hash[:time].inspect })," + @stats_fields.map { |k| "#{k}: #{hash[k].inspect}" }.join(",") + ", ruby_desc: #{hash[:ruby_desc].inspect} }"
+        end.join(",")
+        %>],
+        color: <%= this_series[:color].inspect %>,
+        time_range: [ timeParser(<%= this_series[:data][0][:time].inspect %>), timeParser(<%= this_series[:data][-1][:time].inspect %>) ],
+        value_range: { <% @stats_fields.each do |field| %>
+            <%= field %>: [ <%= this_series[:data].map { |pt| pt[field] }.compact.min %>, <%= this_series[:data].map { |pt| pt[field] }.compact.max %> ],
+            <% end %>
+            last: []
+        }
+    },
+    <% end %>
+    {}
+];
+data_series.pop();
+
+all_series_time_range = [ timeParser(<%= @data_series.map { |this_series| this_series[:data][0][:time] }.min.inspect %>), timeParser(<%= @data_series.map { |this_series| this_series[:data][-1][:time] }.max.inspect %>) ];
