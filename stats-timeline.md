@@ -70,9 +70,10 @@ document.timeline_data = {} // For sharing data w/ handlers
         .range([ 0, width ]);
     //.domain(d3.extent(all_series_time_range))
     document.timeline_data.x_axis_function = x; /* Export for the event handlers */
-    var xAxis = d3.axisBottom(x).ticks(null);
+    var xAxis = d3.axisBottom(x);
     var xAxisGroup = svg.append("g")
         .attr("transform", "translate(0," + height + ")")
+        .attr("class", "x_axis_group")
         .call(xAxis)
     .selectAll("text")
         .attr("transform", "rotate(-60)")
@@ -120,6 +121,7 @@ document.timeline_data = {} // For sharing data w/ handlers
             document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
         }
         // Update axis and circle position
+        // Note: this doesn't seem to work with the other update function. Why not?
         xAxisGroup.transition().duration(1000).call(xAxis)
         svg
             .selectAll(".centerdot.circle")
@@ -145,28 +147,63 @@ document.timeline_data = {} // For sharing data w/ handlers
         .attr("class", "brush")
         .call(brush);
 
+    function updateDomainsAndAxesFromData() {
+        // Find the new data scale based on visible series
+        var minY = 0.0;
+        var maxY = 1.0;
+        var minX = data_series[0].time_range[0];
+        var maxX = data_series[0].time_range[1];
+        data_series.forEach(function (series) {
+            let valueRange = series.value_range[document.timeline_data.current_stat];
+            if(series.visible && valueRange[0] < minY) {
+                minY = valueRange[0];
+            }
+            if(series.visible && valueRange[1] > maxY) {
+                maxY = valueRange[1];
+            }
+            if(series.visible && series.time_range[0] < minX) {
+                minX = series.time_range[0];
+            }
+            if(series.visible && series.time_range[1] > maxX) {
+                maxX = series.time_range[1];
+            }
+        });
+        var yAxis = document.timeline_data.y_axis;
+        var yAxisFunc = document.timeline_data.y_axis_function;
+
+        var xAxis = document.timeline_data.x_axis;
+        var xAxisFunc = document.timeline_data.x_axis_function;
+
+        yAxisFunc.domain([minY, maxY]);
+        yAxis.scale(yAxisFunc);
+        document.timeline_data.top_svg_group.call(yAxis);
+
+        xAxisFunc.domain([minX, maxX]);
+        xAxis.scale(xAxisFunc);
+        document.timeline_data.x_axis_group.call(xAxis);
+
+        all_series_time_range = [minX, maxX];
+    }
+
     // Using JS values like data_series, update the SVG graph data
     function updateGraphFromData() {
+        updateDomainsAndAxesFromData();
+
         // Add top-level SVG groups for data series
-        //d3.selectAll("svg g.svg_tl_data")
-        //    .data(data_series)
-        //    .join("g")
-        //        .attr("class", d => "svg_tl_data " + d.name)
-        //        .attr("visibility", d => d.visible ? "visible" : "hidden")
-        //        ;
+        svg.selectAll("g.svg_tl_data")
+            .data(data_series, (item) => item.name)
+            .join("g")
+                .attr("class", d => "svg_tl_data " + d.name)
+                .attr("visibility", d => d.visible ? "visible" : "hidden")
+                ;
 
         data_series.forEach(function(item) {
-            group = svg.append("g").attr("class", "svg_tl_data " + item.name);
-            if(item.visible) {
-                group.attr("visibility", "visible");
-            } else {
-                group.attr("visibility", "hidden");
-            }
-            //group = svg.select("svg g.svg_tl_data." + item.name);
+            var group = svg.select("svg g.svg_tl_data." + item.name);
 
             // Add the graph line
-            var lines = group.append("path")
-                .datum(item.data)
+            var lines = group.selectAll("path")
+                .data([item.data])
+                .join("path")
                 .attr("class", "line")
                 .attr("fill", "none")
                 .attr("stroke", item.color)
@@ -178,9 +215,7 @@ document.timeline_data = {} // For sharing data w/ handlers
 
             // Add a circle at each datapoint
             var circles = group.selectAll("circle.centerdot." + item.name)
-                .data(item.data);
-
-            circles.join("circle")
+                .data(item.data, (d) => d.time).join("circle")
                 .attr("class", "circle centerdot " + item.name)
                 .attr("fill", item.color)
                 .attr("r", 1.5)
@@ -188,7 +223,7 @@ document.timeline_data = {} // For sharing data w/ handlers
                 .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
                 .attr("data-tooltip", function(d) {
                     return item.benchmark + " at " + timePrinter(d.time) + ": " +
-                        (d[document.timeline_data.current_stat]) +
+                        (d[document.timeline_data.current_stat]).toFixed(1) +
                         "<br/>" + item.platform + " Ruby " + d.ruby_desc;
                 })
                 .attr("clip-path", "url(#clip)");
@@ -196,8 +231,8 @@ document.timeline_data = {} // For sharing data w/ handlers
     }
 
     function rescaleGraphFromFetchedData() {
-        setCheckboxesFromHashParam();
-        rescaleGraphFromCheckboxes();
+        updateAllFromCheckboxes();
+        updateGraphFromData();
     }
 
     // Default to x86_64 recent-only data
@@ -258,17 +293,21 @@ document.timeline_data = {} // For sharing data w/ handlers
                 if(!cb.checked) {
                     cb.checked = true;
                 }
-                updateCheckbox(cb);
             } else {
                 if(cb.checked) {
                     cb.checked = false;
                 }
-                updateCheckbox(cb);
             }
         });
     }
 
-    function updateCheckbox(cb) {
+    function updateAllFromCheckboxes() {
+        checkboxes.forEach(function (cb) {
+            updateAllFromCheckbox(cb);
+        });
+    }
+
+    function updateAllFromCheckbox(cb) {
         var bench = cb.getAttribute("data-benchmark");
         var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
         var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
@@ -296,75 +335,9 @@ document.timeline_data = {} // For sharing data w/ handlers
 
     }
 
-    function rescaleGraphFromCheckboxes() {
-        // Find the new data scale based on visible series
-        var minY = 0.0;
-        var maxY = 1.0;
-        var minX = data_series[0].time_range[0];
-        var maxX = data_series[0].time_range[1];
-        data_series.forEach(function (series) {
-            let valueRange = series.value_range[document.timeline_data.current_stat];
-            if(series.visible && valueRange[0] < minY) {
-                minY = valueRange[0];
-            }
-            if(series.visible && valueRange[1] > maxY) {
-                maxY = valueRange[1];
-            }
-            if(series.visible && series.time_range[0] < minX) {
-                minX = series.time_range[0];
-            }
-            if(series.visible && series.time_range[1] > maxX) {
-                maxX = series.time_range[1];
-            }
-        });
-        var yAxis = document.timeline_data.y_axis;
-        var yAxisFunc = document.timeline_data.y_axis_function;
-
-        var xAxis = document.timeline_data.x_axis;
-        var xAxisFunc = document.timeline_data.x_axis_function;
-        var xAxisGroup = document.timeline_data.x_axis_group;
-
-        yAxisFunc.domain([minY, maxY]);
-        yAxis.scale(yAxisFunc);
-        document.timeline_data.top_svg_group.call(yAxis);
-
-        xAxisFunc.domain([minX, maxX]);
-        xAxis.scale(xAxisFunc);
-        document.timeline_data.x_axis_group.call(xAxis);
-
-        all_series_time_range = [minX, maxX];
-
-        // Rescale the graph lines
-        data_series.forEach(function (series) {
-            var seriesName = series.name;
-            var svgGroup = d3.select("svg g." + seriesName);
-
-            // Rescale the graph line
-            var svgPath = svgGroup.select("path");
-            svgPath.datum(series.data).attr("d", d3.line()
-                .x(function(d) { return x(d.time); })
-                .y(function(d) { return y(d[document.timeline_data.current_stat]); })
-                );
-
-            // Rescale the circles
-            var svgCircles = svgGroup.selectAll(".circle." + seriesName)
-                .data(series.data)
-                .attr("cx", function(d) { return x(d.time); })
-                .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]); })
-                // Update the tooltips
-                .attr("data-tooltip", function(d) {
-                    return series.benchmark + " at " + timePrinter(d.time) + ": " +
-                        (d[document.timeline_data.current_stat]).toFixed(1) +
-                        "<br/>Ruby " + d.ruby_desc;
-                    })
-                ;
-
-        });
-
-    }
-
     window.addEventListener("hashchange", function () {
         setCheckboxesFromHashParam();
+        updateAllFromCheckboxes();
     });
     stats_select.addEventListener("change", function () {
         // Set up new timeline_data.current_stat
@@ -372,16 +345,16 @@ document.timeline_data = {} // For sharing data w/ handlers
         console.log("Setting current stat to", document.timeline_data.current_stat);
 
         setHashParamFromCheckboxes(); // new current_stat goes into the hashparam
-        rescaleGraphFromCheckboxes(); // it also resets the graph scaling
+        updateGraphFromData();
     });
 
     setCheckboxesFromHashParam();
-    //rescaleGraphFromCheckboxes();
+    updateAllFromCheckboxes();
 
     checkboxes.forEach(function (cb) {
         cb.addEventListener('change', function (event) {
-            updateCheckbox(this);
-            rescaleGraphFromCheckboxes();
+            updateAllFromCheckbox(this);
+            updateGraphFromData();
             setHashParamFromCheckboxes();
         });
     });
