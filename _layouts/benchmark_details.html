@@ -86,8 +86,9 @@ layout: basic
 <p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
 
 <ul>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.raw_details.html">Too Much Detail: x86_64 Edition</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.aarch64.raw_details.html">Too Much Detail: aarch64 Edition</a></li>
+  {% for platform in page.platforms %}
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.{{platform}}.raw_details.html">Too Much Detail: {{ platform | capitalize }} Edition</a></li>
+  {% endfor %}
 </ul>
 
 <hr/>
