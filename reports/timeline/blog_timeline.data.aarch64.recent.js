@@ -1,4 +1,4 @@
-var data_series = [
+data_series = [
     
     {
         name: "prod_ruby_with_yjit-30k_ifelse",
@@ -316,5 +316,5 @@ var data_series = [
 ]
 data_series.pop();
 
-var all_series_time_range = [ timeParser("2022 10 05 11 03 55"), timeParser("2022 10 26 04 29 15") ];
-var all_series_value_range = [ 54.11767753843537, 25799.149186381448 ];
+all_series_time_range = [ timeParser("2022 10 05 11 03 55"), timeParser("2022 10 26 04 29 15") ];
+all_series_value_range = [ 54.11767753843537, 25799.149186381448 ];

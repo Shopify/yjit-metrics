@@ -2,166 +2,415 @@
 layout: basic
 ---
 
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v5.js"></script>
+
 <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
+<script>
+var timeParser = d3.timeParse("%Y %m %d %H %M %S");
+var timePrinter = d3.timeFormat("%b %d %I%p");
+var data_series;
+var all_series_time_range;
+var all_series_value_range;
+
+document.timeline_data = {} // For sharing data w/ handlers
+</script>
+
+<p>
+  To zoom in, drag over the time range you want to see. Double-click to zoom back out.
+</p>
+
 <div class="timeline_report">
-{% include reports/blog_timeline.html %}
+    <form>
+        <fieldset id="plat-select-fieldset" style="border: 1px solid black">
+            <legend>Select Dataset</legend>
+
+            <input type="radio" id="platform-radio-x86-recent" name="plat-data-select" value="x86_64.recent" checked />
+            <label for="platform-radio-x86-recent">Xeon x86_64 Recent</label>
+
+            <input type="radio" id="platform-radio-x86-recent" name="plat-data-select" value="x86_64.all_time" />
+            <label for="platform-radio-x86-recent">Xeon x86_64 All-Time</label>
+
+            <input type="radio" id="platform-radio-aarch-recent" name="plat-data-select" value="aarch64.recent" />
+            <label for="platform-radio-aarch-recent">AWS Graviton ARM64 Recent</label>
+
+            <input type="radio" id="platform-radio-aarch-recent" name="plat-data-select" value="aarch64.all_time" />
+            <label for="platform-radio-aarch-recent">AWS Graviton ARM64 All-Time</label>
+        </fieldset>
+    </form>
+    {% include reports/blog_timeline.html %}
 </div>
 
 <script>
-    document.getElementById("bottom_selection_checkboxes").style.display = "block";
-    var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
+// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-    function setHashParamFromCheckboxes() {
-        //console.log("setHashParamFromCheckboxes");
-        var newHash = "";
-        checkboxes.forEach(function (cb) {
-            if(cb.checked) {
-                var bench = cb.getAttribute("data-benchmark");
-                newHash += "+" + bench
-            }
-        });
-        newHash = newHash.slice(1); // Remove extra leading plus
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    //.attr("width", width + margin.left + margin.right)
+    //.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
-        window.location.hash = newHash;
-    }
+// Add X axis --> it is a date format
+var x = d3.scaleTime()
+  //.domain(d3.extent(all_series_time_range))
+  .range([ 0, width ]);
+document.timeline_data.x_axis_function = x; /* Export for the event handlers */
+document.timeline_data.x_axis = d3.axisBottom(x);
+document.timeline_data.x_axis_group = svg.append("g");
 
-    function setCheckboxesFromHashParam() {
-        var hash = window.location.hash;
-        var benchmarks = hash.slice(1).split("+");
+document.timeline_data.x_axis_group.attr("transform", "translate(0," + height + ")")
+    .call(document.timeline_data.x_axis);
 
-        var benchHash = {};
-        benchmarks.forEach(function (bench) {
-            benchHash[bench] = true;
-        });
+// TODO: how will we update this?
+document.timeline_data.x_axis_group.selectAll("text")
+    .attr("transform", "rotate(-60)")
+    .style("text-anchor", "end");
 
-        checkboxes.forEach(function (cb) {
-            var bench = cb.getAttribute("data-benchmark");
-            if(benchHash[bench]) {
-                if(!cb.checked) {
-                    cb.checked = true;
-                    updateCheckbox(cb);
-                }
-            } else {
-                if(cb.checked) {
-                    cb.checked = false;
-                    updateCheckbox(cb);
-                }
-            }
-        });
-    }
+// Add Y axis
+var y = d3.scaleLinear()
+        .domain([0, 1.0])  // Dynamically generate later
+        .range([ height, 0 ]);
+document.timeline_data.y_axis_function = y; /* Export for the event handlers */
+document.timeline_data.y_axis = d3.axisLeft(y);
+document.timeline_data.top_svg_group = svg.append("g")
+  .call(document.timeline_data.y_axis);
 
-    function updateCheckbox(cb) {
-        var bench = cb.getAttribute("data-benchmark");
-        var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
-        var graphSeries1 = document.querySelector("svg g.x86_64_prod_ruby_with_yjit-" + bench);
-        var graphSeries2 = document.querySelector("svg g.aarch64_prod_ruby_with_yjit-" + bench);
+var whiskerStrokeWidth = 1.0;
+var whiskerBarWidth = 5;
 
-        var thisDataSeries1;
-        var thisDataSeries2;
-        data_series.forEach(function (series) {
-            if(series.name == "x86_64_prod_ruby_with_yjit-" + bench) {
-                thisDataSeries1 = series;
-            }
-            if(series.name == "aarch64_prod_ruby_with_yjit-" + bench) {
-                thisDataSeries2 = series;
-            }
-        });
+var clip = svg.append("defs").append("svg:clipPath")
+    .attr("id", "clip")
+    .append("svg:rect")
+    .attr("width", width + 30 )
+    .attr("height", height + 20 )
+    .attr("x", 0)
+    .attr("y", -20);
 
-        if(cb.checked) {
-            /* Make series visible */
-            thisDataSeries1.visible = true;
-            thisDataSeries2.visible = true;
-            legendBox.style.display = "inline-block";
-            graphSeries1.style.visibility = "visible";
-            graphSeries2.style.visibility = "visible";
-        } else {
-            /* Make series invisible */
-            thisDataSeries1.visible = false;
-            thisDataSeries2.visible = false;
-            legendBox.style.display = "none";
-            graphSeries1.style.visibility = "hidden";
-            graphSeries2.style.visibility = "hidden";
+// Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
+var idleTimeout = null;
+
+function idled() { idleTimeout = null; }
+
+function updateChart() {
+    const extent = d3.event.selection
+
+    // If no selection, back to initial coordinate. Otherwise, update X axis domain
+    if (!extent) {
+        if (!idleTimeout) {
+            return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
         }
-
+        x.domain(d3.extent(all_series_time_range));
+    } else {
+        x.domain([x.invert(extent[0]), x.invert(extent[1])]);
+        // Remove the grey brush area as soon as the selection has been done
+        document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
     }
+    // Update axis and circle position
+    // Note: this doesn't seem to work with the other update function. Why not?
+    var xAxis = document.timeline_data.x_axis;
+    var xAxisGroup = document.timeline_data.x_axis_group;
+    xAxisGroup.transition().duration(1000).call(xAxis)
+    svg
+        .selectAll("circle.whiskerdot")
+        .transition().duration(1000)
+        .attr("cx", function(d) { return x(d.date) } )
+        .attr("cy", function(d) { return y(d.value) } )
+        ;
 
-    function rescaleGraphFromCheckboxes() {
-        // Find the new data scale based on visible series
-        var minY = 0.0;
-        var maxY = 1.0;
-        data_series.forEach(function (series) {
-            if(series.visible && series.value_range[0] < minY) {
-                minY = series.value_range[0];
-            }
-            if(series.visible && series.value_range[1] > maxY) {
-                maxY = series.value_range[1];
-            }
-        });
-        var yAxis = document.timeline_data.y_axis;
-        var yAxisFunc = document.timeline_data.y_axis_function;
-        var xAxisFunc = document.timeline_data.x_axis_function;
+    svg
+        .selectAll("line.whiskercenter")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
 
-        yAxisFunc.domain([minY, maxY]);
-        yAxis.scale(yAxisFunc);
-        document.timeline_data.top_svg_group.call(yAxis);
+    svg
+        .selectAll("line.whiskertop")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
 
-        // Rescale the visible graph lines
-        data_series.forEach(function (series) {
-            if(series.visible) {
-                var seriesName = series.name;
-                var svgGroup = d3.select("svg g." + seriesName);
+    svg
+        .selectAll("line.whiskerbottom")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
+        ;
 
-                // Rescale the graph line
-                var svgPath = svgGroup.select("path");
-                svgPath.datum(series.data).attr("d", d3.line()
-                    .x(function(d) { return xAxisFunc(d.date); })
-                    .y(function(d) { return yAxisFunc(d.value); })
-                    );
+    svg
+        .selectAll("path.line")
+        .transition().duration(1000)
+        .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+        );
+}
 
-                // Rescale the circles
-                var svgCircles = svgGroup.selectAll("circle.whiskerdot." + seriesName)
-                    .data(series.data)
-                    .attr("cy", function(d) { return yAxisFunc(d.value); })
-                    ;
+var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
+    .extent( [ [0,0], [width,height] ] ) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+    .on("end", updateChart);
 
-                var whiskerStrokeWidth = 1.0;
-                var whiskerBarWidth = 5;
+document.timeline_data.top_svg_group
+    .append("g")
+    .attr("class", "brush")
+    .call(brush);
 
-                var middleLines = svgGroup.selectAll("line.whiskercenter." + seriesName)
-                    .data(series.data)
-                    .attr("y1", function(d) { return yAxisFunc(d.value - 2 * d.stddev); })
-                    .attr("y2", function(d) { return yAxisFunc(d.value + 2 * d.stddev); })
-                    ;
+function updateDomainsAndAxesFromData() {
+    // Find the new data scale based on visible series
+    var minY = 0.0;
+    var maxY = 1.0;
+    var minX = data_series[0].time_range[0];
+    var maxX = data_series[0].time_range[1];
+    data_series.forEach(function (series) {
+        let valueRange = series.value_range;
+        if(series.visible && valueRange[0] < minY) {
+            minY = valueRange[0];
+        }
+        if(series.visible && valueRange[1] > maxY) {
+            maxY = valueRange[1];
+        }
+        if(series.visible && series.time_range[0] < minX) {
+            minX = series.time_range[0];
+        }
+        if(series.visible && series.time_range[1] > maxX) {
+            maxX = series.time_range[1];
+        }
+    });
+    var yAxis = document.timeline_data.y_axis;
+    var yAxisFunc = document.timeline_data.y_axis_function;
 
-                var topWhiskers = svgGroup.selectAll("line.whiskertop." + seriesName)
-                    .data(series.data)
-                    .attr("y1", function(d) { return yAxisFunc(d.value + 2 * d.stddev); })
-                    .attr("y2", function(d) { return yAxisFunc(d.value + 2 * d.stddev); })
-                    ;
+    var xAxis = document.timeline_data.x_axis;
+    var xAxisFunc = document.timeline_data.x_axis_function;
 
-                var bottomWhiskers = svgGroup.selectAll("line.whiskerbottom." + seriesName)
-                    .data(series.data)
-                    .attr("y1", function(d) { return yAxisFunc(d.value - 2 * d.stddev); })
-                    .attr("y2", function(d) { return yAxisFunc(d.value - 2 * d.stddev); })
-                    ;
-            }
-        });
+    yAxisFunc.domain([minY, maxY]);
+    yAxis.scale(yAxisFunc);
+    document.timeline_data.top_svg_group.call(yAxis);
 
-    }
+    xAxisFunc.domain([minX, maxX]);
+    xAxis.scale(xAxisFunc);
+    document.timeline_data.x_axis_group.call(xAxis);
 
-    window.addEventListener("hashchange", function () {
-        setCheckboxesFromHashParam();
+    all_series_time_range = [minX, maxX];
+}
+
+function updateGraphFromData() {
+    updateDomainsAndAxesFromData();
+
+    // Add top-level SVG groups for data series
+    svg.selectAll("g.svg_tl_data")
+        .data(data_series, (item) => item.name)
+        .join("g")
+            .attr("class", d => "svg_tl_data " + d.name)
+            .attr("visibility", d => d.visible ? "visible" : "hidden")
+            ;
+
+    data_series.forEach(function(item) {
+        var group = svg.select("svg g.svg_tl_data." + item.name);
+
+        // Add the graph line
+        group.selectAll("path")
+        .data([item.data])
+        .join("path")
+        .attr("class", "line")
+        .attr("fill", "none")
+        .attr("stroke", item.color)
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+        .attr("clip-path", "url(#clip)");
+
+        // Add a circle at each datapoint
+        var circles = group.selectAll("circle.whiskerdot." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("circle")
+        .attr("class", "whiskerdot " + item.name)
+        .attr("fill", item.color)
+        .attr("r", 2.0)
+        .attr("cx", function(d) { return x(d.date) } )
+        .attr("cy", function(d) { return y(d.value) } )
+        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        // Add the whiskers, which are an I-shape of lines
+        var middle_lines = group.selectAll("line.whiskercenter." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskercenter " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        var top_whiskers = group.selectAll("line.whiskertop." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskertop " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        var bottom_whiskers = group.selectAll("line.whiskerbottom." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskerbottom " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("clip-path", "url(#clip)")
+        ;
     });
 
-    setCheckboxesFromHashParam();
-    rescaleGraphFromCheckboxes();
+}
+
+function rescaleGraphFromFetchedData() {
+    updateAllFromCheckboxes();
+    updateGraphFromData();
+}
+
+// Default to x86_64 recent-only data
+fetch("/reports/timeline/blog_timeline.data.x86_64.recent.js").then(function (response) {
+    return response.text();
+}).then(function (data) {
+    eval(data);
+    updateGraphFromData();
+    rescaleGraphFromFetchedData();
+
+    // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
+    document.addEventListener('click', function(event) {
+        // Did they click a platform radio button? If not, we ignore it.
+        if(!event.target.matches('#plat-select-fieldset input[type="radio"]')) return;
+
+        var newDataSet = event.target.value;
+        fetch("/reports/timeline/blog_timeline.data." + newDataSet + ".js").then(response => response.text())
+            .then(function(data) {
+                eval(data);
+                rescaleGraphFromFetchedData();
+            });
+    });
+
+});
+
+// Handle legend and checkboxes
+document.getElementById("bottom_selection_checkboxes").style.display = "block";
+var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
+
+function setHashParamFromCheckboxes() {
+    //console.log("setHashParamFromCheckboxes");
+    var newHash = "";
+    checkboxes.forEach(function (cb) {
+        if(cb.checked) {
+            var bench = cb.getAttribute("data-benchmark");
+            newHash += "+" + bench
+        }
+    });
+    newHash = newHash.slice(1); // Remove extra leading plus
+
+    window.location.hash = newHash;
+}
+
+function setCheckboxesFromHashParam() {
+    var hash = window.location.hash;
+    var benchmarks = hash.slice(1).split("+");
+
+    var benchHash = {};
+    benchmarks.forEach(function (bench) {
+        benchHash[bench] = true;
+    });
 
     checkboxes.forEach(function (cb) {
-        cb.addEventListener('change', function (event) {
-            updateCheckbox(this);
-            rescaleGraphFromCheckboxes();
-            setHashParamFromCheckboxes();
-        });
+        var bench = cb.getAttribute("data-benchmark");
+        if(benchHash[bench]) {
+            if(!cb.checked) {
+                cb.checked = true;
+            }
+        } else {
+            if(cb.checked) {
+                cb.checked = false;
+            }
+        }
     });
+}
+
+function updateAllFromCheckboxes() {
+    checkboxes.forEach(function(cb) {
+        updateAllFromCheckbox(cb);
+    });
+}
+
+function updateAllFromCheckbox(cb) {
+    var bench = cb.getAttribute("data-benchmark");
+    var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
+    var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
+
+    var thisDataSeries;
+    if(data_series) {
+        data_series.forEach(function (series) {
+            if(series.name == "prod_ruby_with_yjit-" + bench) {
+                thisDataSeries = series;
+            }
+        });
+    }
+
+    if(cb.checked) {
+        /* Make series visible */
+        if(thisDataSeries) { thisDataSeries.visible = true; }
+        legendBox.style.display = "inline-block";
+        if(graphSeries) { graphSeries.style.visibility = "visible"; }
+    } else {
+        /* Make series invisible */
+        if(thisDataSeries) { thisDataSeries.visible = false; }
+        legendBox.style.display = "none";
+        if(graphSeries) { graphSeries.style.visibility = "hidden"; }
+    }
+}
+
+window.addEventListener("hashchange", function () {
+    setCheckboxesFromHashParam();
+    updateAllFromCheckboxes();
+});
+
+setCheckboxesFromHashParam();
+updateAllFromCheckboxes();
+
+checkboxes.forEach(function (cb) {
+    cb.addEventListener('change', function (event) {
+        updateAllFromCheckbox(this);
+        updateGraphFromData();
+        setHashParamFromCheckboxes();
+    });
+});
+
 </script>
