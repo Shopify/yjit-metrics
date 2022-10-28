@@ -13,12 +13,11 @@ layout: basic
 
   <span style="font-weight: bold; font-size: 125%">{% include {{ last_bench.reports.blog_speed_headline_html }} %}</span>
 
+  {% for platform in last_bench.platforms %}
   <div class="headline-button">
-    <a href="{{ last_bench.url | relative_url }}#x86_64"><button>Latest Full Details (x86_64 Xeon)</button></a>
+    <a href="{{ last_bench.url | relative_url }}#{{platform}}"><button>Latest Full Details ({{platform}})</button></a>
   </div>
-  <div class="headline-button">
-    <a href="{{ last_bench.url | relative_url }}#aarch64"><button>Latest Full Details (ARM64 Graviton)</button></a>
-  </div>
+  {% endfor %}
 </div>
 
 <!-- Latest Headlined Results -->
