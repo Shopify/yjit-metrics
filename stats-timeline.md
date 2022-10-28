@@ -18,7 +18,6 @@ var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
 var data_series;
 var all_series_time_range;
-var all_series_value_range;
 
 document.timeline_data = {} // For sharing data w/ handlers
 </script>
@@ -74,8 +73,8 @@ document.timeline_data = {} // For sharing data w/ handlers
     var xAxisGroup = svg.append("g")
         .attr("transform", "translate(0," + height + ")")
         .attr("class", "x_axis_group")
-        .call(xAxis)
-    .selectAll("text")
+        .call(xAxis);
+    xAxisGroup.selectAll("text")
         .attr("transform", "rotate(-60)")
         .style("text-anchor", "end");
     document.timeline_data.x_axis = xAxis;

@@ -12,7 +12,6 @@ var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
 var data_series;
 var all_series_time_range;
-var all_series_value_range;
 
 document.timeline_data = {} // For sharing data w/ handlers
 </script>
@@ -63,19 +62,19 @@ var svg = d3.select("#timeline_rs_chart")
 
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
-  //.domain(d3.extent(all_series_time_range))
-  .range([ 0, width ]);
+    .domain([new Date(), new Date()])
+    .range([ 0, width ]);
 document.timeline_data.x_axis_function = x; /* Export for the event handlers */
-document.timeline_data.x_axis = d3.axisBottom(x);
-document.timeline_data.x_axis_group = svg.append("g");
-
-document.timeline_data.x_axis_group.attr("transform", "translate(0," + height + ")")
-    .call(document.timeline_data.x_axis);
-
-// TODO: how will we update this?
-document.timeline_data.x_axis_group.selectAll("text")
+var xAxis = d3.axisBottom(x);
+var xAxisGroup = svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .attr("class", "x_axis_group")
+    .call(xAxis);
+xAxisGroup.selectAll("text")
     .attr("transform", "rotate(-60)")
     .style("text-anchor", "end");
+document.timeline_data.x_axis = xAxis;
+document.timeline_data.x_axis_group = xAxisGroup;
 
 // Add Y axis
 var y = d3.scaleLinear()
@@ -118,8 +117,6 @@ function updateChart() {
     }
     // Update axis and circle position
     // Note: this doesn't seem to work with the other update function. Why not?
-    var xAxis = document.timeline_data.x_axis;
-    var xAxisGroup = document.timeline_data.x_axis_group;
     xAxisGroup.transition().duration(1000).call(xAxis)
     svg
         .selectAll("circle.whiskerdot")
