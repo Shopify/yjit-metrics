@@ -94,13 +94,25 @@ layout: basic
 {{ content | markdownify }}
 
 <script>
+  var platformsThisTimestamp = [ "{{ page.platforms | join: '", "' }}" ];
+
   // Create platform-selector DOM elements
   function addPlatformSelector(elt) {
+    //if(platformsThisTimestamp.length == 1) { return; }
+
     var top_element = document.createElement('div');
     var ghUrl = elt.dataset.ghUrl;
     var ctr = elt.dataset.platformCounter;
 
-    top_element.innerHTML = `
+    if(platformsThisTimestamp.length == 1) {
+      top_element.innerHTML = `
+<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}">
+  <div id="graph-location-${ctr}" data-url-template="${ghUrl}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
+  </div>
+</div
+      `
+    } else {
+      top_element.innerHTML = `
 <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}">
 <form style="max-width: 40%; float: right;">
   <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
@@ -118,6 +130,7 @@ layout: basic
 <div style="clear:both"></div>
 </div>
   `
+  }
 
     // Any text or other content will be at the bottom, below the graph and selector
     elt.prepend(top_element);
