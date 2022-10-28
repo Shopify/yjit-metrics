@@ -293,6 +293,7 @@ json_timestamps.each do |ts, test_files|
         end
 
         generated_reports = {}
+        platforms = {}
         REPORTS_AND_FILES.each do |report_name, details|
             next unless details[:report_type] == :basic_report
 
@@ -305,6 +306,7 @@ json_timestamps.each do |ts, test_files|
                 YJITMetrics::PLATFORMS.each do |platform|
                     report_filename = "reports/#{report_name}_#{ts}.#{platform}.#{ext}"
                     if File.exist?("_includes/#{report_filename}")
+                        platforms[platform] = true
                         generated_reports[report_name + "_" + platform + "_" + ext.gsub(".", "_")] = report_filename
                     end
                 end
@@ -320,6 +322,7 @@ json_timestamps.each do |ts, test_files|
             "date_str" => date_str,
             "time_str" => time_str,
             "timestamp" => ts,
+            "platforms" => platforms.keys,
             "test_results" => test_results_by_config,
             "reports" => generated_reports,
         }
