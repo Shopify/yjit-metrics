@@ -3,27 +3,32 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         "blog_timeline"
     end
 
+    def self.report_extensions
+        [ "html", "recent.html" ]
+    end
+
     # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
     def inspect
         "BlogTimelineReport<#{object_id}>"
     end
 
+    REPORT_PLATFORMS=["x86_64", "aarch64"]
+    NUM_RECENT=100
     def initialize(context)
         super
 
-        config_x86 = "x86_64_prod_ruby_with_yjit"
-        config_arm = "aarch64_prod_ruby_with_yjit"
+        yjit_config_root = "prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
 
-        @series = []
-        @benchmark_series = {}
+        @series = {}
+        REPORT_PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
-        @context[:benchmark_order].each do |benchmark|
-            @benchmark_series[benchmark] = []
-            [config_x86, config_arm].each do |config|
-                platform = (config == config_x86) ? "x86_64" : "aarch64"
+        @context[:benchmark_order].each.with_index do |benchmark, idx|
+            color = MUNIN_PALETTE[idx % MUNIN_PALETTE.size]
+            REPORT_PLATFORMS.each do |platform|
+                config = "#{platform}_#{yjit_config_root}"
                 points = @context[:timestamps].map do |ts|
                     this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
                     if this_point
@@ -39,17 +44,35 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
 
                 visible = @context[:selected_benchmarks].include?(benchmark)
 
-                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, visible: visible, data: points })
-                @benchmark_series[benchmark] << @series[-1]
+                s_all_time = { config: config, benchmark: benchmark, name: "#{yjit_config_root}-#{benchmark}", platform: platform, visible: visible, color: color, data: points }
+                s_recent = s_all_time.dup
+                s_recent[:data] = s_recent[:data].last(NUM_RECENT)
+
+                @series[platform][:recent].push s_recent
+                @series[platform][:all_time].push s_all_time
             end
         end
-        @series.sort_by! { |s| [s[:benchmark], s[:platform]] }
     end
 
-    def write_file(file_path)
+    def write_files(out_dir)
+        [:recent, :all_time].each do |duration|
+            REPORT_PLATFORMS.each do |platform|
+                begin
+                    @data_series = @series[platform][duration]
+
+                    script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_timeline_data_template.js.erb")
+                    text = script_template.result(binding)
+                    File.open("#{out_dir}/reports/timeline/blog_timeline.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
+                rescue
+                    puts "Error writing data file for #{platform} #{duration} data!"
+                    raise
+                end
+            end
+        end
+
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_timeline_d3_template.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-        File.open(file_path + ".html", "w") { |f| f.write(html_output) }
+        File.open("#{out_dir}/_includes/reports/blog_timeline.html", "w") { |f| f.write(html_output) }
     end
 end
 
@@ -62,7 +85,6 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         super
 
         config_x86 = "x86_64_prod_ruby_with_yjit"
-        config_arm = "aarch64_prod_ruby_with_yjit"
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -70,7 +92,7 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:selected_benchmarks].each do |benchmark|
-            [config_x86, config_arm].each do |config|
+            [config_x86].each do |config|
                 platform = (config == config_x86) ? "x86_64" : "aarch64"
                 points = @context[:timestamps].map do |ts|
                     this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
@@ -91,9 +113,9 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         #@series.sort_by! { |s| s[:name] }
     end
 
-    def write_file(file_path)
+    def write_files(out_dir)
         script_template = ERB.new File.read(__dir__ + "/../report_templates/mini_timeline_d3_template.html.erb")
         html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-        File.open(file_path + ".html", "w") { |f| f.write(html_output) }
+        File.open("#{out_dir}/_includes/reports/mini_timelines.html", "w") { |f| f.write(html_output) }
     end
 end

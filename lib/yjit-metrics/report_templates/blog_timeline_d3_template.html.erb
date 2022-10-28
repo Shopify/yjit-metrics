@@ -1,209 +1,35 @@
 <!-- This is the full-size timeline report, for the deep dive -->
 
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
-
 <div id="timeline_rs_chart"></div>
-
-<%
-# We want different colours, but we want them saturated so that white text shows up on top of them.
-# This is the Munin palette from Shutterstock Rickshaw
-colors = [
-    '#00cc00',
-    '#0066b3',
-    '#ff8000',
-    '#ffcc00',
-    '#330099',
-    '#990099',
-    '#ccff00',
-    '#ff0000',
-    '#808080',
-    '#008f00',
-    '#00487d',
-    '#b35a00',
-    '#b38f00',
-    '#6b006b',
-    '#8fb300',
-    '#b30000',
-    '#bebebe',
-    '#80ff80',
-    '#80c9ff',
-    '#ffc080',
-    '#ffe680',
-    '#aa80ff',
-    '#ee00cc',
-    '#ff8080',
-    '#666600',
-    '#ffbfff',
-    '#00ffcc',
-    '#cc6699',
-    '#999900'
-];
-
-benchmarks = @benchmark_series.keys
-color_by_name = {}
-@series.each.with_index do |s, idx|
-  color_by_name[s[:name]] = colors[idx % colors.size]
-end
-%>
 
 <div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
   <div id="timeline_legend_child">
     <ul style="display:inline-block">
-  <% @benchmark_series.each do |benchmark, multi_series| %>
-  <li style="display: none" data-benchmark="<%= benchmark %>">&nbsp;&nbsp;<%= benchmark %>&nbsp;&nbsp;<strong style="color: white;">
-    <% multi_series.map { |s| %><span style='background: <%= color_by_name[s[:name]] %>'>&nbsp;<%= s[:platform] %>&nbsp;</span><% } %></strong> </li>
-  <% end %>
+      <% @data_series.each do |this_series| %>
+      <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
+        <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+        </span>
+      </li>
+<% end %>
     </ul>
   </div>
 </div>
 
 <div class="timeline-report-explanation">
-  Y axis values are the total number of seconds to run the benchmark one time - lower is better.<br/>
+  Y axis values are the total number of seconds to run the benchmark - lower is better.<br/>
   Whiskers are shown 2 standard deviations higher and lower.
 </div>
 
 <div id="bottom_selection_checkboxes" style="display: none;">
   <ul>
-    <% benchmarks.each do |benchmark| %>
-    <li><input type="checkbox" data-benchmark="<%= benchmark %>" /> <%= benchmark %>
+    <% @data_series.each do |this_series| %>
+    <li>
+      <input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" />
+      <span style='background: <%= this_series[:color] %>'>
+        &nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+      </span>
     </li>
   <% end %>
   </ul>
 </div>
-
-<script>
-
-// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
-
-// set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 70, left: 40},
-    width = 800 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-// append the svg object to the body of the page
-var svg = d3.select("#timeline_rs_chart")
-  .append("svg")
-    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
-    .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-    //.attr("width", width + margin.left + margin.right)
-    //.attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-var timeParser = d3.timeParse("%Y %m %d %H %M %S");
-var timePrinter = d3.timeFormat("%b %d %I%p");
-var data_series = [
-    <% @series.each do |this_series| %>
-    {
-        name: <%= this_series[:name].inspect %>,
-        config: <%= this_series[:config].inspect %>,
-        benchmark: <%= this_series[:benchmark].inspect %>,
-        platform: <%= this_series[:platform].inspect %>,
-        visible: false,
-        data: [ <%= this_series[:data].map { |t, mean, stddev, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, stddev: #{stddev}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
-        color: <%= color_by_name[this_series[:name]].inspect %>,
-        time_range: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
-        value_range: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
-    },
-    <% end %>
-    {}
-]
-data_series.pop();
-
-var all_series_time_range = [ timeParser(<%= @series.map { |this_series| this_series[:data][0][0] }.min.inspect %>), timeParser(<%= @series.map { |this_series| this_series[:data][-1][0] }.max.inspect %>) ];
-var all_series_value_range = [ <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.min }.min %>, <%= @series.map { |this_series| this_series[:data].map { |pt| pt[1] }.max }.max %> ];
-
-document.timeline_data = {} // For sharing data w/ handlers
-
-// Add X axis --> it is a date format
-var x = d3.scaleTime()
-  .domain(d3.extent(all_series_time_range))
-  .range([ 0, width ]);
-document.timeline_data.x_axis_function = x; /* Export for the event handlers */
-svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x))
-  .selectAll("text")
-    .attr("transform", "rotate(-60)")
-    .style("text-anchor", "end");
-
-// Add Y axis
-var y = d3.scaleLinear()
-  .domain([0, d3.max(all_series_value_range)])
-  .range([ height, 0 ]);
-document.timeline_data.y_axis_function = y; /* Export for the event handlers */
-document.timeline_data.y_axis = d3.axisLeft(y);
-document.timeline_data.top_svg_group = svg.append("g")
-  .call(document.timeline_data.y_axis);
-
-data_series.forEach(function(item) {
-    group = svg.append("g").attr("class", item.name).attr("visibility", "hidden" )
-
-    // Add the graph line
-    group.append("path")
-      .datum(item.data)
-      .attr("fill", "none")
-      .attr("stroke", item.color)
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(function(d) { return x(d.date) })
-        .y(function(d) { return y(d.value) })
-        );
-
-    // Add a circle at each datapoint
-    var circles = group.selectAll("circle.whiskerdot." + item.name)
-      .data(item.data);
-    circles.enter().append("circle")
-      .attr("class", "whiskerdot " + item.name)
-      .attr("fill", item.color)
-      .attr("r", 5.0)
-      .attr("cx", function(d) { return x(d.date) } )
-      .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
-      ;
-
-    var whiskerStrokeWidth = 1.0;
-    var whiskerBarWidth = 5;
-
-    // Add the whiskers, which are an I-shape of lines
-    var middle_lines = group.selectAll("line.whiskercenter." + item.name)
-      .data(item.data);
-    middle_lines.enter().append("line")
-      .attr("class", "whiskercenter " + item.name)
-      .attr("stroke", "black")
-      .attr("stroke-width", whiskerStrokeWidth)
-      .attr("x1", function(d) { return x(d.date) } )
-      .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-      .attr("x2", function(d) { return x(d.date) } )
-      .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
-      ;
-
-    var top_whiskers = group.selectAll("line.whiskertop." + item.name)
-      .data(item.data);
-    top_whiskers.enter().append("line")
-      .attr("class", "whiskertop " + item.name)
-      .attr("stroke", "black")
-      .attr("stroke-width", whiskerStrokeWidth)
-      .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
-      .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-      .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
-      .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
-      ;
-
-    var bottom_whiskers = group.selectAll("line.whiskerbottom." + item.name)
-      .data(item.data);
-    bottom_whiskers.enter().append("line")
-      .attr("class", "whiskerbottom " + item.name)
-      .attr("stroke", "black")
-      .attr("stroke-width", whiskerStrokeWidth)
-      .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
-      .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-      .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
-      .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
-      ;
-});
-
-</script>
