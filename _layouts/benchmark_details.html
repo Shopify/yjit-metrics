@@ -107,14 +107,16 @@ layout: basic
 
     if(platformsThisTimestamp.length == 1) {
       top_element.innerHTML = `
-<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}">
-  <div id="graph-location-${ctr}" data-url-template="${ghUrl}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
+<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
+  <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
+  <div id="graph-error-${ctr}" class="graph-error" style="display: none"><span style="color: red; font-size: 500%;">X</span></div>
+  <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
   </div>
 </div
       `
     } else {
       top_element.innerHTML = `
-<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}">
+<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
 <form style="max-width: 40%; float: right;">
   <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
     <legend>Select Platform</legend>
@@ -126,7 +128,9 @@ layout: basic
     <label for="platform-radio-${ctr}-aarch">AWS Graviton ARM64</label>
   </fieldset>
 </form>
-<div id="graph-location-${ctr}" data-url-template="${ghUrl}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
+<img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none;" />
+<div id="graph-error-${ctr}" class="graph-error" style="display:none"><span style="color: red; font-size: 500%;">X</span></div>
+<div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
 </div>
 <div style="clear:both"></div>
 </div>
@@ -168,6 +172,8 @@ layout: basic
       return;
     }
 
+    setRequestPending(wrapperElt);
+
     // Is there a pending fetch for another platform? Abort it.
     if(fetchCancel[platCtr]) {
       fetchCancel[platCtr].abort();
@@ -178,10 +184,40 @@ layout: basic
     var canceller = new AbortController(); // Call .abort() on controller to send abort signal
     fetchCancel[platCtr] = canceller;
     // Fetch the URL, then load its contents into the .plat-graph-fetch-dest div
-    fetch(url, {signal: canceller.signal}).then(function (response) { delete fetchCancel[platCtr]; return response.text(); })
-      .then((data) => wrapperElt.innerHTML = data);
+    fetch(url, {signal: canceller.signal}).then(function (response) {
+      delete fetchCancel[platCtr];
+      if(response.ok) {
+        setRequestFinished(wrapperElt);
+        var graphLocation = wrapperElt.querySelector(".plat-graph-fetch-dest");
+        return response.text().then((data) => graphLocation.innerHTML = data);
+      } else {
+        setRequestError(wrapperElt);
+      }
+      return response.text();
+    });
 
     prevPlatform[platCtr] = platform;
+  }
+
+  function setRequestPending(wrapperElt) {
+    var loader = wrapperElt.querySelector(".graph-loading");
+    loader.style.display = "block";
+    var error = wrapperElt.querySelector(".graph-error");
+    error.style.display = "none";
+  }
+
+  function setRequestFinished(wrapperElt) {
+    var loader = wrapperElt.querySelector(".graph-loading");
+    loader.style.display = "none";
+    var error = wrapperElt.querySelector(".graph-error");
+    error.style.display = "none";
+  }
+
+  function setRequestError(wrapperElt) {
+    var loader = wrapperElt.querySelector(".graph-loading");
+    loader.style.display = "none";
+    var error = wrapperElt.querySelector(".graph-error");
+    error.style.display = "block";
   }
 
   function getPlatformFromHashParam() {
@@ -210,7 +246,7 @@ layout: basic
         elt.checked = true;
       }
     });
-    document.querySelectorAll(".plat-graph-fetch-dest").forEach(function(elt) {
+    document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
       makePlatGraphRequest(elt, currentPlatform);
     });
   }
@@ -237,7 +273,7 @@ layout: basic
     var newPlatform = event.target.value;
 
     if(prevPlatform[platCtr] != newPlatform) {
-      var wrapperElt = document.getElementById(`graph-location-${platCtr}`);
+      var wrapperElt = document.getElementById(`plat-wrapper-${platCtr}`);
       makePlatGraphRequest(wrapperElt, newPlatform);
     }
   });
