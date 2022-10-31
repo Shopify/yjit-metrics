@@ -300,7 +300,6 @@ function rescaleGraphFromFetchedData() {
 }
 
 function setRequestPending() {
-    console.log("Pending...");
     var loader = document.querySelector(".graph-loading");
     loader.style.display = "block";
     var error = document.querySelector(".graph-error");
@@ -320,7 +319,6 @@ function setRequestError() {
     var error = document.querySelector(".graph-error");
     error.style.display = "block";
 }
-
 
 // Default to x86_64 recent-only data
 setRequestPending();

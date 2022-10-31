@@ -23,6 +23,8 @@ document.timeline_data = {} // For sharing data w/ handlers
 </script>
 
 <div class="timeline_report">
+    <img class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
+    <div class="graph-error" style="display: none"><span style="color: red; font-size: 300%;">Error Loading Data (please reload page)</span></div>
     <form>
         <fieldset id="plat-select-fieldset" style="border: 1px solid black">
             <legend>Select Dataset</legend>
@@ -234,27 +236,61 @@ document.timeline_data = {} // For sharing data w/ handlers
         updateGraphFromData();
     }
 
+    function setRequestPending() {
+        var loader = document.querySelector(".graph-loading");
+        loader.style.display = "block";
+        var error = document.querySelector(".graph-error");
+        error.style.display = "none";
+    }
+
+    function setRequestFinished() {
+        var loader = document.querySelector(".graph-loading");
+        loader.style.display = "none";
+        var error = document.querySelector(".graph-error");
+        error.style.display = "none";
+    }
+
+    function setRequestError() {
+        var loader = document.querySelector(".graph-loading");
+        loader.style.display = "none";
+        var error = document.querySelector(".graph-error");
+        error.style.display = "block";
+    }
+
     // Default to x86_64 recent-only data
+    setRequestPending();
     fetch("/reports/timeline/yjit_stats_timeline.data.x86_64.recent.js").then(function (response) {
-        return response.text();
-    }).then(function (data) {
-        eval(data);
-        updateGraphFromData();
-        rescaleGraphFromFetchedData();
+        if(response.ok) {
+            return response.text().then(function (data) {
+                setRequestFinished();
+                eval(data);
+                updateGraphFromData();
+                rescaleGraphFromFetchedData();
 
-        // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
-        document.addEventListener('click', function(event) {
-            // Did they click a platform radio button? If not, we ignore it.
-            if(!event.target.matches('#plat-select-fieldset input[type="radio"]')) return;
+                var handler = function(event) {
+                    // Did they click a platform radio button? If not, we ignore it.
+                    if(!event.target.matches('#plat-select-fieldset input[type="radio"]')) return;
 
-            var newDataSet = event.target.value;
-            fetch("/reports/timeline/yjit_stats_timeline.data." + newDataSet + ".js").then(response => response.text())
-                .then(function(data) {
-                    eval(data);
-                    rescaleGraphFromFetchedData();
-                });
-        });
-
+                    setRequestPending();
+                    var newDataSet = event.target.value;
+                    fetch("/reports/timeline/yjit_stats_timeline.data." + newDataSet + ".js").then(function(response) {
+                        if(response.ok) {
+                            return response.text().then(function(data) {
+                                setRequestFinished();
+                                eval(data);
+                                rescaleGraphFromFetchedData();
+                            });
+                        } else {
+                            setRequestError();
+                        }
+                    });
+                };
+                // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
+                document.addEventListener('click', handler);
+            });
+        } else {
+            setRequestError();
+        }
     });
 
     // Handle legend, checkboxes and stats dropdown
