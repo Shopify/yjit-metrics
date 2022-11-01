@@ -1,0 +1,56 @@
+method call exit reasons: 
+    args_splat_non_iseq     739142 (80.6%)
+    iseq_complex_callee     105598 (11.5%)
+              block_arg      46196 ( 5.0%)
+      bmethod_block_arg      26399 ( 2.9%)
+          zsuper_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   10409241 (99.5%)
+    start_pc_non_zero      52817 ( 0.5%)
+         se_interrupt        207 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          371
+compiled_block_count:        5105
+invalidation_count:           176
+constant_state_bumps:           0
+inline_code_size:         1343404
+outlined_code_size:       1342931
+
+total_exit_count:        12674298
+total_insns_count:     3539835276
+vm_insns_count:          50928849
+yjit_insns_count:      3491171484
+ratio_in_yjit:              98.6%
+avg_len_in_yjit:            275.3
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:     831538 (36.7)
+    opt_send_without_block:     654128 (28.9)
+      opt_getconstant_path:     442323 (19.5)
+               invokesuper:     145183 (6.4)
+               opt_empty_p:      85830 (3.8)
+               getconstant:      72600 (3.2)
+               invokeblock:      13331 (0.6)
+                  opt_ltlt:      13208 (0.6)
+               expandarray:       6600 (0.3)
+                     leave:        207 (0.0)
+               objtostring:         66 (0.0)
+          opt_regexpmatch2:         27 (0.0)
+          putspecialobject:         10 (0.0)
+                  opt_plus:          3 (0.0)
+              branchunless:          1 (0.0)
+                opt_length:          1 (0.0)
+                   opt_neq:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
