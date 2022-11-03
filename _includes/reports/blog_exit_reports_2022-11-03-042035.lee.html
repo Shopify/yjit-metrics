@@ -1,0 +1,53 @@
+method call exit reasons: 
+      iseq_complex_callee      15249 (99.7%)
+                block_arg         29 ( 0.2%)
+    cfunc_ruby_array_varg         24 ( 0.2%)
+
+leave exit reasons: 
+    interp_return   33231732 (100.0%)
+     se_interrupt         45 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           77
+compiled_block_count:         759
+invalidation_count:            25
+constant_state_bumps:           0
+inline_code_size:          830908
+outlined_code_size:        829502
+
+total_exit_count:        33353589
+total_insns_count:     3400706820
+vm_insns_count:           1076713
+yjit_insns_count:      3399751964
+ratio_in_yjit:             100.0%
+avg_len_in_yjit:            101.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      dupn:      72850 (59.8)
+    opt_send_without_block:      23518 (19.3)
+                      send:      15270 (12.5)
+                     throw:      10150 (8.3)
+                     leave:         45 (0.0)
+      opt_getconstant_path:         18 (0.0)
+                  opt_mult:          5 (0.0)
+          putspecialobject:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+               concatarray:          0 (0.0)
+             concatstrings:          0 (0.0)
+               defineclass:          0 (0.0)
+                   defined:          0 (0.0)
