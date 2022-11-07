@@ -1,0 +1,60 @@
+method call exit reasons: 
+    optimized_method_call    3609397 (60.6%)
+                block_arg    1871135 (31.4%)
+              send_getter     130239 ( 2.2%)
+      args_splat_non_iseq     114605 ( 1.9%)
+      iseq_complex_callee     114600 ( 1.9%)
+            zsuper_method      80097 ( 1.3%)
+                 kw_splat      38816 ( 0.7%)
+      iseq_ruby2_keywords         20 ( 0.0%)
+    cfunc_ruby_array_varg         19 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  117906293 (98.4%)
+    start_pc_non_zero    1887787 ( 1.6%)
+         se_interrupt         76 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          817
+compiled_block_count:       10171
+invalidation_count:           189
+constant_state_bumps:           0
+inline_code_size:         1785629
+outlined_code_size:       1785171
+
+total_exit_count:       131646679
+total_insns_count:     5905448872
+vm_insns_count:         668566300
+yjit_insns_count:      5250622958
+ratio_in_yjit:              88.7%
+avg_len_in_yjit:             39.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    8824991 (64.2)
+                      send:    1953587 (14.2)
+          opt_newarray_min:    1708658 (12.4)
+               invokeblock:     520380 (3.8)
+                 opt_nil_p:     325940 (2.4)
+        getblockparamproxy:     130640 (1.0)
+               invokesuper:     130460 (0.9)
+                     throw:      48934 (0.4)
+             setlocal_WC_0:      48838 (0.4)
+                   opt_neq:      32720 (0.2)
+          opt_newarray_max:      14520 (0.1)
+                  opt_aref:        240 (0.0)
+      opt_getconstant_path:        148 (0.0)
+                    opt_eq:         99 (0.0)
+                    opt_le:         80 (0.0)
+                     leave:         76 (0.0)
+          putspecialobject:         52 (0.0)
+               getconstant:         20 (0.0)
+                  opt_mult:          3 (0.0)
+               adjuststack:          0 (0.0)
