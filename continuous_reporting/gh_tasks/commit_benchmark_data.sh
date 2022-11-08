@@ -10,7 +10,7 @@ cd ~/ym/yjit-metrics-pages
 
 # We've probably run reporting tests here. That leaves certain files dirty, but we don't want to check them in.
 # We do *not* want to "git clean" because we have uncommitted test data.
-git checkout Gemfile.lock _includes/reports
+git checkout Gemfile.lock _includes/reports reports
 
 git pull
 git add raw_benchmark_data

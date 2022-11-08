@@ -17,4 +17,7 @@ cd ~/ym/yjit-metrics
 # Copy benchmark raw data into yjit-metrics-pages repo, generate reports, commit changes to Git.
 ruby continuous_reporting/generate_and_upload_reports.rb --no-push -d ./continuous_reporting/data --only-reports blog_timeline
 
+# Don't keep the provisional report files around
+cd ../yjit-metrics-pages && git checkout reports _includes
+
 echo "Minimal reporting check completed successfully."

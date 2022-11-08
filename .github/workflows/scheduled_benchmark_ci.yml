@@ -79,7 +79,7 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git pull"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git clean -d -f reports _includes && git pull"
           # TODO: when we have better ARM64 reporting, change this to check_reporting, not check_reporting_minimal
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'"
           rm -f id_benchmark_ci_rsa
@@ -98,7 +98,7 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git pull"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && uname -a && git clean -d -f reports _includes && git pull"
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'"
           rm -f id_benchmark_ci_rsa
   benchmarks_checkin_arm:
@@ -152,7 +152,7 @@ jobs:
           EOF
           chmod go-rwx ./id_benchmark_ci_rsa
           export SSH_ARGS="-o StrictHostKeyChecking=no -i ./id_benchmark_ci_rsa -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
-          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git pull"
+          ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "cd ym/yjit-metrics && git clean -d -f reports _includes && git pull"
           # This process needs a GitHub token if we start automatically filing perf issues again; also if we clone/modify the repo's remote.
           # But the one we could get here doesn't work - it's guaranteed stale. Can we use the one *from* the .git directory?
           ssh $SSH_ARGS ubuntu@$AWS_INSTANCE "bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'"
