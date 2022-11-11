@@ -113,7 +113,10 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         "rubykon" => {
             desc: "Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.",
         },
-
+        "ruby-lsp" => {
+            category: :headline,
+            desc: "Run several operations with the Ruby language server used by VSCode",
+        },
     }
 
     def headline_benchmarks
