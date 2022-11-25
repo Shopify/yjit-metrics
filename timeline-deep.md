@@ -244,7 +244,7 @@ function updateGraphFromData() {
         .join("circle")
         .attr("class", "whiskerdot " + item.name)
         .attr("fill", item.color)
-        .attr("r", 2.0)
+        .attr("r", 4.0)
         .attr("cx", function(d) { return x(d.date) } )
         .attr("cy", function(d) { return y(d.value) } )
         .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
