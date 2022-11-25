@@ -39,6 +39,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             category: :micro,
             desc: "setivar tests the performance of setting instance variable values.",
         },
+        "setivar_object" => {
+            single_file: true,
+            category: :micro,
+            desc: "setivar_object tests the performance of setting instance variables to an object, to test write barrier speed.",
+        },
         "str_concat" => {
             single_file: true,
             category: :micro,
