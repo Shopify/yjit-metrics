@@ -12,12 +12,12 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         "30k_ifelse" => {
             single_file: true,
             category: :micro,
-            desc: "30_ifelse tests thousands of nested methods containing simple if/else statements.",
+            desc: "30k_ifelse tests thousands of nested methods containing simple if/else statements.",
         },
         "30k_methods" => {
             single_file: true,
             category: :micro,
-            desc: "30_methods tests thousands of nested method calls that mostly just call out to other single-call methods.",
+            desc: "30k_methods tests thousands of nested method calls that mostly just call out to other single-call methods.",
         },
         "cfunc_itself" => {
             single_file: true,
@@ -117,6 +117,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             category: :headline,
             desc: "Run several operations with the Ruby language server used by VSCode",
         },
+        "chunky_png" => {
+            desc: "A pure-Ruby implementation of PNG encoding",
+        }
     }
 
     def headline_benchmarks
