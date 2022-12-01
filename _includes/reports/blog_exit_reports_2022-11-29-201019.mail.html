@@ -1,0 +1,56 @@
+method call exit reasons: 
+    args_splat_non_iseq     716747 (80.6%)
+    iseq_complex_callee     102398 (11.5%)
+              block_arg      44773 ( 5.0%)
+      bmethod_block_arg      25599 ( 2.9%)
+          zsuper_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   10094669 (99.5%)
+    start_pc_non_zero      51213 ( 0.5%)
+         se_interrupt        157 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          373
+compiled_block_count:        5071
+invalidation_count:           176
+constant_state_bumps:           0
+inline_code_size:         1292384
+outlined_code_size:       1290648
+
+total_exit_count:        12291143
+total_insns_count:     3417622494
+vm_insns_count:          53651338
+yjit_insns_count:      3366167630
+ratio_in_yjit:              98.4%
+avg_len_in_yjit:            273.7
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:     806345 (36.7)
+    opt_send_without_block:     634390 (28.9)
+      opt_getconstant_path:     428923 (19.5)
+               invokesuper:     140771 (6.4)
+               opt_empty_p:      83314 (3.8)
+               getconstant:      70400 (3.2)
+               invokeblock:      12800 (0.6)
+                  opt_ltlt:      12799 (0.6)
+               expandarray:       6400 (0.3)
+                     leave:        157 (0.0)
+          opt_regexpmatch2:        102 (0.0)
+               objtostring:         63 (0.0)
+          putspecialobject:         10 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)

@@ -1,0 +1,57 @@
+method call exit reasons: 
+               kw_splat    4259877 (41.7%)
+    iseq_complex_callee    3833997 (37.5%)
+              block_arg    1065001 (10.4%)
+       iseq_arity_error     852000 ( 8.3%)
+            iseq_zsuper     213000 ( 2.1%)
+         refined_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   33866906 (99.4%)
+    start_pc_non_zero     213000 ( 0.6%)
+         se_interrupt       1045 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           25
+compiled_block_count:         336
+invalidation_count:             6
+constant_state_bumps:           0
+inline_code_size:         2243981
+outlined_code_size:       2243664
+
+total_exit_count:        46435294
+total_insns_count:     1632452011
+vm_insns_count:         154862109
+yjit_insns_count:      1490158290
+ratio_in_yjit:              90.5%
+avg_len_in_yjit:             31.8
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    5325346 (42.4)
+                      send:    4898973 (39.0)
+               invokeblock:    1277999 (10.2)
+               invokesuper:     426008 (3.4)
+      opt_getconstant_path:     213005 (1.7)
+               opt_empty_p:     213000 (1.7)
+                     throw:     213000 (1.7)
+                     leave:       1045 (0.0)
+                  opt_aref:         10 (0.0)
+                  branchif:          2 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+               concatarray:          0 (0.0)
+             concatstrings:          0 (0.0)
+               defineclass:          0 (0.0)
