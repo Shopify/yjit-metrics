@@ -464,7 +464,8 @@ class YJITMetrics::ResultSet
         return @yjit_stats[config] if in_runs
         data = {}
         @yjit_stats[config].each do |benchmark_name, runs|
-            data[benchmark_name] = runs.inject([]) { |arr, piece| arr.concat(piece) }
+            data[benchmark_name] ||= []
+            runs.each { |run| data[benchmark_name].concat(run) }
         end
         data
     end
