@@ -269,6 +269,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @mem_ratio_by_config[config] = []
         end
         @mem_overhead_factor_by_benchmark = []
+
         @inline_mem_used = []
         @outline_mem_used = []
 
@@ -279,8 +280,6 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_by_config[config].push nil
-                    @inline_mem_used.push nil
-                    @outline_mem_used.push nil
                     if config != @no_jit_config
                         @mem_ratio_by_config[config].push nil
                     end
@@ -288,22 +287,23 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                     this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
                     @peak_mb_by_config[config].push(this_config_bytes / one_mib)
 
-                    # Round MiB upward, even with a single byte used, since we crash if the block isn't allocated.
-                    inline_mib = ((@yjit_stats[benchmark_name][0]["inline_code_size"] + (one_mib - 1))/one_mib).to_i
-                    outline_mib = ((@yjit_stats[benchmark_name][0]["outlined_code_size"] + (one_mib - 1))/one_mib).to_i
-
-                    @inline_mem_used.push inline_mib
-                    @outline_mem_used.push outline_mib
-
                     # Total mem ratios - not currently displayed
                     if config != @no_jit_config
                         @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
                     end
                 end
             end
+
             yjit_mem_usage = @peak_mem_by_config[@with_yjit_config][benchmark_name].sum
             no_jit_mem_usage = @peak_mem_by_config[@no_jit_config][benchmark_name].sum
             @mem_overhead_factor_by_benchmark[idx] = (yjit_mem_usage.to_f / no_jit_mem_usage) - 1.0
+
+            # Round MiB upward, even with a single byte used, since we crash if the block isn't allocated.
+            inline_mib = ((@yjit_stats[benchmark_name][0]["inline_code_size"] + (one_mib - 1))/one_mib).to_i
+            outline_mib = ((@yjit_stats[benchmark_name][0]["outlined_code_size"] + (one_mib - 1))/one_mib).to_i
+
+            @inline_mem_used.push inline_mib
+            @outline_mem_used.push outline_mib
         end
     end
 end
