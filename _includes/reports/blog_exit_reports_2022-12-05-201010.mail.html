@@ -1,0 +1,57 @@
+method call exit reasons: 
+    args_splat_non_iseq     800718 (80.6%)
+    iseq_complex_callee     114398 (11.5%)
+              block_arg      50041 ( 5.0%)
+      bmethod_block_arg      28599 ( 2.9%)
+          zsuper_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   11212885 (99.5%)
+    start_pc_non_zero      57214 ( 0.5%)
+         se_interrupt        236 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    megamorphic      71478 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          373
+compiled_block_count:        4646
+invalidation_count:           176
+constant_state_bumps:           0
+inline_code_size:         1249688
+outlined_code_size:       1248201
+
+total_exit_count:        13738045
+total_insns_count:     2043264604
+vm_insns_count:          56526405
+yjit_insns_count:      1989263359
+ratio_in_yjit:              97.2%
+avg_len_in_yjit:            144.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:     900807 (35.7)
+    opt_send_without_block:     708712 (28.1)
+      opt_getconstant_path:     479173 (19.0)
+               invokesuper:     157286 (6.2)
+               opt_empty_p:      92965 (3.7)
+               getconstant:      78650 (3.1)
+       setinstancevariable:      71478 (2.8)
+                  opt_ltlt:      14308 (0.6)
+               invokeblock:      14300 (0.6)
+               expandarray:       7150 (0.3)
+                     leave:        236 (0.0)
+          opt_regexpmatch2:         40 (0.0)
+               objtostring:         33 (0.0)
+          putspecialobject:         10 (0.0)
+                   opt_neq:          4 (0.0)
+              branchunless:          3 (0.0)
+                  opt_aref:          2 (0.0)
+                  opt_plus:          2 (0.0)
+                opt_length:          1 (0.0)
+               adjuststack:          0 (0.0)

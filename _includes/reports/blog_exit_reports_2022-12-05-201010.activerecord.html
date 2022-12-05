@@ -1,0 +1,57 @@
+method call exit reasons: 
+               kw_splat    3979616 (41.7%)
+    iseq_complex_callee    3581994 (37.5%)
+              block_arg     994827 (10.4%)
+       iseq_arity_error     795999 ( 8.3%)
+            iseq_zsuper     199000 ( 2.1%)
+         refined_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   31641563 (99.4%)
+    start_pc_non_zero     199004 ( 0.6%)
+         se_interrupt        466 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           25
+compiled_block_count:         359
+invalidation_count:             6
+constant_state_bumps:           0
+inline_code_size:         2271706
+outlined_code_size:       2270583
+
+total_exit_count:        43383534
+total_insns_count:     1547839999
+vm_insns_count:         144687704
+yjit_insns_count:      1414894266
+ratio_in_yjit:              90.7%
+avg_len_in_yjit:             32.3
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    4975801 (42.4)
+                      send:    4576635 (39.0)
+               invokeblock:    1193994 (10.2)
+               invokesuper:     398009 (3.4)
+      opt_getconstant_path:     199005 (1.7)
+               opt_empty_p:     199000 (1.7)
+                     throw:     199000 (1.7)
+                     leave:        466 (0.0)
+                  opt_aref:         56 (0.0)
+                  opt_ltlt:          4 (0.0)
+                  branchif:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
+               concatarray:          0 (0.0)
+             concatstrings:          0 (0.0)
