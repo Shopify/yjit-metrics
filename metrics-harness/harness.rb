@@ -7,11 +7,6 @@ STDOUT.sync = true
 # rather than readpartial stopping midway.
 print "HARNESS PID: #{Process.pid} -\n"
 
-require 'benchmark'
-require 'json'
-require 'tempfile'
-require 'rbconfig'
-
 # Warmup iterations
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
 
@@ -38,6 +33,7 @@ yjit_metrics_using_gemfile = false
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
 # It shouldn't include timestamps or other data that changes from run to run.
 def ruby_metadata
+    require "rbconfig"
     {
         "RUBY_VERSION" => RUBY_VERSION,
         "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
@@ -100,6 +96,7 @@ def setup_cmds(c)
 
   puts "Running script...\n============\n#{script}\n============\n"
 
+  require "tempfile"
   t = Tempfile.new("yjit-metrics-harness")
   begin
     t.write(script)
@@ -114,6 +111,8 @@ end
 
 # Takes a block as input
 def run_benchmark(num_itrs_hint)
+  require "benchmark"
+
   times = []
   total_time = 0
   num_itrs = 0
@@ -173,5 +172,6 @@ def run_benchmark(num_itrs_hint)
   puts "Non-warmup iteration mean time: #{"%.2f ms" % (mean * 1000.0)} +/- #{"%.2f%%" % rel_stddev_pct}"
 
   out_data[:yjit_stats] = YJIT_MODULE&.runtime_stats
+  require 'json'
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
