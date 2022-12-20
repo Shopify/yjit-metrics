@@ -10,7 +10,9 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
     REPO_ROOT = File.expand_path("../../..", __dir__)
 
     # Benchmarks sometimes go into multiple categories, based on the category field
-    BENCHMARK_METADATA = YAML.load_file(File.join(REPO_ROOT, "yjit-bench/benchmarks.yml"), symbolize_names: true)
+    BENCHMARK_METADATA = YAML.load_file(File.join(REPO_ROOT, "yjit-bench/benchmarks.yml")).map do |name, metadata|
+      [name, metadata.transform_keys(&:to_sym)]
+    end.to_h
 
     def headline_benchmarks
         @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == "headline" }
