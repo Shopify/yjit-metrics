@@ -1,0 +1,61 @@
+method call exit reasons: 
+                block_arg    1871135 (79.6%)
+              send_getter     130239 ( 5.5%)
+      args_splat_non_iseq     114605 ( 4.9%)
+            iseq_has_rest      81861 ( 3.5%)
+            zsuper_method      80097 ( 3.4%)
+                 kw_splat      38816 ( 1.7%)
+          iseq_has_kwrest      32738 ( 1.4%)
+      iseq_ruby2_keywords         20 ( 0.0%)
+    cfunc_ruby_array_varg         19 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  106057580 (98.3%)
+    start_pc_non_zero    1887785 ( 1.7%)
+         se_interrupt         94 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    megamorphic         19 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          819
+compiled_block_count:       10427
+invalidation_count:           217
+constant_state_bumps:           0
+inline_code_size:         1714666
+outlined_code_size:       1713326
+
+total_exit_count:       113973097
+total_insns_count:     6013836446
+vm_insns_count:         439447682
+yjit_insns_count:      5582304281
+ratio_in_yjit:              92.7%
+avg_len_in_yjit:             48.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    4609216 (58.2)
+                      send:    1937312 (24.5)
+               invokeblock:     520380 (6.6)
+                 opt_nil_p:     325940 (4.1)
+        getblockparamproxy:     130640 (1.7)
+               invokesuper:     130460 (1.6)
+                    opt_eq:     130418 (1.6)
+                     throw:      48934 (0.6)
+             setlocal_WC_0:      48839 (0.6)
+                   opt_neq:      32719 (0.4)
+                  opt_aref:        240 (0.0)
+      opt_getconstant_path:        148 (0.0)
+                     leave:         94 (0.0)
+                    opt_le:         80 (0.0)
+          putspecialobject:         52 (0.0)
+             setlocal_WC_1:         43 (0.0)
+                  opt_mult:          2 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
