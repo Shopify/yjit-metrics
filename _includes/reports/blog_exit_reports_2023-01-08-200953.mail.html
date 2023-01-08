@@ -1,0 +1,57 @@
+method call exit reasons: 
+    args_splat_non_iseq     823123 (80.6%)
+          iseq_has_rest     117598 (11.5%)
+              block_arg      51443 ( 5.0%)
+      bmethod_block_arg      29399 ( 2.9%)
+          zsuper_method          1 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   11585374 (99.5%)
+    start_pc_non_zero      58817 ( 0.5%)
+         se_interrupt        265 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    megamorphic      73478 (100.0%)
+
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          373
+compiled_block_count:        4665
+invalidation_count:           176
+constant_state_bumps:           0
+inline_code_size:         1246305
+outlined_code_size:       1245636
+
+total_exit_count:        14107680
+total_insns_count:     2101386381
+vm_insns_count:          57556058
+yjit_insns_count:      2046352629
+ratio_in_yjit:              97.3%
+avg_len_in_yjit:            144.9
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:     926013 (36.7)
+    opt_send_without_block:     728515 (28.9)
+      opt_getconstant_path:     492573 (19.5)
+               invokesuper:     169033 (6.7)
+               opt_empty_p:      95567 (3.8)
+       setinstancevariable:      73478 (2.9)
+                  opt_ltlt:      14704 (0.6)
+               invokeblock:      14700 (0.6)
+               expandarray:       7350 (0.3)
+                     leave:        265 (0.0)
+          opt_regexpmatch2:         38 (0.0)
+               objtostring:         30 (0.0)
+                   opt_neq:         17 (0.0)
+          putspecialobject:         10 (0.0)
+              branchunless:          5 (0.0)
+                  opt_plus:          5 (0.0)
+                  opt_aref:          2 (0.0)
+                opt_length:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
