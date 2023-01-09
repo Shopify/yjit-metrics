@@ -103,6 +103,10 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         "erubi_rails" => {
             desc: "erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.",
         },
+        "sequel" => {
+            category: :headline,
+            desc: "sequel repeatedly queries entries in a SQLite table with highly-random names.",
+        },
 
         # Real-esque benchmarks that you could pretend are real for a blog post or a paper
         "lee" => {
