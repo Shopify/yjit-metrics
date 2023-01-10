@@ -303,7 +303,7 @@ module YJITMetrics
     # for each sampling run. That means which Ruby, which Ruby and shell options,
     # what env vars to set, whether core dumps are enabled, what to do on error and more.
     class ShellSettings
-        LEGAL_SETTINGS = [ :ruby_opts, :chruby, :enable_core_dumps, :on_error, :bundler_version ]
+        LEGAL_SETTINGS = [ :ruby_opts, :prefix, :chruby, :enable_core_dumps, :on_error, :bundler_version ]
 
         def initialize(settings)
             illegal_keys = settings.keys - LEGAL_SETTINGS
@@ -360,6 +360,7 @@ module YJITMetrics
         template_settings = {
             pre_benchmark_code: (with_chruby ? "chruby && chruby #{with_chruby}" : "") + "\n" +
                 (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
+            pre_cmd: shell_settings[:prefix],
             env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
             ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
             script_path: benchmark_info[:script_path],
@@ -375,6 +376,10 @@ module YJITMetrics
             # process fails and returns an exit status. We'll create an exception for the error
             # handler to raise if it decides this is a fatal error.
             exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
+
+            STDERR.puts "-----"
+            STDERR.print bench_script
+            STDERR.puts "-----"
 
             raise exc unless shell_settings[:on_error]
 
