@@ -18,6 +18,7 @@ START_TIME = Time.now
 
 require "optparse"
 require "fileutils"
+require "etc"
 require_relative "lib/yjit-metrics"
 
 # Default settings for benchmark sampling
@@ -27,9 +28,18 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore re_run)
 
-YJIT_ENABLED_OPTS = [ "--yjit-call-threshold=1", "--disable-mjit" ]
+YJIT_ENABLED_OPTS = [ "--disable-mjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
+
+SETARCH_OPTS = {
+    linux: "setarch x86_64 -R taskset -c #{Etc.nprocessors - 1}",
+}
+
+CRUBY_PER_OS_OPTS = SETARCH_OPTS
+YJIT_PER_OS_OPTS = SETARCH_OPTS
+MJIT_PER_OS_OPTS = SETARCH_OPTS
+TRUFFLE_PER_OS_OPTS = {}
 
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
@@ -44,48 +54,59 @@ RUBY_CONFIG_ROOTS = {
     "debug_ruby_no_yjit" => {
         build: "ruby-yjit-metrics-debug",
         opts: NO_JIT_OPTS,
+        per_os_prefix: CRUBY_PER_OS_OPTS,
     },
     "yjit_stats" => {
         build: "ruby-yjit-metrics-debug",
         opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
+        per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "yjit_prod_stats" => {
         build: "ruby-yjit-metrics-stats",
         opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
+        per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "yjit_prod_stats_disabled" => {
         build: "ruby-yjit-metrics-stats",
         opts: YJIT_ENABLED_OPTS,
+        per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "prod_ruby_no_jit" => {
         build: "ruby-yjit-metrics-prod",
         opts: NO_JIT_OPTS,
+        per_os_prefix: CRUBY_PER_OS_OPTS,
     },
     "prod_ruby_with_yjit" => {
         build: "ruby-yjit-metrics-prod",
         opts: YJIT_ENABLED_OPTS,
+        per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "prod_ruby_with_mjit" => {
         build: "ruby-yjit-metrics-prod",
         opts: MJIT_ENABLED_OPTS,
+        per_os_prefix: MJIT_PER_OS_OPTS,
     },
     "prod_ruby_with_mjit_verbose" => {
         build: "ruby-yjit-metrics-prod",
         opts: MJIT_ENABLED_OPTS + [ "--mjit-verbose=1" ],
+        per_os_prefix: MJIT_PER_OS_OPTS,
     },
     "ruby_30" => {
         build: "ruby-3.0.2",
         opts: [],
+        per_os_prefix: CRUBY_PER_OS_OPTS,
     },
     # This is arguably the fastest-tuned MJIT to have existed. We used it as a competitive benchmark for YJIT.
     "ruby_30_with_mjit" => {
         build: "ruby-3.0.0",
         opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
+        per_os_prefix: MJIT_PER_OS_OPTS,
         install: "ruby-install",
     },
     "truffleruby" => {
         build: "truffleruby+graalvm-21.2.0",
         opts: [ "--jvm" ],
+        per_os_prefix: TRUFFLE_PER_OS_OPTS,
     },
 }
 
@@ -288,6 +309,25 @@ OUTPUT_DATA_PATH = output_path[0] == "/" ? output_path : File.expand_path("#{__d
 
 CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
 
+# Check which OS we are running
+def this_os
+    @os ||= (
+      host_os = RbConfig::CONFIG['host_os']
+      case host_os
+      when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+        :windows
+      when /darwin|mac os/
+        :macosx
+      when /linux/
+        :linux
+      when /solaris|bsd/
+        :unix
+      else
+        raise "unknown os: #{host_os.inspect}"
+      end
+    )
+end
+
 unless skip_git_updates
     builds_to_check = configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq
 
@@ -435,6 +475,7 @@ all_runs.each do |run_num, config, bench_info|
 
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
+    per_os_prefix = RUBY_CONFIGS[config][:per_os_prefix]
 
     # Right now we don't have a great place to put per-benchmark metrics that *change*
     # for each run. "Benchmark" metadata means constant for each type of benchmark.
@@ -472,6 +513,7 @@ all_runs.each do |run_num, config, bench_info|
 
     shell_settings = YJITMetrics::ShellSettings.new({
         ruby_opts: ruby_opts,
+        prefix: per_os_prefix[this_os],
         chruby: ruby,
         on_error: on_error,
         enable_core_dumps: (when_error == :report ? true : false),

@@ -16,4 +16,4 @@ gem install bundler:<%= template_settings[:bundler_version] %>
 
 <%= template_settings[:env_var_exports] %>
 
-ruby <%= template_settings[:ruby_opts] %> <%= template_settings[:script_path] %>
+<%= template_settings[:pre_cmd] %> ruby <%= template_settings[:ruby_opts] %> <%= template_settings[:script_path] %>
