@@ -1,147 +1,30 @@
+# frozen_string_literal: true
 require_relative "yjit_stats_reports"
+require "yaml"
 
 # For details-at-a-specific-time reports, we'll want to find individual configs and make sure everything is
 # present and accounted for. This is a "single" report in the sense that it's conceptually at a single
 # time, even though it can be multiple runs and Rubies. What it is *not* is results over time as YJIT and
 # the benchmarks change.
 class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
+    REPO_ROOT = File.expand_path("../../..", __dir__)
 
     # Benchmarks sometimes go into multiple categories, based on the category field
-    BENCHMARK_METADATA = {
-        # Highly synthetic microbenchmarks
-        "30k_ifelse" => {
-            single_file: true,
-            category: :micro,
-            desc: "30k_ifelse tests thousands of nested methods containing simple if/else statements.",
-        },
-        "30k_methods" => {
-            single_file: true,
-            category: :micro,
-            desc: "30k_methods tests thousands of nested method calls that mostly just call out to other single-call methods.",
-        },
-        "cfunc_itself" => {
-            single_file: true,
-            category: :micro,
-            desc: "cfunc_itself just calls the 'itself' method many, many times.",
-        },
-        "fib" => {
-            single_file: true,
-            category: :micro,
-            desc: "Fib is a simple exponential-time recursive Fibonacci number generator.",
-        },
-        "getivar" => {
-            single_file: true,
-            category: :micro,
-            desc: "getivar tests the performance of getting instance variable values.",
-        },
-        "setivar" => {
-            single_file: true,
-            category: :micro,
-            desc: "setivar tests the performance of setting instance variable values.",
-        },
-        "setivar_object" => {
-            single_file: true,
-            category: :micro,
-            desc: "setivar_object tests the performance of setting instance variables to an object, to test write barrier speed.",
-        },
-        "str_concat" => {
-            single_file: true,
-            category: :micro,
-            desc: "str_concat tests the performance of string concatenation in multiple different encodings.",
-        },
-        "respond_to" => {
-            single_file: true,
-            category: :micro,
-            desc: "respond_to tests the performance of the respond_to? method.",
-        },
-        "keyword_args" => {
-            single_file: true,
-            category: :micro,
-            desc: "keyword_args tests the performance of method calls with keyword arguments.",
-        },
-
-        # "Shootout" benchmarks, from places like The Computer Language Benchmarks Game
-        "binarytrees" => {
-            desc: "binarytrees from the Computer Language Benchmarks Game.",
-        },
-        "fannkuchredux" => {
-            desc: "fannkuchredux from the Computer Language Benchmarks Game.",
-        },
-        "nbody" => {
-            desc: "nbody from the Computer Language Benchmarks Game.",
-        },
-
-        # Benchmarks with some measure of real-world functionality (e.g. simple library load-tests)
-        "activerecord" => {
-            category: :headline,
-            desc: "activerecord repeatedly queries entries in a SQLite table with highly-random names.",
-        },
-        "psych-load" => {
-            category: :headline,
-            desc: "psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.",
-        },
-        "mail" => {
-            category: :headline,
-            desc: "mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.",
-        },
-        "liquid-render" => {
-            category: :headline,
-            desc: "liquid-render renders a chosen-for-profiling Liquid theme repeatedly.",
-        },
-        "jekyll" => {
-            category: :headline,
-            unstable: 1, # jekyll has known problems including some kind of resource leak. Jekyll-the-tool is fine, but this usage method is flawed.
-            desc: "jekyll reviews and rebuilds a Jekyll site, but is almost entirely scanning directories of files that didn't change.",
-        },
-        "hexapdf" => {
-            category: :headline,
-            desc: "hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.",
-        },
-        "erubi" => {
-            desc: "erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.",
-        },
-        "erubi_rails" => {
-            desc: "erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.",
-        },
-        "sequel" => {
-            category: :headline,
-            desc: "sequel repeatedly queries entries in a SQLite table with highly-random names.",
-        },
-
-        # Real-esque benchmarks that you could pretend are real for a blog post or a paper
-        "lee" => {
-            desc: "lee is a circuit-board layout solver, deployed in a plausibly reality-like way",
-        },
-        "railsbench" => {
-            category: :headline,
-            desc: "railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.",
-        },
-        "optcarrot" => {
-            desc: "optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.",
-        },
-        "rubykon" => {
-            desc: "Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.",
-        },
-        "ruby-lsp" => {
-            category: :headline,
-            desc: "Run several operations with the Ruby language server used by VSCode",
-        },
-        "chunky_png" => {
-            desc: "A pure-Ruby implementation of PNG encoding",
-        }
-    }
+    BENCHMARK_METADATA = YAML.load_file(File.join(REPO_ROOT, "yjit-bench/benchmarks.yml")).map do |name, metadata|
+      [name, metadata.transform_keys(&:to_sym)]
+    end.to_h
 
     def headline_benchmarks
-        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == :headline }
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == "headline" }
     end
 
     def micro_benchmarks
-        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == :micro }
+        @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == "micro" }
     end
 
     def benchmark_category_index(bench_name)
-        return 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :headline
-        return 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == :micro
+        return 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == "headline"
+        return 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == "micro"
         return 1
     end
 
