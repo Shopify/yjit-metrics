@@ -1,0 +1,102 @@
+// Documentation for Jenkinsfile and Groovy features
+
+// Parallel stages:
+// * https://www.jenkins.io/doc/book/pipeline/syntax/#parallel
+// * https://stackoverflow.com/questions/43913698/jenkinsfile-parallel-directive
+//
+// * Groovy Multiline Strings: https://stackoverflow.com/questions/5079797/whats-wrong-with-groovy-multi-line-string
+// * Groovy ternary or coalescing operators: https://www.danvega.dev/blog/2013/08/22/groovy-ternary-operator/
+
+// x86_64 SSH Key Credentials
+//withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'FILENAME_VAR', usernameVariable: 'USERNAME_VAR')]) {
+//    // some block
+//}
+// AARCH64 SSH Key Credentials
+//withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'FILENAME_VAR', usernameVariable: 'USERNAME_VAR')]) {
+//    // some block
+//}
+
+// How to generate date string for BENCH_TS?
+//import java.text.SimpleDateFormat
+//def date = new Date()
+//def sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss")
+//println sdf.format(date)
+
+import java.text.SimpleDateFormat
+
+pipeline {
+    agent any
+
+    triggers {
+        cron 'H 4,20 * * *'
+    }
+
+    parameters {
+        // docs: https://www.jenkins.io/doc/book/pipeline/syntax/#parameters-example
+        string('RUBY_SHA', defaultValue: 'master', description: 'what version of Ruby to build')
+    }
+
+    environment {
+        // docs: https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#handling-credentials
+        AWS_INSTANCE_X86_64 = credentials('Address of x86_64 AWS metal worker 1')
+        AWS_INSTANCE_AARCH64 = credentials('Address of AARCH64 AWS metal worker 1')
+    }
+
+    stages {
+        stage('generate_params') {
+            // When this is working, it should generate/encode a timestamp, plus CRuby Git checkout info
+            // Optional long-term: SHAs for yjit-metrics and yjit-bench
+            def ruby_sha = "${params.RUBY_SHA}"
+
+            // docs: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
+            stash includes: 'bench_info.json', name: 'bench_info'
+        }
+
+        // Run the various benchmarks in parallel to the extent possible
+        stage('benchmarking') {
+            parallel {
+                stage('benchmarking x86_64') {
+                    agent any
+                    options {
+                        // docs: https://plugins.jenkins.io/throttle-concurrents/#plugin-content-throttling-of-pipeline-jobs
+                        throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
+                    }
+                    steps {
+                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                            def ssh_args = "-o StrictHostKeyChecking=no -i ${SSH_KEYFILE} -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15"
+                            def ssh_cmd = "ssh ${ssh_args} ${SSH_USER}@${AWS_INSTANCE_X86_64} "
+
+                            unstash 'bench_info' // Get BENCH_TS, etc.
+                            sh "${ssh_cmd} \"cd ym/yjit-metrics && uname -a && git pull\""
+                            sh "${ssh_cmd} bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'"
+                            // TODO: change to regular benchmark run, not single-iter
+                            sh "${ssh_cmd} bash -l -c 'BENCH_TS=$BENCH_TS . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('reporting quick check and data checkin') {
+            parallel {
+                stage('reporting quick check x86_64') {
+                    agent any
+                    options {
+                        throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
+                    }
+                    steps {}
+                }
+            }
+        }
+
+        stage('reporting and upload') {
+            agent any
+
+            options {
+                // For now reporting happens on the x86_64 benchmark machine and needs the lock
+                throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
+            }
+
+        }
+    }
+}
