@@ -7,7 +7,7 @@ require "yaml"
 # time, even though it can be multiple runs and Rubies. What it is *not* is results over time as YJIT and
 # the benchmarks change.
 class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
-    REPO_ROOT = File.expand_path("../../..", __dir__)
+    REPO_ROOT = File.expand_path("../../../..", __dir__)
 
     # Benchmarks sometimes go into multiple categories, based on the category field
     BENCHMARK_METADATA = YAML.load_file(File.join(REPO_ROOT, "yjit-bench/benchmarks.yml")).map do |name, metadata|
