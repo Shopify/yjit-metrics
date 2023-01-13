@@ -1,30 +1,6 @@
-// This Jenkinsfile is a conversion of the older GitHub Actions workflow for benchmarking.
+// Use a Jenkinsfile pipeline to run a single-iter all-benchmarks 'smoke test' across worker servers.
 
-// It does a few unusual things. SSHing to workers for every step, for instance, is weird.
-// Benchmarking is odd in that you want ***nothing*** else running on the machine. No
-// Jenkins agent, no other jobs, nothing. And so instead of throttling workflows with
-// executors in the usual way (which could work), we instead throttle using categories
-// to make sure throttling happens across multiple workflows, and we run no Jenkins
-// agent on the bare-metal workers.
-//
-// For non-baremetal workers, we can probably be more relaxed since we're already
-// accepting some noise in the measurement, e.g. for virtualisation. Eventually I'd
-// like a variety of benchmarking quality, from gold standard (AWS metal instances,
-// nothing else running) to pretty-okay (virtualised instance, not much else running.)
-
-// The division between gh_tasks/ shellscripts and continuous_reporting/ Ruby files
-// is a bit weirder. In theory it's to let the shellscripts juggle the Ruby configuration,
-// which would be painful to manage directly from a Jenkinsfile or GitHub Actions workflow,
-// but in practice the current version is a mess too.
-
-// Jenkinsfile documentation:
-//
-// Parallel stages:
-// * https://www.jenkins.io/doc/book/pipeline/syntax/#parallel
-// * https://stackoverflow.com/questions/43913698/jenkinsfile-parallel-directive
-//
-// * Groovy Multiline Strings: https://stackoverflow.com/questions/5079797/whats-wrong-with-groovy-multi-line-string
-// * Groovy ternary or coalescing operators: https://www.danvega.dev/blog/2013/08/22/groovy-ternary-operator/
+// See the full-benchmark-run Jenkinsfile for more documentation and commentary.
 
 // AARCH64 SSH Key Credentials
 //withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'FILENAME_VAR', usernameVariable: 'USERNAME_VAR')]) {
@@ -34,12 +10,7 @@
 pipeline {
     agent any
 
-    triggers {
-        cron 'H 4,20 * * *'
-    }
-
     parameters {
-        // docs: https://www.jenkins.io/doc/book/pipeline/syntax/#parameters-example
         string(name: 'RUBY_VERSION', defaultValue: 'master', description: 'what revision of Ruby to build')
 
         //string(name: 'YJIT_METRICS_VERSION', defaultValue: 'main', description: 'what revision of yjit-metrics to build with')
@@ -60,11 +31,8 @@ pipeline {
             options {
                 // TODO: for now, we're running this on the x86_64 worker. But there's no reason it has to be,
                 // and we'd do better if it wasn't.
-                // docs: https://plugins.jenkins.io/throttle-concurrents/#plugin-content-throttling-of-pipeline-jobs
                 throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
             }
-
-            //def bench_ts = sh(returnStdout: true, 'date +"%Y-%m-%d-%H%M%S"').trim()
 
             steps {
                 // Don't want the keyfile to exist for long, so use a limited-scope block for withCredentials here.
@@ -78,10 +46,6 @@ pipeline {
                         env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
                     }
 
-                    // Groovy seems to require double-quote strings here so that double-quote strings are passed to Bash? That seems weird, but also seems to be what I'm seeing.
-                    // These are Bash variables, not Groovy variables, so I don't need double-quote strings to get Groovy to do anything.
-                    // Groovy string-interpolation shouldn't be used here for Jenkins security reasons:
-                    //   https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#interpolation-of-sensitive-environment-variables
                     sh "ssh $SSH_ARGS $SSH_HOST bash -l -c \'YJIT_METRICS_NAME=main CRUBY_NAME=$CRUBY_NAME cd ym/yjit-metrics/ && ./continuous_reporting/gh_tasks/generate_bench_params.sh\'"
                     sh "scp $SSH_ARGS $SSH_HOST:~/ym/yjit-metrics/bench_params.json ."
                     sh "ssh $SSH_ARGS $SSH_HOST rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
@@ -114,8 +78,7 @@ pipeline {
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
                             sh "$SSH_CMD \"cd ym/yjit-metrics && uname -a && git pull\""
-                            sh "$SSH_CMD bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'"
-                            // TODO: change to regular benchmark run, not single-iter
+                            // No full Ruby rebuild for smoke runs - we want this to be reasonably quick.
                             sh "$SSH_CMD bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'"
 
                             sh "ssh ${ssh_args} ${ssh_host} rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
@@ -124,27 +87,5 @@ pipeline {
                 }
             }
         }
-
-        //stage('reporting quick check and data checkin') {
-        //    parallel {
-        //        stage('reporting quick check x86_64') {
-        //            agent any
-        //            options {
-        //                throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
-        //            }
-        //            steps {}
-        //        }
-        //    }
-        //}
-
-        //stage('reporting and upload') {
-        //    agent any
-//
-        //    options {
-        //        // For now reporting happens on the x86_64 benchmark machine and needs the lock
-        //        throttle(['Build that needs exclusive use of x86_64 AWS worker (1)'])
-        //    }
-//
-        //}
     }
 }
