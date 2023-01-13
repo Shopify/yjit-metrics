@@ -65,6 +65,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         yjit_data
     end
 
+    # Equivalent of yjit.rb:total_exit_count
     def total_exit_count(stats, prefix: "exit_")
         total = 0
         stats.each do |k,v|
@@ -73,56 +74,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         total
     end
 
-    # The "misc" counters aren't for "can't compile" or "side exit",
-    # they're for various other things.
-    COUNTERS_MISC = [
-        "exec_instruction",     # YJIT instructions that *start* to execute, even if they later side-exit
-        "leave_interp_return",  # Number of returns to the interpreter
-        "binding_allocations",  # Number of times Ruby allocates a binding (via proc.c:rb_binding_alloc)
-        "binding_set",          # Number of locals modified via a binding (via proc.c:bind_local_variable_set)
-    ]
-
-    COUNTERS_SIDE_EXITS = %w(
-        setivar_val_heapobject
-        setivar_frozen
-        setivar_idx_out_of_range
-        getivar_undef
-        getivar_idx_out_of_range
-        getivar_se_self_not_heap
-        setivar_se_self_not_heap
-        oaref_arg_not_fixnum
-        send_se_protected_check_failed
-        send_se_cf_overflow
-        leave_se_finish_frame
-        leave_se_interrupt
-        send_se_protected_check_failed
-        )
-
-    COUNTERS_CANT_COMPILE = %w(
-        send_callsite_not_simple
-        send_kw_splat
-        send_bmethod
-        send_zsuper_method
-        send_refined_method
-        send_ivar_set_method
-        send_undef_method
-        send_optimized_method
-        send_missing_method
-        send_cfunc_toomany_args
-        send_cfunc_argc_mismatch
-        send_cfunc_ruby_array_varg
-        send_iseq_tailcall
-        send_iseq_arity_error
-        send_iseq_only_keywords
-        send_iseq_complex_callee
-        send_not_implemented_method
-        send_getter_arity
-        getivar_name_not_mapped
-        setivar_name_not_mapped
-        setivar_not_object
-        oaref_argc_not_one
-        )
-
+    # Equivalent of yjit.rb:runtime_stats, with some differences
     def exit_report_for_benchmarks(benchmarks)
         # Bindings for use inside ERB report template
         stats = combined_stats_data_for_benchmarks(benchmarks)
@@ -139,39 +91,99 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         total_insns_count = retired_in_yjit + stats["vm_insns_count"]
         yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
 
-        report_template = ERB.new File.read(__dir__ + "/../report_templates/yjit_stats_exit.erb")
-        report_template.result(binding) # Evaluate with the local variables right here
+        # Older YJIT didn't have these in the recorded stats
+        stats["total_insns_count"] = total_insns_count unless stats["total_insns_count"]
+        stats["ratio_in_yjit"] = yjit_ratio_pct unless stats["ratio_in_yjit"]
+        stats["side_exit_count"] = side_exits unless stats["side_exit_count"]
+        stats["total_exit_count"] = total_exits unless stats["total_exit_count"]
+        stats["avg_len_in_yjit"] = avg_len_in_yjit unless stats["avg_len_in_yjit"]
+
+        printed_stats(stats)
     end
 
-    def sorted_exit_counts(stats, prefix:, how_many: 20, left_pad: 4)
-        prefix_text = ""
+    # Equivalent of yjit.rb:_print_stats - very differently structured
+    def printed_stats(stats)
+        text = ""
 
-        exits = []
-        stats.each do |k, v|
-            if k.start_with?(prefix)
-                exits.push [k.to_s.delete_prefix(prefix), v]
+        ({
+            'send_' => 'method call exit reasons: ',
+            'invokeblock_' => 'invokeblock exit reasons: ',
+            'invokesuper_' => 'invokesuper exit reasons: ',
+            'leave_' => 'leave exit reasons: ',
+            'gbpp_' => 'getblockparamproxy exit reasons: ',
+            'getivar_' => 'getinstancevariable exit reasons: ',
+            'setivar_' => 'setinstancevariable exit reasons: ',
+            'oaref_' => 'opt_aref exit reasons: ',
+            'expandarray_' => 'expandarray exit reasons: ',
+            'opt_getinlinecache_' => 'opt_getinlinecache exit reasons: ',
+            'invalidate_' => 'invalidation reasons: ',
+        }).each do |prefix, prompt|
+            text += counters_section(stats, prefix: prefix, prompt: prompt)
+        end
+
+        # Number of failed compiler invocations - may be nil for older YJIT
+        compilation_failure = stats[:compilation_failure] || 0
+
+        text += "compilation_failure:   " + ("%10d" % compilation_failure) if compilation_failure != 0
+
+        [ :compiled_iseq_count, :compiled_block_count, :compiled_branch_count, :block_next_count, :defer_count, :freed_iseq_count,
+          :invalidation_count, :constant_state_bumps, :inline_code_size, :outlined_code_size, :freed_code_size,
+          :code_region_size, :yjit_alloc_size, :live_page_count, :freed_page_count, :code_gc_count, :num_gc_obj_refs,
+          :object_shape_count, :side_exit_count, :total_exit_count, :total_insns_count, :vm_insns_count ].each do |metric|
+            if stats.has_key?(metric.to_s) # Some keys may not have been introduced yet for a given Ruby version
+                text += ("%-23s" % (metric.to_s + ":")) + ("%10d" % stats[metric.to_s]) + "\n"
             end
         end
 
-        exits = exits.sort_by { |name, count| [-count, name] }[0...how_many]
-        side_exits = total_exit_count(stats)
+        if stats.has_key?("exec_instruction")
+            text += "yjit_insns_count:      " + ("%10d" % stats["exec_instruction"]) + "\n"
+        end
 
-        top_n_total = exits.map { |name, count| count }.sum
-        top_n_exit_pct = 100.0 * top_n_total / side_exits
+        [ "ratio_in_yjit", "avg_len_in_yjit" ].each do |metric|
+            text += ("%-23s" % (metric + ":")) + ("%10d" % stats[metric]) + "\n"
+        end
 
-        prefix_text = "Top-#{how_many} most frequent exit ops (#{"%.1f" % top_n_exit_pct}% of exits):\n"
-
-        longest_insn_name_len = exits.map { |name, count| name.length }.max
-        prefix_text + exits.map do |name, count|
-            padding = longest_insn_name_len + left_pad
-            padded_name = "%#{padding}s" % name
-            padded_count = "%10d" % count
-            percent = 100.0 * count / side_exits
-            formatted_percent = "%.1f" % percent
-            "#{padded_name}: #{padded_count} (#{formatted_percent})"
-        end.join("\n")
+        text += "\n"
+        text += sorted_exit_counts(stats, prefix: "exit_")
     end
 
+    # Equivalent of yjit.rb:print_sorted_exit_counts
+    def sorted_exit_counts(stats, prefix:, how_many: 20, left_pad: 4)
+      prefix_text = ""
+
+      exits = []
+      stats.each do |k, v|
+        if k.start_with?(prefix)
+          exits.push [k.to_s.delete_prefix(prefix), v]
+        end
+      end
+
+      exits = exits.select { |_name, count| count > 0 }.sort_by { |_name, count| -count }.first(how_many)
+      total_exits = total_exit_count(stats)
+
+      if total_exits > 0
+        top_n_total = exits.sum { |name, count| count }
+        top_n_exit_pct = 100.0 * top_n_total / total_exits
+
+        prefix_text.concat "Top-#{exits.size} most frequent exit ops (#{"%.1f" % top_n_exit_pct}% of exits):\n"
+
+        longest_insn_name_len = exits.map { |name, count| name.length }.max
+        exits.each do |name, count|
+          padding = longest_insn_name_len + left_pad
+          padded_name = "%#{padding}s" % name
+          padded_count = "%10d" % count
+          percent = 100.0 * count / total_exits
+          formatted_percent = "%.1f" % percent
+          prefix_text.concat("#{padded_name}: #{padded_count} (#{formatted_percent}%)\n")
+        end
+      else
+        prefix_text.concat "total_exits:           " + ("%10d" % total_exits) + "\n"
+      end
+
+      prefix_text
+    end
+
+    # Equivalent of yjit.rb:print_counters
     def counters_section(counters, prefix:, prompt:)
         text = prompt + "\n"
 
@@ -180,7 +192,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         counters.transform_keys! { |key| key.to_s.delete_prefix(prefix) }
 
         if counters.empty?
-            text.concat("    (all relevant counters are zero)")
+            text.concat("    (all relevant counters are zero)\n")
             return text
         end
 
@@ -190,7 +202,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         total = counters.sum { |_, counter_value| counter_value }
 
         counters.reverse_each do |name, value|
-            percentage = value.to_f * 100 / total
+            percentage = value.fdiv(total) * 100
             text.concat("    %*s %10d (%4.1f%%)\n" % [longest_name_length, name, value, percentage])
         end
 
