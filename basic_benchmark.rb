@@ -20,53 +20,12 @@ require "optparse"
 require "fileutils"
 require_relative "lib/yjit-metrics"
 
-extra_config_options = []
-if ENV["RUBY_CONFIG_OPTS"]
-    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
-elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL 1.1 location if not otherwise specified
-    ossl_prefix = `brew --prefix openssl@1.1`.chomp
-    extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
-end
+# Default settings for benchmark sampling
+DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
+DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
+DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
-YJIT_GIT_URL = "https://github.com/ruby/ruby"
-YJIT_GIT_BRANCH = "master"
-
-# The same build of Ruby (e.g. current prerelease Ruby) can
-# have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
-RUBY_BUILDS = {
-    "ruby-yjit-metrics-debug" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
-        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
-    },
-    "ruby-yjit-metrics-stats" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
-    },
-    "ruby-yjit-metrics-prod" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
-    },
-    "ruby-3.0.0" => {
-        install: "ruby-install",
-    },
-    "ruby-3.0.2" => {
-        install: "ruby-install",
-    },
-    "truffleruby+graalvm-21.2.0" => {
-        install: "ruby-build",
-    },
-}
+ERROR_BEHAVIOURS = %i(die report ignore re_run)
 
 YJIT_ENABLED_OPTS = [ "--yjit-call-threshold=1", "--disable-mjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
@@ -144,49 +103,6 @@ THIS_PLATFORM_CONFIGS = RUBY_CONFIGS.keys.select do |config|
     config_platform == YJITMetrics::PLATFORM
 end
 
-SKIPPED_COMBOS = [
-    # HexaPDF not working with prerelease MJIT
-    # https://bugs.ruby-lang.org/issues/18277
-    [ "prod_ruby_with_mjit", "hexapdf" ],
-
-    # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
-    # Just in general, Jekyll had some serious issues as a benchmark :-/
-    # https://github.com/Shopify/yjit-bench/issues/71
-    # Now it's gone from yjit-bench, though we leave this to keep from running it
-    # with an older yjit-bench.
-    [ "*", "jekyll" ],
-
-    # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
-    # Needs an update of dependency libraries.
-    # Note: check back to see when/if Discourse runs with head-of-master Ruby again...
-    [ "*", "discourse" ],
-
-    # [ "name_of_config", "name_of_benchmark" ] OR
-    # [ "*", "name_of_benchmark" ]
-]
-
-# Default settings for benchmark sampling
-DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
-DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
-DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
-
-# Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
-YJIT_BENCH_GIT_BRANCH = "main"
-YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
-
-# Configuration for yjit-extra-benchmarks
-YJIT_EXTRA_BENCH_GIT_URL = "https://github.com/Shopify/yjit-extra-benchmarks.git"
-YJIT_EXTRA_BENCH_GIT_BRANCH = "main"
-YJIT_EXTRA_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-extra-benchmarks")
-
-# Configuration for ruby-build
-RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
-RUBY_BUILD_GIT_BRANCH = "master"
-RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
-
-ERROR_BEHAVIOURS = %i(die report ignore re_run)
-
 # Defaults
 skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
@@ -198,6 +114,7 @@ harness_params = {
 }
 DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit)
 configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
+bench_data = nil
 when_error = :die
 output_path = "data"
 bundler_version = "2.2.30"
@@ -255,7 +172,12 @@ OptionParser.new do |opts|
         end
     end
 
-    opts.on("--timestamp=TS", "Output-file timestamp, format: #{timestamp}, default: right now") do |ts|
+    opts.on("--bench-params=BENCH_PARAMS.json", "--bp=BENCH_PARAMS.json") do |bp|
+        unless File.exist?(bp)
+            raise "No such bench params file: #{bp.inspect}!"
+        end
+        bench_data = JSON.load File.read(bp)
+        ts = bench_data["ts"]
         unless ts =~ /\A\d{4}-\d{2}-\d{2}-\d{6}\Z/
             raise "Bad format for given timestamp: #{ts.inspect}!"
         end
@@ -266,13 +188,98 @@ OptionParser.new do |opts|
     opts.on("--configs=CONFIGS", config_desc) do |configs|
         configs_to_test = configs.split(",").map(&:strip).uniq
         bad_configs = configs_to_test - CONFIG_NAMES
-        raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!" unless bad_configs.empty?
+        raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!\n\nLegal configs include: #{CONFIG_NAMES.inspect}" unless bad_configs.empty?
         wrong_platform_configs = configs_to_test - THIS_PLATFORM_CONFIGS
         raise "Requested configuration(s) are for other platforms: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
     end
 end.parse!
 
 HARNESS_PARAMS = harness_params
+BENCH_DATA = bench_data ? bench_data.slice("ts", "cruby_sha", "yjit_bench_sha", "yjit_metrics_sha") : {}
+
+extra_config_options = []
+if ENV["RUBY_CONFIG_OPTS"]
+    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
+elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
+    # On Mac with Homebrew, default to Homebrew's OpenSSL 1.1 location if not otherwise specified
+    ossl_prefix = `brew --prefix openssl@1.1`.chomp
+    extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
+end
+
+YJIT_GIT_URL = "https://github.com/ruby/ruby"
+YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
+
+# The same build of Ruby (e.g. current prerelease Ruby) can
+# have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
+RUBY_BUILDS = {
+    "ruby-yjit-metrics-debug" => {
+        install: "repo",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
+        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
+    },
+    "ruby-yjit-metrics-stats" => {
+        install: "repo",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
+    },
+    "ruby-yjit-metrics-prod" => {
+        install: "repo",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_GIT_BRANCH,
+        repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
+    },
+    "ruby-3.0.0" => {
+        install: "ruby-install",
+    },
+    "ruby-3.0.2" => {
+        install: "ruby-install",
+    },
+    "truffleruby+graalvm-21.2.0" => {
+        install: "ruby-build",
+    },
+}
+
+SKIPPED_COMBOS = [
+    # HexaPDF not working with prerelease MJIT
+    # https://bugs.ruby-lang.org/issues/18277
+    [ "prod_ruby_with_mjit", "hexapdf" ],
+
+    # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
+    # Just in general, Jekyll had some serious issues as a benchmark :-/
+    # https://github.com/Shopify/yjit-bench/issues/71
+    # Now it's gone from yjit-bench, though we leave this to keep from running it
+    # with an older yjit-bench.
+    [ "*", "jekyll" ],
+
+    # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
+    # Needs an update of dependency libraries.
+    # Note: check back to see when/if Discourse runs with head-of-master Ruby again...
+    [ "*", "discourse" ],
+
+    # [ "name_of_config", "name_of_benchmark" ] OR
+    # [ "*", "name_of_benchmark" ]
+]
+
+# Configuration for yjit-bench
+YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
+YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] ? BENCH_DATA["yjit_bench_sha"] : "main"
+YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
+
+# Configuration for yjit-extra-benchmarks
+YJIT_EXTRA_BENCH_GIT_URL = "https://github.com/Shopify/yjit-extra-benchmarks.git"
+YJIT_EXTRA_BENCH_GIT_BRANCH = "main"
+YJIT_EXTRA_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-extra-benchmarks")
+
+# Configuration for ruby-build
+RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
+RUBY_BUILD_GIT_BRANCH = "master"
+RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks

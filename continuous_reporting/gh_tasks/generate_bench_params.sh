@@ -10,6 +10,6 @@ chruby 3.0.2
 cd ~/ym/yjit-metrics
 
 # No timestamp given, default to right now
-ruby continuous_reporting/create_json_params_file --yjit-metrics-name=$YJIT_METRICS_NAME --cruby-name=$CRUBY_NAME
+ruby continuous_reporting/create_json_params_file.rb --yjit-metrics-name=$YJIT_METRICS_NAME --yjit-bench-name=$YJIT_BENCH_NAME --cruby-name=$CRUBY_NAME
 
 echo "Generated params successfully."

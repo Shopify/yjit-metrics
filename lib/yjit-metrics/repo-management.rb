@@ -14,7 +14,11 @@ module YJITMetrics::RepoManagement
                 check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
                 check_call("git clean -d -f")
                 check_call("git checkout #{git_branch}")
-                check_call("git pull")
+                if git_branch =~ /\A[0-9a-zA-Z]{5}/
+                    # Don't do a "git pull" on a raw SHA
+                else
+                    check_call("git pull")
+                end
             else
                 # If we're not cleaning, we should still make sure we're on the right branch
                 current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
