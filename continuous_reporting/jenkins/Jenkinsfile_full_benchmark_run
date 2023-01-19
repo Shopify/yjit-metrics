@@ -26,11 +26,6 @@
 // * Groovy Multiline Strings: https://stackoverflow.com/questions/5079797/whats-wrong-with-groovy-multi-line-string
 // * Groovy ternary or coalescing operators: https://www.danvega.dev/blog/2013/08/22/groovy-ternary-operator/
 
-// AARCH64 SSH Key Credentials
-//withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'FILENAME_VAR', usernameVariable: 'USERNAME_VAR')]) {
-//    // some block
-//}
-
 // Future improvements:
 //
 // * It would be really nice to *not* use throttling and SSH to do this with workers. But we'd need to limit the executors
@@ -80,14 +75,13 @@ pipeline {
                         env.SSH_USER = SSH_USER
                         env.SSH_KEYFILE = SSH_KEYFILE
                         env.CRUBY_NAME = params.RUBY_VERSION
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
                         env.YJIT_BENCH_NAME = params.YJIT_BENCH_VERSION
                         env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
                         env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
                     }
 
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout $YJIT_METRICS_NAME\""
-                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c \'cd ym/yjit-metrics/ && YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_BENCH_NAME=$YJIT_BENCH_NAME CRUBY_NAME=$CRUBY_NAME . ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout ${params.YJIT_METRICS_VERSION}\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c \'cd ym/yjit-metrics/ && YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} YJIT_BENCH_NAME=$YJIT_BENCH_NAME CRUBY_NAME=$CRUBY_NAME . ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
                     sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && cat bench_params.json\""
                     sh "scp $SSH_ARGS $SSH_HOST:~/ym/yjit-metrics/bench_params.json ."
                     sh "ssh $SSH_ARGS $SSH_HOST rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
@@ -108,12 +102,13 @@ pipeline {
                             script {
                                 env.SSH_USER = SSH_USER
                                 env.SSH_KEYFILE = SSH_KEYFILE
+                                env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
                                 env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
                                 env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
                             }
 
                             // Need to do another checkout if another job could grab the worker in between
-                            //sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout $YJIT_METRICS_NAME\""
+                            sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout $YJIT_METRICS_NAME\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
@@ -137,8 +132,8 @@ pipeline {
                                 env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_AARCH64'
                             }
 
-                            // Need to do another checkout if another job could grab the worker in between
-                            //sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout $YJIT_METRICS_NAME\""
+                            // Need to do another checkout if another job could grab the worker in between - and for first time on AARCH64
+                            sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout ${params.YJIT_METRICS_VERSION}\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
