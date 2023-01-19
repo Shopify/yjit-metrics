@@ -16,6 +16,6 @@ cd ~/ym/yjit-metrics
 # since it doesn't run the reporting scripts.
 # Note that on ARM, benchmark_and_update will automatically skip the stats config since it doesn't
 # work on Graviton.
-ruby continuous_reporting/benchmark_and_update.rb --benchmark-type smoketest --no-gh-issue --no-perf-tripwires --no-run-reports --bench-params=$BENCH_PARAMS
+ruby continuous_reporting/benchmark_and_update.rb --benchmark-type smoketest --no-gh-issue --no-perf-tripwires --no-run-reports --bench-params=$BENCH_PARAMS --data-dir=continuous_reporting/single_iter_data
 
 echo "Completed smoke-test benchmarking successfully."
