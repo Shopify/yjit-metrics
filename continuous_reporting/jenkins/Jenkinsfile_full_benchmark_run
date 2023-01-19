@@ -113,8 +113,7 @@ pipeline {
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
                             sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git pull\""
-                            // TODO: full Ruby rebuild
-                            //sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
+                            sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
 
                             sh "ssh $SSH_ARGS $SSH_HOST \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
@@ -138,8 +137,7 @@ pipeline {
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
                             sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git pull\""
-                            // TODO: full Ruby rebuild
-                            //sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
+                            sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
 
                             sh "ssh $SSH_ARGS $SSH_HOST \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
