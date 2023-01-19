@@ -11,7 +11,10 @@ chruby 3.0.2
 cd ~/ym/yjit-metrics
 
 # Copy benchmark raw data into yjit-metrics-pages repo, generate reports, commit changes to Git.
-ruby continuous_reporting/generate_and_upload_reports.rb
+# The --regenerate-reports argument will regenerate ***all*** reports, which can take quite a
+# long time. It will also occasionally hit a Ruby error, so we should update from 3.0.2 when
+# we can for "system" Ruby here.
+ruby continuous_reporting/generate_and_upload_reports.rb --regenerate-reports
 
 # Now we'll verify that we're not regenerating results when we shouldn't.
 # To do that we'll tell generate_and_upload not to do Git checkins,
