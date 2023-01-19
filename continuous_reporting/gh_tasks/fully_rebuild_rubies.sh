@@ -23,6 +23,6 @@ cd ~ubuntu/ym/yjit-metrics/
 git pull
 gem install bundler:2.2.30
 bundle _2.2.30_
-./basic_benchmark.rb -r 0  # No benchmarking, but build and install everything
+./basic_benchmark.rb -r 0 --bench-params=$BENCH_PARAMS # No benchmarking, but build and install everything at the appropriate SHA
 
 echo "Benchmark CI Ruby reinstall completed successfully."

@@ -77,21 +77,23 @@ DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
         "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
     " --configs=#{DEFAULT_CI_CONFIGS[YJITMetrics::PLATFORM].join(",")}"
 
+platform = YJITMetrics::PLATFORM
 BENCH_TYPES = {
     "none"       => nil,
     "default"    => DEFAULT_CI_COMMAND_LINE,
-    "smoketest"  => "--warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=yjit_stats,prod_ruby_no_jit,prod_ruby_with_yjit",
-    "minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
-    "extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
+    "smoketest"  => "--skip-git-updates --warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=#{platform}_prod_ruby_no_jit,#{platform}_prod_ruby_with_yjit",
+    #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
+    #"extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }
 benchmark_args = BENCH_TYPES["default"]
+bench_params = nil
 should_file_gh_issue = true
 no_perf_tripwires = false
 all_perf_tripwires = false
 single_perf_tripwire = nil
 run_reports = true
 is_verbose = false
-output_ts = Time.now.getgm.strftime('%F-%H%M%S')
+data_dir = "continuous_reporting/data"
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -144,8 +146,14 @@ OptionParser.new do |opts|
         run_reports = false
     end
 
-    opts.on("-ot TS", "--output-timestamp TS") do |ts|
-        output_ts = ts
+    opts.on("-bp PARAMS_FILE.json", "--bench-params PARAMS_FILE.json", "Benchmark parameters JSON file") do |bp_file|
+        raise "No such benchmark params file: #{bp_file.inspect}!" unless File.exist?(bp_file)
+        bench_params = bp_file
+    end
+
+    opts.on("-dd DATA_DIR", "--data-dir DATA_DIR", "Location to write benchmark results, default: continuous_reporting/data") do |ddir|
+        raise("No such directory: #{ddir.inspect}!") unless File.directory?(ddir)
+        data_dir = ddir
     end
 
     opts.on("-v", "--verbose", "Print verbose output about tripwire checks") do
@@ -159,7 +167,8 @@ ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
 RUN_REPORTS = run_reports
 VERBOSE = is_verbose
-OUTPUT_TS = output_ts
+BENCH_PARAMS = bench_params
+DATA_DIR = data_dir
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
@@ -259,15 +268,14 @@ end
 def run_benchmarks
     return if BENCHMARK_ARGS.nil?
 
-    # Run benchmarks from the top-level dir and write them into continuous_reporting/data
+    # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
-        old_data_files = Dir["continuous_reporting/data/*"].to_a
+        old_data_files = Dir["#{DATA_DIR}/*"].to_a
         unless old_data_files.empty?
             old_data_files.each { |f| FileUtils.rm f }
         end
 
-        # This is a much faster set of tests, more suitable for quick testing
-        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=continuous_reporting/data/ --timestamp=#{OUTPUT_TS}"
+        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS}"
     end
 end
 
@@ -279,7 +287,7 @@ def report_and_upload
         YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push --no-report"
 
         # Delete the files from this run since they've now been processed.
-        old_data_files = Dir["continuous_reporting/data/*"].to_a
+        old_data_files = Dir["#{DATA_DIR}/*"].to_a
         unless old_data_files.empty?
             old_data_files.each { |f| FileUtils.rm f }
         end
@@ -288,7 +296,7 @@ end
 
 def clear_latest_data
     Dir.chdir __dir__ do
-        old_data_files = Dir["continuous_reporting/data/*"].to_a
+        old_data_files = Dir["#{DATA_DIR}/*"].to_a
         unless old_data_files.empty?
             old_data_files.each { |f| FileUtils.rm f }
         end
