@@ -1,0 +1,39 @@
+// On-demand Jenkins reporting pipeline
+
+pipeline {
+    agent any
+
+    environment {
+        AWS_INSTANCE_X86_64 = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')  // get IP address or name
+    }
+
+    options {
+        // Throttle options on multiple steps are deadlocking. Apparently the plugin people know there's a problem,
+        // but don't have a great fix. Joy. So we throttle at the top level here.
+        throttleJobProperty(
+            categories: ['Build that needs exclusive use of x86_64 AWS worker (1)'],
+            throttleEnabled: true,
+            throttleOption: 'category'
+        )
+    }
+
+    stages {
+        stage('reporting and upload') {
+            agent any
+
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                    script {
+                        env.SSH_USER = SSH_USER
+                        env.SSH_KEYFILE = SSH_KEYFILE
+                        env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                        env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
+                    }
+
+                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git clean -d -f reports _includes && git pull\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
+                }
+            }
+        }
+    }
+}
