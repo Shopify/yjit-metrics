@@ -10,9 +10,9 @@ module YJITMetrics::RepoManagement
 
         Dir.chdir(path) do
             if do_clean
-                check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
-                check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
                 check_call("git clean -d -f")
+                check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
+                check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
                 check_call("git checkout #{git_branch}")
                 if git_branch =~ /\A[0-9a-zA-Z]{5}/
                     # Don't do a "git pull" on a raw SHA
@@ -22,7 +22,13 @@ module YJITMetrics::RepoManagement
             else
                 # If we're not cleaning, we should still make sure we're on the right branch
                 current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
-                raise("Repo is on incorrect branch #{current_branch.inspect} instead of #{git_branch.inspect}!") if current_branch != git_branch
+                current_sha = `git rev-parse HEAD`.chomp
+
+                # If the branch name doesn't match and we're not on the same specific SHA, check out the specified branch or revision
+                if current_branch != git_branch && !current_sha.start_with?(git_branch)
+                    check_call("git fetch") # If we do a checkout, we need to fetch first to make sure we can see it
+                    check_call("git checkout #{git_branch}")
+                end
             end
         end
     end
