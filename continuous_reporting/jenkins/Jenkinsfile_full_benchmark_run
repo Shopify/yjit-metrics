@@ -179,7 +179,7 @@ pipeline {
                                 env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                             }
 
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'\""
                         }
                     }
@@ -195,7 +195,7 @@ pipeline {
                                 env.SSH_HOST_X86 = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
                             }
 
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'\""
                         }
                     }
@@ -249,7 +249,7 @@ pipeline {
                         env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                     }
 
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes && git checkout $YJIT_METRICS_NAME\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
                 }
             }
