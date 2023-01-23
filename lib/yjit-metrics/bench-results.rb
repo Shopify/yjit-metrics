@@ -608,26 +608,26 @@ module YJITMetrics
             # Each config controls warmup individually. But the number of real iterations needs
             # to match across all configs, so it's not set per-config.
             "x86_64_yjit_stats" => {
-                max_warmup_itrs: 5,
+                max_warmup_itrs: 30,
             },
             "x86_64_prod_ruby_no_jit" => {
-                max_warmup_itrs: 5,
+                max_warmup_itrs: 30,
             },
             "x86_64_prod_ruby_with_yjit" => {
-                max_warmup_itrs: 5,
+                max_warmup_itrs: 30,
             },
             #"x86_64_prod_ruby_with_mjit" => {
             #    max_warmup_itrs: 75,
             #    max_warmup_time: 300, # in seconds; we try to let MJIT warm up "enough," but time and iters vary by workload
             #},
-            #"aarch64_yjit_stats" => {
-            #    max_warmup_itrs: 5,
-            #},
+            "aarch64_yjit_stats" => {
+                max_warmup_itrs: 30,
+            },
             "aarch64_prod_ruby_no_jit" => {
-                max_warmup_itrs: 5,
+                max_warmup_itrs: 30,
             },
             "aarch64_prod_ruby_with_yjit" => {
-                max_warmup_itrs: 5,
+                max_warmup_itrs: 30,
             },
         },
         # Non-config-specific settings
@@ -635,7 +635,7 @@ module YJITMetrics
         "min_bench_time" => 20,
         "min_warmup_itrs" => 5,
         "max_warmup_itrs" => 75,
-        "max_itr_time" => 300 * 60,  # GitHub Actions stop at 360 minutes. Allow 300 expected minutes of non-overhead iteration time.
+        "max_itr_time" => 480 * 60,  # Used to stop at 300 minutes to avoid GHActions 360 min cutoff. Now the 7pm run needs to not overlap the 6am run.
     }
 end
 
