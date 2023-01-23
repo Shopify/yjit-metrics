@@ -166,7 +166,7 @@ pipeline {
             }
         }
 
-        stage('reporting quick check and data checkin') {
+        stage('reporting quick check') {
             parallel {
                 stage('reporting quick check x86_64') {
                     agent any
