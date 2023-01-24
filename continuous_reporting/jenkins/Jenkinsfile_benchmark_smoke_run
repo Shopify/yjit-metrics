@@ -124,4 +124,14 @@ pipeline {
             }
         }
     }
+
+    post {
+        success {
+            slackSend color: "#00FF00", message: "YJIT benchmark smoke test succeeded!"
+        }
+        failure {
+            // Need to expand this, based on https://plugins.jenkins.io/slack/
+            slackSend color: "#FF0000", message: "YJIT benchmark smoke test failed!"
+        }
+    }
 }
