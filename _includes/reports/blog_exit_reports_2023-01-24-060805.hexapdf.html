@@ -1,0 +1,63 @@
+method call exit reasons: 
+                    block_arg    4209978 (79.6%)
+                  send_getter     293039 ( 5.5%)
+    args_splat_cfunc_var_args     257225 ( 4.9%)
+                iseq_has_rest     184187 ( 3.5%)
+                zsuper_method     180222 ( 3.4%)
+                     kw_splat      87340 ( 1.7%)
+              iseq_has_kwrest      73663 ( 1.4%)
+              args_splat_ivar        585 ( 0.0%)
+          iseq_ruby2_keywords         45 ( 0.0%)
+         args_splat_optimized         45 ( 0.0%)
+        cfunc_ruby_array_varg         44 ( 0.0%)
+
+leave exit reasons: 
+        interp_return  238619424 (98.3%)
+    start_pc_non_zero    4247495 ( 1.7%)
+         se_interrupt        182 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    megamorphic         44 (100.0%)
+
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          819
+compiled_block_count:       10415
+invalidation_count:           217
+constant_state_bumps:           0
+inline_code_size:         1716869
+outlined_code_size:       1714878
+
+total_exit_count:       256428670
+total_insns_count:     13598865535
+vm_insns_count:         849674815
+yjit_insns_count:      12766999966
+ratio_in_yjit:              93.8%
+avg_len_in_yjit:             49.7
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:   10370587 (58.2)
+                      send:    4358864 (24.5)
+               invokeblock:    1170855 (6.6)
+                 opt_nil_p:     733365 (4.1)
+        getblockparamproxy:     293940 (1.7)
+               invokesuper:     293535 (1.6)
+                    opt_eq:     293318 (1.6)
+                     throw:     110109 (0.6)
+             setlocal_WC_0:     109889 (0.6)
+                   opt_neq:      73619 (0.4)
+                  opt_aref:        540 (0.0)
+                     leave:        182 (0.0)
+                    opt_le:        180 (0.0)
+      opt_getconstant_path:        148 (0.0)
+             setlocal_WC_1:         54 (0.0)
+          putspecialobject:         52 (0.0)
+                  opt_mult:          4 (0.0)
+                  opt_plus:          3 (0.0)
+               objtostring:          1 (0.0)
+                  opt_size:          1 (0.0)
