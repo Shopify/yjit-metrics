@@ -107,7 +107,6 @@ pipeline {
             }
         }
 
-        // Run the various benchmarks in parallel to the extent possible
         stage('benchmarking') {
             parallel {
                 stage('benchmarking x86_64') {

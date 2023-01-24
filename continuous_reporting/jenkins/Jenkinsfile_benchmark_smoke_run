@@ -30,7 +30,7 @@ pipeline {
         // Throttle options on multiple steps are deadlocking. Apparently the plugin people know there's a problem,
         // but don't have a great fix. Joy. So we throttle at the top level here.
         throttleJobProperty(
-            categories: ['Build that needs exclusive use of x86_64 AWS worker (1)'],
+            categories: ['Build that needs exclusive use of x86_64 AWS worker (1)', 'Build that needs exclusive use of AARCH64 AWS worker (1)'],
             throttleEnabled: true,
             throttleOption: 'category'
         )
@@ -41,22 +41,24 @@ pipeline {
             steps {
                 // Don't want the keyfile to exist for long, so use a limited-scope block for withCredentials here.
                 // There's probably a better way to do this if I understood the Jenkinsfile DSL better.
-                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
                     script {
-                        env.SSH_USER = SSH_USER
-                        env.SSH_KEYFILE = SSH_KEYFILE
-                        env.CRUBY_NAME = params.RUBY_VERSION
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
+                        env.CRUBY_NAME = params.RUBY_VERSION  // Setting these once makes them available everywhere, for Groovy DSL reasons, I think?
                         env.YJIT_BENCH_NAME = params.YJIT_BENCH_VERSION
-                        env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
+                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
+                        env.SSH_USER_X86 = SSH_USER_X86
+                        env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
+                        env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                        env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                     }
 
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git fetch && git checkout $YJIT_METRICS_NAME\""
-                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c \'cd ym/yjit-metrics/ && YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_BENCH_NAME=$YJIT_BENCH_NAME CRUBY_NAME=$CRUBY_NAME . ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && cat bench_params.json\""
-                    sh "scp $SSH_ARGS $SSH_HOST:~/ym/yjit-metrics/bench_params.json ."
-                    sh "ssh $SSH_ARGS $SSH_HOST rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
+                    // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
+                    // runs when benchmarking succeeded but checking/reporting failed.
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} YJIT_BENCH_NAME=$YJIT_BENCH_NAME CRUBY_NAME=$CRUBY_NAME . ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
+                    sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/bench_params.json ."
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
                 }
 
                 // docs: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
@@ -64,28 +66,58 @@ pipeline {
             }
         }
 
-        // Run the various benchmarks in parallel to the extent possible
         stage('benchmarking') {
             parallel {
                 stage('benchmarking x86_64') {
                     agent any
                     steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
                             script {
-                                env.SSH_USER = SSH_USER
-                                env.SSH_KEYFILE = SSH_KEYFILE
-                                env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
-                                env.SSH_CMD = 'ssh $SSH_ARGS $SSH_HOST '
+                                env.SSH_USER_X86 = SSH_USER_X86
+                                env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
+                                env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
+                                env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                                env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                             }
 
-                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
-                            sh "scp $SSH_ARGS bench_params.json $SSH_HOST:~/ym/yjit-metrics/"
-                            sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git pull\""
-                            // No full Ruby rebuild for smoke runs - we want this to be reasonably quick.
-                            sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'\""
+                            // Need to do another checkout if another job could grab the worker in between
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
 
-                            sh "ssh $SSH_ARGS $SSH_HOST \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
+                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
+                            sh "scp $SSH_ARGS_X86 bench_params.json $SSH_HOST_X86:~/ym/yjit-metrics/"
+
+                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
+                            // runs when benchmarking succeeded but checking/reporting failed.
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'\""
+
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
+                        }
+                    }
+                }
+                stage('benchmarking AARCH64') {
+                    agent any
+                    steps {
+                        withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'SSH_KEYFILE_ARM', usernameVariable: 'SSH_USER_ARM')]) {
+                            script {
+                                env.SSH_USER_ARM = SSH_USER_ARM
+                                env.SSH_KEYFILE_ARM = SSH_KEYFILE_ARM
+                                env.SSH_ARGS_ARM = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                                env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
+                            }
+
+                            // Need to do another checkout if another job could grab the worker in between - and for first time on AARCH64
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
+
+                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
+                            sh "scp $SSH_ARGS_ARM bench_params.json $SSH_HOST_ARM:~/ym/yjit-metrics/"
+
+                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
+                            // runs when benchmarking succeeded but checking/reporting failed.
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'\""
+
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
                         }
                     }
                 }
