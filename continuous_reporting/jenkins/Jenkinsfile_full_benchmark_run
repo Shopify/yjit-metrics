@@ -257,4 +257,11 @@ pipeline {
             }
         }
     }
+
+    post {
+        failure {
+            // Need to expand this, based on https://plugins.jenkins.io/slack/
+            slackSend color: "#FF0000", message: "YJIT benchmark CI failed!"
+        }
+    }
 }
