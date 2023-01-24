@@ -14,7 +14,8 @@ git checkout Gemfile.lock _includes/reports reports
 
 git pull
 git add raw_benchmark_data
-git commit -m "`uname -p` benchmark results"
+# This should commit only if there's anything to commit, but not fail if empty
+git diff-index HEAD || git commit -m "`uname -p` benchmark results"
 git push
 
 echo "Committed and pushed benchmark data successfully."
