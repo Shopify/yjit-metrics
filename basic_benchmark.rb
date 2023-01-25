@@ -430,8 +430,8 @@ def write_crash_file(error_info, crash_report_dir)
     error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
 end
 
-all_runs.each do |run_num, config, bench_info|
-    puts "Next run: config #{config}  benchmark: #{bench_info[:name]}    run idx: #{run_num}"
+all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
+    puts "Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"
 
     ruby = RUBY_CONFIGS[config][:build]
     ruby_opts = RUBY_CONFIGS[config][:opts]
