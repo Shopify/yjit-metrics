@@ -13,10 +13,8 @@ rm -rf ~/.rubies/ruby-yjit-metrics-prod/*
 rm -rf ~/.gem/ruby/3.2.0
 
 # This isn't a 100% cleanup -- no ./configure, for instance, which basic_benchmark.rb will only do if the current config looks wrong
-cd ~/ym/prod-yjit && make clean
-cd ~/ym/prod-yjit && git clean -d -f
-cd ~/ym/debug-yjit && make clean
-cd ~/ym/debug-yjit && git clean -d -f
+cd ~/ym/prod-yjit && git clean -d -x -f
+cd ~/ym/debug-yjit && git clean -d -x -f
 
 cd ~ubuntu/ym/yjit-bench
 find . -wholename "*tmp/cache/bootsnap" -print0 | xargs -0 rm -r || echo OK
