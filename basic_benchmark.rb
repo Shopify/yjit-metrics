@@ -33,7 +33,7 @@ MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--m
 NO_JIT_OPTS = [ "--disable-yjit" ]
 
 SETARCH_OPTS = {
-    linux: "setarch x86_64 -R taskset -c #{Etc.nprocessors - 1}",
+    linux: "setarch #{`uname -m`.strip} -R taskset -c #{Etc.nprocessors - 1}",
 }
 
 CRUBY_PER_OS_OPTS = SETARCH_OPTS
