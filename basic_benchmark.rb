@@ -266,6 +266,8 @@ SKIPPED_COMBOS = [
     # [ "*", "name_of_benchmark" ]
 ]
 
+YJIT_METRICS_DIR = __dir__
+
 # Configuration for yjit-bench
 YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] ? BENCH_DATA["yjit_bench_sha"] : "main"
@@ -341,6 +343,21 @@ unless skip_git_updates
         FileUtils.cp_r source_path, dest_path
     end
 end
+
+# All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.
+
+def sha_for_dir(dir)
+    Dir.chdir(dir) { `git rev-parse HEAD`.chomp }
+end
+
+# TODO: figure out how/whether to handle cases with --skip-git-update where we have a not-committed Git version.
+# Right now that will just reflect the current head revision in Git, not any changes to it.
+# For now if we're testing a specific version, this will say which one.
+GIT_VERSIONS = {
+    "yjit_bench" => sha_for_dir(YJIT_BENCH_DIR),
+    "yjit_extra_bench" => sha_for_dir(YJIT_EXTRA_BENCH_DIR),
+    "yjit_metrics" => sha_for_dir(YJIT_METRICS_DIR),
+}
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
 # It needs to happen *after* yjit-bench is cloned and updated.
@@ -534,6 +551,7 @@ intermediate_by_config.each do |config, int_files|
         # large jobs run for.
         metadata["total_bench_time"] = "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds"
         metadata["total_bench_seconds"] = total_seconds
+        metadata["git_versions"] = GIT_VERSIONS # Log yjit-metrics version, yjit-bench version, etc.
     end
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
