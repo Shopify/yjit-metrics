@@ -41,6 +41,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         only_platforms = [only_platforms].flatten
         # Filter config names by given platform(s)
         config_names = @config_names.select { |name| only_platforms.any? { |plat| name.include?(plat) } }
+        raise "No data files for platform(s) #{only_platforms.inspect} in #{@config_names}!" if config_names.empty?
 
         @with_yjit_config = exactly_one_config_with_name(config_names, "with_yjit", "with-YJIT")
         @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
