@@ -1028,7 +1028,11 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         return if @inactive # Can't get stats? Bail out.
 
         # Give the headline data for x86 processors, not ARM64.
-        # Note: as written, this will break for any data *not* including x86. Do we care?
+        # No x86 data? Then no headline.
+        if config_names.none? { |name| name.include?("x86_64") }
+            @no_data = true
+            return
+        end
         look_up_data_by_ruby(only_platforms: ["x86_64"])
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
@@ -1070,12 +1074,13 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
     end
 
     def to_s
+        return "(This run had no x86 results)" if @no_data
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_headline.html.erb")
         script_template.result(binding) # Evaluate an Erb template with template_settings
     end
 
     def write_file(filename)
-        if @inactive
+        if @inactive || @no_data
             # Can't get stats? Write an empty file.
             self.class.report_extensions.each do |ext|
                 File.open(filename + ".#{ext}", "w") { |f| f.write("") }
