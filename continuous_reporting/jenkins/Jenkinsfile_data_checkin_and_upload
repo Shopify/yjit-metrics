@@ -45,12 +45,12 @@ pipeline {
                             script {
                                 env.SSH_USER_ARM = SSH_USER_ARM
                                 env.SSH_KEYFILE_ARM = SSH_KEYFILE_ARM
-                                env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST_X86 = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
+                                env.SSH_ARGS_ARM = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                                env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
                             }
 
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes"
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'"
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes"
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'"
                         }
                     }
                 }
