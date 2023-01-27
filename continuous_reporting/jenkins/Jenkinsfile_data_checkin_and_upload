@@ -49,8 +49,8 @@ pipeline {
                                 env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
                             }
 
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes"
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'"
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git clean -d -f reports _includes\""
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/check_reporting_minimal.sh'\""
                         }
                     }
                 }
