@@ -1031,6 +1031,7 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         # No x86 data? Then no headline.
         if config_names.none? { |name| name.include?("x86_64") }
             @no_data = true
+            puts "WARNING: no x86_64 data for data: #{config_names.inspect}"
             return
         end
         look_up_data_by_ruby(only_platforms: ["x86_64"])
