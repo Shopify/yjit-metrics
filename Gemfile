@@ -21,6 +21,9 @@ end
 
 gem "webrick"
 
+# The speed report uses the Victor gem
+gem "victor"
+
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
 # and associated library.
 platforms :mingw, :x64_mingw, :mswin, :jruby do
