@@ -28,7 +28,7 @@ Raw JSON data:<br/>
 <ul> {% for result in benchmark.test_results %} <li><a href="{{result[1]}}">{{result[0]}}</a></li> {% endfor %} </ul>
 
 {% else %}
-<a href="{{ benchmark_url | relative_url }}"><button>Full Details for This Time</button></a>
+<a href="{{ benchmark.url | relative_url }}"><button>Full Details for This Time</button></a>
 {% endif %}
 
 {% endfor %}
