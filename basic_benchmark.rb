@@ -579,6 +579,9 @@ total_hours = total_minutes / 60
 seconds = total_seconds % 60
 minutes = total_minutes % 60
 
+ruby_config_opts = {}
+configs_to_test.each { |config| ruby_config_opts[config] = RUBY_CONFIGS[config][:opts] }
+
 puts "All intermediate runs finished, merging to final files..."
 intermediate_by_config.each do |config, int_files|
     run_data = int_files.map { |file| YJITMetrics::RunData.from_json JSON.load(File.read(file)) }
@@ -588,13 +591,16 @@ intermediate_by_config.each do |config, int_files|
     # Extra metadata tags for overall benchmarks
     merged_data["benchmark_metadata"].each do |bench_name, metadata|
         metadata["runs"] = num_runs # how many runs we tried to do
+    end
 
+    merged_data["full_run"] = {
         # Include total time for the whole run, not just this benchmark, to monitor how long
         # large jobs run for.
-        metadata["total_bench_time"] = "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds"
-        metadata["total_bench_seconds"] = total_seconds
-        metadata["git_versions"] = GIT_VERSIONS # Log yjit-metrics version, yjit-bench version, etc.
-    end
+        "total_bench_time" => "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds",
+        "total_bench_seconds" => total_seconds,
+        "git_versions" => GIT_VERSIONS, # yjit-metrics version, yjit-bench version, etc.
+        "ruby_config_opts" => ruby_config_opts, # command-line options for each Ruby configuration
+    }
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
     puts "Writing to JSON output file #{json_path}, removing intermediate files."
