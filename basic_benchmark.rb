@@ -57,7 +57,7 @@ RUBY_CONFIG_ROOTS = {
         per_os_prefix: CRUBY_PER_OS_OPTS,
     },
     "yjit_stats" => {
-        build: "ruby-yjit-metrics-debug",
+        build: "ruby-yjit-metrics-stats",
         opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
