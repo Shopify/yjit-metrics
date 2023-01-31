@@ -11,10 +11,7 @@ require "optparse"
 # TODO: should the benchmark-run and perf-check parts of this script be separated? Probably.
 
 # This is intended to be the top-level script for running benchmarks, reporting on them
-# and uploading the results. It belongs in a cron job with some kind of error detection
-# to make sure it's running properly.
-
-# We want to run our benchmarks, then update GitHub Pages appropriately.
+# and checking performance.
 
 # The tolerances below are for detecting big drops in benchmark performance. So far I haven't
 # had good luck with that -- it's either too sensitive and files spurious bugs a lot, or it's
@@ -91,7 +88,6 @@ should_file_gh_issue = true
 no_perf_tripwires = false
 all_perf_tripwires = false
 single_perf_tripwire = nil
-run_reports = true
 is_verbose = false
 data_dir = "continuous_reporting/data"
 
@@ -138,14 +134,6 @@ OptionParser.new do |opts|
         no_perf_tripwires = true
     end
 
-    # Normally we run reports with the benchmark data. This updates timeline reports, and tests that the data is
-    # "correct enough" for later reporting stages. In some cases (e.g. cheaper AWS Graviton instances) we can't
-    # collect stats data, which means we can't do a lot of the reporting we'd normally want. So: skip the
-    # reporting, we'll do it on other machines later.
-    opts.on("-nr", "--no-run-reports", "Do not run reports with the benchmark data") do
-        run_reports = false
-    end
-
     opts.on("-bp PARAMS_FILE.json", "--bench-params PARAMS_FILE.json", "Benchmark parameters JSON file") do |bp_file|
         raise "No such benchmark params file: #{bp_file.inspect}!" unless File.exist?(bp_file)
         bench_params = bp_file
@@ -165,7 +153,6 @@ BENCHMARK_ARGS = benchmark_args
 FILE_GH_ISSUE = should_file_gh_issue
 ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
-RUN_REPORTS = run_reports
 VERBOSE = is_verbose
 BENCH_PARAMS = bench_params
 DATA_DIR = data_dir
@@ -474,11 +461,6 @@ end
 
 begin
     run_benchmarks
-    if RUN_REPORTS
-        report_and_upload
-        check_perf_tripwires
-        clear_latest_data
-    end
 rescue
     host = `uname -a`.chomp
     puts $!.full_message
