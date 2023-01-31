@@ -9,7 +9,6 @@ require_relative "../lib/yjit-metrics"
 
 # Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories.
 RAW_BENCHMARK_ROOT = "raw_benchmark_data"
-RAW_BENCHMARK_PLATFORM_ROOT = "raw_benchmark_data/#{YJITMetrics::PLATFORM}"
 
 def benchmark_file_out_path(filename)
     if filename =~ /^(.*)_basic_benchmark_(.*).json$/
