@@ -1,0 +1,131 @@
+<p>
+    Hover your cursor over the benchmark names for descriptions of each benchmark.
+</p>
+
+<table>
+    <thead>  <th title="Benchmark name">bench</th>  <th title="Link to a generated YJIT-stats-style exit report">Exit Report</th>  <th title="Bytes of inlined code generated">Inline</th>  <th title="Bytes of outlined code generated">Outlined</th>  <th title="Number of compiled iSeqs (methods)">Comp iSeqs</th>  <th title="Number of compiled blocks">Comp Blocks</th>  <th title="Number of methods or blocks invalidated">Inval</th>  <th title="Number of blocks invalidated over number of blocks compiled">Inval Ratio</th>  <th title="Number of Ruby bindings allocated">Bind Alloc</th>  <th title="Number of variables set via bindings">Bind Set</th>  <th title="Number of times Ruby clears its internal constant cache">Const Bumps</th>  </thead>
+    <tbody style="text-align: right;">
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/activerecord/benchmark.rb" title="activerecord repeatedly queries entries in a SQLite table with highly-random names.">activerecord</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.activerecord.html">(click)</a> </td> <td> 763881 </td> <td> 763004 </td> <td> 205 </td> <td> 1567 </td> <td> 1 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/hexapdf/benchmark.rb" title="hexapdf benchmarks the hexapdf Ruby gem by line-wrapping The Odyssey with specific line-length and font.">hexapdf</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.hexapdf.html">(click)</a> </td> <td> 983864 </td> <td> 983452 </td> <td> 607 </td> <td> 9017 </td> <td> 17 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/liquid-c/benchmark.rb" title="liquid-c renders a chosen-for-profiling Liquid theme repeatedly.">liquid-c</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.liquid-c.html">(click)</a> </td> <td> 415228 </td> <td> 413356 </td> <td> 125 </td> <td> 1565 </td> <td> 2 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/liquid-render/benchmark.rb" title="liquid-render renders a chosen-for-profiling Liquid theme repeatedly.">liquid-render</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.liquid-render.html">(click)</a> </td> <td> 453730 </td> <td> 452480 </td> <td> 147 </td> <td> 1918 </td> <td> 7 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/mail/benchmark.rb" title="mail tests the Mail gem by repeatedly creating an email from a text file and converting it to a string for sending.">mail</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.mail.html">(click)</a> </td> <td> 617319 </td> <td> 615992 </td> <td> 347 </td> <td> 4623 </td> <td> 9 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/psych-load/benchmark.rb" title="psych-load repeatedly loads a small selection of YAML files taken from various OSS projects.">psych-load</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.psych-load.html">(click)</a> </td> <td> 201273 </td> <td> 199568 </td> <td> 64 </td> <td> 566 </td> <td> 1 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/railsbench/benchmark.rb" title="railsbench is a read-only tiny SQLite-backed Rails app, querying a small selection of .html.erb routes and JSON routes.">railsbench</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.railsbench.html">(click)</a> </td> <td> 2161586 </td> <td> 2159204 </td> <td> 1365 </td> <td> 11344 </td> <td> 12 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/ruby-lsp/benchmark.rb" title="Run several operations with the Ruby language server used by VSCode">ruby-lsp</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.ruby-lsp.html">(click)</a> </td> <td> 3720374 </td> <td> 3719904 </td> <td> 3353 </td> <td> 33568 </td> <td> 294 </td> <td> 0% </td> <td> 16004 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/sequel/benchmark.rb" title="sequel repeatedly queries entries in a SQLite table with highly-random names.">sequel</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.sequel.html">(click)</a> </td> <td> 553085 </td> <td> 551152 </td> <td> 47 </td> <td> 624 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/binarytrees/benchmark.rb" title="binarytrees from the Computer Language Benchmarks Game.">binarytrees</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.binarytrees.html">(click)</a> </td> <td> 9307 </td> <td> 8740 </td> <td> 11 </td> <td> 75 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/chunky_png/benchmark.rb" title="A pure-Ruby implementation of PNG encoding">chunky_png</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.chunky_png.html">(click)</a> </td> <td> 249834 </td> <td> 248240 </td> <td> 86 </td> <td> 1086 </td> <td> 1 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/erubi/benchmark.rb" title="erubi compiles a simple Erb template into a method with erubi, then times evaluating that method.">erubi</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.erubi.html">(click)</a> </td> <td> 175897 </td> <td> 174340 </td> <td> 9 </td> <td> 83 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/erubi_rails/benchmark.rb" title="erubi_rails uses Rails template rendering to repeatedly render a stubbed Discourse view.">erubi_rails</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.erubi_rails.html">(click)</a> </td> <td> 1355734 </td> <td> 1354524 </td> <td> 289 </td> <td> 2329 </td> <td> 2 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/etanni/benchmark.rb" title="etanni is an older, extremely simple template-lang format that basically turns your template into an "eval" with a lot of heredocs.">etanni</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.etanni.html">(click)</a> </td> <td> 12403 </td> <td> 10716 </td> <td> 11 </td> <td> 55 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fannkuchredux/benchmark.rb" title="fannkuchredux from the Computer Language Benchmarks Game.">fannkuchredux</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.fannkuchredux.html">(click)</a> </td> <td> 20262 </td> <td> 18752 </td> <td> 8 </td> <td> 205 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/lee/benchmark.rb" title="lee is a circuit-board layout solver, deployed in a plausibly reality-like way">lee</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.lee.html">(click)</a> </td> <td> 220140 </td> <td> 218068 </td> <td> 49 </td> <td> 640 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/nbody/benchmark.rb" title="nbody from the Computer Language Benchmarks Game.">nbody</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.nbody.html">(click)</a> </td> <td> 16406 </td> <td> 16384 </td> <td> 10 </td> <td> 178 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/optcarrot/benchmark.rb" title="optcarrot is a functional headless NES emulator, run on a specific game cartridge for a specific number of frames.">optcarrot</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.optcarrot.html">(click)</a> </td> <td> 327427 </td> <td> 325496 </td> <td> 195 </td> <td> 4040 </td> <td> 22 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/rubykon/benchmark.rb" title="Ruby solver for Go (the boardgame.) Runs 1,000 iterations forward from an initial starting board.">rubykon</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.rubykon.html">(click)</a> </td> <td> 140783 </td> <td> 140196 </td> <td> 145 </td> <td> 1564 </td> <td> 1 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_ifelse.rb" title="30k_ifelse tests thousands of nested methods containing simple if/else statements.">30k_ifelse</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.30k_ifelse.html">(click)</a> </td> <td> 5167281 </td> <td> 5164984 </td> <td> 9263 </td> <td> 50805 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/30k_methods.rb" title="30k_methods tests thousands of nested method calls that mostly just call out to other single-call methods.">30k_methods</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.30k_methods.html">(click)</a> </td> <td> 1931955 </td> <td> 1929448 </td> <td> 5781 </td> <td> 19359 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/cfunc_itself.rb" title="cfunc_itself just calls the 'itself' method many, many times.">cfunc_itself</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.cfunc_itself.html">(click)</a> </td> <td> 6393 </td> <td> 3644 </td> <td> 8 </td> <td> 61 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/fib.rb" title="Fib is a simple exponential-time recursive Fibonacci number generator.">fib</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.fib.html">(click)</a> </td> <td> 4997 </td> <td> 3312 </td> <td> 8 </td> <td> 49 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/getivar.rb" title="getivar tests the performance of getting instance variable values.">getivar</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.getivar.html">(click)</a> </td> <td> 6247 </td> <td> 4944 </td> <td> 8 </td> <td> 74 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/keyword_args.rb" title="keyword_args tests the performance of method calls with keyword arguments.">keyword_args</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.keyword_args.html">(click)</a> </td> <td> 7231 </td> <td> 4020 </td> <td> 9 </td> <td> 63 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/respond_to.rb" title="respond_to tests the performance of the respond_to? method.">respond_to</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.respond_to.html">(click)</a> </td> <td> 6843 </td> <td> 4688 </td> <td> 8 </td> <td> 76 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/setivar.rb" title="setivar tests the performance of setting instance variable values.">setivar</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.setivar.html">(click)</a> </td> <td> 5280 </td> <td> 4112 </td> <td> 8 </td> <td> 54 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/setivar_object.rb" title="setivar_object tests the performance of setting instance variables to an object, to test write barrier speed.">setivar_object</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.setivar_object.html">(click)</a> </td> <td> 5615 </td> <td> 4112 </td> <td> 8 </td> <td> 54 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+            <tr style="border: 1px solid black;">
+                 <td> <a href="https://github.com/Shopify/yjit-bench/blob/main/benchmarks/str_concat.rb" title="str_concat tests the performance of string concatenation in multiple different encodings.">str_concat</a> </td> <td> <a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_2023-02-02-060805.str_concat.html">(click)</a> </td> <td> 6514 </td> <td> 4424 </td> <td> 10 </td> <td> 72 </td> <td> 0 </td> <td> 0% </td> <td> 0 </td> <td> 0 </td> <td> 0 </td>
+            </tr>
+        
+    </tbody>
+</table>
+
+<p>
+    YJIT stats correspond to the YJIT stats exit report.
+</p>
+
