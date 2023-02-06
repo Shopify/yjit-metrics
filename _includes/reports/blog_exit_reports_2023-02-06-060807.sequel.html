@@ -1,0 +1,57 @@
+method call exit reasons: 
+      iseq_has_rest     829739 (50.0%)
+           keywords     498000 (30.0%)
+    ivar_set_method     165912 (10.0%)
+           kw_splat     165874 (10.0%)
+     iseq_has_no_kw         12 ( 0.0%)
+          block_arg          3 ( 0.0%)
+
+leave exit reasons: 
+        interp_return   18254072 (100.0%)
+         se_interrupt       4343 ( 0.0%)
+    start_pc_non_zero         70 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:           47
+compiled_block_count:         624
+invalidation_count:             0
+constant_state_bumps:           0
+inline_code_size:          553175
+outlined_code_size:        551400
+
+total_exit_count:        29054136
+total_insns_count:      619008577
+vm_insns_count:         109182025
+yjit_insns_count:       520626616
+ratio_in_yjit:              82.4%
+avg_len_in_yjit:             17.5
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    8634868 (80.0)
+                      send:     997943 (9.2)
+               invokesuper:     498046 (4.6)
+                     throw:     331993 (3.1)
+                checkmatch:     331826 (3.1)
+                     leave:       4343 (0.0)
+                  opt_aref:        259 (0.0)
+                    opt_eq:        232 (0.0)
+                  opt_mult:        178 (0.0)
+                opt_length:        115 (0.0)
+                   opt_neq:        108 (0.0)
+               opt_empty_p:         54 (0.0)
+                  branchif:         52 (0.0)
+          opt_regexpmatch2:         47 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                 checktype:          0 (0.0)
