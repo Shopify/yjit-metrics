@@ -1,0 +1,59 @@
+method call exit reasons: 
+               iseq_has_rest    2004386 (50.0%)
+            iseq_arity_error     626414 (15.6%)
+                 iseq_zsuper     375871 ( 9.4%)
+         iseq_ruby2_keywords     250542 ( 6.2%)
+    iseq_missing_optional_kw     250542 ( 6.2%)
+                   block_arg     250534 ( 6.2%)
+      args_splat_cfunc_zuper     125272 ( 3.1%)
+              iseq_has_no_kw     125271 ( 3.1%)
+
+leave exit reasons: 
+        interp_return   34211225 (98.2%)
+    start_pc_non_zero     626478 ( 1.8%)
+         se_interrupt        613 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          289
+compiled_block_count:        2324
+invalidation_count:             2
+constant_state_bumps:           0
+inline_code_size:         1336816
+outlined_code_size:       1336528
+
+total_exit_count:        38599184
+total_insns_count:     1475783252
+vm_insns_count:         162027822
+yjit_insns_count:      1318143389
+ratio_in_yjit:              89.0%
+avg_len_in_yjit:             34.0
+
+Top-20 most frequent exit ops (100.0% of exits):
+    opt_send_without_block:    1252796 (28.6)
+               invokesuper:    1130083 (25.8)
+                      send:    1127468 (25.7)
+               invokeblock:     626414 (14.3)
+        getblockparamproxy:     125300 (2.9)
+                  opt_aref:     125271 (2.9)
+                     leave:        613 (0.0)
+                 opt_minus:          5 (0.0)
+                 opt_nil_p:          4 (0.0)
+                   opt_and:          3 (0.0)
+               opt_empty_p:          1 (0.0)
+      opt_getconstant_path:          1 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                  branchif:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
