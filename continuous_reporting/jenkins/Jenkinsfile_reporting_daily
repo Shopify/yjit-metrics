@@ -30,7 +30,8 @@ pipeline {
                         env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
                     }
 
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics-pages && uname -a && git checkout . && git clean -d -f reports _includes && git pull\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git pull\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics-pages && git checkout . && git clean -d -f reports _includes && git pull\""
                     sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
                 }
             }

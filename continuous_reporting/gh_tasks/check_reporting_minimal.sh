@@ -18,6 +18,6 @@ cd ~/ym/yjit-metrics
 ruby continuous_reporting/generate_and_upload_reports.rb --no-push -d ./continuous_reporting/data --only-reports blog_timeline
 
 # Don't keep the provisional report files around
-cd ../yjit-metrics-pages && git checkout reports _includes
+cd ../yjit-metrics-pages && git checkout reports _includes && git clean -d -f reports _includes
 
 echo "Minimal reporting check completed successfully."
