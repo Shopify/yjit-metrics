@@ -8,13 +8,19 @@ chruby 3.0.2
 
 cd ~/ym/yjit-metrics-pages
 
+# Anything that's been added to a pending commit should be un-added
+git restore --staged .
+
 # We've probably run reporting tests here. That leaves certain files dirty, but we don't want to check them in.
-# We do *not* want to "git clean" because we have uncommitted test data.
 git checkout Gemfile.lock _includes/reports reports
+
+# Clean only the report dirs because we might have uncommitted test data.
+git clean -d -f _includes/reports reports
 
 git pull
 # This should commit only if there's anything to commit, but not fail if empty
-git diff-index HEAD || (git add raw_benchmark_data && git commit -m "`uname -p` benchmark results")
+git git add raw_benchmark_data
+git commit -m "`uname -p` benchmark results" || echo "Commit is empty?"
 git push
 
 echo "Committed and pushed benchmark data successfully."
