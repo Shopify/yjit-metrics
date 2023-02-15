@@ -19,7 +19,7 @@ git clean -d -f _includes/reports reports
 
 git pull
 # This should commit only if there's anything to commit, but not fail if empty
-git git add raw_benchmark_data
+git add raw_benchmark_data
 git commit -m "`uname -p` benchmark results" || echo "Commit is empty?"
 git push
 
