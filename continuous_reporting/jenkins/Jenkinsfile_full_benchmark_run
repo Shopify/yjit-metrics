@@ -1,27 +1,11 @@
 // This Jenkinsfile is a conversion of the older GitHub Actions workflow for benchmarking.
 
-// It does a few unusual things. SSHing to workers for every step, for instance, is weird.
-// Benchmarking is odd in that you want ***nothing*** else running on the machine. No
-// Jenkins agent, no other jobs, nothing. And so instead of throttling workflows with
-// executors in the usual way (which could work), we instead throttle using categories
-// to make sure throttling happens across multiple workflows, and we run no Jenkins
-// agent on the bare-metal workers.
-//
-// For non-baremetal workers, we can probably be more relaxed since we're already
-// accepting some noise in the measurement, e.g. for virtualisation. Eventually I'd
-// like a variety of benchmarking quality, from gold standard (AWS metal instances,
-// nothing else running) to pretty-okay (virtualised instance, not much else running.)
-
 // The division between gh_tasks/ shellscripts and continuous_reporting/ Ruby files
 // is a bit weirder. In theory it's to let the shellscripts juggle the Ruby configuration,
 // which would be painful to manage directly from a Jenkinsfile or GitHub Actions workflow,
 // but in practice the current version is a mess too.
 
 // Jenkinsfile documentation:
-//
-// Parallel stages:
-// * https://www.jenkins.io/doc/book/pipeline/syntax/#parallel
-// * https://stackoverflow.com/questions/43913698/jenkinsfile-parallel-directive
 //
 // * Groovy Multiline Strings: https://stackoverflow.com/questions/5079797/whats-wrong-with-groovy-multi-line-string
 // * Groovy ternary or coalescing operators: https://www.danvega.dev/blog/2013/08/22/groovy-ternary-operator/
