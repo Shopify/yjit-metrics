@@ -10,26 +10,6 @@ require_relative "../lib/yjit-metrics"
 # Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories.
 RAW_BENCHMARK_ROOT = "raw_benchmark_data"
 
-def benchmark_file_out_path(filename)
-    if filename =~ /^(.*)_basic_benchmark_(.*).json$/
-        ts = $1
-        config = $2
-
-        config_platform = YJITMetrics::PLATFORMS.detect { |platform| config.start_with?(platform) }
-        if !config_platform
-            raise "Can't parse platform from config in filename: #{filename.inspect} / #{config.inspect}!"
-        end
-
-        year, month, day, tm = ts.split("-")
-        if ts == "" || year == "" || day == ""
-            raise "Empty string when parsing timestamp: #{ts.inspect}!"
-        end
-        "#{RAW_BENCHMARK_ROOT}/#{config_platform}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
-    else
-        raise "Can't parse filename: #{filename}!"
-    end
-end
-
 # TODO: load the extensions out of the class objects
 REPORTS_AND_FILES = {
     "blog_speed_headline" => {
@@ -83,7 +63,6 @@ def report_filenames(report_name, ts, prefix: "_includes/reports/")
     exts.map { |ext| "#{prefix}#{report_name}_#{ts}.#{ext}" }
 end
 
-copy_from = []
 no_push = false
 regenerate_reports = false
 die_on_regenerate = false
@@ -95,10 +74,6 @@ OptionParser.new do |opts|
         Specify directories with -d to add new test results and reports.
         Currently-known data will be indexed and git-pushed.
     BANNER
-
-    opts.on("-d DIR", "Copy raw data and report files out of this directory (may be specified multiple times)") do |dir|
-        copy_from << dir
-    end
 
     opts.on("-n", "--no-push", "Don't push the new Git commit, just modify files locally") do
         no_push = true
@@ -174,32 +149,6 @@ end
 
 # We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
 #Dir.chdir(YJIT_METRICS_PAGES_DIR) { YJITMetrics.check_call "git clean -d -f" }
-
-# Copy JSON and report files into the branch
-copy_from.each do |dir_to_copy|
-    Dir.chdir(dir_to_copy) do
-        # Copy raw data files to a place we can link them rather than include them in pages
-        Dir["*_basic_benchmark_*.json"].each do |filename|
-            out_file = benchmark_file_out_path(filename)
-            dir = File.join(YJIT_METRICS_PAGES_DIR, File.dirname(out_file))
-            FileUtils.mkdir_p dir
-            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, out_file))
-            puts "Copying data file: #{filename.inspect} to #{out_file.inspect} in dir #{dir.inspect}"
-        end
-
-        # We used to copy report files from the data dir. We probably shouldn't.
-
-        # Copy report files to somewhere we can include them in other Jekyll pages
-        #REPORTS_AND_FILES.keys.each do |report_name|
-        #    Dir["#{report_name}_*\.([^.]+)"].each do |filename|
-        #        ext = $1
-        #        if REPORTS_AND_FILES[report_name][:extensions].include?(ext)
-        #            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, "_includes/reports/#{filename}"))
-        #        end
-        #    end
-        #end
-    end
-end
 
 # From here on out, we're just in the yjit-metrics checkout of "pages"
 Dir.chdir(YJIT_METRICS_PAGES_DIR)
