@@ -6,6 +6,9 @@ set -e
 # Also we're gonna be messing with the installed prerelease Rubies a fair bit.
 chruby 3.0.2
 
+cd ~/ym/yjit-metrics
+ruby continuous_reporting/file_benchmark_data_into_raw.rb -d continuous_reporting/data
+
 cd ~/ym/yjit-metrics-pages
 
 # Anything that's been added to a pending commit should be un-added
