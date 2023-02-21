@@ -21,9 +21,13 @@ git checkout Gemfile.lock _includes/reports reports
 # Clean only the report dirs. We might have uncommitted test data, so no cleaning data dirs.
 git clean -d -f _includes/reports reports
 
+git pull
+
 # Sometimes we make a commit at the exact same time as the x86 worker and then we can't
 # push it. If that has happened, rebase our data commit back over top of the new head commit.
+pushd ../yjit-metrics-pages
 git pull --rebase
+popd
 
 # This should commit only if there's anything to commit, but not fail if empty
 git add raw_benchmark_data
