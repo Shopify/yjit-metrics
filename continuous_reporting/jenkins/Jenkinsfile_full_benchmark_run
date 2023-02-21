@@ -91,9 +91,9 @@ pipeline {
             }
         }
 
-        stage('benchmarking') {
+        stage('benchmarking and data upload') {
             parallel {
-                stage('benchmarking x86_64') {
+                stage('benchmarking and data upload x86_64') {
                     agent any
                     steps {
                         withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
@@ -115,12 +115,13 @@ pipeline {
                             // runs when benchmarking succeeded but checking/reporting failed.
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
 
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
                         }
                     }
                 }
-                stage('benchmarking AARCH64') {
+                stage('benchmarking and data upload AARCH64') {
                     agent any
                     steps {
                         withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'SSH_KEYFILE_ARM', usernameVariable: 'SSH_USER_ARM')]) {
@@ -141,6 +142,7 @@ pipeline {
                             // runs when benchmarking succeeded but checking/reporting failed.
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
 
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
                         }
@@ -149,43 +151,7 @@ pipeline {
             }
         }
 
-        // This stage commits and uploads new benchmark data (if any) in raw_benchmarks to Git storage
-        stage('data checkin') {
-            parallel {
-                stage('data checkin x86_64') {
-                    agent any
-                    steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                            script {
-                                env.SSH_USER_X86 = SSH_USER_X86
-                                env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                                env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                            }
-
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-                        }
-                    }
-                }
-                stage('data checkin AARCH64') {
-                    agent any
-                    steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'SSH_KEYFILE_ARM', usernameVariable: 'SSH_USER_ARM')]) {
-                            script {
-                                env.SSH_USER_ARM = SSH_USER_ARM
-                                env.SSH_KEYFILE_ARM = SSH_KEYFILE_ARM
-                                env.SSH_ARGS_ARM = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
-                            }
-
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('reporting and upload') {
+        stage('reporting') {
             agent any
 
             steps {
