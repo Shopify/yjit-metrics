@@ -548,6 +548,11 @@ class YJITMetrics::ResultSet
                 }
             end
 
+            mem_by_bench = peak_mem_bytes_for_config_by_benchmark(config)
+            times_by_bench.keys.each do |bench|
+                summary[config][bench]["peak_mem_bytes"] = mem_by_bench[bench]
+            end
+
             all_stats = combined_yjit_stats_for_config_by_benchmark(config)
             all_stats.each do |bench, stats|
                 summary[config][bench]["yjit_stats"] = stats.slice(*SUMMARY_STATS)

@@ -53,6 +53,10 @@ REPORTS_AND_FILES = {
         report_type: :timeline_report,
         extensions: [ "html" ],
     },
+    "memory_timeline" => {
+        report_type: :timeline_report,
+        extensions: [ "html" ],
+    },
 }
 
 # Note: we use extensions *directly* for timeline reports, and they don't use timestamps.
