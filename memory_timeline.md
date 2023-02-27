@@ -27,29 +27,17 @@ document.timeline_data = {} // For sharing data w/ handlers
         <fieldset id="plat-select-fieldset" style="border: 1px solid black">
             <legend>Select Dataset</legend>
 
-            <input type="radio" id="platform-radio-nojit-x86-recent" name="plat-data-select" value="nojit.x86_64.recent" />
-            <label for="platform-radio-nojit-x86-recent">No-JIT x86_64 Recent</label>
+            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="x86_64.recent" />
+            <label for="platform-radio-x86-recent">x86_64 Recent</label>
 
-            <input type="radio" id="platform-radio-nojit-x86-recent" name="plat-data-select" value="nojit.x86_64.all_time" />
-            <label for="platform-radio-nojit-x86-recent">No-JIT x86_64 All-Time</label>
+            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="x86_64.all_time" checked />
+            <label for="platform-radio-x86-recent">x86_64 All-Time</label>
 
-            <input type="radio" id="platform-radio-nojit-aarch-recent" name="plat-data-select" value="nojit.aarch64.recent" />
-            <label for="platform-radio-aarch-recent">No-JIT ARM64 Recent</label>
+            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="aarch64.recent" />
+            <label for="platform-radio-aarch-recent">ARM64 Recent</label>
 
-            <input type="radio" id="platform-radio-nojit-aarch-recent" name="plat-data-select" value="nojit.aarch64.all_time" />
-            <label for="platform-radio-aarch-recent">No-JIT ARM64 All-Time</label>
-
-            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="yjit.x86_64.recent" checked />
-            <label for="platform-radio-x86-recent">YJIT x86_64 Recent</label>
-
-            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="yjit.x86_64.all_time" />
-            <label for="platform-radio-x86-recent">YJIT x86_64 All-Time</label>
-
-            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="yjit.aarch64.recent" />
-            <label for="platform-radio-aarch-recent">YJIT ARM64 Recent</label>
-
-            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="yjit.aarch64.all_time" />
-            <label for="platform-radio-aarch-recent">YJIT ARM64 All-Time</label>
+            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="aarch64.all_time" />
+            <label for="platform-radio-aarch-recent">ARM64 All-Time</label>
         </fieldset>
     </form>
     {% include reports/memory_timeline.html %}
@@ -266,7 +254,7 @@ function setRequestError() {
 
 // Default to x86_64 YJIT recent-only data
 setRequestPending();
-fetch("/reports/timeline/memory_timeline.data.yjit.x86_64.recent.js").then(function (response) {
+fetch("/reports/timeline/memory_timeline.data.x86_64.all_time.js").then(function (response) {
     if(response.ok) {
         return response.text().then(function (data) {
             setRequestFinished();
@@ -352,27 +340,36 @@ function updateAllFromCheckbox(cb) {
     var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
 
     // Find the graph series for this benchmark
-    var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
+    var yjitGraphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
+    var nojitGraphSeries = document.querySelector("svg g.prod_ruby_no_jit-" + bench);
 
-    var thisDataSeries;
+    var thisYJITDataSeries;
+    var thisNoJITDataSeries;
     if(data_series) {
         data_series.forEach(function (series) {
             if(series.name == "prod_ruby_with_yjit-" + bench) {
-                thisDataSeries = series;
+                thisYJITDataSeries = series;
+            }
+            if(series.name == "prod_ruby_no_jit-" + bench) {
+                thisNoJITDataSeries = series;
             }
         });
     }
 
     if(cb.checked) {
         /* Make series visible */
-        if(thisDataSeries) { thisDataSeries.visible = true; }
+        if(thisYJITDataSeries) { thisYJITDataSeries.visible = true; }
+        if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = true; }
         legendBox.style.display = "inline-block";
-        if(graphSeries) { graphSeries.style.visibility = "visible"; }
+        if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "visible"; }
+        if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "visible"; }
     } else {
         /* Make series invisible */
-        if(thisDataSeries) { thisDataSeries.visible = false; }
+        if(thisYJITDataSeries) { thisYJITDataSeries.visible = false; }
+        if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = false; }
         legendBox.style.display = "none";
-        if(graphSeries) { graphSeries.style.visibility = "hidden"; }
+        if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "hidden"; }
+        if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "hidden"; }
     }
 }
 
