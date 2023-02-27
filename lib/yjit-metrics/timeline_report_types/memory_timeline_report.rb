@@ -17,6 +17,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
     "no-jit" => "prod_ruby_no_jit",
     "yjit" => "prod_ruby_with_yjit",
   }
+  CONFIG_ROOTS = CONFIG_NAMES.values
   NUM_RECENT=100
   def initialize(context)
     super
@@ -65,18 +66,16 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
 
   def write_files(out_dir)
     [:recent, :all_time].each do |duration|
-      CONFIG_NAMES.each do |config_name, config_root|
-        REPORT_PLATFORMS.each do |platform|
-          begin
-            @data_series = @series[platform][duration].select { |s| s[:config].include?(config_root) }
+      REPORT_PLATFORMS.each do |platform|
+        begin
+          @data_series = @series[platform][duration].select { |s| CONFIG_ROOTS.any? { |config_root| s[:config].include?(config_root) } }
 
-            script_template = ERB.new File.read(__dir__ + "/../report_templates/memory_timeline_data_template.js.erb")
-            text = script_template.result(binding)
-            File.open("#{out_dir}/reports/timeline/memory_timeline.data.#{config_name}.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
-          rescue
-            puts "Error writing data file for #{config_name} #{platform} #{duration} data!"
-            raise
-          end
+          script_template = ERB.new File.read(__dir__ + "/../report_templates/memory_timeline_data_template.js.erb")
+          text = script_template.result(binding)
+          File.open("#{out_dir}/reports/timeline/memory_timeline.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
+        rescue
+          puts "Error writing data file for #{platform} #{duration} data!"
+          raise
         end
       end
     end

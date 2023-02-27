@@ -23,6 +23,7 @@
 <div id="bottom_selection_checkboxes" style="display: none;">
   <ul>
     <% @data_series.each do |this_series| %>
+    <% next if this_series[:config]["no_jit"] %> <%# de-dup because we include both YJIT and No-JIT series %>
     <li>
       <input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" />
       <span style='background: <%= this_series[:color] %>'>
