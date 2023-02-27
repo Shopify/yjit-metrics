@@ -1,0 +1,398 @@
+<!-- This is the full-size timeline report, for the deep dive -->
+
+<div id="timeline_rs_chart"></div>
+
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+      
+      <li style="display: none" data-benchmark="30k_ifelse">
+        <span style='background: #0066b3'>&nbsp;&nbsp;
+          <strong style="color: white;">30k_ifelse</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="30k_methods">
+        <span style='background: #ffcc00'>&nbsp;&nbsp;
+          <strong style="color: white;">30k_methods</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="activerecord">
+        <span style='background: #990099'>&nbsp;&nbsp;
+          <strong style="color: white;">activerecord</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="binarytrees">
+        <span style='background: #ff0000'>&nbsp;&nbsp;
+          <strong style="color: white;">binarytrees</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="cfunc_itself">
+        <span style='background: #008f00'>&nbsp;&nbsp;
+          <strong style="color: white;">cfunc_itself</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="chunky_png">
+        <span style='background: #b35a00'>&nbsp;&nbsp;
+          <strong style="color: white;">chunky_png</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="erubi">
+        <span style='background: #b30000'>&nbsp;&nbsp;
+          <strong style="color: white;">erubi</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="erubi_rails">
+        <span style='background: #80ff80'>&nbsp;&nbsp;
+          <strong style="color: white;">erubi_rails</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="etanni">
+        <span style='background: #ffc080'>&nbsp;&nbsp;
+          <strong style="color: white;">etanni</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="fannkuchredux">
+        <span style='background: #aa80ff'>&nbsp;&nbsp;
+          <strong style="color: white;">fannkuchredux</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="fib">
+        <span style='background: #ff8080'>&nbsp;&nbsp;
+          <strong style="color: white;">fib</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="getivar">
+        <span style='background: #ffbfff'>&nbsp;&nbsp;
+          <strong style="color: white;">getivar</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="hexapdf">
+        <span style='background: #cc6699'>&nbsp;&nbsp;
+          <strong style="color: white;">hexapdf</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="keyword_args">
+        <span style='background: #ffcc00'>&nbsp;&nbsp;
+          <strong style="color: white;">keyword_args</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="lee">
+        <span style='background: #990099'>&nbsp;&nbsp;
+          <strong style="color: white;">lee</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="liquid-c">
+        <span style='background: #ff0000'>&nbsp;&nbsp;
+          <strong style="color: white;">liquid-c</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="liquid-render">
+        <span style='background: #008f00'>&nbsp;&nbsp;
+          <strong style="color: white;">liquid-render</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="mail">
+        <span style='background: #b35a00'>&nbsp;&nbsp;
+          <strong style="color: white;">mail</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="nbody">
+        <span style='background: #6b006b'>&nbsp;&nbsp;
+          <strong style="color: white;">nbody</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="optcarrot">
+        <span style='background: #b30000'>&nbsp;&nbsp;
+          <strong style="color: white;">optcarrot</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="psych-load">
+        <span style='background: #80ff80'>&nbsp;&nbsp;
+          <strong style="color: white;">psych-load</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="railsbench">
+        <span style='background: #ffc080'>&nbsp;&nbsp;
+          <strong style="color: white;">railsbench</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="respond_to">
+        <span style='background: #aa80ff'>&nbsp;&nbsp;
+          <strong style="color: white;">respond_to</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="ruby-lsp">
+        <span style='background: #ff8080'>&nbsp;&nbsp;
+          <strong style="color: white;">ruby-lsp</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="rubykon">
+        <span style='background: #ffbfff'>&nbsp;&nbsp;
+          <strong style="color: white;">rubykon</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="sequel">
+        <span style='background: #cc6699'>&nbsp;&nbsp;
+          <strong style="color: white;">sequel</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="setivar">
+        <span style='background: #003399'>&nbsp;&nbsp;
+          <strong style="color: white;">setivar</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="setivar_object">
+        <span style='background: #0066b3'>&nbsp;&nbsp;
+          <strong style="color: white;">setivar_object</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+      <li style="display: none" data-benchmark="str_concat">
+        <span style='background: #ffcc00'>&nbsp;&nbsp;
+          <strong style="color: white;">str_concat</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="timeline-report-explanation">
+  Y axis values are the maximum memory usage while running the benchmark - lower is better.
+</div>
+
+<div id="bottom_selection_checkboxes" style="display: none;">
+  <ul>
+    
+    <li>
+      <input type="checkbox" data-benchmark="30k_ifelse" />
+      <span style='background: #0066b3'>
+        &nbsp;&nbsp; <strong style="color: white;">30k_ifelse</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="30k_methods" />
+      <span style='background: #ffcc00'>
+        &nbsp;&nbsp; <strong style="color: white;">30k_methods</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="activerecord" />
+      <span style='background: #990099'>
+        &nbsp;&nbsp; <strong style="color: white;">activerecord</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="binarytrees" />
+      <span style='background: #ff0000'>
+        &nbsp;&nbsp; <strong style="color: white;">binarytrees</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="cfunc_itself" />
+      <span style='background: #008f00'>
+        &nbsp;&nbsp; <strong style="color: white;">cfunc_itself</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="chunky_png" />
+      <span style='background: #b35a00'>
+        &nbsp;&nbsp; <strong style="color: white;">chunky_png</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="erubi" />
+      <span style='background: #b30000'>
+        &nbsp;&nbsp; <strong style="color: white;">erubi</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="erubi_rails" />
+      <span style='background: #80ff80'>
+        &nbsp;&nbsp; <strong style="color: white;">erubi_rails</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="etanni" />
+      <span style='background: #ffc080'>
+        &nbsp;&nbsp; <strong style="color: white;">etanni</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="fannkuchredux" />
+      <span style='background: #aa80ff'>
+        &nbsp;&nbsp; <strong style="color: white;">fannkuchredux</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="fib" />
+      <span style='background: #ff8080'>
+        &nbsp;&nbsp; <strong style="color: white;">fib</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="getivar" />
+      <span style='background: #ffbfff'>
+        &nbsp;&nbsp; <strong style="color: white;">getivar</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="hexapdf" />
+      <span style='background: #cc6699'>
+        &nbsp;&nbsp; <strong style="color: white;">hexapdf</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="keyword_args" />
+      <span style='background: #ffcc00'>
+        &nbsp;&nbsp; <strong style="color: white;">keyword_args</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="lee" />
+      <span style='background: #990099'>
+        &nbsp;&nbsp; <strong style="color: white;">lee</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="liquid-c" />
+      <span style='background: #ff0000'>
+        &nbsp;&nbsp; <strong style="color: white;">liquid-c</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="liquid-render" />
+      <span style='background: #008f00'>
+        &nbsp;&nbsp; <strong style="color: white;">liquid-render</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="mail" />
+      <span style='background: #b35a00'>
+        &nbsp;&nbsp; <strong style="color: white;">mail</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="nbody" />
+      <span style='background: #6b006b'>
+        &nbsp;&nbsp; <strong style="color: white;">nbody</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="optcarrot" />
+      <span style='background: #b30000'>
+        &nbsp;&nbsp; <strong style="color: white;">optcarrot</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="psych-load" />
+      <span style='background: #80ff80'>
+        &nbsp;&nbsp; <strong style="color: white;">psych-load</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="railsbench" />
+      <span style='background: #ffc080'>
+        &nbsp;&nbsp; <strong style="color: white;">railsbench</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="respond_to" />
+      <span style='background: #aa80ff'>
+        &nbsp;&nbsp; <strong style="color: white;">respond_to</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="ruby-lsp" />
+      <span style='background: #ff8080'>
+        &nbsp;&nbsp; <strong style="color: white;">ruby-lsp</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="rubykon" />
+      <span style='background: #ffbfff'>
+        &nbsp;&nbsp; <strong style="color: white;">rubykon</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="sequel" />
+      <span style='background: #cc6699'>
+        &nbsp;&nbsp; <strong style="color: white;">sequel</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="setivar" />
+      <span style='background: #003399'>
+        &nbsp;&nbsp; <strong style="color: white;">setivar</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="setivar_object" />
+      <span style='background: #0066b3'>
+        &nbsp;&nbsp; <strong style="color: white;">setivar_object</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="str_concat" />
+      <span style='background: #ffcc00'>
+        &nbsp;&nbsp; <strong style="color: white;">str_concat</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+  </ul>
+</div>
