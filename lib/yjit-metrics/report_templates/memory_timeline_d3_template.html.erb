@@ -1,0 +1,34 @@
+<!-- This is the full-size timeline report, for the deep dive -->
+
+<div id="timeline_rs_chart"></div>
+
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+      <% @data_series.each do |this_series| %>
+      <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
+        <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      <% end %>
+    </ul>
+  </div>
+</div>
+
+<div class="timeline-report-explanation">
+  Y axis values are the maximum memory usage while running the benchmark - lower is better.
+</div>
+
+<div id="bottom_selection_checkboxes" style="display: none;">
+  <ul>
+    <% @data_series.each do |this_series| %>
+    <li>
+      <input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" />
+      <span style='background: <%= this_series[:color] %>'>
+        &nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  <% end %>
+  </ul>
+</div>
