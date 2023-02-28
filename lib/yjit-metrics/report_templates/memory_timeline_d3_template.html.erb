@@ -6,10 +6,9 @@
   <div id="timeline_legend_child">
     <ul style="display:inline-block">
       <% @data_series.each do |this_series| %>
-        <% next if this_series[:config]["no_jit"] %> <%# de-dup because we include both YJIT and No-JIT series %>
         <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
         <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
-          <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %> <%= this_series[:config_human_name] %></strong> &nbsp;&nbsp;
         </span>
       </li>
       <% end %>

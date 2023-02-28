@@ -32,7 +32,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
 
     color_idx = 0
     @context[:benchmark_order].each.with_index do |benchmark, idx|
-      ruby_config_roots.each do |config_root|
+      CONFIG_NAMES.each do |config_human_name, config_root|
         color = MUNIN_PALETTE[color_idx % MUNIN_PALETTE.size]
         color_idx += 1
 
@@ -53,7 +53,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
 
           visible = @context[:selected_benchmarks].include?(benchmark)
 
-          s_all_time = { config: config, benchmark: benchmark, name: "#{config_root}-#{benchmark}", platform: platform, visible: visible, color: color, data: points }
+          s_all_time = { config: config, config_human_name: config_human_name, benchmark: benchmark, name: "#{config_root}-#{benchmark}", platform: platform, visible: visible, color: color, data: points }
           s_recent = s_all_time.dup
           s_recent[:data] = s_recent[:data].last(NUM_RECENT)
 
