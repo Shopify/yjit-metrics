@@ -10,6 +10,7 @@ layout: basic
 <script>
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
+var commaPrinter = d3.format(",d");
 var data_series;
 var all_series_time_range;
 
@@ -219,7 +220,7 @@ function updateGraphFromData() {
         .attr("r", 4.0)
         .attr("cx", function(d) { return x(d.date) } )
         .attr("cy", function(d) { return y(d.value) } )
-        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value + " bytes<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
+        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + commaPrinter(d.value) + " bytes<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
         .attr("clip-path", "url(#clip)")
         ;
     });
@@ -337,7 +338,7 @@ function updateAllFromCheckboxes() {
 
 function updateAllFromCheckbox(cb) {
     var bench = cb.getAttribute("data-benchmark");
-    var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
+    var legendBox = document.querySelectorAll("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
 
     // Find the graph series for this benchmark
     var yjitGraphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
@@ -360,14 +361,14 @@ function updateAllFromCheckbox(cb) {
         /* Make series visible */
         if(thisYJITDataSeries) { thisYJITDataSeries.visible = true; }
         if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = true; }
-        legendBox.style.display = "inline-block";
+        legendBox.forEach(function(elt) { elt.style.display = "inline-block"; });
         if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "visible"; }
         if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "visible"; }
     } else {
         /* Make series invisible */
         if(thisYJITDataSeries) { thisYJITDataSeries.visible = false; }
         if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = false; }
-        legendBox.style.display = "none";
+        legendBox.forEach(function(elt) { elt.style.display = "none"; });
         if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "hidden"; }
         if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "hidden"; }
     }
