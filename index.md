@@ -53,10 +53,18 @@ layout: basic
   </div>
 </div>
 
-<!-- Stats timeline -->
+<!-- Stats Timeline -->
 <div class="stats-timeline-report">
   <div style="text-align: center; margin-top: 3em;">
     <a href="{{ "stats-timeline#yjit_speedup+overall-mean+activerecord+liquid-render+optcarrot+railsbench" | relative_url }}"><button>YJIT Speedup and Statistics Over Time</button></a>
+  </div>
+</div>
+
+<!-- Memory Usage Timeline -->
+
+<div class="memory-timeline-report">
+  <div style="text-align: center; margin-top: 3em;">
+    <a href="{{ "memory_timeline#railsbench" | relative_url }}"><button>YJIT vs CRuby Memory Usage Over Time</button></a>
   </div>
 </div>
 
