@@ -82,14 +82,25 @@ BENCH_TYPES = {
     #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
     #"extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }
-benchmark_args = BENCH_TYPES["default"]
-bench_params = nil
+def args_for_bench_type(bench_type_arg)
+    if bench_type_arg.include?("-")
+        bench_type_arg
+    elsif BENCH_TYPES.has_key?(bench_type_arg)
+        BENCH_TYPES[bench_type_arg]
+    else
+        raise "Unrecognized benchmark args or type: #{bench_type_arg.inspect}! Known types: #{BENCH_TYPES.keys.inspect}"
+    end
+end
+
+benchmark_args = nil
+bench_params_file = nil
 should_file_gh_issue = true
 no_perf_tripwires = false
 all_perf_tripwires = false
 single_perf_tripwire = nil
 is_verbose = false
-data_dir = "continuous_reporting/data"
+data_dir = nil
+full_rebuild = nil
 
 OptionParser.new do |opts|
     opts.banner = <<~BANNER
@@ -99,15 +110,10 @@ OptionParser.new do |opts|
     BANNER
 
     opts.on("-b BENCHTYPE", "--benchmark-type BENCHTYPE", "The type of benchmarks to run - give a basic_benchmark.rb command line, or one of: #{BENCH_TYPES.keys.inspect}") do |btype|
-      if btype.include?("-") # If it has a dash, we assume it's arguments for basic_benchmark
-        benchmark_args = btype
-      elsif BENCH_TYPES.has_key?(btype)
-        benchmark_args = BENCH_TYPES[btype]
-      else
-        raise "Unrecognized benchmark args or type: #{btype.inspect}! Known types: #{BENCH_TYPES.keys.inspect}"
-      end
+      benchmark_args = args_for_bench_type(btype)
     end
 
+    # NOTE: GH issue filing is currently disabled
     opts.on("-g", "--no-gh-issue", "Do not file an actual GitHub issue, only print failures to console") do
         should_file_gh_issue = false
     end
@@ -134,9 +140,17 @@ OptionParser.new do |opts|
         no_perf_tripwires = true
     end
 
+    opts.on("-fr YN", "--full-rebuild YN") do |fr|
+        if fr.nil? || fr.strip == ""
+            full_rebuild = true
+        else
+            full_rebuild = YJITMetrics.CLI.human_string_to_boolean(fr)
+        end
+    end
+
     opts.on("-bp PARAMS_FILE.json", "--bench-params PARAMS_FILE.json", "Benchmark parameters JSON file") do |bp_file|
         raise "No such benchmark params file: #{bp_file.inspect}!" unless File.exist?(bp_file)
-        bench_params = bp_file
+        bench_params_file = bp_file
     end
 
     opts.on("-dd DATA_DIR", "--data-dir DATA_DIR", "Location to write benchmark results, default: continuous_reporting/data") do |ddir|
@@ -149,13 +163,27 @@ OptionParser.new do |opts|
     end
 end.parse!
 
-BENCHMARK_ARGS = benchmark_args
+bench_params_data = bench_params_file ? JSON.parse(File.read bench_params_file) : {}
+
+BENCHMARK_ARGS = benchmark_args || (bench_params_data["bench_type"] ? args_for_bench_type(bench_params_data["bench_type"]) : BENCH_TYPES["default"])
+FULL_REBUILD = !full_rebuild.nil? ? full_rebuild : (bench_params_data["full_rebuild"] || false)
 FILE_GH_ISSUE = should_file_gh_issue
 ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
 VERBOSE = is_verbose
-BENCH_PARAMS = bench_params
-DATA_DIR = data_dir
+BENCH_PARAMS_FILE = bench_params_file
+DATA_DIR = data_dir || bench_params_data["data_directory"] || "continuous_reporting/data"
+
+STDERR.puts <<SHOW_PARAMS
+B and U:
+benchmark_args: #{BENCHMARK_ARGS.inspect}
+full_rebuild: #{FULL_REBUILD.inspect}
+file_gh_issue: #{FILE_GH_ISSUE.inspect}
+all_perf_tripwires: #{ALL_PERF_TRIPWIRES}
+verbose: #{is_verbose.inspect}
+bench_params: #{BENCH_PARAMS_FILE.inspect}
+data_dir: #{data_dir.inspect}
+SHOW_PARAMS
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
@@ -262,7 +290,8 @@ def run_benchmarks
             old_data_files.each { |f| FileUtils.rm f }
         end
 
-        YJITMetrics.check_call "ruby basic_benchmark.rb #{BENCHMARK_ARGS} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS}"
+        args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
+        YJITMetrics.check_call "ruby basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
     end
 end
 
