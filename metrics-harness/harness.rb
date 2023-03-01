@@ -30,6 +30,8 @@ YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : n
 
 yjit_metrics_using_gemfile = false
 
+srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
+
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
 # It shouldn't include timestamps or other data that changes from run to run.
 def ruby_metadata
