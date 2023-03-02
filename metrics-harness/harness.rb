@@ -136,11 +136,18 @@ def run_benchmark(num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
-  # This method is only accurate to kilobytes, but is nicely portable to Mac and Linux
-  # and doesn't require any extra gems/dependencies.
-  mem = `ps -o rss= -p #{Process.pid}`
-  peak_mem_bytes = 1024 * mem.to_i
+  mem_rollup_file = "/proc/#{Process.pid}/smaps_rollup"
+  if File.exist?(mem_rollup_file)
+    # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
+    rss_desc = File.read(mem_rollup_file).lines.detect { |line| line.start_with?("Rss") }.split(":", 2)[1].strip
+    peak_mem_bytes = 1024 * rss_desc.to_i
+  else
+    # Collect our own peak mem usage as soon as reasonable after finishing the last iteration.
+    # This method is only accurate to kilobytes, but is nicely portable and doesn't require
+    # any extra gems/dependencies.
+    mem = `ps -o rss= -p #{Process.pid}`
+    peak_mem_bytes = 1024 * mem.to_i
+  end
 
   yjit_stats = YJIT_MODULE&.runtime_stats
 
