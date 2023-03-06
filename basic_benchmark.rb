@@ -356,7 +356,12 @@ def this_os
     )
 end
 
+if FULL_REBUILD && skip_git_updates
+    raise "You won't like what happens with full-rebuild plus skip-git-updates! If using a config where full-rebuild won't matter, then turn it off!"
+end
+
 if FULL_REBUILD
+    puts "Remove old Rubies for full rebuild"
     configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq.each do |build_to_clean|
         YJITMetrics.check_call RUBY_BUILDS[build_to_clean][:full_clean]
     end
