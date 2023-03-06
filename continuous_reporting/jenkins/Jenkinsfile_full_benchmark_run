@@ -101,8 +101,7 @@ pipeline {
                     // runs when benchmarking succeeded but checking/reporting failed.
 
                     // Use specified yjit-metrics repo and name
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
 
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=$BENCH_TYPE YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
@@ -130,8 +129,7 @@ pipeline {
                             }
 
                             // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS_X86 bench_params.json $SSH_HOST_X86:~/ym/yjit-metrics/"
@@ -157,8 +155,7 @@ pipeline {
                             }
 
                             // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS_ARM bench_params.json $SSH_HOST_ARM:~/ym/yjit-metrics/"
@@ -188,8 +185,8 @@ pipeline {
                     }
 
                     // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh"
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
                 }
             }
