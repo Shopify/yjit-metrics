@@ -78,7 +78,7 @@ platform = YJITMetrics::PLATFORM
 BENCH_TYPES = {
     "none"       => nil,
     "default"    => DEFAULT_CI_COMMAND_LINE,
-    "smoketest"  => "--skip-git-updates --warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=#{platform}_prod_ruby_no_jit,#{platform}_prod_ruby_with_yjit",
+    "smoketest"  => "--warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=#{platform}_prod_ruby_no_jit,#{platform}_prod_ruby_with_yjit",
     #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
     #"extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
 }
@@ -173,17 +173,6 @@ SINGLE_PERF_TRIPWIRE = single_perf_tripwire
 VERBOSE = is_verbose
 BENCH_PARAMS_FILE = bench_params_file
 DATA_DIR = data_dir || bench_params_data["data_directory"] || "continuous_reporting/data"
-
-STDERR.puts <<SHOW_PARAMS
-B and U:
-benchmark_args: #{BENCHMARK_ARGS.inspect}
-full_rebuild: #{FULL_REBUILD.inspect}
-file_gh_issue: #{FILE_GH_ISSUE.inspect}
-all_perf_tripwires: #{ALL_PERF_TRIPWIRES}
-verbose: #{is_verbose.inspect}
-bench_params: #{BENCH_PARAMS_FILE.inspect}
-data_dir: #{data_dir.inspect}
-SHOW_PARAMS
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 

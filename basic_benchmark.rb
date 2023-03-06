@@ -146,7 +146,7 @@ full_rebuild = false
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
 
-    opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (omit on first run)") do
+    opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (only works if Rubies are built already)") do
         skip_git_updates = true
     end
 
