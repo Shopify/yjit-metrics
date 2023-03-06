@@ -188,7 +188,8 @@ pipeline {
                     }
 
                     // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git pull && git clean -d -f reports _includes\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh"
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
                 }
             }
