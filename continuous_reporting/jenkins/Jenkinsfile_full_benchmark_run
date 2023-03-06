@@ -35,10 +35,24 @@ pipeline {
 
     parameters {
         string(name: 'RUBY_VERSION', defaultValue: 'master', description: 'what revision of Ruby to build')
+        string(name: 'RUBY_REPO', defaultValue: 'https://github.com/ruby/ruby.git', description: 'what repo to build Ruby from')
 
         string(name: 'YJIT_METRICS_VERSION', defaultValue: 'main', description: 'what revision of yjit-metrics to build with')
+        string(name: 'YJIT_METRICS_REPO', defaultValue: 'https://github.com/Shopify/yjit-metrics.git', description: 'what yjit-metrics repo to build with')
         string(name: 'YJIT_BENCH_VERSION', defaultValue: 'main', description: 'what revision of yjit-bench to build with')
-        //string(name: 'RUBY_REPO', defaultValue: '', description: 'what repo to build Ruby from')
+        string(name: 'YJIT_BENCH_REPO', defaultValue: 'https://github.com/Shopify/yjit-bench.git', description: 'what yjit-bench repo to build with')
+
+        // For now, no yjit_extra_bench for optional benchmarks
+
+        // The yjit-metrics pages branch for reporting output isn't configurable, and won't be.
+
+        string(name: 'BENCH_TYPE', defaultValue: 'default', description: 'Benchmark type -- "default" uses variable warmup file and all benchmarks, "smoketest" is one iter of all benchmarks, can also give full specification')
+
+        string(name: 'DATA_DIR', defaultValue: 'continuous_reporting/data', description: 'Data directory for output - continuous_reporting/data and single_iter_data are fine choices, but only /data gets filed into the CRuby reporting data')
+
+        booleanParam(name: 'DO_FULL_REBUILD', defaultValue: true, description: 'whether to remove all appropriate Ruby and gem directories to ensure a clean rebuild (note: slow)')
+
+        string(name: 'SLACK_FAILURE_NOTIFY', defaultValue: '#yjit-internal', description: 'What Slack channel(s) and Member ID(s) to notify in case of failure, comma-delimited')
 
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
@@ -69,8 +83,14 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
                     script {
                         env.CRUBY_NAME = params.RUBY_VERSION  // Setting these once makes them available everywhere, for Groovy DSL reasons, I think?
+                        env.CRUBY_REPO = params.RUBY_REPO
                         env.YJIT_BENCH_NAME = params.YJIT_BENCH_VERSION
+                        env.YJIT_BENCH_REPO = params.YJIT_BENCH_REPO
                         env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
+                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
+                        env.BENCH_TYPE = params.BENCH_TYPE
+                        env.FULL_REBUILD = params.DO_FULL_REBUILD ? "yes" : "no"
+                        env.BENCH_DATA_DIR = params.DATA_DIR // This is where file_benchmark_data_into_raw.rb looks for report-of-record CRuby benchmark data
                         env.SSH_USER_X86 = SSH_USER_X86
                         env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
                         env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
@@ -79,8 +99,12 @@ pipeline {
 
                     // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                     // runs when benchmarking succeeded but checking/reporting failed.
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} YJIT_BENCH_NAME=$YJIT_BENCH_NAME CRUBY_NAME=$CRUBY_NAME . ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
+
+                    // Use specified yjit-metrics repo and name
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
+
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=$BENCH_TYPE YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
                     sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/bench_params.json ."
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
@@ -105,15 +129,15 @@ pipeline {
                                 env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                             }
 
-                            // Need to do another checkout if another job could grab the worker in between
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
+                            // Use specified yjit-metrics repo and name
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
+                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS_X86 bench_params.json $SSH_HOST_X86:~/ym/yjit-metrics/"
 
                             // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                             // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
 
@@ -132,15 +156,15 @@ pipeline {
                                 env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
                             }
 
-                            // Need to do another checkout if another job could grab the worker in between - and for first time on AARCH64
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && git fetch && git reset $YJIT_METRICS_NAME && git checkout . && git pull\""
+                            // Use specified yjit-metrics repo and name
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && (git remote remove current_repo || echo ok) && git remote add current_repo ${params.YJIT_METRICS_REPO} && git fetch current_repo\""
+                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"cd ym/yjit-metrics && git checkout . && git checkout current_repo/$YJIT_METRICS_NAME\""
 
                             unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
                             sh "scp $SSH_ARGS_ARM bench_params.json $SSH_HOST_ARM:~/ym/yjit-metrics/"
 
                             // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                             // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
 
@@ -163,7 +187,9 @@ pipeline {
                         env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
                     }
 
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics-pages && uname -a && git fetch && git checkout . && git pull && git clean -d -f reports _includes\""
+                    // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"uname -a && . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh"
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
                 }
             }
@@ -173,7 +199,8 @@ pipeline {
     post {
         failure {
             // Need to expand this, based on https://plugins.jenkins.io/slack/
-            slackSend color: "#FF0000", message: "YJIT benchmark CI failed!"
+            // Also we use a bot account so the color shown here doesn't work.
+            slackSend channel: params.SLACK_FAILURE_NOTIFY, color: "#FF0000", message: "YJIT benchmark CI full-build failed!"
         }
     }
 }

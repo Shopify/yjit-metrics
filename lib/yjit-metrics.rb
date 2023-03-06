@@ -8,6 +8,7 @@ require 'erb'
 
 require_relative "./yjit-metrics/bench-results"
 require_relative "./yjit-metrics/repo-management"
+require_relative "./yjit-metrics/cli-interface"
 
 # Require all source files in yjit-metrics/report_types/*.rb
 Dir.glob("yjit-metrics/report_types/*.rb", base: __dir__).each do |report_type_file|

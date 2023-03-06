@@ -141,6 +141,7 @@ output_path = "data"
 bundler_version = "2.2.30"
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
+full_rebuild = false
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -202,7 +203,16 @@ OptionParser.new do |opts|
         unless ts =~ /\A\d{4}-\d{2}-\d{2}-\d{6}\Z/
             raise "Bad format for given timestamp: #{ts.inspect}!"
         end
+        full_rebuild = bench_data["full_rebuild"]
         timestamp = ts
+    end
+
+    opts.on("-fr=YN", "--full-rebuild=YN", "Whether to fully rebuild all rubies") do |fr|
+        if fr.nil? || fr.strip == ""
+            full_rebuild = true
+        else
+            full_rebuild = YJITMetrics::CLI.human_string_to_boolean(fr)
+        end
     end
 
     config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
@@ -216,7 +226,17 @@ OptionParser.new do |opts|
 end.parse!
 
 HARNESS_PARAMS = harness_params
-BENCH_DATA = bench_data ? bench_data.slice("ts", "cruby_sha", "yjit_bench_sha", "yjit_metrics_sha") : {}
+BENCH_DATA = bench_data || {}
+FULL_REBUILD = full_rebuild
+
+STDERR.puts <<HERE
+basic_benchmark.rb:
+  harness_params = #{harness_params.inspect}
+  bench_data: #{bench_data.inspect}
+  full_rebuild: #{full_rebuild.inspect}
+  output_path: #{output_path.inspect}
+  benchmarks: #{ARGV.inspect}
+HERE
 
 extra_config_options = []
 if ENV["RUBY_CONFIG_OPTS"]
@@ -227,56 +247,62 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
     extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
 end
 
-YJIT_GIT_URL = "https://github.com/ruby/ruby"
+YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
+
+def full_clean_yjit_cruby(flavor)
+    repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
+    "cd #{repo} && git clean -d -x -f && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor} && rm -rf ~/.gem/ruby/3.2.0"
+end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
 # have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
+repo_root = File.expand_path("#{__dir__}/..")
+install_root = "~/.rubies"
 RUBY_BUILDS = {
     "ruby-yjit-metrics-debug" => {
         install: "repo",
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../debug-yjit"),
+        repo_path: "#{repo_root}/debug-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
+        full_clean: full_clean_yjit_cruby("debug"),
     },
     "ruby-yjit-metrics-stats" => {
         install: "repo",
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../stats-yjit"),
+        repo_path: "#{repo_root}/stats-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
+        full_clean: full_clean_yjit_cruby("stats"),
     },
     "ruby-yjit-metrics-prod" => {
         install: "repo",
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_GIT_BRANCH,
-        repo_path: File.expand_path("#{__dir__}/../prod-yjit"),
+        repo_path: "#{repo_root}/prod-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
+        full_clean: full_clean_yjit_cruby("prod"),
     },
     "ruby-3.0.0" => {
         install: "ruby-install",
+        full_clean: "rm -rf ~/.rubies/ruby-3.0.0",
     },
     "ruby-3.0.2" => {
         install: "ruby-install",
+        full_clean: "rm -rf ~/.rubies/ruby-3.0.2",
     },
     "truffleruby+graalvm-21.2.0" => {
         install: "ruby-build",
+        full_clean: "rm -rf ~/.rubies/truffleruby+graalvm-21.2.0",
     },
 }
 
 SKIPPED_COMBOS = [
-    # HexaPDF not working with prerelease MJIT
+    # HexaPDF not working with latest MJIT
     # https://bugs.ruby-lang.org/issues/18277
     [ "prod_ruby_with_mjit", "hexapdf" ],
-
-    # Jekyll not working with post-3.1 prerelease Ruby because tainted? was removed
-    # Just in general, Jekyll had some serious issues as a benchmark :-/
-    # https://github.com/Shopify/yjit-bench/issues/71
-    # Now it's gone from yjit-bench, though we leave this to keep from running it
-    # with an older yjit-bench.
-    [ "*", "jekyll" ],
 
     # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
     # Needs an update of dependency libraries.
@@ -290,13 +316,13 @@ SKIPPED_COMBOS = [
 YJIT_METRICS_DIR = __dir__
 
 # Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = "https://github.com/Shopify/yjit-bench.git"
-YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] ? BENCH_DATA["yjit_bench_sha"] : "main"
+YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/Shopify/yjit-bench.git"
+YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
 # Configuration for yjit-extra-benchmarks
-YJIT_EXTRA_BENCH_GIT_URL = "https://github.com/Shopify/yjit-extra-benchmarks.git"
-YJIT_EXTRA_BENCH_GIT_BRANCH = "main"
+YJIT_EXTRA_BENCH_GIT_URL = BENCH_DATA["yjit_extra_bench_repo"] || "https://github.com/Shopify/yjit-extra-benchmarks.git"
+YJIT_EXTRA_BENCH_GIT_BRANCH = BENCH_DATA["yjit_extra_bench_sha"] || "main"
 YJIT_EXTRA_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-extra-benchmarks")
 
 # Configuration for ruby-build
@@ -328,6 +354,12 @@ def this_os
         raise "unknown os: #{host_os.inspect}"
       end
     )
+end
+
+if FULL_REBUILD
+    configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq.each do |build_to_clean|
+        YJITMetrics.check_call RUBY_BUILDS[build_to_clean][:full_clean]
+    end
 end
 
 unless skip_git_updates
@@ -398,6 +430,13 @@ GIT_VERSIONS = {
     "yjit_extra_bench" => sha_for_dir(YJIT_EXTRA_BENCH_DIR),
     "yjit_metrics" => sha_for_dir(YJIT_METRICS_DIR),
 }
+
+if BENCH_DATA["yjit_metrics_sha"] && GIT_VERSIONS["yjit_metrics"] != BENCH_DATA["yjit_metrics_sha"]
+    raise "YJIT-Metrics SHA in benchmark data disagrees with actual tested version!"
+end
+
+# Rails apps in yjit-bench can leave a bad bootsnap cache - delete them
+Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| File.unlink File.join(YJIT_BENCH_DIR, f) }
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
 # It needs to happen *after* yjit-bench is cloned and updated.

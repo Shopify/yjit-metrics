@@ -2,6 +2,13 @@
 
 set -e
 
+
+# TODO: most of this script needs to move into file_benchmark_data_into_raw, which can put it into the new location
+# and/or do both. But it'll also get a lot of this into Ruby, which is a useful thing.
+
+
+
+
 # We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
 # Also we're gonna be messing with the installed prerelease Rubies a fair bit.
 chruby 3.0.2

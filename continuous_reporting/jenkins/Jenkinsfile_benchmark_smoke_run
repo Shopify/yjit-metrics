@@ -88,7 +88,6 @@ pipeline {
 
                             // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                             // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'\""
 
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
@@ -114,7 +113,6 @@ pipeline {
 
                             // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                             // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/fully_rebuild_rubies.sh'\""
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_single_iter_benchmarks.sh'\""
 
                             sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
