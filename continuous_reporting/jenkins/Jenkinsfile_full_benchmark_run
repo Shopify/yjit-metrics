@@ -182,6 +182,8 @@ pipeline {
                         env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
                         env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
                         env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
+                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
+                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
                     }
 
                     // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
