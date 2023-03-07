@@ -1,9 +1,32 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    faraday (2.7.4)
+      faraday-net_http (>= 2.0, < 3.1)
+      ruby2_keywords (>= 0.0.4)
+    faraday-mashify (0.1.1)
+      faraday (~> 2.0)
+      hashie
+    faraday-multipart (1.0.4)
+      multipart-post (~> 2)
+    faraday-net_http (3.0.2)
+    gli (2.21.0)
+    hashie (5.0.0)
     minitest (5.11.3)
+    multipart-post (2.3.0)
     rake (13.0.6)
+    ruby2_keywords (0.0.5)
+    slack-ruby-client (2.0.0)
+      faraday (>= 2.0)
+      faraday-mashify
+      faraday-multipart
+      gli
+      hashie
+      websocket-driver
     victor (0.3.3)
+    websocket-driver (0.7.5)
+      websocket-extensions (>= 0.1.0)
+    websocket-extensions (0.1.5)
 
 PLATFORMS
   ruby
@@ -11,6 +34,7 @@ PLATFORMS
 DEPENDENCIES
   minitest (~> 5.11.3)
   rake
+  slack-ruby-client
   victor
 
 BUNDLED WITH
