@@ -20,15 +20,17 @@ pipeline {
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
 
-    stage('run full build') {
-        build('benchmark_full_run', [
-            RUBY_VERSION: params.RUBY_VERSION,
-            YJIT_METRICS_VERSION: params.YJIT_METRICS_VERSION,
-            YJIT_BENCH_VERSION: params.YJIT_BENCH_VERSION,
-            BENCH_TYPE: 'smoketest',
-            DATA_DIR: 'continuous_reporting/single_iter_data',
-            SLACK_FAILURE_NOTIFY: '',
-        ])
+    stages {
+        stage('run full build') {
+            build('benchmark_full_run', [
+                RUBY_VERSION: params.RUBY_VERSION,
+                YJIT_METRICS_VERSION: params.YJIT_METRICS_VERSION,
+                YJIT_BENCH_VERSION: params.YJIT_BENCH_VERSION,
+                BENCH_TYPE: 'smoketest',
+                DATA_DIR: 'continuous_reporting/single_iter_data',
+                SLACK_FAILURE_NOTIFY: '',
+            ])
+        }
     }
 
     post {
