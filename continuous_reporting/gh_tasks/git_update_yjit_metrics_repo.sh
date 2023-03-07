@@ -5,7 +5,9 @@ set -x
 
 cd ~/ym/yjit-metrics
 
-mv continuous_reporting/data/*.json ../ || echo ok # If there's anything valuable here, move it to a higher level where it can be dealt with
+rm -f continuous_reporting/data/*intermediate*.json # These aren't kept
+rm -f continuous_reporting/data/*crash_report*      # Nor are these
+mv continuous_reporting/data/*.json ../ || echo ok  # If there's anything valuable here, move it to a higher level where it can be dealt with
 
 # NOTE: git restore works even in detached-head state! So does git reset --hard, and it seems not to mess up
 # other branches.
