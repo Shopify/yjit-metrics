@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 set -e
+set -x
 
 cd ~/ym/yjit-metrics
 
