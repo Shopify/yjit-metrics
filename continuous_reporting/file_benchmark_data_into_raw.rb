@@ -7,8 +7,17 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-# Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories.
-RAW_BENCHMARK_ROOT = "raw_benchmark_data"
+YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages/raw_benchmark_data")
+unless File.exist?(YJIT_METRICS_PAGES_DIR)
+    raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
+end
+
+YJIT_RAW_DATA_REPO = File.expand_path File.join(__dir__, "../../raw-benchmark-data/raw_benchmark_data")
+
+DESTINATIONS = [
+    YJIT_METRICS_PAGES_DIR,
+    YJIT_RAW_DATA_REPO,
+]
 
 def benchmark_file_out_path(filename)
     if filename =~ /^(.*)_basic_benchmark_(.*).json$/
@@ -24,7 +33,7 @@ def benchmark_file_out_path(filename)
         if ts == "" || year == "" || day == ""
             raise "Empty string when parsing timestamp: #{ts.inspect}!"
         end
-        "#{RAW_BENCHMARK_ROOT}/#{config_platform}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
+        "#{config_platform}/#{year}-#{month}/#{ts}_basic_benchmark_#{config}.json"
     else
         raise "Can't parse filename: #{filename}!"
     end
@@ -47,30 +56,22 @@ if copy_from.empty?
     puts "No directories to copy. Success!"
 end
 
-# If want to check into the repo and file issues, we need credentials.
-YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
-
-unless File.exist?(YJIT_METRICS_PAGES_DIR)
-    raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
-end
-
 # Copy JSON and report files into the branch
 copy_from.each do |dir_to_copy|
     Dir.chdir(dir_to_copy) do
         # Copy raw data files to a place we can link them rather than include them in pages
         Dir["*_basic_benchmark_*.json"].each do |filename|
-            out_file = benchmark_file_out_path(filename)
-            dir = File.join(YJIT_METRICS_PAGES_DIR, File.dirname(out_file))
-            FileUtils.mkdir_p dir
-            FileUtils.cp(filename, File.join(YJIT_METRICS_PAGES_DIR, out_file))
-            puts "Copying data file: #{filename.inspect} to #{out_file.inspect} in dir #{dir.inspect}"
+            DESTINATIONS.each do |dest|
+                out_path = benchmark_file_out_path(filename)
+                dir = File.join(dest, File.dirname(out_path))
+                FileUtils.mkdir_p dir
+                FileUtils.cp(filename, File.join(dest, out_path))
+                puts "Copying data file: #{filename.inspect} to #{dest.inspect} / #{out_path.inspect} in dir #{dir.inspect}"
+            end
             # If the copy succeeded, we can delete it locally
             FileUtils.rm filename
         end
     end
 end
-
-# From here on out, we're just in the yjit-metrics checkout of "pages"
-Dir.chdir(YJIT_METRICS_PAGES_DIR)
 
 puts "Copied benchmark data into place successfully!"
