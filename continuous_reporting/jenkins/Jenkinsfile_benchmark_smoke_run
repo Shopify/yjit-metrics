@@ -23,14 +23,19 @@ pipeline {
     stages {
         stage('run full build') {
             steps {
-                build(job: 'benchmark_full_run', parameters: [
-                    RUBY_VERSION: params.RUBY_VERSION,
-                    YJIT_METRICS_VERSION: params.YJIT_METRICS_VERSION,
-                    YJIT_BENCH_VERSION: params.YJIT_BENCH_VERSION,
-                    BENCH_TYPE: 'smoketest',
-                    DATA_DIR: 'continuous_reporting/single_iter_data',
-                    SLACK_FAILURE_NOTIFY: '',
-                ])
+                build job: 'benchmark_full_run',
+                  parameters: [
+                    string(name: 'RUBY_VERSION', value: params.RUBY_VERSION),
+                    string(name: 'RUBY_REPO', value: 'https://github.com/ruby/ruby.git'),
+                    string(name: 'YJIT_METRICS_VERSION', value: params.YJIT_METRICS_VERSION),
+                    string(name: 'YJIT_METRICS_REPO', value: 'https://github.com/Shopify/yjit-metrics.git'),
+                    string(name: 'YJIT_BENCH_VERSION', value: params.YJIT_BENCH_VERSION),
+                    string(name: 'YJIT_BENCH_REPO', value: 'https://github.com/Shopify/yjit-bench.git'),
+                    string(name: 'BENCH_TYPE', value: 'smoketest'),
+                    string(name: 'DATA_DIR', value: 'continuous_reporting/single_iter_data'),
+                    booleanParam(name: 'DO_FULL_REBUILD', value: false),
+                    string(name: 'SLACK_FAILURE_NOTIFY', value: '')
+                ]
             }
         }
     }
