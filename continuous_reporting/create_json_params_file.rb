@@ -130,8 +130,18 @@ def sha_for_name_in_dir(name:, dir:, repo:, desc:)
     system("git remote remove current_repo") # Don't care if this succeeds or not
     system("git remote add current_repo #{repo}")
     system("git fetch current_repo") || raise("Error trying to fetch latest revisions for #{desc}!")
+
     out = `git log -n 1 --pretty=oneline current_repo/#{name}`
-    raise("Error trying to find SHA for #{dir.inspect} name #{name.inspect} repo #{repo.inspect}!") unless out && out.strip != ""
+    unless out && out.strip != ""
+      # The git log above did nothing useful... Is it already a SHA?
+      out = `git log -n 1 --pretty=oneline #{name}`
+
+      if name.strip =~ /\A[a-zA-Z0-9]{6,}\Z/ # At least 6 hex chars, all hex chars
+        return name.strip
+      end
+      raise("Error trying to find SHA for #{dir.inspect} name #{name.inspect} repo #{repo.inspect}!")
+    end
+
     sha = out.split(" ")[0]
     raise("Output doesn't start with SHA: #{out.inspect}!") unless sha && sha =~ /\A[0-9a-zA-Z]{8}/
     return sha
