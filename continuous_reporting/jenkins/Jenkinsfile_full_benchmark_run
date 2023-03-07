@@ -52,7 +52,7 @@ pipeline {
 
         booleanParam(name: 'DO_FULL_REBUILD', defaultValue: true, description: 'whether to remove all appropriate Ruby and gem directories to ensure a clean rebuild (note: slow)')
 
-        string(name: 'SLACK_FAILURE_NOTIFY', defaultValue: '#yjit-internal', description: 'What Slack channel(s) and Member ID(s) to notify in case of failure, comma-delimited')
+        string(name: 'SLACK_FAILURE_NOTIFY', defaultValue: '#yjit-benchmark-ci', description: 'What Slack channel(s) and Member ID(s) to notify in case of failure, comma-delimited')
 
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
