@@ -23,7 +23,7 @@ pipeline {
     stages {
         stage('run full build') {
             steps {
-                build('benchmark_full_run', [
+                build(job: 'benchmark_full_run', parameters: [
                     RUBY_VERSION: params.RUBY_VERSION,
                     YJIT_METRICS_VERSION: params.YJIT_METRICS_VERSION,
                     YJIT_BENCH_VERSION: params.YJIT_BENCH_VERSION,
