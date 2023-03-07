@@ -531,86 +531,88 @@ def write_crash_file(error_info, crash_report_dir)
     error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
 end
 
-all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
-    puts "Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"
+Dir.chdir(YJIT_BENCH_DIR) do
+    all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
+        puts "Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"
 
-    ruby = RUBY_CONFIGS[config][:build]
-    ruby_opts = RUBY_CONFIGS[config][:opts]
-    per_os_prefix = RUBY_CONFIGS[config][:per_os_prefix]
+        ruby = RUBY_CONFIGS[config][:build]
+        ruby_opts = RUBY_CONFIGS[config][:opts]
+        per_os_prefix = RUBY_CONFIGS[config][:per_os_prefix]
 
-    # Right now we don't have a great place to put per-benchmark metrics that *change*
-    # for each run. "Benchmark" metadata means constant for each type of benchmark.
-    # Instead, like peak_mem_bytes, we just have to put it at the top-level.
-    # TODO: fix that.
-    re_run_num = 0
+        # Right now we don't have a great place to put per-benchmark metrics that *change*
+        # for each run. "Benchmark" metadata means constant for each type of benchmark.
+        # Instead, like peak_mem_bytes, we just have to put it at the top-level.
+        # TODO: fix that.
+        re_run_num = 0
 
-    if num_runs > 1
-        run_string = "%04d" % run_num + "_"
-    else
-        run_string = ""
-    end
-
-    on_error = proc do |error_info|
-        exc = error_info[:exception]
-        bench = error_info[:benchmark_name]
-
-        re_run_info = ""
-        re_run_info = " (retry ##{re_run_num + 1}/3)" if when_error == :re_run
-
-        puts "Exception in benchmark #{bench} w/ config #{config}#{re_run_info}: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
-
-        # If we get a runtime error, we're not going to record this run's data.
-        if [:die, :report].include?(when_error)
-            # Instead we'll record the fact that we got an error.
-            crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
-            write_crash_file(error_info, crash_report_dir)
+        if num_runs > 1
+            run_string = "%04d" % run_num + "_"
+        else
+            run_string = ""
         end
 
-        # If we die on errors, raise or re-raise the exception.
-        raise(exc) if when_error == :die
-        re_run_num += 1
-        raise(exc) if when_error == :re_run && re_run_num > 3
-    end
+        on_error = proc do |error_info|
+            exc = error_info[:exception]
+            bench = error_info[:benchmark_name]
 
-    shell_settings = YJITMetrics::ShellSettings.new({
-        ruby_opts: ruby_opts,
-        prefix: per_os_prefix[this_os],
-        chruby: ruby,
-        on_error: on_error,
-        enable_core_dumps: (when_error == :report ? true : false),
-        bundler_version: bundler_version,
-    })
+            re_run_info = ""
+            re_run_info = " (retry ##{re_run_num + 1}/3)" if when_error == :re_run
 
-    single_run_results = nil
-    loop do
-        single_run_results = YJITMetrics.run_single_benchmark(bench_info,
-            harness_settings: harness_settings_for_config_and_bench(config, bench_info[:name]),
-            shell_settings: shell_settings)
-        break if single_run_results # Got results? Great! Then don't die or re-run.
+            puts "Exception in benchmark #{bench} w/ config #{config}#{re_run_info}: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
 
-        if when_error == :die
-            raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
+            # If we get a runtime error, we're not going to record this run's data.
+            if [:die, :report].include?(when_error)
+                # Instead we'll record the fact that we got an error.
+                crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
+                write_crash_file(error_info, crash_report_dir)
+            end
+
+            # If we die on errors, raise or re-raise the exception.
+            raise(exc) if when_error == :die
+            re_run_num += 1
+            raise(exc) if when_error == :re_run && re_run_num > 3
         end
 
-        if [:report, :ignore].include?(when_error)
-            puts "No data collected for this run, presumably due to errors. On we go."
-            break
+        shell_settings = YJITMetrics::ShellSettings.new({
+            ruby_opts: ruby_opts,
+            prefix: per_os_prefix[this_os],
+            chruby: ruby,
+            on_error: on_error,
+            enable_core_dumps: (when_error == :report ? true : false),
+            bundler_version: bundler_version,
+        })
+
+        single_run_results = nil
+        loop do
+            single_run_results = YJITMetrics.run_single_benchmark(bench_info,
+                harness_settings: harness_settings_for_config_and_bench(config, bench_info[:name]),
+                shell_settings: shell_settings)
+            break if single_run_results # Got results? Great! Then don't die or re-run.
+
+            if when_error == :die
+                raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
+            end
+
+            if [:report, :ignore].include?(when_error)
+                puts "No data collected for this run, presumably due to errors. On we go."
+                break
+            end
+
+            # Otherwise re-run until success or exception.
+            raise "Unexpected value of when_error! Internal error!" if when_error != :re_run
         end
 
-        # Otherwise re-run until success or exception.
-        raise "Unexpected value of when_error! Internal error!" if when_error != :re_run
-    end
+        # Single-run results can be nil if we're reporting or ignoring errors.
+        # If we die or re-run on error, we should raise an exception if we fail completely
+        unless single_run_results.nil?
+            single_run_results["failures_before_success"] = re_run_num # Always 0 unless when_error is :re_run
 
-    # Single-run results can be nil if we're reporting or ignoring errors.
-    # If we die or re-run on error, we should raise an exception if we fail completely
-    unless single_run_results.nil?
-        single_run_results["failures_before_success"] = re_run_num # Always 0 unless when_error is :re_run
+            json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
+            puts "Writing to JSON output file #{json_path}."
+            File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
 
-        json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
-        puts "Writing to JSON output file #{json_path}."
-        File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
-
-        intermediate_by_config[config].push json_path
+            intermediate_by_config[config].push json_path
+        end
     end
 end
 
