@@ -41,7 +41,7 @@ pipeline {
         }
         failure {
             sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels "${params.SLACK_FAILURE_NOTIFY}\" --properties \"status=fail\" \"Smoke test failed!\"'"
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels \"${params.SLACK_FAILURE_NOTIFY}\" --properties \"status=fail\" \"Smoke test failed!\"'"
         }
     }
 }
