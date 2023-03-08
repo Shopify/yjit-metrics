@@ -13,9 +13,9 @@ pipeline {
     }
 
     stages {
-        stage('run full build') {
+        stage('run configurable build') {
             steps {
-                build job: 'benchmark_full_run',
+                build job: 'benchmark_configurable_run',
                   parameters: [
                     string(name: 'RUBY_VERSION', value: params.RUBY_VERSION),
                     string(name: 'YJIT_METRICS_VERSION', value: params.YJIT_METRICS_VERSION),
