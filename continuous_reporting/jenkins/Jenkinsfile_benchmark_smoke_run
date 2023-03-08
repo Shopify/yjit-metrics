@@ -10,6 +10,8 @@ pipeline {
 
         string(name: 'YJIT_METRICS_VERSION', defaultValue: 'main', description: 'what revision of yjit-metrics to build with')
         string(name: 'YJIT_BENCH_VERSION', defaultValue: 'main', description: 'what revision of yjit-bench to build with')
+
+        string(name: 'BENCH_TYPE', defaultValue: 'default', description: 'Benchmark type -- "smoketest" is one iter of all benchmarks, can also give none or full spec')
     }
 
     stages {
@@ -20,7 +22,7 @@ pipeline {
                     string(name: 'RUBY_VERSION', value: params.RUBY_VERSION),
                     string(name: 'YJIT_METRICS_VERSION', value: params.YJIT_METRICS_VERSION),
                     string(name: 'YJIT_BENCH_VERSION', value: params.YJIT_BENCH_VERSION),
-                    string(name: 'BENCH_TYPE', value: 'smoketest'),
+                    string(name: 'BENCH_TYPE', value: params.BENCH_TYPE),
                     string(name: 'DATA_DIR', value: 'continuous_reporting/single_iter_data'),
                     booleanParam(name: 'DO_FULL_REBUILD', value: false)
                 ]
@@ -34,7 +36,7 @@ pipeline {
                 script {
                     env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
                 }
-                sh "ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test succeeded!\""
+                sh "cd && . ~/.bashrc && chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test succeeded!\""
             }
         }
         failure {
@@ -42,7 +44,7 @@ pipeline {
                 script {
                     env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
                 }
-                sh "ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test failed!\""
+                sh "cd && . ~/.bashrc && chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test failed!\""
             }
         }
     }
