@@ -14,6 +14,10 @@ pipeline {
         string(name: 'BENCH_TYPE', defaultValue: 'smoketest', description: 'Benchmark type -- "smoketest" is one iter of all benchmarks, can also give none or full spec')
     }
 
+    environment {
+        SLACK_OAUTH_TOKEN = credentials('684cd699-feae-4ef1-8483-e71440a73fcd')
+    }
+
     stages {
         stage('run configurable build') {
             steps {
@@ -31,11 +35,6 @@ pipeline {
     }
 
     post {
-        withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
-            script {
-                env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
-            }
-        }
         success {
             sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' --properties \"status=success\" \"Smoke test succeeded!\"'"
         }
