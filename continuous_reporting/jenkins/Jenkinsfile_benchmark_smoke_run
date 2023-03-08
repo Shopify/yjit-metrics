@@ -31,21 +31,16 @@ pipeline {
     }
 
     post {
-        success {
-            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
-                script {
-                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
-                }
-                sh "cd && . ~/.bashrc && chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test succeeded!\""
+        withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
+            script {
+                env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
             }
         }
+        success {
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' --properties \"status=success\" \"Smoke test succeeded!\"'"
+        }
         failure {
-            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
-                script {
-                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
-                }
-                sh "cd && . ~/.bashrc && chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test failed!\""
-            }
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' --properties \"status=fail\" \"Smoke test failed!\"'"
         }
     }
 }

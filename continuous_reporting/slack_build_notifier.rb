@@ -38,36 +38,47 @@ def slack_notification_targets(spec)
   end
 end
 
+IMAGES = {
+  cute_cat: {
+    url: "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
+    alt: "Cute cat",
+  },
+}
+
 TEMPLATES = {
-  build_status: [
-    {
-      "type": "header",
-      "text": {
-        "type": "plain_text",
-        "text": "PROP_MESSAGE",
+  build_status: proc do |properties|
+    img = properties["IMAGE"].to_sym
+    raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
+    STDERR.puts "IMAGE: #{properties["IMAGE"]}"
+    [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": properties["MESSAGE"],
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*URL:*\n#{properties["BUILD_URL"]}"
+        },
+        "accessory": {
+          "type": "image",
+          "image_url": IMAGES[img][:url],
+          "alt_text": IMAGES[img][:alt],
+        },
       }
-    },
-    {
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": "*URL:*\nPROP_BUILD_URL"
-			},
-			"accessory": {
-				"type": "image",
-				"image_url": "PROP_IMAGE_URL",
-				"alt_text": "PROP_IMAGE_ALT",
-			},
-		}
-  ]
+    ]
+  end,
 
 }
 
 to_notify = ["#yjit-benchmark-ci"]
 properties = {
   "BUILD_URL" => ENV["BUILD_URL"],
-  "IMAGE_URL" => "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
-  "IMAGE_ALT" => "Cute cat",
+  "IMAGE" => "cute_cat",
 }
 template = :build_status
 
@@ -78,9 +89,9 @@ OptionParser.new do |opts|
     to_notify = slack_notification_targets(chan)
   end
 
-  opts.on("--properties PROP", "Set one or more string properties, e.g. '--properties title=FAIL,image=cute_cat'") do |properties|
-    properties.split(",").each do |prop_assign|
-      prop, val = properties.split("=", 2)
+  opts.on("--properties PROP", "Set one or more string properties, e.g. '--properties TITLE=Fail,IMAGE=cute_cat'") do |properties_str|
+    properties_str.split(",").each do |prop_assign|
+      prop, val = prop_assign.split("=", 2)
       properties[prop] = val
     end
   end
@@ -99,34 +110,16 @@ end
 TO_NOTIFY = to_notify
 properties["MESSAGE"] = ARGV[0]
 
-def template_substitute(block_struct, prop)
-  case block_struct
-  when String
-    block_struct.gsub /PROP_([_A-Za-z0-9]+)/ do |prop_str|
-      prop_name = prop_str.delete_prefix("PROP_")
-      raise("Cannot find property: #{prop_str.inspect}/#{prop_name.inspect} in #{block_struct.inspect}!") unless prop.has_key?(prop_name)
-      prop[prop_name]
-    end
-  when Symbol
-    # No change
-    block_struct
-  when Array
-    block_struct.map { |elt| template_substitute(elt, prop) }
-  when Hash
-    out = {}
-    block_struct.each do |k, v|
-      new_k = template_substitute(k, prop)
-      new_v = template_substitute(v, prop)
-      out[new_k] = new_v
-    end
-    out
-  else
-    raise "Template error: can't do template substitution on #{block_struct.inspect}!"
+def template_substitute(tmpl_name, prop)
+  tmpl_name = tmpl_name.to_sym
+  unless TEMPLATES.has_key?(tmpl_name)
+    raise "Can't find template #{tmpl_name.inspect}! Known: #{TEMPLATES.keys.inspect}"
   end
+  TEMPLATES[tmpl_name].call(prop)
 end
 
 def send_message(tmpl_name, prop)
-  block_msg = template_substitute(TEMPLATES[tmpl_name], prop)
+  block_msg = template_substitute(tmpl_name, prop)
 
   TO_NOTIFY.each do |channel|
     slack_client.chat_postMessage channel: channel, text: prop["MESSAGE"], blocks: block_msg
