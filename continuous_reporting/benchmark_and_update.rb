@@ -269,7 +269,7 @@ File.open(PIDFILE, "w") do |f|
 end
 
 def run_benchmarks
-    return if BENCHMARK_ARGS.nil? || benchmark_args == ""
+    return if BENCHMARK_ARGS.nil? || BENCHMARK_ARGS == ""
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
