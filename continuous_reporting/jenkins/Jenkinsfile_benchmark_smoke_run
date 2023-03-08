@@ -2,11 +2,6 @@
 
 // See the full-benchmark-run Jenkinsfile for more documentation and commentary.
 
-// AARCH64 SSH Key Credentials
-//withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'FILENAME_VAR', usernameVariable: 'USERNAME_VAR')]) {
-//    // some block
-//}
-
 pipeline {
     agent any
 
@@ -15,9 +10,6 @@ pipeline {
 
         string(name: 'YJIT_METRICS_VERSION', defaultValue: 'main', description: 'what revision of yjit-metrics to build with')
         string(name: 'YJIT_BENCH_VERSION', defaultValue: 'main', description: 'what revision of yjit-bench to build with')
-        //string(name: 'RUBY_REPO', defaultValue: '', description: 'what repo to build Ruby from')
-
-        // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
 
     stages {
@@ -39,11 +31,20 @@ pipeline {
 
     post {
         success {
-            slackSend color: "#00FF00", message: "YJIT benchmark smoke test succeeded!"
+            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
+                script {
+                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
+                }
+                sh "ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test succeeded!\""
+            }
         }
         failure {
-            // Need to expand this, based on https://plugins.jenkins.io/slack/
-            slackSend color: "#FF0000", message: "YJIT benchmark smoke test failed!"
+            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
+                script {
+                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
+                }
+                sh "ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels '${params.SLACK_FAILURE_NOTIFY}' \"Smoke test failed!\""
+            }
         }
     }
 }

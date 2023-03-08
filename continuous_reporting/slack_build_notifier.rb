@@ -39,7 +39,7 @@ def slack_notification_targets(spec)
 end
 
 TEMPLATES = {
-  build_failed: [
+  build_status: [
     {
       "type": "header",
       "text": {
@@ -69,7 +69,7 @@ properties = {
   "IMAGE_URL" => "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
   "IMAGE_ALT" => "Cute cat",
 }
-template = :build_failed
+template = :build_status
 
 OptionParser.new do |opts|
   opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
