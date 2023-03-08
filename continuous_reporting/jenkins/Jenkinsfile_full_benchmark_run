@@ -1,30 +1,4 @@
-// This Jenkinsfile is a conversion of the older GitHub Actions workflow for benchmarking.
-
-// The division between gh_tasks/ shellscripts and continuous_reporting/ Ruby files
-// is a bit weirder. In theory it's to let the shellscripts juggle the Ruby configuration,
-// which would be painful to manage directly from a Jenkinsfile or GitHub Actions workflow,
-// but in practice the current version is a mess too.
-
-// Jenkinsfile documentation:
-//
-// * Groovy Multiline Strings: https://stackoverflow.com/questions/5079797/whats-wrong-with-groovy-multi-line-string
-// * Groovy ternary or coalescing operators: https://www.danvega.dev/blog/2013/08/22/groovy-ternary-operator/
-
-// Horrifying Bugs:
-//
-// Jenkinsfiles use a Groovy DSL. Apparently it's really bad if this ever sees any credentials,
-// and Jenkins will notice this and complain. Good. However, also, "script" blocks get substituted
-// in directly somehow, so having the same variable multiple times is really bad and not really
-// scoped to one step/stage/block or another. So: things like SSH_HOST_X86 and SSH_HOST_ARM are
-// effectively global variables, which is why it's REALLY NOT OKAY to have a single SSH_HOST
-// variable that can take on different values in different places. Nope. It gets ONE value, and
-// last write wins. Thus, multiple globals for multiple values in this script. I'm very sorry.
-
-// Future improvements:
-//
-// * It would be really nice to *not* use throttling and SSH to do this with workers. But we'd need to limit the executors
-//   per Jenkins agent to 1, but only for certain Jenkins agents. Or throttle all builds on a particular agent. I'm not
-//   sure there's an easy way to do either one.
+// This run the full benchmarks twice a day, using the configurable run with specific settings.
 
 pipeline {
     agent any
@@ -46,6 +20,10 @@ pipeline {
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
 
+    environment {
+        SLACK_OAUTH_TOKEN = credentials('684cd699-feae-4ef1-8483-e71440a73fcd')
+    }
+
     stages {
         stage('schedule parameterized benchmarking run') {
             steps {
@@ -64,12 +42,9 @@ pipeline {
 
     post {
         failure {
-            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
-                script {
-                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
-                }
-                sh "ruby continuous_reporting/slack_build_notifier.rb --channels '${params.SLACK_FAILURE_NOTIFY}' --template build_status \"Benchmark run failed!\""
-            }
+            sh "bash -l -c 'chruby 3.0.2 && bundle'"
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels "${params.SLACK_FAILURE_NOTIFY}\" --properties \"status=fail\" \"Full benchmark run failed!\"'"
         }
     }
+
 }
