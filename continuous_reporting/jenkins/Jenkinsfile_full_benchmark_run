@@ -35,20 +35,9 @@ pipeline {
 
     parameters {
         string(name: 'RUBY_VERSION', defaultValue: 'master', description: 'what revision of Ruby to build')
-        string(name: 'RUBY_REPO', defaultValue: 'https://github.com/ruby/ruby.git', description: 'what repo to build Ruby from')
-
         string(name: 'YJIT_METRICS_VERSION', defaultValue: 'main', description: 'what revision of yjit-metrics to build with')
-        string(name: 'YJIT_METRICS_REPO', defaultValue: 'https://github.com/Shopify/yjit-metrics.git', description: 'what yjit-metrics repo to build with')
         string(name: 'YJIT_BENCH_VERSION', defaultValue: 'main', description: 'what revision of yjit-bench to build with')
-        string(name: 'YJIT_BENCH_REPO', defaultValue: 'https://github.com/Shopify/yjit-bench.git', description: 'what yjit-bench repo to build with')
-
         // For now, no yjit_extra_bench for optional benchmarks
-
-        // The yjit-metrics pages branch for reporting output isn't configurable, and won't be.
-
-        string(name: 'BENCH_TYPE', defaultValue: 'default', description: 'Benchmark type -- "default" uses variable warmup file and all benchmarks, "smoketest" is one iter of all benchmarks, can also give full specification, e.g. --warmup-itrs=0 --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=PLATFORM_prod_ruby_no_jit,PLATFORM_prod_ruby_with_yjit')
-
-        string(name: 'DATA_DIR', defaultValue: 'continuous_reporting/data', description: 'Data directory for output - continuous_reporting/data and single_iter_data are fine choices, but only /data gets filed into the CRuby reporting data')
 
         booleanParam(name: 'DO_FULL_REBUILD', defaultValue: true, description: 'whether to remove all appropriate Ruby and gem directories to ensure a clean rebuild (note: slow)')
 
@@ -57,149 +46,30 @@ pipeline {
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
 
-    // I can't set CRUBY_NAME = params.CRUBY_NAME here to get an env var to match the param.
-    // I'm sure there's some reason why.
-    environment {
-        // docs: https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#handling-credentials
-        AWS_INSTANCE_X86_64 = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')  // get IP address or name
-        AWS_INSTANCE_AARCH64 = credentials('86e5f9a8-4c3a-4789-92ab-d617fba356e8') // get IP address or name
-    }
-
-    options {
-        // Throttle options on multiple steps are deadlocking. Apparently the plugin people know there's a problem,
-        // but don't have a great fix. Joy. So we throttle at the top level here.
-        throttleJobProperty(
-            categories: ['Build that needs exclusive use of x86_64 AWS worker (1)', 'Build that needs exclusive use of AARCH64 AWS worker (1)'],
-            throttleEnabled: true,
-            throttleOption: 'category'
-        )
-    }
-
     stages {
-        stage('generate_params') {
+        stage('schedule parameterized benchmarking run') {
             steps {
-                // Don't want the keyfile to exist for long, so use a limited-scope block for withCredentials here.
-                // There's probably a better way to do this if I understood the Jenkinsfile DSL better.
-                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                    script {
-                        env.CRUBY_NAME = params.RUBY_VERSION  // Setting these once makes them available everywhere, for Groovy DSL reasons, I think?
-                        env.CRUBY_REPO = params.RUBY_REPO
-                        env.YJIT_BENCH_NAME = params.YJIT_BENCH_VERSION
-                        env.YJIT_BENCH_REPO = params.YJIT_BENCH_REPO
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
-                        env.BENCH_TYPE = params.BENCH_TYPE
-                        env.FULL_REBUILD = params.DO_FULL_REBUILD ? "yes" : "no"
-                        env.BENCH_DATA_DIR = params.DATA_DIR // This is where file_benchmark_data_into_raw.rb looks for report-of-record CRuby benchmark data
-                        env.SSH_USER_X86 = SSH_USER_X86
-                        env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                        env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                    }
-
-                    // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
-                    // runs when benchmarking succeeded but checking/reporting failed.
-
-                    // Use specified yjit-metrics repo and name
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=$BENCH_TYPE YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
-                    sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/bench_params.json ."
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
-                }
-
-                // docs: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
-                stash includes: 'bench_params.json', name: 'bench_params'
-            }
-        }
-
-        stage('benchmarking and data upload') {
-            parallel {
-                stage('benchmarking and data upload x86_64') {
-                    agent any
-                    steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                            script {
-                                env.SSH_USER_X86 = SSH_USER_X86
-                                env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                                env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                                env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                            }
-
-                            // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-
-                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
-                            sh "scp $SSH_ARGS_X86 bench_params.json $SSH_HOST_X86:~/ym/yjit-metrics/"
-
-                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
-                            // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
-                        }
-                    }
-                }
-                stage('benchmarking and data upload AARCH64') {
-                    agent any
-                    steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'SSH_KEYFILE_ARM', usernameVariable: 'SSH_USER_ARM')]) {
-                            script {
-                                env.SSH_USER_ARM = SSH_USER_ARM
-                                env.SSH_KEYFILE_ARM = SSH_KEYFILE_ARM
-                                env.SSH_ARGS_ARM = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                                env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
-                            }
-
-                            // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-
-                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
-                            sh "scp $SSH_ARGS_ARM bench_params.json $SSH_HOST_ARM:~/ym/yjit-metrics/"
-
-                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
-                            // runs when benchmarking succeeded but checking/reporting failed.
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\""
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('reporting') {
-            agent any
-
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                    script {
-                        env.SSH_USER_X86 = SSH_USER_X86
-                        env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                        env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
-                    }
-
-                    // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \". ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
-                }
+                build job: 'benchmark_configurable_run',
+                  parameters: [
+                    string(name: 'RUBY_VERSION', value: params.RUBY_VERSION),
+                    string(name: 'YJIT_METRICS_VERSION', value: params.YJIT_METRICS_VERSION),
+                    string(name: 'YJIT_BENCH_VERSION', value: params.YJIT_BENCH_VERSION),
+                    string(name: 'BENCH_TYPE', value: 'default'),
+                    string(name: 'DATA_DIR', value: 'continuous_reporting/data'),
+                    booleanParam(name: 'DO_FULL_REBUILD', value: params.DO_FULL_REBUILD)
+                ]
             }
         }
     }
 
     post {
         failure {
-            // Need to expand this, based on https://plugins.jenkins.io/slack/
-            // Also we use a bot account so the color shown here doesn't work.
-            slackSend channel: params.SLACK_FAILURE_NOTIFY, color: "#FF0000", message: "YJIT benchmark CI full-build failed!"
+            withCredentials([string(credentialsId: '684cd699-feae-4ef1-8483-e71440a73fcd', variable: 'SLACK_OAUTH_TOKEN')]) {
+                script {
+                    env.SLACK_OAUTH_TOKEN = SLACK_OAUTH_TOKEN
+                }
+                sh "ruby continuous_reporting/slack_build_notifier.rb --channels '${params.SLACK_FAILURE_NOTIFY}' --template build_status \"Benchmark run failed!\""
+            }
         }
     }
 }

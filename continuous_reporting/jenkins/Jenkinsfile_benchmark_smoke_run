@@ -22,8 +22,7 @@ pipeline {
                     string(name: 'YJIT_BENCH_VERSION', value: params.YJIT_BENCH_VERSION),
                     string(name: 'BENCH_TYPE', value: 'smoketest'),
                     string(name: 'DATA_DIR', value: 'continuous_reporting/single_iter_data'),
-                    booleanParam(name: 'DO_FULL_REBUILD', value: false),
-                    string(name: 'SLACK_FAILURE_NOTIFY', value: '')
+                    booleanParam(name: 'DO_FULL_REBUILD', value: false)
                 ]
             }
         }

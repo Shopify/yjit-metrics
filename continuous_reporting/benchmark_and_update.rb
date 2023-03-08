@@ -75,7 +75,7 @@ DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
     " --configs=#{DEFAULT_CI_CONFIGS[YJITMetrics::PLATFORM].join(",")}"
 
 BENCH_TYPES = {
-    "none"       => nil,
+    "none"       => "",
     "default"    => DEFAULT_CI_COMMAND_LINE,
     "smoketest"  => "--warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=PLATFORM_prod_ruby_no_jit,PLATFORM_prod_ruby_with_yjit",
     #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=re_run --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
@@ -269,7 +269,7 @@ File.open(PIDFILE, "w") do |f|
 end
 
 def run_benchmarks
-    return if BENCHMARK_ARGS.nil?
+    return if BENCHMARK_ARGS.nil? || benchmark_args == ""
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
