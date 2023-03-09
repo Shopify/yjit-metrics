@@ -39,6 +39,14 @@ def slack_notification_targets(spec)
 end
 
 IMAGES = {
+  build_success: {
+    url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-success.png",
+    alt: "Large green check and the words 'Build Success, Because I am a Good Server'",
+  },
+  build_fail: {
+    url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-fail.png",
+    alt: "Large red X and the words 'Build Failed, All Your Fault I Assume'",
+  },
   cute_cat: {
     url: "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
     alt: "Cute cat",
@@ -49,7 +57,6 @@ TEMPLATES = {
   build_status: proc do |properties|
     img = properties["IMAGE"].to_sym
     raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
-    STDERR.puts "IMAGE: #{properties["IMAGE"]}"
     [
       {
         "type": "header",
@@ -73,12 +80,45 @@ TEMPLATES = {
     ]
   end,
 
+  smoke_test: proc do |properties|
+    if properties["IMAGE"]
+      img = properties["IMAGE"].to_sym
+    elsif properties["STATUS"] == "success"
+      img = :build_success
+    elsif properties["STATUS"] == "fail"
+      img = :build_fail
+    else
+      img = :cute_cat
+    end
+    raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
+    [
+      {
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": properties["MESSAGE"],
+        }
+      },
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*URL:* #{properties["BUILD_URL"]}\n*RUBY:* #{properties["RUBY"]}\n*YJIT-BENCH:* #{properties["YJIT_BENCH"]}\n*YJIT-METRICS:* #{properties["YJIT_METRICS"]}\n*STATUS:* #{properties["STATUS"]}"
+        },
+        "accessory": {
+          "type": "image",
+          "image_url": IMAGES[img][:url],
+          "alt_text": IMAGES[img][:alt],
+        },
+      }
+    ]
+  end,
+
 }
 
 to_notify = ["#yjit-benchmark-ci"]
 properties = {
   "BUILD_URL" => ENV["BUILD_URL"],
-  "IMAGE" => "cute_cat",
 }
 template = :build_status
 
