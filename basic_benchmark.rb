@@ -28,7 +28,7 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore re_run)
 
-YJIT_ENABLED_OPTS = [ "--disable-mjit", "--yjit" ]
+YJIT_ENABLED_OPTS = [ "--disable-rjit", "--yjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
 
@@ -221,7 +221,7 @@ OptionParser.new do |opts|
         bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!\n\nLegal configs include: #{CONFIG_NAMES.inspect}" unless bad_configs.empty?
         wrong_platform_configs = configs_to_test - THIS_PLATFORM_CONFIGS
-        raise "Requested configuration(s) are for other platforms: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
+        raise "Requested configuration(s) are not for platform #{YJITMetrics::PLATFORM}: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
     end
 end.parse!
 
