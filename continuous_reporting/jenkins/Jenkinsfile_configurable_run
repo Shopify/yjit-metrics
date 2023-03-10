@@ -101,7 +101,7 @@ pipeline {
                     // Use specified yjit-metrics repo and name
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
 
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=$BENCH_TYPE YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=\"$BENCH_TYPE\" YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
                     sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/bench_params.json ."
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
