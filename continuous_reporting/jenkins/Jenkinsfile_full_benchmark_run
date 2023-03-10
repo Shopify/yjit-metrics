@@ -22,6 +22,7 @@ pipeline {
 
     environment {
         SLACK_OAUTH_TOKEN = credentials('684cd699-feae-4ef1-8483-e71440a73fcd')
+        NOTIFIER_ARGS = "--template build_status --channels \"${params.SLACK_FAILURE_NOTIFY}\""
     }
 
     stages {
@@ -43,7 +44,7 @@ pipeline {
     post {
         failure {
             sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb --template build_status --channels \"${params.SLACK_FAILURE_NOTIFY}\" --properties \"status=fail\" \"Full benchmark run failed!\"'"
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties \"STATUS=fail\" \"Full benchmark run failed!\"'"
         }
     }
 

@@ -55,7 +55,15 @@ IMAGES = {
 
 TEMPLATES = {
   build_status: proc do |properties|
-    img = properties["IMAGE"].to_sym
+    if properties["IMAGE"]
+      img = properties["IMAGE"].to_sym
+    elsif properties["STATUS"] == "success"
+      img = :build_success
+    elsif properties["STATUS"] == "fail"
+      img = :build_fail
+    else
+      img = :cute_cat
+    end
     raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
     [
       {
@@ -69,7 +77,7 @@ TEMPLATES = {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": "*URL:*\n#{properties["BUILD_URL"]}"
+          "text": "*URL:*\n#{properties["BUILD_URL"]}\n*STATUS:* #{properties["STATUS"]}"
         },
         "accessory": {
           "type": "image",
