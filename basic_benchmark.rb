@@ -28,7 +28,7 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore re_run)
 
-YJIT_ENABLED_OPTS = [ "--disable-mjit", "--yjit" ]
+YJIT_ENABLED_OPTS = [ "--yjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
 
