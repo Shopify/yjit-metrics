@@ -20,7 +20,7 @@ layout: basic
   {% endfor %}
 </div>
 
-<!-- Latest Headlined Results -->
+<!-- Latest Headlining Results -->
 <div class="latest-details-box">
   <h2 style="text-align: center;">Latest Headlining Results vs CRuby</h2>
 
