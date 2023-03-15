@@ -221,7 +221,7 @@ OptionParser.new do |opts|
         bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!\n\nLegal configs include: #{CONFIG_NAMES.inspect}" unless bad_configs.empty?
         wrong_platform_configs = configs_to_test - THIS_PLATFORM_CONFIGS
-        raise "Requested configuration(s) are for other platforms: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
+        raise "Requested configuration(s) are are not for platform #{YJITMetrics::PLATFORM}: #{wrong_platform_configs.inspect}!" unless wrong_platform_configs.empty?
     end
 end.parse!
 
