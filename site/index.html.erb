@@ -11,7 +11,7 @@ layout: basic
   How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href="https://github.com/Shopify/yjit-bench">benchmarks</a> as of <strong>  <%= last_bench.date_str %> <%= last_bench.time_str %></strong>?
   </p>
 
-  <span style="font-weight: bold; font-size: 125%">{% include <%= last_bench.reports.blog_speed_headline_html %> %}</span>
+  <span style="font-weight: bold; font-size: 125%"><%= include last_bench.reports[:blog_speed_headline_html] %></span>
 
   <% for platform in last_bench.platforms %>
   <div class="headline-button">
@@ -34,7 +34,7 @@ layout: basic
 
   <div style="text-align: center;">
   <a href="<%= relative_url last_bench.url %>">
-  <%= include last_bench.reports.blog_speed_details_x86_64_head_svg %>
+  <%= include last_bench.reports[:blog_speed_details_x86_64_head_svg] %>
   </a>
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
   </div>
@@ -49,7 +49,7 @@ layout: basic
   </div>
 
   <div class="timeline_report">
-  {% include reports/mini_timelines.html %}
+    <%= include "reports/mini_timelines.html" %>
   </div>
 </div>
 

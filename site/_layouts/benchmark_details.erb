@@ -2,10 +2,10 @@
 layout: basic
 ---
 
-<h2>Details for Benchmarks at {{ page.date_str }} {{ page.time_str }}</h2>
+<h2>Details for Benchmarks at <%= page.date_str %> <%= page.time_str %></h2>
 
 <div>
-<span style="font-weight: bold; font-size: 125%;">{% include {{page.reports.blog_speed_headline_html}} %}
+<span style="font-weight: bold; font-size: 125%;"><%= include page.reports.blog_speed_headline_html %>
 </span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
 </div>
 
@@ -16,7 +16,7 @@ layout: basic
 </p>
 
 <div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_{{page.timestamp}}.PLATFORM.head.svg">
+  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
 
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
@@ -24,48 +24,48 @@ layout: basic
 <h2 id="other-graph">Other Benchmarks</h2>
 
 <div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_{{page.timestamp}}.PLATFORM.back.svg">
+  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
 
 <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
 
 <div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_{{page.timestamp}}.PLATFORM.micro.svg">
+  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
   Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
 </div>
 
 <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
 
 <ul>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.svg">All benchmarks (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_{{page.timestamp}}.html">HTML "headline" speed comparison (only generated for x86_64)</a>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.x86_64.csv">CSV speed results (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.aarch64.svg">All benchmarks (AARCH64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.aarch64.csv">CSV speed results (AARCH64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.svg">All benchmarks (x86_64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_<%= page.timestamp %>.html">HTML "headline" speed comparison (only generated for x86_64)</a>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.csv">CSV speed results (x86_64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.svg">All benchmarks (AARCH64)</a></li>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.csv">CSV speed results (AARCH64)</a></li>
 </ul>
 
 <h2 id="speed-table">Benchmarks Speed Details</h2>
 
 <div data-platform-selector="yes"
-  data-gh-url="blog_speed_details_{{page.timestamp}}.PLATFORM.html">
+  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.html">
 </div>
 
 <h2 id="memory-table">Benchmark Memory Usage Details</h2>
 
 <div data-platform-selector="yes"
-  data-gh-url="blog_memory_details_{{page.timestamp}}.PLATFORM.html">
+  data-gh-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.html">
 </div>
 
 <h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
 
-{% include {{page.reports.iteration_count_html}} %}
+<%= include page.reports.iteration_count_html %>
 
 <h2 id="yjit-stats">Benchmark YJIT Stats</h2>
 
-{% include {{page.reports.blog_yjit_stats_html}} %}
+<%= include page.reports.blog_yjit_stats_html %>
 
 <p>Note: currently, all stats are collected on x86_64, not ARM.</p>
 
@@ -76,7 +76,7 @@ layout: basic
 </p>
 
 <ul>
-{% for result in page.test_results %} <li><a href="{{result[1] | relative_url}}">{{result[0]}}</a></li> {% endfor %}
+<% page.test_results.each do |result| %> <li><a href="<%= relative_url result[1] %>"><%= result[0] %></a></li> <% end %>
 </ul>
 
 <hr/>
@@ -86,16 +86,16 @@ layout: basic
 <p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
 
 <ul>
-  {% for platform in page.platforms %}
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_{{page.timestamp}}.{{platform}}.raw_details.html">Too Much Detail: {{ platform | capitalize }} Edition</a></li>
-  {% endfor %}
+  <% page.platforms.each do |platform| %>
+  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.<%= platform %>.raw_details.html">Too Much Detail: <%= platform.capitalize %> Edition</a></li>
+  <% end %>
 </ul>
 
 <hr/>
-{{ content | markdownify }}
+<%= render_markdown content %>
 
 <script>
-  var platformsThisTimestamp = [ "{{ page.platforms | join: '", "' }}" ];
+  var platformsThisTimestamp = [ "<%= page.platforms.join: '", "' %>" ];
 
   // Create platform-selector DOM elements
   function addPlatformSelector(elt) {
