@@ -52,6 +52,8 @@ pipeline {
 
         booleanParam(name: 'DO_FULL_REBUILD', defaultValue: true, description: 'whether to remove all appropriate Ruby and gem directories to ensure a clean rebuild (note: slow)')
 
+        booleanParam(name: 'WITH_X86_TRUFFLE', defaultValue: false, description: 'use presumed excess x86 runtime to run TruffleRuby yjit-bench iterations')
+
         // The benchmark timestamp can't be input manually, so it's not a parameter here
     }
 
@@ -124,6 +126,7 @@ pipeline {
                                 env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
                                 env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
                                 env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
+                                env.WITH_X86_TRUFFLE = params.WITH_X86_TRUFFLE
                             }
 
                             // Use specified yjit-metrics repo and name
@@ -138,6 +141,8 @@ pipeline {
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
 
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
+
+                            sh "[true = $WITH_X86_TRUFFLE] && ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/truffle_x86_benchmarks.sh'\""
                         }
                     }
                 }
