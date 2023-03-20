@@ -142,7 +142,7 @@ pipeline {
 
                             sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
 
-                            sh "[true = $WITH_X86_TRUFFLE] && ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/truffle_x86_benchmarks.sh'\""
+                            sh "[ true = $WITH_X86_TRUFFLE ] && ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/truffle_x86_benchmarks.sh'\""
                         }
                     }
                 }
