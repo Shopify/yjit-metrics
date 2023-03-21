@@ -5,7 +5,7 @@ layout: basic
 <h2>Details for Benchmarks at <%= page.date_str %> <%= page.time_str %></h2>
 
 <div>
-<span style="font-weight: bold; font-size: 125%;"><%= include page.reports.blog_speed_headline_html %>
+<span style="font-weight: bold; font-size: 125%;"><%= include page.reports[:blog_speed_headline_html] %>
 </span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
 </div>
 
@@ -61,11 +61,11 @@ layout: basic
 
 <h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
 
-<%= include page.reports.iteration_count_html %>
+<%= include page.reports[:iteration_count_html] %>
 
 <h2 id="yjit-stats">Benchmark YJIT Stats</h2>
 
-<%= include page.reports.blog_yjit_stats_html %>
+<%= include page.reports[:blog_yjit_stats_html] %>
 
 <p>Note: currently, all stats are collected on x86_64, not ARM.</p>
 
@@ -92,10 +92,10 @@ layout: basic
 </ul>
 
 <hr/>
-<%= render_markdown content %>
+<%= content %>
 
 <script>
-  var platformsThisTimestamp = [ "<%= page.platforms.join: '", "' %>" ];
+  var platformsThisTimestamp = [ "<%= page.platforms.join '", "' %>" ];
 
   // Create platform-selector DOM elements
   function addPlatformSelector(elt) {

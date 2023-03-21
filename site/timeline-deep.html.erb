@@ -5,12 +5,11 @@ layout: basic
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v5.js"></script>
 
-<h2 style="text-align: center;">YJIT Memory Usage Over Time</h2>
+<h2 style="text-align: center;">YJIT Results Over Time</h2>
 
 <script>
 var timeParser = d3.timeParse("%Y %m %d %H %M %S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
-var commaPrinter = d3.format(",d");
 var data_series;
 var all_series_time_range;
 
@@ -28,26 +27,26 @@ document.timeline_data = {} // For sharing data w/ handlers
         <fieldset id="plat-select-fieldset" style="border: 1px solid black">
             <legend>Select Dataset</legend>
 
-            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="x86_64.recent" />
-            <label for="platform-radio-x86-recent">x86_64 Recent</label>
+            <input type="radio" id="platform-radio-x86-recent" name="plat-data-select" value="x86_64.recent" checked />
+            <label for="platform-radio-x86-recent">Xeon x86_64 Recent</label>
 
-            <input type="radio" id="platform-radio-yjit-x86-recent" name="plat-data-select" value="x86_64.all_time" checked />
-            <label for="platform-radio-x86-recent">x86_64 All-Time</label>
+            <input type="radio" id="platform-radio-x86-recent" name="plat-data-select" value="x86_64.all_time" />
+            <label for="platform-radio-x86-recent">Xeon x86_64 All-Time</label>
 
-            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="aarch64.recent" />
-            <label for="platform-radio-aarch-recent">ARM64 Recent</label>
+            <input type="radio" id="platform-radio-aarch-recent" name="plat-data-select" value="aarch64.recent" />
+            <label for="platform-radio-aarch-recent">AWS Graviton ARM64 Recent</label>
 
-            <input type="radio" id="platform-radio-yjit-aarch-recent" name="plat-data-select" value="aarch64.all_time" />
-            <label for="platform-radio-aarch-recent">ARM64 All-Time</label>
+            <input type="radio" id="platform-radio-aarch-recent" name="plat-data-select" value="aarch64.all_time" />
+            <label for="platform-radio-aarch-recent">AWS Graviton ARM64 All-Time</label>
         </fieldset>
     </form>
-    {% include reports/memory_timeline.html %}
+    <%= include "reports/blog_timeline.html" %>
 </div>
 
 <script>
 // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 70, left: 60},
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
     width = 800 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
@@ -81,10 +80,10 @@ document.timeline_data.x_axis_group = xAxisGroup;
 
 // Add Y axis
 var y = d3.scaleLinear()
-        .domain([0, 1.0])  // Dynamically set from data later
+        .domain([0, 1.0])  // Dynamically generate later
         .range([ height, 0 ]);
 document.timeline_data.y_axis_function = y; /* Export for the event handlers */
-document.timeline_data.y_axis = d3.axisLeft(y).tickFormat(d => `${(d / (1024 * 1024)).toFixed(1)} MiB`);
+document.timeline_data.y_axis = d3.axisLeft(y);
 document.timeline_data.top_svg_group = svg.append("g")
   .call(document.timeline_data.y_axis);
 
@@ -119,12 +118,40 @@ function updateChart() {
         document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
     }
     // Update axis and circle position
+    // Note: this doesn't seem to work with the other update function. Why not?
     xAxisGroup.transition().duration(1000).call(xAxis)
     svg
         .selectAll("circle.whiskerdot")
         .transition().duration(1000)
         .attr("cx", function(d) { return x(d.date) } )
         .attr("cy", function(d) { return y(d.value) } )
+        ;
+
+    svg
+        .selectAll("line.whiskercenter")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
+
+    svg
+        .selectAll("line.whiskertop")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
+
+    svg
+        .selectAll("line.whiskerbottom")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         ;
 
     svg
@@ -220,7 +247,47 @@ function updateGraphFromData() {
         .attr("r", 4.0)
         .attr("cx", function(d) { return x(d.date) } )
         .attr("cy", function(d) { return y(d.value) } )
-        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + commaPrinter(d.value) + " bytes<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
+        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        // Add the whiskers, which are an I-shape of lines
+        var middle_lines = group.selectAll("line.whiskercenter." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskercenter " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        var top_whiskers = group.selectAll("line.whiskertop." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskertop " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("clip-path", "url(#clip)")
+        ;
+
+        var bottom_whiskers = group.selectAll("line.whiskerbottom." + item.name)
+        .data(item.data, (d) => d.date)
+        .join("line")
+        .attr("class", "whiskerbottom " + item.name)
+        .attr("stroke", "black")
+        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
     });
@@ -253,9 +320,9 @@ function setRequestError() {
     error.style.display = "block";
 }
 
-// Default to x86_64 YJIT recent-only data
+// Default to x86_64 recent-only data
 setRequestPending();
-fetch("/reports/timeline/memory_timeline.data.x86_64.all_time.js").then(function (response) {
+fetch("/reports/timeline/blog_timeline.data.x86_64.recent.js").then(function (response) {
     if(response.ok) {
         return response.text().then(function (data) {
             setRequestFinished();
@@ -269,7 +336,7 @@ fetch("/reports/timeline/memory_timeline.data.x86_64.all_time.js").then(function
 
                 setRequestPending();
                 var newDataSet = event.target.value;
-                fetch("/reports/timeline/memory_timeline.data." + newDataSet + ".js").then(function(response) {
+                fetch("/reports/timeline/blog_timeline.data." + newDataSet + ".js").then(function(response) {
                     if(response.ok) {
                         return response.text().then(function(data) {
                             setRequestFinished();
@@ -338,39 +405,28 @@ function updateAllFromCheckboxes() {
 
 function updateAllFromCheckbox(cb) {
     var bench = cb.getAttribute("data-benchmark");
-    var legendBox = document.querySelectorAll("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
+    var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
+    var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
 
-    // Find the graph series for this benchmark
-    var yjitGraphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
-    var nojitGraphSeries = document.querySelector("svg g.prod_ruby_no_jit-" + bench);
-
-    var thisYJITDataSeries;
-    var thisNoJITDataSeries;
+    var thisDataSeries;
     if(data_series) {
         data_series.forEach(function (series) {
             if(series.name == "prod_ruby_with_yjit-" + bench) {
-                thisYJITDataSeries = series;
-            }
-            if(series.name == "prod_ruby_no_jit-" + bench) {
-                thisNoJITDataSeries = series;
+                thisDataSeries = series;
             }
         });
     }
 
     if(cb.checked) {
         /* Make series visible */
-        if(thisYJITDataSeries) { thisYJITDataSeries.visible = true; }
-        if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = true; }
-        legendBox.forEach(function(elt) { elt.style.display = "inline-block"; });
-        if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "visible"; }
-        if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "visible"; }
+        if(thisDataSeries) { thisDataSeries.visible = true; }
+        legendBox.style.display = "inline-block";
+        if(graphSeries) { graphSeries.style.visibility = "visible"; }
     } else {
         /* Make series invisible */
-        if(thisYJITDataSeries) { thisYJITDataSeries.visible = false; }
-        if(thisNoJITDataSeries) { thisNoJITDataSeries.visible = false; }
-        legendBox.forEach(function(elt) { elt.style.display = "none"; });
-        if(yjitGraphSeries) { yjitGraphSeries.style.visibility = "hidden"; }
-        if(nojitGraphSeries) { nojitGraphSeries.style.visibility = "hidden"; }
+        if(thisDataSeries) { thisDataSeries.visible = false; }
+        legendBox.style.display = "none";
+        if(graphSeries) { graphSeries.style.visibility = "hidden"; }
     }
 }
 

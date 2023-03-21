@@ -1,0 +1,37 @@
+---
+layout: basic
+---
+
+Here's a full historical listing of raw results of YJIT benchmark runs, including comparison
+with other Rubies.
+
+<% dates = site.benchmarks.map(&:date_str).uniq.sort.reverse %>
+<% bench_index = 0 %>
+
+<% dates.each do |day| %>
+
+  <% date_benchmarks = site.benchmarks.select { |bench| bench["date_str"] == day }.sort_by { |bench| bench["timestamp"] }.reverse %>
+
+  <% date_benchmarks.each do |benchmark| %>
+    <% bench_index += 1 %>
+
+<h4 id="{{benchmark.timestamp}}"><%= benchmark.date_str %> <%= benchmark.time_str %></h4>
+
+<% if bench_index < 50 %>
+<div style="width: 800px;">
+<a href="{{ benchmark.url | relative_url }}">
+<%= include benchmark.reports[:blog_speed_details_x86_64_svg] %>
+<button>Full Details for This Time</button>
+</a>
+</div>
+
+Raw JSON data:<br/>
+
+<ul> <% benchmark.test_results.each do |result| %> <li><a href="<%= result[1] %>"><%= result[0] %></a></li> <% end %> </ul>
+
+<% else %>
+<a href="<%= relative_url benchmark.url %>"><button>Full Details for This Time</button></a>
+<% end %>
+
+<% end %>
+<% end %>
