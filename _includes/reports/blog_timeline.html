@@ -180,14 +180,20 @@
         </span>
       </li>
 
-      <li style="display: none" data-benchmark="str_concat">
+      <li style="display: none" data-benchmark="setivar_young_object">
         <span style='background: #ff8000'>&nbsp;&nbsp;
+          <strong style="color: white;">setivar_young_object</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+
+      <li style="display: none" data-benchmark="str_concat">
+        <span style='background: #ffcc00'>&nbsp;&nbsp;
           <strong style="color: white;">str_concat</strong> &nbsp;&nbsp;
         </span>
       </li>
 
       <li style="display: none" data-benchmark="throw">
-        <span style='background: #ffcc00'>&nbsp;&nbsp;
+        <span style='background: #330099'>&nbsp;&nbsp;
           <strong style="color: white;">throw</strong> &nbsp;&nbsp;
         </span>
       </li>
@@ -408,15 +414,22 @@
     </li>
   
     <li>
-      <input type="checkbox" data-benchmark="str_concat" />
+      <input type="checkbox" data-benchmark="setivar_young_object" />
       <span style='background: #ff8000'>
+        &nbsp;&nbsp; <strong style="color: white;">setivar_young_object</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    <li>
+      <input type="checkbox" data-benchmark="str_concat" />
+      <span style='background: #ffcc00'>
         &nbsp;&nbsp; <strong style="color: white;">str_concat</strong> &nbsp;&nbsp;
       </span>
     </li>
   
     <li>
       <input type="checkbox" data-benchmark="throw" />
-      <span style='background: #ffcc00'>
+      <span style='background: #330099'>
         &nbsp;&nbsp; <strong style="color: white;">throw</strong> &nbsp;&nbsp;
       </span>
     </li>
