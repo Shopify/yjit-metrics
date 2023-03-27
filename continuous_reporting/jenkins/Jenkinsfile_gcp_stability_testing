@@ -1,0 +1,37 @@
+// Run a recurring yjit-metrics job on GCP to check performance stability over time
+
+pipeline {
+    agent any
+
+    environment {
+        WORKER_INSTANCE = credentials('8f280123-68d1-4575-8193-122438bb1a3c')  // get IP address or name
+    }
+
+    options {
+        throttleJobProperty(
+            categories: ['Exclusive GCP x86 worker (1)',
+            throttleEnabled: true,
+            throttleOption: 'category'
+        )
+    }
+
+    stages {
+        stage('benchmarking') {
+            agent any
+            steps {
+                // CredentialsId is wrong? Update with GCP worker credentials
+                withCredentials([sshUserPrivateKey(credentialsId: '164869e1-39b6-41d0-9afa-21ea58cabc6e', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                    script {
+                        env.SSH_USER = SSH_USER
+                        env.SSH_KEYFILE = SSH_KEYFILE
+                        env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
+                        env.SSH_HOST = '$SSH_USER@$WORKER_INSTANCE'
+                    }
+
+                    // No updating anything, including Ruby - this is for performance stability with identical everything
+                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'chruby 3.0.2; cd ym/yjit-metrics && ./basic_benchmark.rb --skip-git-update --warmup-itrs=10 --min-bench-time=0 --min-bench-itrs=15 --on-errors=re_run --full-rebuild=no --configs=x86_64_prod_ruby_with_yjit,x86_64_prod_ruby_no_jit'\""
+                }
+            }
+        }
+    }
+}
