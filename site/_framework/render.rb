@@ -7,15 +7,14 @@ require "ostruct"
 
 # For now, keep the equivalent of _config.yml in constants
 COLLECTIONS = [ "benchmarks" ]
-SPECIAL_DIRS = [ "_layouts", "_includes", "_sass" ]
+SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
 TOPLEVEL_SKIPPED = [ "_config.yml" ]
 
 # TODO: handle _sass dir - just pregenerate up-front?
 
 def redcarpet_render_markdown(text)
-  require "redcarpet"
-  @md_renderer ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true, tables: true)
-  @md_renderer.render(text)
+  require "kramdown"
+  Kramdown::Document.new(text).to_html
 end
 
 # RenderContext is an OpenStruct with some additional helper methods
@@ -39,8 +38,20 @@ class RenderContext
     super
   end
 
+  # This is named for the Jekyll equivalent... The big reason Jekyll
+  # needs this is that it may put a site at the root, or at a subdirectory,
+  # and so site-'absolute' URLs like the one passed in need to turn into
+  # relative URLs that can work when the whole site is in a dir like
+  # "/blog" rather than at the root. We're at the root and don't care.
   def relative_url(url)
-    url # This is gonna be wrong
+    raise "URL should not be nil!" if url.nil?
+
+    unless @metadata["url"]
+      raise "NO URL IN METADATA: #{url.inspect}"
+    end
+
+    url = "/" + url unless url[0] == "/"
+    url
   end
 
   def include(path)
@@ -52,7 +63,7 @@ class RenderContext
   end
 end
 
-def read_file(path)
+def read_front_matter(path)
   contents = File.read(path)
 
   if contents.start_with?("---\n")
@@ -64,8 +75,52 @@ def read_file(path)
   end
 end
 
+KNOWN_STEPS = ["erb", "md"]
+def render_file_to_location(path, out_dir, metadata)
+  FileUtils.mkdir_p(out_dir)
+  filename = path.split("/")[-1]
+
+  extensions = path.split(".").reverse[0..-2] # Remove the initial filename
+  unless extensions.any? { |ext| KNOWN_STEPS.include?(ext) }
+    FileUtils.cp path, "#{out_dir}/#{filename}"
+    return
+  end
+
+  steps = extensions.take_while { |ext| KNOWN_STEPS.include?(ext) }
+  out_filename = out_dir + "/" + filename.delete_suffix("." + steps.reverse.join("."))
+
+  front_matter_data, line_offset, file_content = read_front_matter(path)
+
+  merged_metadata = front_matter_data.merge(metadata)
+  merged_metadata[:url] = (out_filename.split("/")[1..-1].select { |p| p != "." }).join("/")
+  dsl = RenderContext.new merged_metadata
+
+  # For each step, "content" is the current file content before processing.
+  # For a .html.md.erb file, steps will be ["erb", "md"]
+  contents = file_content
+  steps.each do |step|
+    case step
+    when "erb"
+      erb_tmpl = ERB.new(contents)
+      # Multi-step erb pipelines could mess up the line numbers easily
+      contents = dsl.instance_eval(erb_tmpl.src, path, 1 + line_offset)
+    when "md"
+      contents = redcarpet_render_markdown(contents)
+    else
+      raise "Unknown content-step or file extension: #{step.inspect} out of #{steps.inspect}"
+    end
+  end
+
+  if merged_metadata[:layout]
+    merged_metadata[:content] = contents
+    contents = render_file("_layouts/#{merged_metadata[:layout]}.erb", merged_metadata)
+  end
+
+  File.write("#{out_filename}", contents)
+end
+
 def render_file(path, metadata)
-  front_matter_data, line_offset, erb_template = read_file(path)
+  front_matter_data, line_offset, erb_template = read_front_matter(path)
 
   #dsl = OpenStruct.new(metadata.merge(front_matter_data).merge(content: ""))
   front_matter_data[:content] = ""  # Overwrite if metadata has :content
@@ -82,27 +137,15 @@ def render_file(path, metadata)
   text
 end
 
-def render_file_to_location(in_path, out_dir, metadata)
-  ext = File.extname(in_path)
-  filename = File.split(in_path)[-1]
-
-  case ext
-  when ".erb"
-    new_contents = render_file(in_path, metadata)
-    File.write("#{out_dir}/#{filename.delete_suffix(".erb")}", new_contents)
-  else
-    FileUtils.mkdir_p(out_dir)
-    FileUtils.cp in_path, "#{out_dir}/#{filename}"
-  end
-end
-
 def render_collection_item_to_location(item, out_dir, metadata)
   layout = item.layout
   unless layout
     raise "Can't find layout for item #{item["name"].inspect} / #{item.inspect}!"
   end
 
-  contents = render_file("_layouts/#{layout}.erb", metadata.merge(:page => item))
+  # Trim off leading _site for url
+  url = "#{out_dir.split("/")[1..-1].join("/")}/#{item[:name]}"
+  contents = render_file("_layouts/#{layout}.erb", metadata.merge(page: item, url: url))
   File.write("#{out_dir}/#{item[:name]}", contents)
 end
 
@@ -111,8 +154,9 @@ def parse_collections
   COLLECTIONS.each do |coll|
     out[coll] = []
     Dir["_#{coll}/*.md"].each do |file_w_frontmatter|
-      item_data, _line, _content = read_file(file_w_frontmatter)
+      item_data, _line, _content = read_front_matter(file_w_frontmatter)
       item_data[:name] = file_w_frontmatter.split("/")[-1].gsub("_", "-") # Ah, Jekyll. There's probably some deep annoying meaning to why this is needed.
+      item_data[:url] = "/#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
       out[coll] << OpenStruct.new(item_data)
     end
   end
@@ -132,7 +176,9 @@ def build_site
   metadata = {}
   metadata[:site] = site_var
 
-  Dir["**/*"].each do |repo_file|
+  # Use a glob pattern that returns immediate children *and* follows one layer of
+  # symlinks. See https://stackoverflow.com/questions/357754/can-i-traverse-symlinked-directories-in-ruby-with-a-glob
+  Dir["**{,/*/**}/*"].each do |repo_file|
     next if File.directory?(repo_file)
 
     if repo_file[0] == "_"

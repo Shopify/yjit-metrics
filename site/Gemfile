@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "redcarpet"
+gem "kramdown"
 
 
 # Hello! This is where you manage which Jekyll version is used to run.
