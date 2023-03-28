@@ -1,0 +1,64 @@
+method call exit reasons: 
+                    block_arg    4209903 (80.8%)
+                  send_getter     292982 ( 5.6%)
+    args_splat_cfunc_var_args     257196 ( 4.9%)
+                zsuper_method     180136 ( 3.5%)
+          is_a_class_mismatch     110284 ( 2.1%)
+                     kw_splat      87123 ( 1.7%)
+              iseq_has_kwrest      73546 ( 1.4%)
+              args_splat_ivar        324 ( 0.0%)
+             iseq_arity_error        132 ( 0.0%)
+                     keywords         44 ( 0.0%)
+          iseq_ruby2_keywords         16 ( 0.0%)
+          args_splat_opt_call         16 ( 0.0%)
+               iseq_has_no_kw         16 ( 0.0%)
+        cfunc_ruby_array_varg         16 ( 0.0%)
+
+leave exit reasons: 
+    interp_return  235373374 (100.0%)
+     se_interrupt        459 ( 0.0%)
+
+getinstancevariable exit reasons: 
+    (all relevant counters are zero)
+setinstancevariable exit reasons: 
+    (all relevant counters are zero)
+opt_aref exit reasons: 
+    (all relevant counters are zero)
+
+bindings_allocations:           0
+bindings_set:                   0
+compiled_iseq_count:          600
+compiled_block_count:       10667
+invalidation_count:            22
+constant_state_bumps:           0
+inline_code_size:         1196176
+outlined_code_size:       1196100
+
+total_exit_count:       242308122
+total_insns_count:     13513843369
+vm_insns_count:        1254324721
+yjit_insns_count:      12266453396
+ratio_in_yjit:              90.7%
+avg_len_in_yjit:             50.6
+
+Top-20 most frequent exit ops (100.0% of exits):
+                      send:    4210393 (60.7)
+    opt_send_without_block:    1037930 (15.0)
+               invokeblock:     695499 (10.0)
+        getblockparamproxy:     293835 (4.2)
+               invokesuper:     293465 (4.2)
+                    opt_eq:     293166 (4.2)
+             setlocal_WC_0:     109803 (1.6)
+                     leave:        459 (0.0)
+             setlocal_WC_1:        170 (0.0)
+      opt_getconstant_path:         10 (0.0)
+                  branchif:          9 (0.0)
+                  opt_mult:          7 (0.0)
+                  opt_plus:          2 (0.0)
+               adjuststack:          0 (0.0)
+               anytostring:          0 (0.0)
+                 branchnil:          0 (0.0)
+              branchunless:          0 (0.0)
+              checkkeyword:          0 (0.0)
+                checkmatch:          0 (0.0)
+                 checktype:          0 (0.0)
