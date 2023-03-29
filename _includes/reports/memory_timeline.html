@@ -354,38 +354,50 @@
         </span>
       </li>
       
-        <li style="display: none" data-benchmark="setivar_young_object">
+        <li style="display: none" data-benchmark="setivar_young">
         <span style='background: #330099'>&nbsp;&nbsp;
+          <strong style="color: white;">setivar_young no-jit</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+        <li style="display: none" data-benchmark="setivar_young">
+        <span style='background: #990099'>&nbsp;&nbsp;
+          <strong style="color: white;">setivar_young yjit</strong> &nbsp;&nbsp;
+        </span>
+      </li>
+      
+        <li style="display: none" data-benchmark="setivar_young_object">
+        <span style='background: #ccff00'>&nbsp;&nbsp;
           <strong style="color: white;">setivar_young_object no-jit</strong> &nbsp;&nbsp;
         </span>
       </li>
       
         <li style="display: none" data-benchmark="setivar_young_object">
-        <span style='background: #990099'>&nbsp;&nbsp;
+        <span style='background: #ff0000'>&nbsp;&nbsp;
           <strong style="color: white;">setivar_young_object yjit</strong> &nbsp;&nbsp;
         </span>
       </li>
       
         <li style="display: none" data-benchmark="str_concat">
-        <span style='background: #ccff00'>&nbsp;&nbsp;
+        <span style='background: #808080'>&nbsp;&nbsp;
           <strong style="color: white;">str_concat no-jit</strong> &nbsp;&nbsp;
         </span>
       </li>
       
         <li style="display: none" data-benchmark="str_concat">
-        <span style='background: #ff0000'>&nbsp;&nbsp;
+        <span style='background: #008f00'>&nbsp;&nbsp;
           <strong style="color: white;">str_concat yjit</strong> &nbsp;&nbsp;
         </span>
       </li>
       
         <li style="display: none" data-benchmark="throw">
-        <span style='background: #808080'>&nbsp;&nbsp;
+        <span style='background: #00487d'>&nbsp;&nbsp;
           <strong style="color: white;">throw no-jit</strong> &nbsp;&nbsp;
         </span>
       </li>
       
         <li style="display: none" data-benchmark="throw">
-        <span style='background: #008f00'>&nbsp;&nbsp;
+        <span style='background: #b35a00'>&nbsp;&nbsp;
           <strong style="color: white;">throw yjit</strong> &nbsp;&nbsp;
         </span>
       </li>
@@ -665,8 +677,17 @@
     
      
     <li>
-      <input type="checkbox" data-benchmark="setivar_young_object" />
+      <input type="checkbox" data-benchmark="setivar_young" />
       <span style='background: #990099'>
+        &nbsp;&nbsp; <strong style="color: white;">setivar_young</strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  
+    
+     
+    <li>
+      <input type="checkbox" data-benchmark="setivar_young_object" />
+      <span style='background: #ff0000'>
         &nbsp;&nbsp; <strong style="color: white;">setivar_young_object</strong> &nbsp;&nbsp;
       </span>
     </li>
@@ -675,7 +696,7 @@
      
     <li>
       <input type="checkbox" data-benchmark="str_concat" />
-      <span style='background: #ff0000'>
+      <span style='background: #008f00'>
         &nbsp;&nbsp; <strong style="color: white;">str_concat</strong> &nbsp;&nbsp;
       </span>
     </li>
@@ -684,7 +705,7 @@
      
     <li>
       <input type="checkbox" data-benchmark="throw" />
-      <span style='background: #008f00'>
+      <span style='background: #b35a00'>
         &nbsp;&nbsp; <strong style="color: white;">throw</strong> &nbsp;&nbsp;
       </span>
     </li>
