@@ -45,7 +45,7 @@ layout: basic
   <h2 style="text-align: center;">YJIT Results Over Time</h2>
 
   <div style="text-align: center;">
-    <a href="<%= relative_url "timeline-deep#activerecord+liquid-render+optcarrot+railsbench" %>"><button>Results-Over-Time Deep Dive</button></a>
+    <a href="<%= relative_url "timeline-deep.html#activerecord+liquid-render+optcarrot+railsbench" %>"><button>Results-Over-Time Deep Dive</button></a>
   </div>
 
   <div class="timeline_report">
@@ -56,7 +56,7 @@ layout: basic
 <!-- Stats Timeline -->
 <div class="stats-timeline-report">
   <div style="text-align: center; margin-top: 3em;">
-    <a href="<%= relative_url "stats-timeline#yjit_speedup+overall-mean+activerecord+liquid-render+optcarrot+railsbench" %>"><button>YJIT Speedup and Statistics Over Time</button></a>
+    <a href="<%= relative_url "stats-timeline.html#yjit_speedup+overall-mean+activerecord+liquid-render+optcarrot+railsbench" %>"><button>YJIT Speedup and Statistics Over Time</button></a>
   </div>
 </div>
 
@@ -64,11 +64,11 @@ layout: basic
 
 <div class="memory-timeline-report">
   <div style="text-align: center; margin-top: 3em;">
-    <a href="<%= relative_url "memory_timeline#railsbench" %>"><button>YJIT vs CRuby Memory Usage Over Time</button></a>
+    <a href="<%= relative_url "memory_timeline.html#railsbench" %>"><button>YJIT vs CRuby Memory Usage Over Time</button></a>
   </div>
 </div>
 
 <p style="text-align: center; margin-top: 3em;">
   Do you love extensive details? <br/>
-  <a href="<%= relative_url "history" %>"> <button>See All the Benchmark History</button></a>
+  <a href="<%= relative_url "history.html" %>"> <button>See All the Benchmark History</button></a>
 </p>

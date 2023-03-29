@@ -204,9 +204,18 @@ def build_site
   end
 end
 
-# Jekyll has a few subcommands. Build and server are the two I care about.
-if ARGV == ["server"]
-  raise "Add server code here"
+# Jekyll has various subcommands. Build and server are the two I care about.
+
+if ARGV == ["server"] || ARGV == ["serve"]
+  puts "Building site..."
+  build_site
+
+  require "webrick"
+  doc_dir = File.join(__dir__, "../_site")
+  puts "Starting server at http://localhost:8000, serving #{doc_dir}..."
+  s = WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => doc_dir)
+  trap('INT') { s.shutdown }
+  s.start
 elsif ARGV == ["build"]
   build_site
 else
