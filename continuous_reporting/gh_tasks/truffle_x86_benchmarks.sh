@@ -15,6 +15,6 @@ cd ~/ym/yjit-bench
 git checkout main
 git checkout .
 git pull
-MAX_TIME=600 ./run_benchmarks.rb --harness=harness-warmup --out_path=/home/ubuntu/truffle-data/
+MAX_TIME=600 MAD_TARGET=0.005 ./run_benchmarks.rb --harness=harness-warmup --out_path=/home/ubuntu/truffle-data/
 
 echo "Completed TruffleRuby benchmarking successfully."
