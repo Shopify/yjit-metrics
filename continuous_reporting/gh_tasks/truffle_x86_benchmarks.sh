@@ -15,7 +15,6 @@ cd ~/ym/yjit-bench
 git checkout main
 git checkout .
 git pull
-# Note: as of 2023-03-17, chunky_png doesn't work with latest Truffle nightly
-./run_benchmarks.rb --harness=harness-warmup --out_path=/home/ubuntu/truffle-data/ 30_ifelse 30k_methods activerecord binarytrees cfunc_itself erubi erubi_rails etanni fannkuchredux fib getivar hexapdf keyword_args lee liquid-c liquid-render mail nbody optcarrot psych-load railsbench respond_to ruby-json ruby-lsp rubykon sequel setivar setivar_object str_concat throw
+MAX_TIME=600 ./run_benchmarks.rb --harness=harness-warmup --out_path=/home/ubuntu/truffle-data/
 
 echo "Completed TruffleRuby benchmarking successfully."
