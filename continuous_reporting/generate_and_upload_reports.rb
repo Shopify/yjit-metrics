@@ -30,6 +30,10 @@ BUILT_REPORTS_ROOT = File.join(YM_ROOT_DIR, "built-yjit-reports")
   end
 end
 
+# mkdir output directories
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_includes/reports"
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_benchmarks"
+
 ### Per-run reports to build
 
 # TODO: load the extensions out of the class objects

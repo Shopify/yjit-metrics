@@ -217,14 +217,16 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(config_names, platform, results, benchmarks: [])
+    def initialize(orig_config_names, platform, results, benchmarks: [])
         unless YJITMetrics::PLATFORMS.include?(platform)
             raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
         end
         @platform = platform
 
         # Permit non-same-platform stats config
-        config_names = config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
+        config_names = orig_config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
+        raise("Can't find any stats configuration in #{orig_config_names.inspect}!") if config_names.empty?
+
         # This can be set up using set_extra_info later.
         @filename_permalinks = {}
 
@@ -624,6 +626,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
                 platform_config_names << x86_stats_config if x86_stats_config
             end
 
+            raise("Can't find a stats config for this platform in #{config_names.inspect}!") if platform_config_names.empty?
             @sub_reports[platform] = ::YJITMetrics::SpeedDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
             if @sub_reports[platform].inactive
                 puts "Platform config names: #{platform_config_names.inspect}"

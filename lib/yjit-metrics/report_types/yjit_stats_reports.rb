@@ -9,6 +9,8 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
     attr_reader :inactive
 
     def initialize(stats_configs, results, benchmarks: [])
+        raise("No stats configs given for YJIT stats report!") if stats_configs.empty?
+
         super
 
         bad_configs = stats_configs - results.available_configs
