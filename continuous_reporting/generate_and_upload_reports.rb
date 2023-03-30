@@ -33,6 +33,7 @@ end
 # mkdir output directories
 FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_includes/reports"
 FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_benchmarks"
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/reports/timeline"
 
 ### Per-run reports to build
 
@@ -280,8 +281,11 @@ end
 Dir.chdir(RAW_REPORTS_ROOT)
 
 # Make sure it builds locally
-YJITMetrics.check_call "bundle"  # Make sure all gems are installed
-YJITMetrics.check_call "bundle exec ruby -I./framework framework/render.rb build"
+# Funny thing here - this picks up the Bundler config from this script, via env vars.
+# So it's important to include the kramdown gem, and others used in reporting, in
+# the yjit-metrics Gemfile. Or you can run generate_and_upload_reports.rb from the
+# other directory, where it picks up the reporting Gemfile. That works too.
+YJITMetrics.check_call "bundle exec ruby -I./_framework _framework/render.rb build"
 
 puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
 
