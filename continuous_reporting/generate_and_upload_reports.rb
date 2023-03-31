@@ -291,29 +291,31 @@ puts "Static site seems to build correctly. That means that GHPages should do th
 
 dirs_to_commit = [ "_benchmarks", "_includes", "reports" ]
 
-## Commit if there is something to commit
-#diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
-#if diffs == ""
-#    puts "No changes found. Not committing or pushing."
-#elsif no_push
-#    puts "Changes found, but --no-push was specified. Not committing or pushing."
-#else
-#    puts "Changes found. Committing and pushing."
-#    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
-#    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
-#    YJITMetrics.check_call "git push"
-#end
+## Commit built reports if there is something to commit
+diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
+if diffs == ""
+    puts "No changes found. Not committing or pushing."
+elsif no_push
+    puts "Changes found, but --no-push was specified. Not committing or pushing."
+else
+    puts "Changes found. Committing and pushing."
+    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
+    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
+    YJITMetrics.check_call "git push"
+end
 
-=begin
-# Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
-Dir.chdir YJIT_METRICS_PAGES_DIR
-YJITMetrics.check_call "git checkout --orphan -b new_pages && git rm -r * && cp -r #{RAW_REPORTS_ROOT}/_site/* . && git add ."
-YJITMetrics.check_call "git commit -m 'Rebuilt site HTML' && git push -f"
+unless no_push
+    # Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
+    Dir.chdir YJIT_METRICS_PAGES_DIR
+    YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
+    YJITMetrics.check_call "git checkout --orphan -b new_pages && git rm -r * && cp -r #{RAW_REPORTS_ROOT}/_site/* . && git add ."
+    YJITMetrics.check_call "git commit -m 'Rebuilt site HTML' && git push -f"
 
-# Reset the pages branch to the new built site
-YJITMetrics.check_call "git checkout pages"
-# TODO: UNCOMMENT WHEN WE'RE READY TO CHANGE OVER
-#YJITMetrics.check_call "git checkout pages && git reset --hard new_pages && git push -f"
-=end
+    # Reset the pages branch to the new built site
+    YJITMetrics.check_call "git checkout pages"
+    YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
+    #YJITMetrics.check_call "git push -f"
+    #YJITMetrics.check_call "git branch -D new_pages"
+end
 
 puts "Finished generate_and_upload_reports successfully!"
