@@ -138,7 +138,7 @@ configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{con
 bench_data = nil
 when_error = :die
 output_path = "data"
-bundler_version = "2.2.30"
+bundler_version = "2.4.13"
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
 full_rebuild = false
