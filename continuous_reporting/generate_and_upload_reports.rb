@@ -7,8 +7,35 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-# Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories.
-RAW_BENCHMARK_ROOT = "raw_benchmark_data"
+### Required repos, etc, to build from
+
+# Dir in which yjit-metrics, yjit-bench, etc are cloned
+YM_ROOT_DIR = File.expand_path(File.join(__dir__, "../.."))
+
+# Clone of yjit-metrics repo, pages branch
+YJIT_METRICS_PAGES_DIR = File.expand_path File.join(YM_ROOT_DIR, "yjit-metrics-pages")
+
+# Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories
+RAW_BENCHMARK_ROOT = File.join(YM_ROOT_DIR, "raw-benchmark-data")
+
+# This contains Jekyll source files of various kinds - everything but the built reports
+RAW_REPORTS_ROOT = File.join(YM_ROOT_DIR, "raw-yjit-reports")
+
+# We cache all the built per-run reports, which can take a long time to rebuild
+BUILT_REPORTS_ROOT = File.join(YM_ROOT_DIR, "built-yjit-reports")
+
+[YJIT_METRICS_PAGES_DIR, RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
+  unless File.exist?(dir)
+    raise "We expected directory #{dir.inspect} to exist in order to generate reports!"
+  end
+end
+
+# mkdir output directories
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_includes/reports"
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/_benchmarks"
+FileUtils.mkdir_p "#{BUILT_REPORTS_ROOT}/reports/timeline"
+
+### Per-run reports to build
 
 # TODO: load the extensions out of the class objects
 REPORTS_AND_FILES = {
@@ -59,7 +86,7 @@ REPORTS_AND_FILES = {
     },
 }
 
-# Note: we use extensions *directly* for timeline reports, and they don't use timestamps.
+# Timeline reports don't have a timestamp in the filename.
 # So this is only for basic reports.
 def report_filenames(report_name, ts, prefix: "_includes/reports/")
     exts = REPORTS_AND_FILES[report_name][:extensions]
@@ -102,62 +129,9 @@ if only_reports
     REPORTS_AND_FILES.select! { |k, _| only_reports.include?(k) }
 end
 
-# If want to check into the repo and file issues, we need credentials.
-YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages")
-github_token = ENV["BENCHMARK_CI_GITHUB_TOKEN"] ? ENV["BENCHMARK_CI_GITHUB_TOKEN"].chomp : nil
-
-if no_push && !File.exist?(YJIT_METRICS_PAGES_DIR)
-    raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
-end
-
-unless github_token || no_push
-    # Unless the token is set explicitly, we hope and expect that it will be part of the URL in the
-    # pages repository, so "git push" just works. So we'll read it from there.
-
-    git_config = File.join(YJIT_METRICS_PAGES_DIR, ".git", "config")
-    if File.exist?(git_config)
-        contents = File.read(git_config)
-        before, after = contents.split('[remote "origin"]', 2)
-        if after
-            if after =~ /url = https:\/\/([^@]+)@github\.com/
-                github_token = $1
-            else
-                puts "Content that was unparseable: #{after.inspect}"
-                puts "Found .git/config, but couldn't parse git URL with token from remote 'origin'!"
-            end
-        else
-            puts "Found .git/config, but couldn't find remote origin inside it!"
-        end
-    else
-        puts "Looking for .git/config in #{git_config.inspect}, but can't find it to load token!"
-    end
-
-    unless github_token
-        raise "Please set BENCHMARK_CI_GITHUB_TOKEN to an appropriate GitHub token if you need to push results or use --no-push"
-    end
-end
-
-GITHUB_TOKEN = github_token
-
-# This script expects to be cloned in a repo right next to a "yjit-metrics-pages" repo for the Github Pages branch of yjit-metrics
-YJIT_METRICS_GIT_URL = GITHUB_TOKEN ? "https://#{GITHUB_TOKEN}@github.com/Shopify/yjit-metrics.git" : "https://github.com/Shopify/yjit-metrics.git"
-YJIT_METRICS_PAGES_BRANCH = "pages"
-
-# Clone YJIT repo on "pages" branch, updated to latest version
-YJITMetrics.clone_repo_with path: YJIT_METRICS_PAGES_DIR, git_url: YJIT_METRICS_GIT_URL, git_branch: YJIT_METRICS_PAGES_BRANCH, do_clean: false
-if GITHUB_TOKEN
-  Dir.chdir(YJIT_METRICS_PAGES_DIR) do
-    system("git pull") or raise("Error trying to git pull in pages dir!") # use check_call
-  end
-end
-
-# We don't normally want to clean this directory - sometimes we run with --no-push, and this would destroy those results.
-#Dir.chdir(YJIT_METRICS_PAGES_DIR) { YJITMetrics.check_call "git clean -d -f" }
-
-# From here on out, we're just in the yjit-metrics checkout of "pages"
+# From here on out, we're just in the yjit-metrics checkout of "pages" -- until we can stop relying on it.
 Dir.chdir(YJIT_METRICS_PAGES_DIR)
-
-starting_sha = YJITMetrics.check_output "git rev-list -n 1 HEAD".chomp
+YJITMetrics.check_call("git checkout pages")
 
 # Turn JSON files into reports where outdated - first, find out what test results we have.
 # json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
@@ -173,7 +147,7 @@ end
 
 # Now see what reports we already have, so we can run anything missing.
 report_timestamps = {}
-report_files = Dir["*", base: "_includes/reports"].to_a
+report_files = Dir["*", base: "#{BUILT_REPORTS_ROOT}/_includes/reports"].to_a
 REPORTS_AND_FILES.each do |report_name, details|
     next unless details[:report_type] == :basic_report # Timeline reports don't produce a series of timestamped files
     this_report_files = report_files.select { |filename| filename.include?(report_name) }
@@ -219,7 +193,7 @@ json_timestamps.each do |ts, test_files|
             reason = regenerate_reports ? "we're regenerating everything" : "we're missing files: #{missing_files.inspect}"
 
             puts "Running basic_report for timestamp #{ts} because #{reason} with data files #{test_files.inspect}"
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o _includes/reports -w #{test_files.join(" ")}")
+            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
 
             rf = report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -232,7 +206,7 @@ json_timestamps.each do |ts, test_files|
             report_timestamps[ts][report_name] = rf
         end
 
-        # Now make sure we have a _benchmarks Jekyll entry for the dataset
+        # Now make sure we have a _benchmarks entry for the dataset
         test_results_by_config = {}
         # Try to keep the iteration order stable with sort - we do *not* want this to autogenerate differently
         # every time and have massive Git churn. This lists out the test-result JSON files for this config and timestamp.
@@ -241,7 +215,7 @@ json_timestamps.each do |ts, test_files|
                 raise "Error parsing JSON filename #{file.inspect}!"
             end
             config = $1
-            test_results_by_config[config] = File.join(RAW_BENCHMARK_ROOT, file)
+            test_results_by_config[config] = file
         end
 
         generated_reports = {}
@@ -251,7 +225,7 @@ json_timestamps.each do |ts, test_files|
 
             # Add a field like blog_speed_details_svg
             details[:extensions].each do |ext|
-                # Don't include the leading "_includes" - Jekyll checks there by default.
+                # Don't include the leading "_includes"
                 generated_reports[report_name + "_" + ext.gsub(".", "_")] = "reports/#{report_name}_#{ts}.#{ext}"
 
                 # Add a field like blog_speed_details_x86_64_svg
@@ -280,10 +254,10 @@ json_timestamps.each do |ts, test_files|
         }
 
         contents = YAML.dump(bench_data) + "\n---\nAutogenerated by continuous_reporting/generate_and_upload_reports.rb script.\n"
-        filename = "_benchmarks/bench_#{ts}.md"
-        # Only write the file if contents don't match - we don't want to re-run Jekyll for non-changes
+        filename = "#{BUILT_REPORTS_ROOT}/_benchmarks/bench_#{ts}.md"
+        # Only write the file if contents don't match - we don't want to re-run for non-changes
         if !File.exist?(filename) || File.read(filename) != contents
-            # Write out the _benchmarks file for Jekyll to use.
+            # Write out the _benchmarks file.
             File.open(filename, "w") { |f| f.write(contents) }
         end
     end
@@ -297,20 +271,27 @@ unless die_on_regenerate
 
     # It's possible to run only specific non-timeline reports -- then this would be empty.
     unless timeline_reports.empty?
-        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o .")
+        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
     end
 
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
 end
 
+# Switch to raw-yjit-reports, which symlinks to the built reports
+Dir.chdir(RAW_REPORTS_ROOT)
+
 # Make sure it builds locally
-YJITMetrics.check_call "bundle"  # Make sure all gems are installed
-YJITMetrics.check_call "bundle exec jekyll build"
-puts "Jekyll seems to build correctly. That means that GHPages should do the right thing on push."
+# Funny thing here - this picks up the Bundler config from this script, via env vars.
+# So it's important to include the kramdown gem, and others used in reporting, in
+# the yjit-metrics Gemfile. Or you can run generate_and_upload_reports.rb from the
+# other directory, where it picks up the reporting Gemfile. That works too.
+YJITMetrics.check_call "bundle exec ruby -I./_framework _framework/render.rb build"
 
-dirs_to_commit = [ "_benchmarks", "_includes", RAW_BENCHMARK_ROOT, "reports" ]
+puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
 
-# Commit if there is something to commit
+dirs_to_commit = [ "_benchmarks", "_includes", "reports" ]
+
+## Commit built reports if there is something to commit
 diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
 if diffs == ""
     puts "No changes found. Not committing or pushing."
@@ -321,6 +302,21 @@ else
     YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
     YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
     YJITMetrics.check_call "git push"
+end
+
+# Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
+Dir.chdir YJIT_METRICS_PAGES_DIR
+YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
+YJITMetrics.check_call "git checkout --orphan new_pages && git rm --cached -r * && cp -r #{RAW_REPORTS_ROOT}/_site/* . && git add ."
+YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
+
+# Reset the pages branch to the new built site
+YJITMetrics.check_call "git checkout pages"
+
+unless no_push
+    YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
+    YJITMetrics.check_call "git push -f origin pages"
+    YJITMetrics.check_call "git branch -D new_pages"
 end
 
 puts "Finished generate_and_upload_reports successfully!"

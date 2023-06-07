@@ -69,7 +69,7 @@ def parse_dataset_filepath(filepath)
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    platform = filepath.split("/")[0]
+    platform = filepath.split("/").detect { |dir| YJITMetrics::PLATFORMS.include?(dir) }
 
     # We want to include the platform in the filename, which will put it in the config name.
     # If that's not done yet, patch it here.

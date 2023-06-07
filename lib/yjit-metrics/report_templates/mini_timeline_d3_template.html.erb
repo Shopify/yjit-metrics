@@ -4,7 +4,7 @@
 <script src="https://d3js.org/d3.v4.js"></script>
 
 <% if @series.size != 4 && @series.size != 8
-       raise "The mini_timeline graph assumes a 2x2 grid of benchmarks - either 4 series or 8 for multiplatform!"
+       raise "The mini_timeline graph assumes a 2x2 grid of benchmarks - either 4 series or 8 for multiplatform, not #{@series.size.inspect}!"
    end %>
 
 <%

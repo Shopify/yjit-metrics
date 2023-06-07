@@ -81,6 +81,11 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         "mini_timelines"
     end
 
+    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
+    def inspect
+        "MiniTimelinesReport<#{object_id}>"
+    end
+
     def initialize(context)
         super
 
@@ -92,23 +97,23 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:selected_benchmarks].each do |benchmark|
-            [config_x86].each do |config|
-                platform = (config == config_x86) ? "x86_64" : "aarch64"
-                points = @context[:timestamps].map do |ts|
-                    this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
-                    if this_point
-                        this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
-                        # These fields are from the ResultSet summary
-                        [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
-                    else
-                        nil
-                    end
-                end
-                points.compact!
-                next if points.empty?
+            platform = "x86_64"
+            config = config_x86
 
-                @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, data: points })
+            points = @context[:timestamps].map do |ts|
+                this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+                if this_point
+                    this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
+                    # These fields are from the ResultSet summary
+                    [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
+                else
+                    nil
+                end
             end
+            points.compact!
+            next if points.empty?
+
+            @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, data: points })
         end
         #@series.sort_by! { |s| s[:name] }
     end

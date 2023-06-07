@@ -59,7 +59,8 @@ def parse_dataset_filepath(filepath)
     config_name = $3
     run_num = $2 ? $2.chomp("_") : $2
     timestamp = ts_string_to_date($1)
-    platform = filepath.split("/")[0]
+    platform = YJITMetrics::PLATFORMS.detect { |plat| filepath[plat] } # Path should contain at most one platform
+    raise "Could not detect platform!" unless platform
 
     unless config_name.include?(platform)
         config_name = platform + "_" + config_name
