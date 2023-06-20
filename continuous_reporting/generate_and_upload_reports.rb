@@ -199,7 +199,7 @@ json_timestamps.each do |ts, test_files|
             files_not_found = rf.select { |f| !File.exist? f }
 
             unless files_not_found.empty?
-                raise "We tried to create the report file(s) #{files_not_found.inspect} but failed! No process error, but the file(s) didn't appear."
+                raise "We tried to create the report file(s) #{files_not_found.inspect} but failed! No process error, but (#{files_not_found.size}/#{rf.size}) of the file(s) didn't appear."
             end
 
             report_timestamps[ts] ||= {}
