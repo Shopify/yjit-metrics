@@ -1026,17 +1026,20 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
     end
 
     def initialize(config_names, results, benchmarks: [])
-        # Set up the parent class, look up relevant data
-        super
-        return if @inactive # Can't get stats? Bail out.
-
         # Give the headline data for x86 processors, not ARM64.
         # No x86 data? Then no headline.
-        if config_names.none? { |name| name.include?("x86_64") }
+        x86_configs = config_names.select { |name| name.include?("x86_64") }
+        if x86_configs.empty?
             @no_data = true
             puts "WARNING: no x86_64 data for data: #{config_names.inspect}"
             return
         end
+        config_names = x86_configs
+
+        # Set up the parent class, look up relevant data
+        super
+        return if @inactive # Can't get stats? Bail out.
+
         look_up_data_by_ruby(only_platforms: ["x86_64"])
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
