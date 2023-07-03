@@ -172,7 +172,7 @@ json_timestamps.each do |ts, test_files|
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
-        required_files = report_filenames(report_name, ts, prefix: "")
+        required_files = report_filenames(report_name, ts, prefix: "#{BUILT_REPORTS_ROOT}/_includes/reports")
         missing_files = required_files - ((report_timestamps[ts] || {})[report_name] || [])
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
