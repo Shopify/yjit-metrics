@@ -15,7 +15,7 @@ end
 YJIT_RAW_DATA_REPO = File.expand_path File.join(__dir__, "../../raw-benchmark-data/raw_benchmark_data")
 
 DESTINATIONS = [
-    YJIT_METRICS_PAGES_DIR,
+    #YJIT_METRICS_PAGES_DIR,
     YJIT_RAW_DATA_REPO,
 ]
 
