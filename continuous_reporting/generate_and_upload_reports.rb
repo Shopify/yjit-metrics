@@ -162,7 +162,7 @@ REPORTS_AND_FILES.each do |report_name, details|
 
         report_timestamps[ts] ||= {}
         report_timestamps[ts][report_name] ||= []
-        report_timestamps[ts][report_name].push filename
+        report_timestamps[ts][report_name].push "#{BUILT_REPORTS_ROOT}/_includes/reports/#{filename}"
     end
 end
 
@@ -176,8 +176,7 @@ json_timestamps.each do |ts, test_files|
         missing_files = required_files - ((report_timestamps[ts] || {})[report_name] || [])
         not_really_missing = missing_files.select { |filename| File.exist?(filename) }
         unless not_really_missing.empty?
-            STDERR.puts "Failure! Found fake-missing files: #{not_really_missing.inspect}!"
-            raise "Fake-missing files!"
+            raise "Fake-missing files (internal error): #{not_really_missing.inspect}!"
         end
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
