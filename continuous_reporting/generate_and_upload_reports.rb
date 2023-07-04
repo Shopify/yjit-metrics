@@ -174,6 +174,11 @@ json_timestamps.each do |ts, test_files|
 
         required_files = basic_report_filenames(report_name, ts)
         missing_files = required_files - ((report_timestamps[ts] || {})[report_name] || [])
+        not_really_missing = missing_files.select { |filename| File.exist?(filename) }
+        unless not_really_missing.empty?
+            STDERR.puts "Failure! Found fake-missing files: #{not_really_missing.inspect}!"
+            raise "Fake-missing files!"
+        end
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
