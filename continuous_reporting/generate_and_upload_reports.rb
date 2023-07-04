@@ -313,7 +313,10 @@ end
 # Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
 #Dir.chdir YJIT_METRICS_PAGES_DIR
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
-YJITMetrics.check_call "git checkout --orphan new_pages && git rm --cached -r * && mv #{RAW_REPORTS_ROOT}/_site ./ && git add ."
+YJITMetrics.check_call "git checkout --orphan new_pages"
+YJITMetrics.check_call "git rm --cached -r *"
+YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site ./"
+YJITMetrics.check_call "git add ."
 YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
 unless no_push
