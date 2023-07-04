@@ -168,7 +168,9 @@ end
 
 # Check timestamped raw data versus the expected set of reports each basic_report can generate.
 # Generate any basic reports that need it.
-json_timestamps.each do |ts, test_files|
+timestamps = json_timestamps.keys.sort
+timestamps.each do |ts|
+    test_files = json_timestamps[ts]
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
