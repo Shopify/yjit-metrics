@@ -305,18 +305,16 @@ else
 end
 
 # Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
-Dir.chdir YJIT_METRICS_PAGES_DIR
+#Dir.chdir YJIT_METRICS_PAGES_DIR
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
-YJITMetrics.check_call "git checkout --orphan new_pages && git rm --cached -r * && cp -r #{RAW_REPORTS_ROOT}/_site/* . && git add ."
+YJITMetrics.check_call "git checkout --orphan new_pages && git rm --cached -r * && mv #{RAW_REPORTS_ROOT}/_site ./ && git add ."
 YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
-# Reset the pages branch to the new built site
-YJITMetrics.check_call "git checkout pages"
-
 unless no_push
+    # Reset the pages branch to the new built site
     YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
     YJITMetrics.check_call "git push -f origin pages"
     YJITMetrics.check_call "git branch -D new_pages"
 end
 
-puts "Finished generate_and_upload_reports successfully!"
+puts "Finished generate_and_upload_reports successfully in #{RAW_REPORTS_ROOT}!"
