@@ -55,6 +55,8 @@ class RenderContext
   end
 
   def include(path)
+    raise("Can't include nil or empty string!") if path.nil? || path.empty?
+
     render_file("_includes/#{path}", @metadata)
   end
 
@@ -120,6 +122,8 @@ def render_file_to_location(path, out_dir, metadata)
 end
 
 def render_file(path, metadata)
+  raise "Can't render a directory!" if File.directory?(path)
+
   front_matter_data, line_offset, erb_template = read_front_matter(path)
 
   #dsl = OpenStruct.new(metadata.merge(front_matter_data).merge(content: ""))
