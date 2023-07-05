@@ -171,6 +171,7 @@ end
 timestamps = json_timestamps.keys.sort
 timestamps.each do |ts|
     test_files = json_timestamps[ts]
+    next unless test_files.any? { |tf| tf.include?("x86") } # Right now, ARM-only reports are very buggy.
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
