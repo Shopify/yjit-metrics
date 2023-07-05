@@ -17,26 +17,6 @@ chruby 3.0.2
 cd ~/ym/yjit-metrics
 ruby continuous_reporting/file_benchmark_data_into_raw.rb -d continuous_reporting/data
 
-###### Old repo - using subdirs of yjit-metrics pages branch
-
-cd ~/ym/yjit-metrics-pages
-
-# Anything that's been added to a pending commit should be un-added
-git restore --staged .
-
-# We've probably run reporting tests here. Get rid of uncommitted changes to reports, etc.
-git checkout Gemfile.lock _includes/reports reports
-
-# Clean only the report dirs. We might have uncommitted test data, so no cleaning data dirs.
-git clean -d -f _includes/reports reports
-
-git pull
-
-# This should commit only if there's anything to commit, but not fail if empty
-git add raw_benchmark_data
-git commit -m "`uname -p` benchmark results" || echo "Commit is empty?"
-git push
-
 ###### New repo - just for raw data
 
 cd ~/ym/raw-benchmark-data
