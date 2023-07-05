@@ -317,7 +317,7 @@ YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_p
 YJITMetrics.check_call "git checkout --orphan new_pages"
 YJITMetrics.check_call "git rm --cached -r ."
 YJITMetrics.check_call "mv _site ../"
-YJITMetrics.check_call "rm -r * && find . -type f -exec rm {} \\;"
+YJITMetrics.check_call "rm -r * && rm .gitignore .ruby-version"
 YJITMetrics.check_call "mv ../_site/* ."
 YJITMetrics.check_call "rmdir ../_site"
 YJITMetrics.check_call "git add ."
