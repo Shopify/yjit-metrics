@@ -316,7 +316,10 @@ end
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
 YJITMetrics.check_call "git checkout --orphan new_pages"
 YJITMetrics.check_call "git rm --cached -r ."
-YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site ./"
+YJITMetrics.check_call "mv _site ../"
+YJITMetrics.check_call "rm -r *"
+YJITMetrics.check_call "mv ../_site/* ."
+YJITMetrics.check_call "rmdir ../_site"
 YJITMetrics.check_call "git add ."
 YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
