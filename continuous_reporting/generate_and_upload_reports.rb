@@ -286,6 +286,7 @@ end
 
 # Switch to raw-yjit-reports, which symlinks to the built reports
 Dir.chdir(RAW_REPORTS_ROOT)
+YJITMetrics.check_call "git checkout main"
 
 # Make sure it builds locally
 # Funny thing here - this picks up the Bundler config from this script, via env vars.
