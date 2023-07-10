@@ -24,6 +24,9 @@ RAW_REPORTS_ROOT = File.join(YM_ROOT_DIR, "raw-yjit-reports")
 # We cache all the built per-run reports, which can take a long time to rebuild
 BUILT_REPORTS_ROOT = File.join(YM_ROOT_DIR, "built-yjit-reports")
 
+# We have a separate repo for the final HTML, because creating the new orphan branch is fiddly
+GHPAGES_REPO = File.join(YM_ROOT_DIR, "ghpages-yjit-metrics")
+
 [YJIT_METRICS_PAGES_DIR, RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
   unless File.exist?(dir)
     raise "We expected directory #{dir.inspect} to exist in order to generate reports!"
@@ -286,7 +289,7 @@ end
 
 # Switch to raw-yjit-reports, which symlinks to the built reports
 Dir.chdir(RAW_REPORTS_ROOT)
-YJITMetrics.check_call "git checkout main"
+YJITMetrics.check_call "git checkout main && git pull"
 
 # Make sure it builds locally
 # Funny thing here - this picks up the Bundler config from this script, via env vars.
@@ -297,30 +300,28 @@ YJITMetrics.check_call "bundle exec ruby -I./_framework _framework/render.rb bui
 
 puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
 
-dirs_to_commit = [ "_benchmarks", "_includes", "reports" ]
+# Benchmark raw data was already committed. Built reports are now locally cached, not pushed.
+#dirs_to_commit = [ "_benchmarks", "_includes", "reports" ]
+### Commit built reports if there is something to commit
+#diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
+#if diffs == ""
+#    puts "No changes found. Not committing or pushing."
+#elsif no_push
+#    puts "Changes found, but --no-push was specified. Not committing or pushing."
+#else
+#    puts "Changes found. Committing and pushing."
+#    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
+#    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
+#    YJITMetrics.check_call "git push"
+#end
 
-## Commit built reports if there is something to commit
-diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
-if diffs == ""
-    puts "No changes found. Not committing or pushing."
-elsif no_push
-    puts "Changes found, but --no-push was specified. Not committing or pushing."
-else
-    puts "Changes found. Committing and pushing."
-    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
-    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
-    YJITMetrics.check_call "git push"
-end
-
-# Copy built _site directory into YJIT_METRICS_PAGES repo as a new single commit, to branch new_pages
-#Dir.chdir YJIT_METRICS_PAGES_DIR
+# Copy built _site directory into raw pages repo as a new single commit, to branch new_pages
+Dir.chdir GHPAGES_REPO
+YJITMetrics.check_call "git checkout empty"
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
 YJITMetrics.check_call "git checkout --orphan new_pages"
-YJITMetrics.check_call "git rm --cached -r ."
-YJITMetrics.check_call "mv _site ../"
-YJITMetrics.check_call "rm -r * && rm .gitignore .ruby-version"
-YJITMetrics.check_call "mv ../_site/* ."
-YJITMetrics.check_call "rmdir ../_site"
+YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
+YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site/* ./"
 YJITMetrics.check_call "git add ."
 YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
@@ -331,6 +332,6 @@ unless no_push
     YJITMetrics.check_call "git branch -D new_pages"
 end
 
-YJITMetrics.check_call "git checkout main"
+YJITMetrics.check_call "git checkout empty"
 
 puts "Finished generate_and_upload_reports successfully in #{RAW_REPORTS_ROOT}!"
