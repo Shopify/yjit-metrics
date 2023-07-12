@@ -331,7 +331,7 @@ YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 unless no_push
     # Reset the pages branch to the new built site
     YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
-    YJITMetrics.check_call "git push -f origin pages"
+    YJITMetrics.check_call "git push -f pages"
     YJITMetrics.check_call "git branch -D new_pages"
 end
 
