@@ -134,6 +134,7 @@ end
 
 # From here on out, we're just in the yjit-metrics checkout of "pages" -- until we can stop relying on it.
 Dir.chdir(YJIT_METRICS_PAGES_DIR)
+puts "Switched to #{Dir.pwd}"
 YJITMetrics.check_call("git checkout pages")
 
 # Turn JSON files into reports where outdated - first, find out what test results we have.
@@ -289,6 +290,7 @@ end
 
 # Switch to raw-yjit-reports, which symlinks to the built reports
 Dir.chdir(RAW_REPORTS_ROOT)
+puts "Switched to #{Dir.pwd}"
 YJITMetrics.check_call "git checkout main && git pull"
 
 # Make sure it builds locally
@@ -317,6 +319,7 @@ puts "Static site seems to build correctly. That means that GHPages should do th
 
 # Copy built _site directory into raw pages repo as a new single commit, to branch new_pages
 Dir.chdir GHPAGES_REPO
+puts "Switched to #{Dir.pwd}"
 YJITMetrics.check_call "git checkout empty"
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
 YJITMetrics.check_call "git checkout --orphan new_pages"
