@@ -325,6 +325,7 @@ YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_p
 YJITMetrics.check_call "git checkout --orphan new_pages"
 YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
 YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site/* ./"
+YJITMetrics.check_call "touch .nojekyll"
 YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
 YJITMetrics.check_call "git add ."
 YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
