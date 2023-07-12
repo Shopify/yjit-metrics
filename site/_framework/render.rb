@@ -8,7 +8,7 @@ require "ostruct"
 # For now, keep the equivalent of _config.yml in constants
 COLLECTIONS = [ "benchmarks" ]
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
-TOPLEVEL_SKIPPED = [ "_config.yml" ]
+TOPLEVEL_SKIPPED = [ "_config.yml", "Gemfile", "Gemfile.lock" ]
 
 # TODO: handle _sass dir - just pregenerate up-front?
 
