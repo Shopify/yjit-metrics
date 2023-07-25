@@ -147,7 +147,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             this_bench_stats = combined_stats_data_for_benchmarks([benchmark_name])
 
             total_exits = total_exit_count(this_bench_stats)
-            retired_in_yjit = this_bench_stats["exec_instruction"] - total_exits
+            retired_in_yjit = (this_bench_stats["exec_instruction"] || this_bench_stats["yjit_insns_count"]) - total_exits
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
             @yjit_ratio.push yjit_ratio_pct
