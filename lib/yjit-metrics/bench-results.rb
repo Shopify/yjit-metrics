@@ -526,7 +526,8 @@ class YJITMetrics::ResultSet
     SUMMARY_STATS = [
         "inline_code_size",
         "outlined_code_size",
-        "exec_instruction",
+        #"exec_instruction",  # exec_instruction changed name to yjit_insns_count -- only one of the two will be present in a dataset
+        "yjit_insns_count",
         "vm_insns_count",
         "compiled_iseq_count",
         "leave_interp_return",
@@ -556,13 +557,14 @@ class YJITMetrics::ResultSet
             all_stats = combined_yjit_stats_for_config_by_benchmark(config)
             all_stats.each do |bench, stats|
                 summary[config][bench]["yjit_stats"] = stats.slice(*SUMMARY_STATS)
+                summary[config][bench]["yjit_stats"]["yjit_insns_count"] ||= stats["exec_instruction"]
 
                 # Do we have full YJIT stats? If so, let's add the relevant summary bits
                 if stats["all_stats"]
                     out_stats = summary[config][bench]["yjit_stats"]
                     out_stats["side_exits"] = stats.inject(0) { |total, (k, v)| total + (k.start_with?("exit_") ? v : 0) }
                     out_stats["total_exits"] = out_stats["side_exits"] + out_stats["leave_interp_return"]
-                    out_stats["retired_in_yjit"] = out_stats["exec_instruction"] - out_stats["side_exits"]
+                    out_stats["retired_in_yjit"] = (out_stats["exec_instruction"] || out_stats["yjit_insns_count"]) - out_stats["side_exits"]
                     out_stats["avg_len_in_yjit"] = out_stats["retired_in_yjit"].to_f / out_stats["total_exits"]
                     out_stats["total_insns_count"] = out_stats["retired_in_yjit"] + out_stats["vm_insns_count"]
                     out_stats["yjit_ratio_pct"] = 100.0 * out_stats["retired_in_yjit"] / out_stats["total_insns_count"]

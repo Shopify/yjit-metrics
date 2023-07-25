@@ -16,7 +16,7 @@ outlined_code_size:    <%= "%10d" % stats["outlined_code_size"] %>
 total_exit_count:      <%= "%10d" % total_exits %>
 total_insns_count:     <%= "%10d" % total_insns_count %>
 vm_insns_count:        <%= "%10d" % stats["vm_insns_count"] %>
-yjit_insns_count:      <%= "%10d" % stats["exec_instruction"] %>
+yjit_insns_count:      <%= "%10d" % (stats["exec_instruction"] || stats["yjit_insns_count"]) %>
 ratio_in_yjit:         <%= "%9.1f" % yjit_ratio_pct %>%
 avg_len_in_yjit:       <%= "%10.1f" % avg_len_in_yjit %>
 

@@ -75,56 +75,6 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         total
     end
 
-    # The "misc" counters aren't for "can't compile" or "side exit",
-    # they're for various other things.
-    COUNTERS_MISC = [
-        "exec_instruction",     # YJIT instructions that *start* to execute, even if they later side-exit
-        "leave_interp_return",  # Number of returns to the interpreter
-        "binding_allocations",  # Number of times Ruby allocates a binding (via proc.c:rb_binding_alloc)
-        "binding_set",          # Number of locals modified via a binding (via proc.c:bind_local_variable_set)
-    ]
-
-    COUNTERS_SIDE_EXITS = %w(
-        setivar_val_heapobject
-        setivar_frozen
-        setivar_idx_out_of_range
-        getivar_undef
-        getivar_idx_out_of_range
-        getivar_se_self_not_heap
-        setivar_se_self_not_heap
-        oaref_arg_not_fixnum
-        send_se_protected_check_failed
-        send_se_cf_overflow
-        leave_se_finish_frame
-        leave_se_interrupt
-        send_se_protected_check_failed
-        )
-
-    COUNTERS_CANT_COMPILE = %w(
-        send_callsite_not_simple
-        send_kw_splat
-        send_bmethod
-        send_zsuper_method
-        send_refined_method
-        send_ivar_set_method
-        send_undef_method
-        send_optimized_method
-        send_missing_method
-        send_cfunc_toomany_args
-        send_cfunc_argc_mismatch
-        send_cfunc_ruby_array_varg
-        send_iseq_tailcall
-        send_iseq_arity_error
-        send_iseq_only_keywords
-        send_iseq_complex_callee
-        send_not_implemented_method
-        send_getter_arity
-        getivar_name_not_mapped
-        setivar_name_not_mapped
-        setivar_not_object
-        oaref_argc_not_one
-        )
-
     def exit_report_for_benchmarks(benchmarks)
         # Bindings for use inside ERB report template
         stats = combined_stats_data_for_benchmarks(benchmarks)
@@ -132,7 +82,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         total_exits = side_exits + stats["leave_interp_return"]
 
         # Number of instructions that finish executing in YJIT
-        retired_in_yjit = stats["exec_instruction"] - side_exits
+        retired_in_yjit = (stats["exec_instruction"] || stats["yjit_insns_count"]) - side_exits
 
         # Average length of instruction sequences executed by YJIT
         avg_len_in_yjit = retired_in_yjit.to_f / total_exits
@@ -270,7 +220,7 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
             this_bench_stats = combined_stats_data_for_benchmarks([benchmark_name])
 
             side_exits = total_exit_count(this_bench_stats)
-            retired_in_yjit = this_bench_stats["exec_instruction"] - side_exits
+            retired_in_yjit = (this_bench_stats["exec_instruction"] || this_bench_stats["yjit_insns_count"]) - side_exits
             total_insns_count = retired_in_yjit + this_bench_stats["vm_insns_count"]
             yjit_ratio_pct = 100.0 * retired_in_yjit.to_f / total_insns_count
 
