@@ -78,6 +78,12 @@ def read_front_matter(path)
 end
 
 KNOWN_STEPS = ["erb", "md"]
+
+# Render the file at path to out_dir, using metadata and the frontmatter in path if present.
+# Writes the file to its new location. If path has transformable extensions like .md or .erb,
+# the file will be processed using one or multiple steps.
+#
+# This is the primary top-level method used to render files from source to destination.
 def render_file_to_location(path, out_dir, metadata)
   FileUtils.mkdir_p(out_dir)
   filename = path.split("/")[-1]
@@ -141,6 +147,7 @@ def render_file(path, metadata)
   text
 end
 
+# This is a top-level method used to render a collection item to its location.
 def render_collection_item_to_location(item, out_dir, metadata)
   layout = item.layout
   unless layout
