@@ -1,280 +1,434 @@
----
-layout: basic
----
+<!DOCTYPE html>
+<!-- Copied from Slate default and modified -->
+<html lang="en-US">
 
-<h2>Details for Benchmarks at <%= page.date_str %> <%= page.time_str %></h2>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <script src="assets/js/clipboard.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="https://speed.yjit.org/assets/css/style.css">
 
-<div>
-<span style="font-weight: bold; font-size: 125%;"><%= include page.reports[:blog_speed_headline_html] %>
-</span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
-</div>
-
-<h2 id="headlining-graph">Headlining Benchmarks</h2>
-
-<p>
-  These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
-</p>
-
-<div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
-
-  Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
-</div>
-
-<h2 id="other-graph">Other Benchmarks</h2>
-
-<div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
-  Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
-</div>
-
-<h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
-
-<div style="width: 800px;" data-platform-selector="yes"
-  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
-  Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
-</div>
-
-<h2 id="raw-data">Want Raw Graphs and CSV?</h2>
-
-<ul>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.svg">All benchmarks (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_<%= page.timestamp %>.html">HTML "headline" speed comparison (only generated for x86_64)</a>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.csv">CSV speed results (x86_64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.svg">All benchmarks (AARCH64)</a></li>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.csv">CSV speed results (AARCH64)</a></li>
-</ul>
-
-<h2 id="speed-table">Benchmarks Speed Details</h2>
-
-<div data-platform-selector="yes"
-  data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.html">
-</div>
-
-<h2 id="memory-table">Benchmark Memory Usage Details</h2>
-
-<div data-platform-selector="yes"
-  data-gh-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.html">
-</div>
-
-<h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
-
-<%= include page.reports[:iteration_count_html] %>
-
-<h2 id="yjit-stats">Benchmark YJIT Stats</h2>
-
-<%= include page.reports[:blog_yjit_stats_html] %>
-
-<p>Note: currently, all stats are collected on x86_64, not ARM.</p>
-
-<h2 id="raw-json">Raw JSON data files</h2>
-
-<p>
-  All graphs and table data in this page comes from processing these data files, which come from <a href="https://github.com/Shopify/yjit-metrics/blob/main/basic_benchmark.rb">benchmark runs</a>.
-</p>
-
-<ul>
-<% page.test_results.each do |result| %> <li><a href="<%= relative_url result[1] %>"><%= result[0] %></a></li> <% end %>
-</ul>
-
-<hr/>
-
-<h2 id="too-many-details">Far Too Many Details</h2>
-
-<p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
-
-<ul>
-  <% page.platforms.each do |platform| %>
-  <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.<%= platform %>.raw_details.html">Too Much Detail: <%= platform.capitalize %> Edition</a></li>
-  <% end %>
-</ul>
-
-<hr/>
-<%= content %>
-
-<script>
-  var platformsThisTimestamp = [ "<%= page.platforms.join '", "' %>" ];
-
-  // Create platform-selector DOM elements
-  function addPlatformSelector(elt) {
-    //if(platformsThisTimestamp.length == 1) { return; }
-
-    var top_element = document.createElement('div');
-    var ghUrl = elt.dataset.ghUrl;
-    var ctr = elt.dataset.platformCounter;
-
-    if(platformsThisTimestamp.length == 1) {
-      top_element.innerHTML = `
-<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
-  <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
-  <div id="graph-error-${ctr}" class="graph-error" style="display: none"><span style="color: red; font-size: 500%;">X</span></div>
-  <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
-  </div>
-</div
-      `
-    } else {
-      top_element.innerHTML = `
-<div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
-<form style="max-width: 40%; float: right;">
-  <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
-    <legend>Select Platform</legend>
-
-    <input type="radio" id="platform-radio-${ctr}-x86" name="plat-select-${ctr}" value="x86_64" checked />
-    <label for="platform-radio-${ctr}-x86">Xeon x86_64</label>
-
-    <input type="radio" id="platform-radio-${ctr}-aarch" name="plat-select-${ctr}" value="aarch64" />
-    <label for="platform-radio-${ctr}-aarch">AWS Graviton ARM64</label>
-  </fieldset>
-</form>
-<img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none;" />
-<div id="graph-error-${ctr}" class="graph-error" style="display:none"><span style="color: red; font-size: 500%;">X</span></div>
-<div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
-</div>
-<div style="clear:both"></div>
-</div>
-  `
-  }
-
-    // Any text or other content will be at the bottom, below the graph and selector
-    elt.prepend(top_element);
-  }
-
-  // How to turn a GH URL template into a real URL
-  function urlFromTemplate(opts) {
-    var t = opts.template;
-    if(opts.platform) {
-      t = t.replaceAll("PLATFORM", opts.platform);
-    }
-    return "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/" + t;
-  }
-
-  // Load platform-specific graph content into appropriate divs
-  var platform_counter = 1;
-  document.platform_handlers = {};
-  document.querySelectorAll("div[data-platform-selector]").forEach(function (elt) {
-    elt.dataset.platformCounter = platform_counter; // Set data-platform-counter for later handlers
-    platform_counter++; // Next elt's platform_counter is guaranteed different
-    addPlatformSelector(elt);
-  });
-
-  // We're going to want to AJAX-fetch platform-specific graphs. And if a
-  // fetch is already pending, we need to cancel it. We'll track that with
-  // an array of 'cancellers' (AbortControllers).
-  var fetchCancel = [];
-  var prevPlatform = [];
-  function makePlatGraphRequest(wrapperElt, platform) {
-    var platCtr = wrapperElt.dataset.platCounter;
-
-    // Is there a pending request for this same platform? Let it finish.
-    if(prevPlatform[platCtr] == platform && fetchCancel[platCtr]) {
-      return;
-    }
-
-    setRequestPending(wrapperElt);
-
-    // Is there a pending fetch for another platform? Abort it.
-    if(fetchCancel[platCtr]) {
-      fetchCancel[platCtr].abort();
-      delete fetchCancel[platCtr];
-    }
-
-    var url = urlFromTemplate({ template: wrapperElt.dataset.urlTemplate, platform: platform });
-    var canceller = new AbortController(); // Call .abort() on controller to send abort signal
-    fetchCancel[platCtr] = canceller;
-    // Fetch the URL, then load its contents into the .plat-graph-fetch-dest div
-    fetch(url, {signal: canceller.signal}).then(function (response) {
-      delete fetchCancel[platCtr];
-      if(response.ok) {
-        setRequestFinished(wrapperElt);
-        var graphLocation = wrapperElt.querySelector(".plat-graph-fetch-dest");
-        return response.text().then((data) => graphLocation.innerHTML = data);
-      } else {
-        setRequestError(wrapperElt);
+    <style media="all">
+      #svg_tooltip {
+        background: white;
+        border:  1px solid black;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        display: none;
       }
-      return response.text();
-    });
+      #svg_tooltip_sha_copied {
+        background: white;
+        border:  1px solid black;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        display: none;
+      }
+      .timeline-report-explanation {
+        text-align: center;
+      }
+    </style>
 
-    prevPlatform[platCtr] = platform;
-  }
+  </head>
 
-  function setRequestPending(wrapperElt) {
-    var loader = wrapperElt.querySelector(".graph-loading");
-    loader.style.display = "block";
-    var error = wrapperElt.querySelector(".graph-error");
-    error.style.display = "none";
-  }
+  <body>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <!-- <a id="forkme_banner" href="https://github.com/Shopify/yjit-metrics">View on GitHub</a> -->
 
-  function setRequestFinished(wrapperElt) {
-    var loader = wrapperElt.querySelector(".graph-loading");
-    loader.style.display = "none";
-    var error = wrapperElt.querySelector(".graph-error");
-    error.style.display = "none";
-  }
+          <h1 id="project_title">YJIT Benchmarks</h1>
+          <div style="clear:both;"></div>
+        </header>
+    </div>
 
-  function setRequestError(wrapperElt) {
-    var loader = wrapperElt.querySelector(".graph-loading");
-    loader.style.display = "none";
-    var error = wrapperElt.querySelector(".graph-error");
-    error.style.display = "block";
-  }
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
 
-  function getPlatformFromHashParam() {
-    var hash = window.location.hash;
-    var platform = hash.slice(1);
+      <!-- Content specific to benchmark details -->
+      <h2>Details for Benchmarks at <%= page.date_str %> <%= page.time_str %></h2>
 
-    document.querySelectorAll(".platformError").forEach(function(elt) { elt.parentNode.removeChild(elt); });
-    if(platform == "aarch64" || platform == "x86_64") {
-      return platform;
-    } else if (!platform || platform == "") {
-      return "x86_64";
-    } else {
-      document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
-        var msg = document.createElement("p");
-        msg.className = "platformError";
-        msg.innerHTML = "<b style='color: red'>Error in URL hash parameter, please fix platform name!</b>"
-        elt.prepend(msg);
+      <div>
+      <span style="font-weight: bold; font-size: 125%;"><%= include page.reports[:blog_speed_headline_html] %>
+      </span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
+      </div>
+      
+      <h2 id="headlining-graph">Headlining Benchmarks</h2>
+      
+      <p>
+        These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
+      </p>
+      
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
+      
+        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+      </div>
+      
+      <h2 id="other-graph">Other Benchmarks</h2>
+      
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
+        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+      </div>
+      
+      <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
+      
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
+        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+      </div>
+      
+      <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
+      
+      <ul>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.svg">All benchmarks (x86_64)</a></li>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_<%= page.timestamp %>.html">HTML "headline" speed comparison (only generated for x86_64)</a>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.csv">CSV speed results (x86_64)</a></li>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.svg">All benchmarks (AARCH64)</a></li>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.csv">CSV speed results (AARCH64)</a></li>
+      </ul>
+      
+      <h2 id="speed-table">Benchmarks Speed Details</h2>
+      
+      <div data-platform-selector="yes"
+        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.html">
+      </div>
+      
+      <h2 id="memory-table">Benchmark Memory Usage Details</h2>
+      
+      <div data-platform-selector="yes"
+        data-gh-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.html">
+      </div>
+      
+      <h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
+      
+      <%= include page.reports[:iteration_count_html] %>
+      
+      <h2 id="yjit-stats">Benchmark YJIT Stats</h2>
+      
+      <%= include page.reports[:blog_yjit_stats_html] %>
+      
+      <p>Note: currently, all stats are collected on x86_64, not ARM.</p>
+      
+      <h2 id="raw-json">Raw JSON data files</h2>
+      
+      <p>
+        All graphs and table data in this page comes from processing these data files, which come from <a href="https://github.com/Shopify/yjit-metrics/blob/main/basic_benchmark.rb">benchmark runs</a>.
+      </p>
+      
+      <ul>
+      <% page.test_results.each do |result| %> <li><a href="<%= relative_url result[1] %>"><%= result[0] %></a></li> <% end %>
+      </ul>
+      
+      <hr/>
+      
+      <h2 id="too-many-details">Far Too Many Details</h2>
+      
+      <p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
+      
+      <ul>
+        <% page.platforms.each do |platform| %>
+        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.<%= platform %>.raw_details.html">Too Much Detail: <%= platform.capitalize %> Edition</a></li>
+        <% end %>
+      </ul>
+      
+      <hr/>
+      <%= content %>
+      
+      <script>
+        var platformsThisTimestamp = [ "<%= page.platforms.join '", "' %>" ];
+      
+        // Create platform-selector DOM elements
+        function addPlatformSelector(elt) {
+          //if(platformsThisTimestamp.length == 1) { return; }
+      
+          var top_element = document.createElement('div');
+          var ghUrl = elt.dataset.ghUrl;
+          var ctr = elt.dataset.platformCounter;
+      
+          if(platformsThisTimestamp.length == 1) {
+            top_element.innerHTML = `
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
+        <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
+        <div id="graph-error-${ctr}" class="graph-error" style="display: none"><span style="color: red; font-size: 500%;">X</span></div>
+        <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
+        </div>
+      </div
+            `
+          } else {
+            top_element.innerHTML = `
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
+      <form style="max-width: 40%; float: right;">
+        <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
+          <legend>Select Platform</legend>
+      
+          <input type="radio" id="platform-radio-${ctr}-x86" name="plat-select-${ctr}" value="x86_64" checked />
+          <label for="platform-radio-${ctr}-x86">Xeon x86_64</label>
+      
+          <input type="radio" id="platform-radio-${ctr}-aarch" name="plat-select-${ctr}" value="aarch64" />
+          <label for="platform-radio-${ctr}-aarch">AWS Graviton ARM64</label>
+        </fieldset>
+      </form>
+      <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none;" />
+      <div id="graph-error-${ctr}" class="graph-error" style="display:none"><span style="color: red; font-size: 500%;">X</span></div>
+      <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
+      </div>
+      <div style="clear:both"></div>
+      </div>
+        `
+        }
+      
+          // Any text or other content will be at the bottom, below the graph and selector
+          elt.prepend(top_element);
+        }
+      
+        // How to turn a GH URL template into a real URL
+        function urlFromTemplate(opts) {
+          var t = opts.template;
+          if(opts.platform) {
+            t = t.replaceAll("PLATFORM", opts.platform);
+          }
+          return "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/" + t;
+        }
+      
+        // Load platform-specific graph content into appropriate divs
+        var platform_counter = 1;
+        document.platform_handlers = {};
+        document.querySelectorAll("div[data-platform-selector]").forEach(function (elt) {
+          elt.dataset.platformCounter = platform_counter; // Set data-platform-counter for later handlers
+          platform_counter++; // Next elt's platform_counter is guaranteed different
+          addPlatformSelector(elt);
+        });
+      
+        // We're going to want to AJAX-fetch platform-specific graphs. And if a
+        // fetch is already pending, we need to cancel it. We'll track that with
+        // an array of 'cancellers' (AbortControllers).
+        var fetchCancel = [];
+        var prevPlatform = [];
+        function makePlatGraphRequest(wrapperElt, platform) {
+          var platCtr = wrapperElt.dataset.platCounter;
+      
+          // Is there a pending request for this same platform? Let it finish.
+          if(prevPlatform[platCtr] == platform && fetchCancel[platCtr]) {
+            return;
+          }
+      
+          setRequestPending(wrapperElt);
+      
+          // Is there a pending fetch for another platform? Abort it.
+          if(fetchCancel[platCtr]) {
+            fetchCancel[platCtr].abort();
+            delete fetchCancel[platCtr];
+          }
+      
+          var url = urlFromTemplate({ template: wrapperElt.dataset.urlTemplate, platform: platform });
+          var canceller = new AbortController(); // Call .abort() on controller to send abort signal
+          fetchCancel[platCtr] = canceller;
+          // Fetch the URL, then load its contents into the .plat-graph-fetch-dest div
+          fetch(url, {signal: canceller.signal}).then(function (response) {
+            delete fetchCancel[platCtr];
+            if(response.ok) {
+              setRequestFinished(wrapperElt);
+              var graphLocation = wrapperElt.querySelector(".plat-graph-fetch-dest");
+              return response.text().then((data) => graphLocation.innerHTML = data);
+            } else {
+              setRequestError(wrapperElt);
+            }
+            return response.text();
+          });
+      
+          prevPlatform[platCtr] = platform;
+        }
+      
+        function setRequestPending(wrapperElt) {
+          var loader = wrapperElt.querySelector(".graph-loading");
+          loader.style.display = "block";
+          var error = wrapperElt.querySelector(".graph-error");
+          error.style.display = "none";
+        }
+      
+        function setRequestFinished(wrapperElt) {
+          var loader = wrapperElt.querySelector(".graph-loading");
+          loader.style.display = "none";
+          var error = wrapperElt.querySelector(".graph-error");
+          error.style.display = "none";
+        }
+      
+        function setRequestError(wrapperElt) {
+          var loader = wrapperElt.querySelector(".graph-loading");
+          loader.style.display = "none";
+          var error = wrapperElt.querySelector(".graph-error");
+          error.style.display = "block";
+        }
+      
+        function getPlatformFromHashParam() {
+          var hash = window.location.hash;
+          var platform = hash.slice(1);
+      
+          document.querySelectorAll(".platformError").forEach(function(elt) { elt.parentNode.removeChild(elt); });
+          if(platform == "aarch64" || platform == "x86_64") {
+            return platform;
+          } else if (!platform || platform == "") {
+            return "x86_64";
+          } else {
+            document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
+              var msg = document.createElement("p");
+              msg.className = "platformError";
+              msg.innerHTML = "<b style='color: red'>Error in URL hash parameter, please fix platform name!</b>"
+              elt.prepend(msg);
+            });
+            return "x86_64";
+          }
+        }
+      
+        function updatePageFromCurrentPlatform() {
+          document.querySelectorAll(".plat-select-fieldset input[type=radio]").forEach(function(elt) {
+            if(elt.value == currentPlatform) {
+              elt.checked = true;
+            }
+          });
+          document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
+            makePlatGraphRequest(elt, currentPlatform);
+          });
+        }
+      
+        // We have DOM elements in place. Now we start AJAX-fetching all the detail graphs.
+        var currentPlatform = getPlatformFromHashParam(); // For now, always default to x86_64 on page load
+        updatePageFromCurrentPlatform();
+      
+        // If a platform hash parameter is added (or equivalently, clicked), change the platform to the new one.
+        window.addEventListener("hashchange", function () {
+          currentPlatform = getPlatformFromHashParam();
+          updatePageFromCurrentPlatform();
+        });
+      
+        // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
+        document.addEventListener('click', function(event) {
+          // Did they click a platform radio button? If not, we ignore it.
+          if(!event.target.matches('.plat-select-fieldset input[type="radio"]')) return;
+      
+          // If they did, get the closest parent with a data-plat-counter,
+          // and use it to locate our corresponding graph wrapper.
+          var parent = event.target.closest("[data-plat-counter]");
+          var platCtr = parent.dataset.platCounter;
+          var newPlatform = event.target.value;
+      
+          if(prevPlatform[platCtr] != newPlatform) {
+            var wrapperElt = document.getElementById(`plat-wrapper-${platCtr}`);
+            makePlatGraphRequest(wrapperElt, newPlatform);
+          }
+        });
+      </script>
+      <!-- End content specific to benchmark details -->      
+
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <ul style="display: inline-block;">
+          <li style="display: inline-block;"><a href="<%= relative_url "about.html" %>">About YJIT Benchmarks</a>&nbsp;&nbsp;</li>
+          <li style="display: inline-block;"><a href="<%= relative_url "history.html" %>">Raw Results History</a>&nbsp;&nbsp;</li>
+        </ul>
+      </footer>
+    </div>
+
+    <div id="svg_tooltip"></div>
+    <div id="svg_tooltip_sha_copied"></div>
+
+    <script>
+      function showSVGTooltip(evt, text) {
+        let tt = document.getElementById("svg_tooltip");
+        if(tt === null) return;
+        tt.innerHTML = text;
+        tt.style.display = "block";
+        tt.style.left = evt.pageX + 10 + 'px';
+        tt.style.top = evt.pageY + 10 + 'px';
+      }
+
+      function hideSVGTooltip() {
+        var tt = document.getElementById("svg_tooltip");
+        if(tt === undefined) return;
+        tt.style.display = "none";
+      }
+
+      var fadeCount = 0;
+      function fadeOutEffect(fadeTarget) {
+          fadeCount++;
+          var currentFadeCount = fadeCount;
+
+          fadeTarget.opacity = 1;
+          fadeTarget.display = 'block';
+
+          var fadeEffect = setInterval(function () {
+              // Another fade happening? Cancel the older fade.
+              if (fadeCount != currentFadeCount) {
+                clearInterval(fadeEffect);
+                return;
+              }
+              if (!fadeTarget.style.opacity) {
+                  fadeTarget.style.opacity = 1;
+              }
+              if (fadeTarget.style.opacity > 0) {
+                  fadeTarget.style.opacity -= 0.1;
+              } else {
+                  fadeTarget.style.display = 'none';
+                  fadeTarget.style.opacity = 1.0;
+                  clearInterval(fadeEffect);
+              }
+          }, 200);
+      }
+
+      function showCopyConfirm(e) {
+        var copied_confirm = document.getElementById("svg_tooltip_sha_copied");
+        if(copied_confirm === undefined) return;
+
+        hideSVGTooltip();
+        //console.log(e.trigger);
+        var rect = e.trigger.getBoundingClientRect();
+        //console.log("Rect", rect.top, rect.right, rect.bottom, rect.left);
+        //console.log("Scroll", window.scrollX, window.scrollY);
+
+        // This is completely failing to work, and I have no idea why. D'oh.
+        copied_confirm.innerHTML = "Copied SHA to clipboard: " + e.text;
+        copied_confirm.style.left = rect.left + window.scrollX;
+        copied_confirm.style.top = rect.top + window.scrollY;
+        copied_confirm.display = 'block';
+        copied_confirm.opacity = 1;
+        fadeOutEffect(copied_confirm);
+      }
+
+      // Show and hide tooltips on graphs
+      // TODO: track *which* tooltip-enabled object popped this up, and do more intelligent show/hide rather than constant
+      // flicker as we transition over object after object...
+      document.addEventListener("mousemove", function (e) {
+        if(!e.target.matches('svg [data-tooltip]')) return;
+        showSVGTooltip(e, e.target.getAttribute("data-tooltip"));
       });
-      return "x86_64";
-    }
-  }
+      document.addEventListener("mouseout", function (e) {
+        if(!e.target.matches('svg [data-tooltip]')) return;
+        hideSVGTooltip();
+      });
 
-  function updatePageFromCurrentPlatform() {
-    document.querySelectorAll(".plat-select-fieldset input[type=radio]").forEach(function(elt) {
-      if(elt.value == currentPlatform) {
-        elt.checked = true;
-      }
-    });
-    document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
-      makePlatGraphRequest(elt, currentPlatform);
-    });
-  }
-
-  // We have DOM elements in place. Now we start AJAX-fetching all the detail graphs.
-  var currentPlatform = getPlatformFromHashParam(); // For now, always default to x86_64 on page load
-  updatePageFromCurrentPlatform();
-
-  // If a platform hash parameter is added (or equivalently, clicked), change the platform to the new one.
-  window.addEventListener("hashchange", function () {
-    currentPlatform = getPlatformFromHashParam();
-    updatePageFromCurrentPlatform();
-  });
-
-  // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
-  document.addEventListener('click', function(event) {
-    // Did they click a platform radio button? If not, we ignore it.
-    if(!event.target.matches('.plat-select-fieldset input[type="radio"]')) return;
-
-    // If they did, get the closest parent with a data-plat-counter,
-    // and use it to locate our corresponding graph wrapper.
-    var parent = event.target.closest("[data-plat-counter]");
-    var platCtr = parent.dataset.platCounter;
-    var newPlatform = event.target.value;
-
-    if(prevPlatform[platCtr] != newPlatform) {
-      var wrapperElt = document.getElementById(`plat-wrapper-${platCtr}`);
-      makePlatGraphRequest(wrapperElt, newPlatform);
-    }
-  });
-</script>
+      var clipboard = new ClipboardJS('[data-clipboard-text]');
+      clipboard.on("success", function(e) {
+        console.log("Copied to clipboard: " + e.text);
+        showCopyConfirm(e);
+        e.clearSelection();
+      });
+      clipboard.on('error', function(e) {
+        console.error('Failed copying SHA to clipboard on click');
+        console.error('Action:', e.action);
+        console.error('Trigger:', e.trigger);
+      });
+    </script>
+  </body>
+</html>
