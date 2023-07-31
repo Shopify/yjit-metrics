@@ -200,7 +200,7 @@ def build_site
     autocopy = YAML.load(File.read("autocopy.yml"))
     autocopy.each do |src, dest|
       FileUtils.mkdir_p File.expand_path(File.dirname(dest))
-      FileUtils.ln Dir.glob(src), dest
+      FileUtils.ln Dir.glob(src), dest, force: true
     end
   end
 
