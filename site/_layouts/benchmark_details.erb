@@ -61,83 +61,82 @@
       <p>
         These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
       </p>
-      
+
       <div style="width: 800px;" data-platform-selector="yes"
-        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
-      
+        data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
+
         Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
       </div>
-      
+
       <h2 id="other-graph">Other Benchmarks</h2>
-      
+
       <div style="width: 800px;" data-platform-selector="yes"
-        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
+        data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
         Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
       </div>
-      
+
       <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
-      
+
       <div style="width: 800px;" data-platform-selector="yes"
-        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
+        data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
         Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
       </div>
-      
+
       <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
-      
+
       <ul>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.svg">All benchmarks (x86_64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_headline_<%= page.timestamp %>.html">HTML "headline" speed comparison (only generated for x86_64)</a>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.csv">CSV speed results (x86_64)</a></li>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.svg">All benchmarks (AARCH64)</a></li>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.csv">CSV speed results (AARCH64)</a></li>
       </ul>
-      
+
       <h2 id="speed-table">Benchmarks Speed Details</h2>
-      
+
       <div data-platform-selector="yes"
-        data-gh-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.html">
+        data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.html">
       </div>
-      
+
       <h2 id="memory-table">Benchmark Memory Usage Details</h2>
-      
+
       <div data-platform-selector="yes"
-        data-gh-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.html">
+        data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.html">
       </div>
-      
+
       <h2 id="iteration-count">Number of Iterations and Warmups Tested</h2>
-      
+
       <%= include page.reports[:iteration_count_html] %>
-      
+
       <h2 id="yjit-stats">Benchmark YJIT Stats</h2>
-      
+
       <%= include page.reports[:blog_yjit_stats_html] %>
-      
+
       <p>Note: currently, all stats are collected on x86_64, not ARM.</p>
-      
+
       <h2 id="raw-json">Raw JSON data files</h2>
-      
+
       <p>
         All graphs and table data in this page comes from processing these data files, which come from <a href="https://github.com/Shopify/yjit-metrics/blob/main/basic_benchmark.rb">benchmark runs</a>.
       </p>
-      
+
       <ul>
       <% page.test_results.each do |result| %> <li><a href="<%= relative_url result[1] %>"><%= result[0] %></a></li> <% end %>
       </ul>
-      
+
       <hr/>
-      
+
       <h2 id="too-many-details">Far Too Many Details</h2>
-      
+
       <p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
-      
+
       <ul>
         <% page.platforms.each do |platform| %>
         <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.<%= platform %>.raw_details.html">Too Much Detail: <%= platform.capitalize %> Edition</a></li>
         <% end %>
       </ul>
-      
+
       <hr/>
       <%= content %>
       
@@ -146,15 +145,13 @@
       
         // Create platform-selector DOM elements
         function addPlatformSelector(elt) {
-          //if(platformsThisTimestamp.length == 1) { return; }
-      
           var top_element = document.createElement('div');
-          var ghUrl = elt.dataset.ghUrl;
+          var graphUrl = elt.dataset.graphUrl;
           var ctr = elt.dataset.platformCounter;
-      
+
           if(platformsThisTimestamp.length == 1) {
             top_element.innerHTML = `
-      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${graphUrl}">
         <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
         <div id="graph-error-${ctr}" class="graph-error" style="display: none"><span style="color: red; font-size: 500%;">X</span></div>
         <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
@@ -163,7 +160,7 @@
             `
           } else {
             top_element.innerHTML = `
-      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${ghUrl}">
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${graphUrl}">
       <form style="max-width: 40%; float: right;">
         <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
           <legend>Select Platform</legend>
@@ -183,20 +180,20 @@
       </div>
         `
         }
-      
+
           // Any text or other content will be at the bottom, below the graph and selector
           elt.prepend(top_element);
         }
-      
+
         // How to turn a GH URL template into a real URL
         function urlFromTemplate(opts) {
           var t = opts.template;
           if(opts.platform) {
             t = t.replaceAll("PLATFORM", opts.platform);
           }
-          return "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/" + t;
+          return "reports/platform_details/" + t;
         }
-      
+
         // Load platform-specific graph content into appropriate divs
         var platform_counter = 1;
         document.platform_handlers = {};
@@ -205,7 +202,7 @@
           platform_counter++; // Next elt's platform_counter is guaranteed different
           addPlatformSelector(elt);
         });
-      
+
         // We're going to want to AJAX-fetch platform-specific graphs. And if a
         // fetch is already pending, we need to cancel it. We'll track that with
         // an array of 'cancellers' (AbortControllers).
@@ -213,20 +210,20 @@
         var prevPlatform = [];
         function makePlatGraphRequest(wrapperElt, platform) {
           var platCtr = wrapperElt.dataset.platCounter;
-      
+
           // Is there a pending request for this same platform? Let it finish.
           if(prevPlatform[platCtr] == platform && fetchCancel[platCtr]) {
             return;
           }
-      
+
           setRequestPending(wrapperElt);
-      
+
           // Is there a pending fetch for another platform? Abort it.
           if(fetchCancel[platCtr]) {
             fetchCancel[platCtr].abort();
             delete fetchCancel[platCtr];
           }
-      
+
           var url = urlFromTemplate({ template: wrapperElt.dataset.urlTemplate, platform: platform });
           var canceller = new AbortController(); // Call .abort() on controller to send abort signal
           fetchCancel[platCtr] = canceller;
