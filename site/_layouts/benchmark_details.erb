@@ -126,18 +126,6 @@
       </ul>
 
       <hr/>
-
-      <h2 id="too-many-details">Far Too Many Details</h2>
-
-      <p>These are links to HTML reports on GitHub with far, far too much detail about the benchmarking runs per-platform.</p>
-
-      <ul>
-        <% page.platforms.each do |platform| %>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.<%= platform %>.raw_details.html">Too Much Detail: <%= platform.capitalize %> Edition</a></li>
-        <% end %>
-      </ul>
-
-      <hr/>
       <%= content %>
       
       <script>
