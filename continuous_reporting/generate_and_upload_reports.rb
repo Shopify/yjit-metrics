@@ -48,7 +48,7 @@ REPORTS_AND_FILES = {
     },
     "blog_speed_details" => {
         report_type: :basic_report,
-        extensions: [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
+        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
     },
     "blog_memory_details" => {
         report_type: :basic_report,

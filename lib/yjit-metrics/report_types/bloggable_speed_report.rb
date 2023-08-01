@@ -214,7 +214,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     attr_reader :inactive
 
     def self.report_extensions
-        [ "html", "raw_details.html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
+        [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
     def initialize(orig_config_names, platform, results, benchmarks: [])
@@ -583,11 +583,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
         html_output = script_template.result(binding)
         File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
-
-        # And then the "no normal person would ever care" details report, with raw everything
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_raw_details.html.erb")
-        html_output = script_template.result(binding)
-        File.open(filename + ".#{@platform}.raw_details.html", "w") { |f| f.write(html_output) }
 
         # The Tripwire report is used to tell when benchmark performance drops suddenly
         json_data = speedup_tripwires
