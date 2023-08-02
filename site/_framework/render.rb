@@ -12,7 +12,7 @@ TOPLEVEL_SKIPPED = [ "_config.yml", "Gemfile", "Gemfile.lock" ]
 
 # TODO: handle _sass dir - just pregenerate up-front?
 
-def redcarpet_render_markdown(text)
+def render_markdown(text)
   require "kramdown"
   Kramdown::Document.new(text).to_html
 end
@@ -61,7 +61,7 @@ class RenderContext
   end
 
   def render_markdown(markdown)
-    redcarpet_render_markdown(markdown)
+    render_markdown(markdown)
   end
 end
 
@@ -113,7 +113,7 @@ def render_file_to_location(path, out_dir, metadata)
       # Multi-step erb pipelines could mess up the line numbers easily
       contents = dsl.instance_eval(erb_tmpl.src, path, 1 + line_offset)
     when "md"
-      contents = redcarpet_render_markdown(contents)
+      contents = render_markdown(contents)
     else
       raise "Unknown content-step or file extension: #{step.inspect} out of #{steps.inspect}"
     end
@@ -167,8 +167,9 @@ def render_collection_item_to_location(item, out_dir, metadata)
   # Trim off leading _site for url
   url = "#{out_dir.split("/")[1..-1].join("/")}/#{item[:name]}"
 
-  contents = render_file("_layouts/#{layout}.erb", metadata.merge(page: item, url: url), no_layout: true)
-  contents = redcarpet_render_markdown(contents) if do_md_conversion
+  contents = item[:content]
+  contents = render_markdown(contents) if do_md_conversion
+  contents = render_file("_layouts/#{layout}.erb", metadata.merge(page: item, url: url, contents: contents), no_layout: true)
 
   File.write("#{out_dir}/#{item[:name]}", contents)
 end
@@ -178,9 +179,10 @@ def parse_collections
   COLLECTIONS.each do |coll|
     out[coll] = []
     Dir["_#{coll}/*.md"].each do |file_w_frontmatter|
-      item_data, _line, _content = read_front_matter(file_w_frontmatter)
+      item_data, _line, content = read_front_matter(file_w_frontmatter)
       item_data[:name] = file_w_frontmatter.split("/")[-1].gsub("_", "-") # Ah, Jekyll. There's probably some deep annoying meaning to why this is needed.
       item_data[:url] = "/#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
+      item_data[:content] = content
       out[coll] << OpenStruct.new(item_data)
     end
   end
