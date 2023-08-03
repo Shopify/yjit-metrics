@@ -118,7 +118,7 @@ OptionParser.new do |opts|
         regenerate_reports = true
     end
 
-    opt.on("-ry YEAR", "--regenerate-year YEAR", "Regenerate reports for a specific year") do |year|
+    opts.on("-ry YEAR", "--regenerate-year YEAR", "Regenerate reports for a specific year") do |year|
         regenerate_year = year
     end
 
