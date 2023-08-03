@@ -44,7 +44,6 @@ require_relative "../lib/yjit-metrics"
 #
 
 YJIT_METRICS_DIR = File.expand_path("..", __dir__)
-YJIT_PAGES_DIR = File.expand_path("../yjit-metrics-pages", YJIT_METRICS_DIR)
 YJIT_BENCH_DIR = File.expand_path("../yjit-bench", YJIT_METRICS_DIR)
 CRUBY_DIR = File.expand_path("../prod-yjit", YJIT_METRICS_DIR)
 
@@ -60,7 +59,7 @@ yjit_bench_name = "main"
 yjit_bench_repo = "https://github.com/Shopify/yjit-bench.git"
 yjit_extra_bench_name = "main"
 yjit_extra_bench_repo = "https://github.com/Shopify/yjit-extra-benchmarks.git"
-benchmark_data_dir = File.join(YJIT_PAGES_DIR, "raw_benchmark_data")
+benchmark_data_dir = File.join(YJIT_METRICS_DIR, "raw-benchmark-data/raw_benchmark_data")
 
 # TODO: try looking up the given yjit_metrics and/or yjit_bench and/or CRuby revisions in the local repos to see if they exist?
 

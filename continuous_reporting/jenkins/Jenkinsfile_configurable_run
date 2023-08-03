@@ -44,8 +44,6 @@ pipeline {
 
         // For now, no yjit_extra_bench for optional benchmarks
 
-        // The yjit-metrics pages branch for reporting output isn't configurable, and won't be.
-
         string(name: 'BENCH_TYPE', defaultValue: 'default', description: 'Benchmark type -- "default" uses variable warmup file and all benchmarks, "smoketest" is one iter of all benchmarks, can also give full specification, e.g. --warmup-itrs=0 --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=PLATFORM_prod_ruby_no_jit,PLATFORM_prod_ruby_with_yjit')
 
         string(name: 'DATA_DIR', defaultValue: 'continuous_reporting/data', description: 'Data directory for output - continuous_reporting/data and single_iter_data are fine choices, but only /data gets filed into the CRuby reporting data')
@@ -189,7 +187,7 @@ pipeline {
                         env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
                     }
 
-                    // For now, assume we just use the 'pages' branch of the main yjit-metrics repo. This will be changed, but not made configurable, later.
+                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ~/ym/raw-benchmark-data && git pull\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \". ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh\""
                     sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
