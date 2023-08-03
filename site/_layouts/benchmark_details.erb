@@ -139,7 +139,7 @@
 
           if(platformsThisTimestamp.length == 1) {
             top_element.innerHTML = `
-      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${graphUrl}">
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-single-platform="true" data-url-template="${graphUrl}">
         <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
         <div id="graph-error-${ctr}" class="graph-error" style="display: none"><span style="color: red; font-size: 500%;">X</span></div>
         <div id="graph-location-${ctr}" data-plat-counter="${ctr}" class="plat-graph-fetch-dest">
@@ -148,7 +148,7 @@
             `
           } else {
             top_element.innerHTML = `
-      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-url-template="${graphUrl}">
+      <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-multi-platform="true" data-url-template="${graphUrl}">
       <form style="max-width: 40%; float: right;">
         <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
           <legend>Select Platform</legend>
