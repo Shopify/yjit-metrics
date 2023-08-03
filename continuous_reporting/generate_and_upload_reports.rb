@@ -99,6 +99,7 @@ end
 
 no_push = false
 regenerate_reports = false
+regenerate_year = nil
 die_on_regenerate = false
 only_reports = nil
 
@@ -115,6 +116,10 @@ OptionParser.new do |opts|
 
     opts.on("-r", "--regenerate-reports", "Don't use existing reports, generate them again") do
         regenerate_reports = true
+    end
+
+    opt.on("-ry YEAR", "--regenerate-year YEAR", "Regenerate reports for a specific year") do |year|
+        regenerate_year = year
     end
 
     opts.on("-p", "--prevent-regenerate", "Fail if reports would be regenerated") do
@@ -176,6 +181,8 @@ timestamps = json_timestamps.keys.sort
 timestamps.each do |ts|
     test_files = json_timestamps[ts]
     next unless test_files.any? { |tf| tf.include?("x86") } # Right now, ARM-only reports are very buggy.
+    do_regenerate_year = regenerate_year && ts.start_with?(regenerate_year)
+
     REPORTS_AND_FILES.each do |report_name, details|
         next unless details[:report_type] == :basic_report
 
@@ -188,6 +195,7 @@ timestamps.each do |ts|
 
         # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
         run_report = regenerate_reports ||
+            do_regenerate_year  ||
             !report_timestamps[ts] ||
             !report_timestamps[ts][report_name] ||
             !((required_files - report_timestamps[ts][report_name]).empty?)
@@ -201,7 +209,9 @@ timestamps.each do |ts|
 
         # If the report output doesn't already exist, build it.
         if run_report
-            reason = regenerate_reports ? "we're regenerating everything" : "we're missing files: #{missing_files.inspect}"
+            reason = regenerate_reports ? "we're regenerating everything" : nil
+            reason ||= do_regenerate_year ? "we're regenerating year #{regenerate_year}" : nil
+            reason ||= "we're missing files: #{missing_files.inspect}"
 
             puts "Running basic_report for timestamp #{ts} because #{reason} with data files #{test_files.inspect}"
             YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
