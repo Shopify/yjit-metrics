@@ -6,9 +6,7 @@ the latest YJIT statistics, gathered with yjit-metrics,
 [at speed.yjit.org](https://speed.yjit.org).
 
 YJIT-metrics uses the benchmarks in the
-[yjit-bench repository](https://github.com/Shopify/yjit-bench) and
-the [yjit-extra-benchmarks repository](https://github.com/Shopify/yjit-extra-benchmarks).
-
+[yjit-bench repository](https://github.com/Shopify/yjit-bench).
 
 You can see the latest benchmark reports
 [at speed.yjit.org](https://speed.yjit.org).

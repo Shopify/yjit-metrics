@@ -57,8 +57,6 @@ yjit_metrics_name = "main"
 yjit_metrics_repo = ""
 yjit_bench_name = "main"
 yjit_bench_repo = "https://github.com/Shopify/yjit-bench.git"
-yjit_extra_bench_name = "main"
-yjit_extra_bench_repo = "https://github.com/Shopify/yjit-extra-benchmarks.git"
 benchmark_data_dir = File.join(YJIT_METRICS_DIR, "raw-benchmark-data/raw_benchmark_data")
 
 # TODO: try looking up the given yjit_metrics and/or yjit_bench and/or CRuby revisions in the local repos to see if they exist?
@@ -94,20 +92,6 @@ OptionParser.new do |opts|
     # Blank yjit_bench rev? Use main.
     yb = "main" if yb.nil? || yb.strip == ""
     yjit_bench_name = yb
-  end
-
-  opts.on("-ybr YBR", "--yjit-bench-repo YBR") do |ybr|
-    yjit_bench_repo = ybr
-  end
-
-  opts.on("-ye YE", "--yjit-extra-bench-name YE") do |ye|
-    # Blank yjit_bench rev? Use main.
-    ye = "main" if ye.nil? || ye.strip == ""
-    yjit_extra_bench_name = ye
-  end
-
-  opts.on("-yer YER", "--yjit-extra-bench-repo YER") do |yer|
-    yjit_extra_bench_repo = yer
   end
 
   opts.on("-cn NAME", "--cruby-name NAME") do |name|
