@@ -320,11 +320,6 @@ YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/Shopif
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
 YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
 
-# Configuration for yjit-extra-benchmarks
-YJIT_EXTRA_BENCH_GIT_URL = BENCH_DATA["yjit_extra_bench_repo"] || "https://github.com/Shopify/yjit-extra-benchmarks.git"
-YJIT_EXTRA_BENCH_GIT_BRANCH = BENCH_DATA["yjit_extra_bench_sha"] || "main"
-YJIT_EXTRA_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-extra-benchmarks")
-
 # Configuration for ruby-build
 RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
 RUBY_BUILD_GIT_BRANCH = "master"
@@ -408,17 +403,8 @@ unless skip_git_updates
         end
     end
 
-    ### Ensure an up-to-date local yjit-bench and yjit-extra-benchmarks checkout
+    ### Ensure an up-to-date local yjit-bench checkout
     YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
-    YJITMetrics.clone_repo_with path: YJIT_EXTRA_BENCH_DIR, git_url: YJIT_EXTRA_BENCH_GIT_URL, git_branch: YJIT_EXTRA_BENCH_GIT_BRANCH
-
-    ### Any benchmarks in yjit-extra-benchmarks should be copied over
-    Dir.glob("#{YJIT_EXTRA_BENCH_DIR}/benchmarks/*") do |source_path|
-        bench_name = source_path.split("/")[-1]
-        dest_path = "#{YJIT_BENCH_DIR}/benchmarks/#{bench_name}"
-        FileUtils.rm_rf dest_path if File.exist?(dest_path)  # remove_destination: true below doesn't do this. Why not?
-        FileUtils.cp_r source_path, dest_path
-    end
 end
 
 # All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.
@@ -432,7 +418,6 @@ end
 # For now if we're testing a specific version, this will say which one.
 GIT_VERSIONS = {
     "yjit_bench" => sha_for_dir(YJIT_BENCH_DIR),
-    "yjit_extra_bench" => sha_for_dir(YJIT_EXTRA_BENCH_DIR),
     "yjit_metrics" => sha_for_dir(YJIT_METRICS_DIR),
 }
 
