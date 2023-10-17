@@ -94,6 +94,10 @@ OptionParser.new do |opts|
     yjit_bench_name = yb
   end
 
+  opts.on("-ybr YBR", "--yjit-bench-repo YBR") do |ybr|
+    yjit_bench_repo = ybr
+  end
+
   opts.on("-cn NAME", "--cruby-name NAME") do |name|
     name == "master" if name.nil? || name.strip == ""
     cruby_name = name.strip
