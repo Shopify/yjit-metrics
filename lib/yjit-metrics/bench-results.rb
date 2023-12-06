@@ -513,8 +513,21 @@ class YJITMetrics::ResultSet
 
                 stats["all_stats"] = run["all_stats"] if run["all_stats"]
                 (run.keys - ["all_stats"]).each do |key|
-                    stats[key] ||= 0
-                    stats[key] += run[key]
+                    if run[key].is_a?(Integer)
+                      stats[key] ||= 0
+                      stats[key] += run[key]
+                    elsif run[key].is_a?(Float)
+                      stats[key] ||= 0.0
+                      stats[key] += run[key]
+                    elsif run[key].is_a?(Hash)
+                      stats[key] ||= {}
+                      run[key].each do |subkey, subval|
+                        stats[key][subkey] ||= 0
+                        stats[key][subkey] += subval
+                      end
+                    else
+                      raise "Unexpected stat type #{run[key].class}!"
+                    end
                 end
             end
             data[benchmark_name] = stats

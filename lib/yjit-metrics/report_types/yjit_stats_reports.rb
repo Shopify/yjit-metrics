@@ -62,7 +62,20 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         yjit_data = {}
         yjit_stats_keys.each do |stats_key|
             # Unknown keys default to 0
-            yjit_data[stats_key] = relevant_stats.map { |dataset| dataset[stats_key] || 0 }.sum
+            entries = relevant_stats.map { |dataset| dataset[stats_key] }.compact
+            if entries[0].is_a?(Integer)
+              yjit_data[stats_key] = entries.sum(0)
+            elsif entries[0].is_a?(Float)
+              yjit_data[stats_key] = entries.sum(0.0)
+            elsif entries[0].is_a?(Hash) && entries[0].values[0].is_a?(Integer)
+              yjit_data[stats_key] = {}
+              sub_keys = entries.flat_map(&:keys).uniq
+              sub_keys.each do |sub_key|
+                yjit_data[stats_key][sub_key] = entries.sum(0) { |entry| entry[sub_key] }
+              end
+            else
+              raise "Failing for #{stats_key.inspect} with unknown entry type #{entries[0].class}!"
+            end
         end
         yjit_data
     end
