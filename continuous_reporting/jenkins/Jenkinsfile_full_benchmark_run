@@ -3,6 +3,12 @@
 pipeline {
     agent any
 
+    options {
+        // Timeout counter starts AFTER (top-level) agent is allocated.
+        // Average run time is currently 9 hours and 8 minutes.
+        timeout(time: 12, unit: 'HOURS')
+    }
+
     triggers {
         cron 'H 6,19 * * *'
     }
