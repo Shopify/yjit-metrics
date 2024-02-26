@@ -142,6 +142,7 @@ bundler_version = "2.4.13"
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
 full_rebuild = false
+max_attempts = 3
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -185,6 +186,11 @@ OptionParser.new do |opts|
 
     opts.on("--bundler-version=VERSION", "Require a specific Bundler version (default: 2.2.30)") do |ver|
         bundler_version = ver
+    end
+
+    opts.on("--max-retries=NUMBER", "Number of times to retry a benchmark after it fails. (default: #{max_attempts - 1})") do |n|
+        raise "max-retries must be zero or positive!" if n.to_i < 0
+        max_attempts = n.to_i + 1
     end
 
     opts.on("--on-errors=BEHAVIOUR", "When a benchmark fails, how do we respond? Options: #{ERROR_BEHAVIOURS.map(&:to_s).join(",")}") do |choice|
@@ -541,7 +547,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
             bench = error_info[:benchmark_name]
 
             re_run_info = ""
-            re_run_info = " (retry ##{re_run_num + 1}/3)" if when_error == :re_run
+            re_run_info = " (attempt ##{re_run_num + 1}/#{max_attempts})" if max_attempts > 1
 
             puts "Exception in benchmark #{bench} w/ config #{config}#{re_run_info}: #{error_info["benchmark_name"].inspect}, Ruby: #{ruby}, Error: #{exc.class} / #{exc.message.inspect}"
 
@@ -555,7 +561,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
             # If we die on errors, raise or re-raise the exception.
             raise(exc) if when_error == :die
             re_run_num += 1
-            raise(exc) if when_error == :re_run && re_run_num > 3
+            raise(exc) if max_attempts > 1 && re_run_num = max_attempts
         end
 
         shell_settings = YJITMetrics::ShellSettings.new({

@@ -68,7 +68,7 @@ end
 
 # If we have a config file from the variable warmup report, we should use it. If not,
 # we should have defaults to fall back on.
-DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run " +
+DEFAULT_CI_COMMAND_LINE = "--on-errors=re_run --max-retries=2 " +
     (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
         "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
         "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
