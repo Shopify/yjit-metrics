@@ -26,7 +26,7 @@ DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run 
 DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
 DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
-ERROR_BEHAVIOURS = %i(die report ignore re_run)
+ERROR_BEHAVIOURS = %i(die report ignore)
 
 YJIT_ENABLED_OPTS = [ "--yjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
@@ -136,7 +136,7 @@ harness_params = {
 DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit)
 configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
 bench_data = nil
-when_error = :die
+when_error = :report
 output_path = "data"
 bundler_version = "2.4.13"
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
@@ -560,8 +560,6 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
             # If we die on errors, raise or re-raise the exception.
             raise(exc) if when_error == :die
-            re_run_num += 1
-            raise(exc) if max_attempts > 1 && re_run_num = max_attempts
         end
 
         shell_settings = YJITMetrics::ShellSettings.new({
@@ -578,25 +576,23 @@ Dir.chdir(YJIT_BENCH_DIR) do
             single_run_results = YJITMetrics.run_single_benchmark(bench_info,
                 harness_settings: harness_settings_for_config_and_bench(config, bench_info[:name]),
                 shell_settings: shell_settings)
+
             break if single_run_results # Got results? Great! Then don't die or re-run.
 
             if when_error == :die
                 raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
             end
 
-            if [:report, :ignore].include?(when_error)
-                puts "No data collected for this run, presumably due to errors. On we go."
-                break
-            end
+            puts "No data collected for this run, presumably due to errors. On we go."
 
-            # Otherwise re-run until success or exception.
-            raise "Unexpected value of when_error! Internal error!" if when_error != :re_run
+            re_run_num += 1
+            break if re_run_num >= max_attempts
         end
 
         # Single-run results can be nil if we're reporting or ignoring errors.
-        # If we die or re-run on error, we should raise an exception if we fail completely
+        # If we die on error, we should raise an exception if we fail completely
         unless single_run_results.nil?
-            single_run_results["failures_before_success"] = re_run_num # Always 0 unless when_error is :re_run
+            single_run_results["failures_before_success"] = re_run_num # Always 0 unless max_attempts > 1
 
             json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
             puts "Writing to JSON output file #{json_path}."
