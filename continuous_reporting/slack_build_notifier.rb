@@ -54,7 +54,7 @@ IMAGES = {
 }
 
 TEMPLATES = {
-  build_status: proc do |properties|
+  build_status: proc do |properties, opts|
     if properties["IMAGE"]
       img = properties["IMAGE"].to_sym
     elsif properties["STATUS"] == "success"
@@ -70,14 +70,14 @@ TEMPLATES = {
         "type": "header",
         "text": {
           "type": "plain_text",
-          "text": properties["MESSAGE"],
+          "text": "#{properties["JOB_NAME"]}: #{properties["STATUS"]}",
         }
       },
       {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": "*URL:*\n#{properties["BUILD_URL"]}\n*STATUS:* #{properties["STATUS"]}"
+          "text": "#{properties["BUILD_URL"]}\n\n#{opts[:summary]}"
         },
         "accessory": {
           "type": "image",
@@ -88,7 +88,7 @@ TEMPLATES = {
     ]
   end,
 
-  smoke_test: proc do |properties|
+  smoke_test: proc do |properties, opts|
     if properties["IMAGE"]
       img = properties["IMAGE"].to_sym
     elsif properties["STATUS"] == "success"
@@ -104,14 +104,14 @@ TEMPLATES = {
         "type": "header",
         "text": {
           "type": "plain_text",
-          "text": properties["MESSAGE"],
+          "text": "#{properties["JOB_NAME"]}: #{properties["STATUS"]}",
         }
       },
       {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": "*URL:* #{properties["BUILD_URL"]}\n*RUBY:* #{properties["RUBY"]}\n*YJIT-BENCH:* #{properties["YJIT_BENCH"]}\n*YJIT-METRICS:* #{properties["YJIT_METRICS"]}\n*STATUS:* #{properties["STATUS"]}"
+          "text": "*URL:* #{properties["BUILD_URL"]}\n*RUBY:* #{properties["RUBY"]}\n*YJIT-BENCH:* #{properties["YJIT_BENCH"]}\n*YJIT-METRICS:* #{properties["YJIT_METRICS"]}"
         },
         "accessory": {
           "type": "image",
@@ -127,6 +127,7 @@ TEMPLATES = {
 to_notify = ["#yjit-benchmark-ci"]
 properties = {
   "BUILD_URL" => ENV["BUILD_URL"],
+  "JOB_NAME" => ENV["JOB_NAME"],
 }
 template = :build_status
 
@@ -151,27 +152,63 @@ OptionParser.new do |opts|
 
 end.parse!
 
-if ARGV.size != 1
-  raise "Expected one arg, instead got #{ARGV.inspect}!"
-end
-
 TO_NOTIFY = to_notify
-properties["MESSAGE"] = ARGV[0]
 
-def template_substitute(tmpl_name, prop)
+def template_substitute(tmpl_name, prop, opts)
   tmpl_name = tmpl_name.to_sym
   unless TEMPLATES.has_key?(tmpl_name)
     raise "Can't find template #{tmpl_name.inspect}! Known: #{TEMPLATES.keys.inspect}"
   end
-  TEMPLATES[tmpl_name].call(prop)
+  TEMPLATES[tmpl_name].call(prop, opts)
 end
 
-def send_message(tmpl_name, prop)
-  block_msg = template_substitute(tmpl_name, prop)
+def send_message(tmpl_name, prop, opts)
+  block_msg = template_substitute(tmpl_name, prop, opts)
 
   TO_NOTIFY.each do |channel|
-    slack_client.chat_postMessage channel: channel, text: prop["MESSAGE"], blocks: block_msg
+    slack_client.chat_postMessage channel: channel, text: "#{prop["JOB_NAME"]}: #{prop["STATUS"]}", blocks: block_msg
   end
 end
 
-send_message(template, properties)
+# Use Slack "mrkdwn" formatting.
+# https://api.slack.com/reference/surfaces/formatting
+def summary(files)
+  return if files.empty?
+
+  results = files.map { |f| JSON.parse(File.read(f)) }
+
+  by_failure = results.each_with_object({}) do |result, h|
+    result["benchmark_failures"]&.each do |name, info|
+      ((h[name] ||= {})[info.values_at("exit_status", "summary")] ||= []) << result["ruby_config_name"]
+    end
+  end
+
+  # results could be a list of empty hashes so test by_failure.
+  return "All benchmarks completed successfully." if by_failure.empty?
+
+  q = ->(s) { "`#{s}`" }
+
+  lines = []
+
+  # Line for each failed benchmark name with configs.
+  lines += by_failure.map do |name, failures|
+    "*#{q[name]}* (#{failures.values.flatten.sort.map(&q).join(", ")})"
+  end
+
+  lines << "\nDetails:\n"
+
+  lines += by_failure.map do |(name, results)|
+    [
+      "*#{q[name]}*\n",
+      results.map do |(exit_status, summary), configs|
+        "exit status #{exit_status} (#{configs.sort.map(&q).join(", ")})\n```\n#{summary}\n```\n"
+      end
+    ]
+  end
+
+  lines.flatten.join("\n")
+rescue StandardError => error
+  "Error building slack message: #{error.class}: #{error.message}"
+end
+
+send_message(template, properties, {summary: summary(ARGV)})

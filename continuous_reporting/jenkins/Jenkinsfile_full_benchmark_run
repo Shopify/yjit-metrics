@@ -32,7 +32,11 @@ pipeline {
     stages {
         stage('schedule parameterized benchmarking run') {
             steps {
-                build job: 'benchmark_configurable_run',
+              script {
+                job_name = 'benchmark_configurable_run'
+                // https://www.jenkins.io/doc/pipeline/steps/pipeline-build-step/
+                result = build(
+                  job: job_name,
                   parameters: [
                     string(name: 'RUBY_VERSION', value: params.RUBY_VERSION),
                     string(name: 'YJIT_METRICS_VERSION', value: params.YJIT_METRICS_VERSION),
@@ -41,15 +45,35 @@ pipeline {
                     string(name: 'DATA_DIR', value: 'continuous_reporting/data'),
                     booleanParam(name: 'DO_FULL_REBUILD', value: params.DO_FULL_REBUILD),
                     booleanParam(name: 'WITH_X86_TRUFFLE', value: true)
-                ]
+                  ],
+                  propagate: false,
+                )
+                // Must grant "Permission to Copy Artifact" in configuration for benchmark_configurable_run.
+                copyArtifacts(
+                  projectName: job_name,
+                  filter: "results/*.json",
+                  selector: specific("${result.number}"),
+                  target: "results",
+                  flatten: true,
+                )
+                if( result.getResult() != "SUCCESS" ){
+                  error(result.getResult())
+                }
+              }
             }
         }
     }
 
     post {
+        success {
+            sh "ls ./results/*.json || true"
+            sh "rm -rvf ./results/"
+        }
         failure {
+            sh "ls ./results/*.json || true"
             sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties \"STATUS=fail\" \"Full benchmark run failed!\"'"
+            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=fail results/*.json'"
+            sh "rm -rvf ./results/"
         }
     }
 
