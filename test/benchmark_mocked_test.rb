@@ -103,12 +103,15 @@ class TestBenchmarkingWithMocking < Minitest::Test
             on_error: nil,
         })
 
-        YJITMetrics.run_single_benchmark(
+        result = YJITMetrics.run_single_benchmark(
             # Information about the yjit-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
             harness_settings: hs,
             shell_settings: ss,
             run_script: fake_runner)
+
+        assert_predicate result, :success?
+        assert_equal 0, result.exit_status
     end
 
     # Test failure of a benchmark, as though the subprocess returned error
@@ -152,13 +155,15 @@ class TestBenchmarkingWithMocking < Minitest::Test
             # Missing: additional non-Ruby command-line params
         })
 
-        YJITMetrics.run_single_benchmark(
+        result = YJITMetrics.run_single_benchmark(
             # Information about the yjit-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
             harness_settings: hs,
             shell_settings: ss,
             run_script: fake_runner)
 
+        refute_predicate result, :success?
+        assert_equal -1, result.exit_status
     end
 
 end

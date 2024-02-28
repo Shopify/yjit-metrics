@@ -38,6 +38,14 @@ module YJITMetrics
     # This structure is returned by the benchmarking harness from a run.
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
     RunData = Struct.new(*JSON_RUN_FIELDS) do
+        def exit_status
+          0
+        end
+
+        def success?
+          true
+        end
+
         def times_ms
             self.times.map { |v| 1000.0 * v }
         end
@@ -59,6 +67,12 @@ module YJITMetrics
 
             RunData.new(*JSON_RUN_FIELDS.map { |f| json[f.to_s] })
         end
+    end
+
+    ErrorData = Struct.new(:exit_status, :error, keyword_init: true) do
+      def success?
+        false
+      end
     end
 
     # Checked system - error if the command fails
@@ -376,25 +390,32 @@ module YJITMetrics
             # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
             # process fails and returns an exit status. We'll create an exception for the error
             # handler to raise if it decides this is a fatal error.
-            exc = RuntimeError.new("Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}")
+            result = ErrorData.new(
+              exit_status: script_details[:exit_status],
+              error: "Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}",
+            )
 
             STDERR.puts "-----"
             STDERR.print bench_script
             STDERR.puts "-----"
 
-            raise exc unless shell_settings[:on_error]
+            if shell_settings[:on_error]
+              begin
+                # What should go in here? What should the interface be? Some things will
+                # be unavailable, depending what stage of the script got an error.
+                shell_settings[:on_error].call(script_details.merge({
+                    exception: result.error,
+                    benchmark_name: benchmark_info[:name],
+                    benchmark_path: benchmark_info[:script_path],
+                    harness_settings: harness_settings.to_h,
+                    shell_settings: shell_settings.to_h,
+                }))
+              rescue StandardError => error
+                result.error = error
+              end
+            end
 
-            # What should go in here? What should the interface be? Some things will
-            # be unavailable, depending what stage of the script got an error.
-            shell_settings[:on_error].call(script_details.merge({
-                exception: exc,
-                benchmark_name: benchmark_info[:name],
-                benchmark_path: benchmark_info[:script_path],
-                harness_settings: harness_settings.to_h,
-                shell_settings: shell_settings.to_h,
-            }))
-
-            return nil
+            return result
         end
 
         # Read the benchmark data

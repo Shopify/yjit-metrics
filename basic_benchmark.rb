@@ -143,6 +143,7 @@ bundler_version = "2.4.13"
 timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
 full_rebuild = false
 max_attempts = 3
+failed_benchmarks = {}
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -557,9 +558,6 @@ Dir.chdir(YJIT_BENCH_DIR) do
                 crash_report_dir = "#{OUTPUT_DATA_PATH}/#{timestamp}_crash_report_#{run_string}#{config}_#{bench}"
                 write_crash_file(error_info, crash_report_dir)
             end
-
-            # If we die on errors, raise or re-raise the exception.
-            raise(exc) if when_error == :die
         end
 
         shell_settings = YJITMetrics::ShellSettings.new({
@@ -577,11 +575,9 @@ Dir.chdir(YJIT_BENCH_DIR) do
                 harness_settings: harness_settings_for_config_and_bench(config, bench_info[:name]),
                 shell_settings: shell_settings)
 
-            break if single_run_results # Got results? Great! Then don't die or re-run.
+            break if single_run_results.success? # Got results? Great! Then don't die or re-run.
 
-            if when_error == :die
-                raise "INTERNAL ERROR: NO DATA WAS RETURNED BUT WE'RE SUPPOSED TO HAVE AN UPTIGHT ERROR HANDLER. PLEASE EXAMINE WHAT WENT WRONG."
-            end
+            raise single_run_results.error if when_error == :die
 
             puts "No data collected for this run, presumably due to errors. On we go."
 
@@ -589,9 +585,9 @@ Dir.chdir(YJIT_BENCH_DIR) do
             break if re_run_num >= max_attempts
         end
 
-        # Single-run results can be nil if we're reporting or ignoring errors.
-        # If we die on error, we should raise an exception if we fail completely
-        unless single_run_results.nil?
+        # Single-run results will be ErrorData if we're reporting or ignoring errors.
+        # If we die on error, we should raise an exception before we get here.
+        if single_run_results.success?
             single_run_results["failures_before_success"] = re_run_num # Always 0 unless max_attempts > 1
 
             json_path = OUTPUT_DATA_PATH + "/#{timestamp}_bb_intermediate_#{run_string}#{config}_#{bench_info[:name]}.json"
@@ -599,6 +595,11 @@ Dir.chdir(YJIT_BENCH_DIR) do
             File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
 
             intermediate_by_config[config].push json_path
+        else
+          (failed_benchmarks[config] ||= []) << {
+            name: bench_info[:name],
+            exit_status: single_run_results.exit_status,
+          }
         end
     end
 end
@@ -642,4 +643,21 @@ intermediate_by_config.each do |config, int_files|
     int_files.each { |f| FileUtils.rm_f f }
 end
 
+summary = if failed_benchmarks.empty?
+  "All benchmarks completed successfully.\n"
+else
+  details = failed_benchmarks.map do |config, failures|
+    [
+      "#{config}: #{failures.size} failures\n",
+      failures.map { |info| "- #{info[:name]}: (exit #{info[:exit_status]})\n" }.join(""),
+    ]
+  end.flatten.join("\n")
+
+  "Benchmark Failures:\n\n#{details}"
+end
+
+puts "\n#{summary}\n"
+
 puts "All done, total benchmarking time #{total_hours} hours, #{minutes} minutes, #{seconds} seconds."
+
+exit(failed_benchmarks.empty? ? 0 : 1)
