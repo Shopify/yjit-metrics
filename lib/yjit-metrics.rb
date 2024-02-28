@@ -69,7 +69,7 @@ module YJITMetrics
         end
     end
 
-    ErrorData = Struct.new(:exit_status, :error, keyword_init: true) do
+    ErrorData = Struct.new(:exit_status, :error, :summary, keyword_init: true) do
       def success?
         false
       end
@@ -133,7 +133,8 @@ module YJITMetrics
         $stdout.sync = true
 
         # Passing -l to bash makes sure to load .bash_profile for chruby.
-        local_popen.call(["bash", "-l", tf.path], err: [:child, :out]) do |script_out_io|
+        err_r, err_w = IO.pipe
+        local_popen.call(["bash", "-l", tf.path], err: err_w) do |script_out_io|
             harness_script_pid = script_out_io.pid
             script_output = ""
             loop do
@@ -158,6 +159,10 @@ module YJITMetrics
             end
         end
 
+        err_w.close
+        script_err = err_r.read
+        print script_err if do_echo
+
         # This code and the ensure handler need to point to the same
         # status structure so that both can make changes (e.g. to crash_files).
         # We'd like this structure to be simple and serialisable -- it's
@@ -168,6 +173,7 @@ module YJITMetrics
             exit_status: $?.exitstatus,
             harness_script_pid: harness_script_pid,
             worker_pid: worker_pid,
+            stderr: script_err,
             output: script_output
         })
 
@@ -393,6 +399,7 @@ module YJITMetrics
             result = ErrorData.new(
               exit_status: script_details[:exit_status],
               error: "Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}",
+              summary: script_details[:stderr]&.lines&.detect { |l| l.match?(/\S/) }&.sub("#{Dir.pwd}", ".")&.strip,
             )
 
             STDERR.puts "-----"

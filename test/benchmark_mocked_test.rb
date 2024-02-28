@@ -3,17 +3,18 @@ require_relative "test_helper"
 # For these tests we don't want to run the harness. We want to fake running the harness
 # using a fake popen to avoid interacting with (e.g.) the contents of the yjit-bench repo.
 class FakePopen
-    def initialize(expected_args: nil, readpartial_results:, worker_pid: 12345, harness_script_pid: 54321)
+    def initialize(expected_args: nil, readpartial_results:, worker_pid: 12345, harness_script_pid: 54321, stderr: "")
         @expected_args = expected_args
         @readpartial_results = ["HARNESS PID: #{worker_pid} -\n"] + readpartial_results
         @worker_pid = worker_pid
         @harness_script_pid = harness_script_pid
+        @stderr = stderr
     end
 
     def call(args, err:)
         assert_equal(@expected_args, args) if @expected_args
 
-        # For now ignore the value of err but require that it be passed in.
+        err.write(@stderr)
 
         # We need to set $?, so we'll run a trivial script to say "success".
         # On error, we'll run another one that fails.
@@ -47,7 +48,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
 
     # "Basic success" test of the harness runner using a fake IO.popen() to impersonate a harness child process
     def test_harness_runner
-        fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", "chunk2\n", :eof ]
+        fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", "chunk2\n", :eof ], stderr: "err1\nerr2\n"
 
         run_info = YJITMetrics.run_harness_script_from_string("fake script contents", local_popen: fake_popen, crash_file_check: false, do_echo: false)
 
@@ -55,12 +56,13 @@ class TestBenchmarkingWithMocking < Minitest::Test
         assert_equal [], run_info[:crash_files]
         assert_equal 54321, run_info[:harness_script_pid]
         assert_equal 12345, run_info[:worker_pid]
+        assert_equal "err1\nerr2\n", run_info[:stderr]
         assert run_info[:output].include?("chunk1"), "First chunk isn't in script output!"
         assert run_info[:output].include?("chunk2"), "Second chunk isn't in script output!"
     end
 
     def test_harness_runner_with_exception
-        fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", :die ]
+        fake_popen = FakePopen.new readpartial_results: [ "chunk1\n", :die ], stderr: "err3"
 
         run_info = YJITMetrics.run_harness_script_from_string("fake script", local_popen: fake_popen, crash_file_check: false, do_echo: false)
 
@@ -68,6 +70,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
         assert_equal [], run_info[:crash_files] # We're raising an exception, but that shouldn't generate a new core file
         assert_equal 54321, run_info[:harness_script_pid] # PIDs should be passed even on exception
         assert_equal 12345, run_info[:worker_pid]
+        assert_equal "err3", run_info[:stderr]
         assert run_info[:output].include?("chunk1"), "First chunk isn't in script output!"
     end
 

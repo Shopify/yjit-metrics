@@ -28,6 +28,10 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore)
 
+# Use "quiet" mode since yjit-bench will record the runtime stats in the json file anyway.
+# Having the text stats print out makes it harder to report stderr on failures.
+YJIT_STATS_OPTS = [ "--yjit-stats=quiet" ]
+
 YJIT_ENABLED_OPTS = [ "--yjit" ]
 MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
@@ -58,12 +62,12 @@ RUBY_CONFIG_ROOTS = {
     },
     "yjit_stats" => {
         build: "ruby-yjit-metrics-stats",
-        opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
+        opts: YJIT_ENABLED_OPTS + YJIT_STATS_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "yjit_prod_stats" => {
         build: "ruby-yjit-metrics-stats",
-        opts: YJIT_ENABLED_OPTS + [ "--yjit-stats" ],
+        opts: YJIT_ENABLED_OPTS + YJIT_STATS_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
     "yjit_prod_stats_disabled" => {
@@ -599,6 +603,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
           (failed_benchmarks[config] ||= []) << {
             name: bench_info[:name],
             exit_status: single_run_results.exit_status,
+            summary: single_run_results.summary,
           }
         end
     end
@@ -649,7 +654,7 @@ else
   details = failed_benchmarks.map do |config, failures|
     [
       "#{config}: #{failures.size} failures\n",
-      failures.map { |info| "- #{info[:name]}: (exit #{info[:exit_status]})\n" }.join(""),
+      failures.map { |info| "- #{info[:name]}: (exit #{info[:exit_status]})\n  #{info[:summary]}\n" }.join(""),
     ]
   end.flatten.join("\n")
 
