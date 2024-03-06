@@ -600,8 +600,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
             intermediate_by_config[config].push json_path
         else
-          (failed_benchmarks[config] ||= []) << {
-            name: bench_info[:name],
+          (failed_benchmarks[config] ||= {})[bench_info[:name]] = {
             exit_status: single_run_results.exit_status,
             summary: single_run_results.summary,
           }
@@ -632,6 +631,9 @@ intermediate_by_config.each do |config, int_files|
         metadata["runs"] = num_runs # how many runs we tried to do
     end
 
+    merged_data["ruby_config_name"] = config
+    merged_data["benchmark_failures"] = failed_benchmarks[config]
+
     merged_data["full_run"] = {
         # Include total time for the whole run, not just this benchmark, to monitor how long
         # large jobs run for.
@@ -651,14 +653,32 @@ end
 summary = if failed_benchmarks.empty?
   "All benchmarks completed successfully.\n"
 else
-  details = failed_benchmarks.map do |config, failures|
-    [
-      "#{config}: #{failures.size} failures\n",
-      failures.map { |info| "- #{info[:name]}: (exit #{info[:exit_status]})\n  #{info[:summary]}\n" }.join(""),
-    ]
-  end.flatten.join("\n")
+  by_failure = failed_benchmarks.each_with_object({}) do |(config, failures), h|
+    failures.each do |name, info|
+      ((h[name] ||= {})[info.values_at(:exit_status, :summary)] ||= []) << config
+    end
+  end
 
-  "Benchmark Failures:\n\n#{details}"
+  decorate = ->(s) { "\e[1m#{s}\e[0m" }
+
+  lines = ["Benchmark failures:\n"]
+
+  lines += by_failure.map do |name, failures|
+    "#{decorate[name]} (#{failures.values.sort.join(", ")})"
+  end
+
+  lines << "\nDetails:\n"
+
+  lines += by_failure.map do |(name, results)|
+    [
+      "#{decorate[name]}\n",
+      results.map do |(exit_status, summary), configs|
+        "exit status #{exit_status} (#{configs.sort.join(", ")})\n#{summary}\n"
+      end
+    ]
+  end
+
+  lines.flatten.join("\n")
 end
 
 puts "\n#{summary}\n"
