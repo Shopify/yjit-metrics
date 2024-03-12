@@ -29,7 +29,7 @@ pipeline {
                     }
 
                     // No updating anything, including Ruby - this is for performance stability with identical everything
-                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'chruby 3.0.2; cd ym/yjit-metrics && ./basic_benchmark.rb --skip-git-update --warmup-itrs=10 --min-bench-time=0 --min-bench-itrs=15 --on-errors=re_run --full-rebuild=no --configs=x86_64_prod_ruby_with_yjit,x86_64_prod_ruby_no_jit'\""
+                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c 'chruby 3.0.2; cd ym/yjit-metrics && ./basic_benchmark.rb --skip-git-update --warmup-itrs=10 --min-bench-time=0 --min-bench-itrs=15 --on-errors=report --full-rebuild=no --configs=x86_64_prod_ruby_with_yjit,x86_64_prod_ruby_no_jit'\""
                 }
             }
         }
