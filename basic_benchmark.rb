@@ -329,7 +329,7 @@ YJIT_METRICS_DIR = __dir__
 # Configuration for yjit-bench
 YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/Shopify/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
-YJIT_BENCH_DIR = File.expand_path("#{__dir__}/../yjit-bench")
+YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
 
 # Configuration for ruby-build
 RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
