@@ -178,8 +178,10 @@ def summary(files)
   results = files.map { |f| JSON.parse(File.read(f)) }
 
   by_failure = results.each_with_object({}) do |result, h|
-    result["benchmark_failures"]&.each do |name, info|
-      ((h[name] ||= {})[info.values_at("exit_status", "summary")] ||= []) << result["ruby_config_name"]
+    result["benchmark_failures"]&.each do |name, arr|
+      arr.each do |info|
+        ((h[name] ||= {})[info.values_at("exit_status", "summary")] ||= []) << result["ruby_config_name"]
+      end
     end
   end
 

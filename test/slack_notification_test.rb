@@ -17,7 +17,7 @@ class SlackNotificationTest < Minitest::Test
   BUILD_URL = "https://build-url"
   SLACK_CHANNEL = "#yjit-benchmark-ci"
   SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
-  DATA_GLOB = "test/data/2024-03-18-194352_basic_benchmark_*.json"
+  DATA_GLOB = "test/data/2024-03-18-204411*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
 
   def notify(args: [], job_result: 'success')
@@ -106,13 +106,13 @@ class SlackNotificationTest < Minitest::Test
     assert_equal(<<~MSG, blocks[1][:text][:text])
       #{BUILD_URL}
 
-      *`cycle_error`* (`arm_yjit_stats`)
+      *`cycle_error`* (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
 
       Details:
 
       *`cycle_error`*
 
-      exit status 1 (`arm_yjit_stats`)
+      exit status 1 (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
       ```
       ./benchmarks/cycle_error/benchmark.rb:24:in `block in <main>': Time to fail (RuntimeError)
       ```
