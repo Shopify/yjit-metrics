@@ -68,3 +68,17 @@ Then a quick "git diff" in the pages directory can show you what, if anything, c
 
 Changes to the JSON format may require a bump to the `version` entry (`lib/yjit-metrics.rb`)
 and translation logic in the code that processes the data (`lib/yjit-metrics/bench-results.rb`).
+
+### Tests
+
+The test files can be run with a command like `ruby -Ilib:test test/some_test.rb`.
+
+#### `test/basic_benchmark_script_test.rb`
+
+This can be used as a smoke test to run the main script and verify the output JSON data files.
+This is useful to test changes to the `basic_benchmark.rb` script and will provide much faster feedback than triggering a test of the branch in CI.
+
+#### `test/slack_notification.rb`
+
+Along with `test/generate_slack_data.sh` this test can be used to verify that
+the slack notification builds correctly.
