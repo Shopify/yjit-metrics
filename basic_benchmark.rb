@@ -581,6 +581,11 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
             break if single_run_results.success? # Got results? Great! Then don't die or re-run.
 
+            ((failed_benchmarks[config] ||= {})[bench_info[:name]] ||= []) << {
+              exit_status: single_run_results.exit_status,
+              summary: single_run_results.summary,
+            }
+
             raise single_run_results.error if when_error == :die
 
             puts "No data collected for this run, presumably due to errors. On we go."
@@ -599,11 +604,6 @@ Dir.chdir(YJIT_BENCH_DIR) do
             File.open(json_path, "w") { |f| f.write JSON.pretty_generate(single_run_results.to_json) }
 
             intermediate_by_config[config].push json_path
-        else
-          (failed_benchmarks[config] ||= {})[bench_info[:name]] = {
-            exit_status: single_run_results.exit_status,
-            summary: single_run_results.summary,
-          }
         end
     end
 end
@@ -654,8 +654,10 @@ summary = if failed_benchmarks.empty?
   "All benchmarks completed successfully.\n"
 else
   by_failure = failed_benchmarks.each_with_object({}) do |(config, failures), h|
-    failures.each do |name, info|
-      ((h[name] ||= {})[info.values_at(:exit_status, :summary)] ||= []) << config
+    failures.each do |name, results|
+      results.each do |info|
+        ((h[name] ||= {})[info.values_at(:exit_status, :summary)] ||= []) << config
+      end
     end
   end
 

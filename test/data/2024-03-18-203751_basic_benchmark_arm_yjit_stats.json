@@ -3,7 +3,7 @@
   "times": {
     "pass": [
       [
-        255.05600002361462
+        255.0660000415519
       ]
     ]
   },
@@ -28,7 +28,7 @@
           "vm_insns_count": 237786,
           "live_iseq_count": 1124,
           "all_stats": true,
-          "yjit_insns_count": 8598,
+          "yjit_insns_count": 8644,
           "send_keywords": 0,
           "send_kw_splat": 0,
           "send_args_splat_super": 0,
@@ -143,7 +143,7 @@
           "guard_invokeblock_iseq_block_changed": 0,
           "traced_cfunc_return": 0,
           "leave_se_interrupt": 0,
-          "leave_interp_return": 1060,
+          "leave_interp_return": 1067,
           "getivar_se_self_not_heap": 0,
           "getivar_idx_out_of_range": 0,
           "getivar_megamorphic": 0,
@@ -200,7 +200,7 @@
           "compiled_blockid_count": 14,
           "compiled_block_count": 15,
           "compiled_branch_count": 21,
-          "compile_time_ns": 1902707,
+          "compile_time_ns": 888042,
           "compilation_failure": 0,
           "block_next_count": 12,
           "defer_count": 5,
@@ -219,7 +219,7 @@
           "exec_mem_non_bump_alloc": 0,
           "code_gc_count": 0,
           "num_gc_obj_refs": 9,
-          "num_send": 1639,
+          "num_send": 1652,
           "num_send_known_class": 0,
           "num_send_polymorphic": 0,
           "num_send_x86_rel32": 0,
@@ -227,7 +227,7 @@
           "num_send_dynamic": 0,
           "num_send_inline": 0,
           "num_send_leaf_builtin": 0,
-          "num_send_cfunc": 1639,
+          "num_send_cfunc": 1652,
           "num_send_cfunc_inline": 0,
           "num_getivar_megamorphic": 0,
           "num_setivar_megamorphic": 0,
@@ -445,24 +445,24 @@
           "exit_trace_putobject_INT2FIX_0_": 0,
           "exit_trace_putobject_INT2FIX_1_": 0,
           "cfunc_calls": {
-            "String#downcase": 579,
-            "Array#any?": 82,
             "Symbol#start_with?": 399,
-            "String#[]": 579
+            "String#downcase": 585,
+            "String#[]": 585,
+            "Array#any?": 83
           },
           "object_shape_count": 226,
-          "total_insns_count": 246384,
-          "ratio_in_yjit": 3.489674654198325,
+          "total_insns_count": 246430,
+          "ratio_in_yjit": 3.507689810493852,
           "side_exit_count": 0,
-          "total_exit_count": 1060,
-          "avg_len_in_yjit": 8.111320754716981
+          "total_exit_count": 1067,
+          "avg_len_in_yjit": 8.101218369259607
         }
       ]
     ]
   },
   "peak_mem_bytes": {
     "pass": [
-      14647296
+      14893056
     ]
   },
   "failures_before_success": {
@@ -528,17 +528,19 @@
   },
   "ruby_config_name": "arm_yjit_stats",
   "benchmark_failures": {
-    "cycle_error": {
-      "exit_status": 1,
-      "summary": "./benchmarks/cycle_error/benchmark.rb:24:in `block in <main>': Time to fail (RuntimeError)"
-    }
+    "cycle_error": [
+      {
+        "exit_status": 1,
+        "summary": "./benchmarks/cycle_error/benchmark.rb:24:in `block in <main>': Time to fail (RuntimeError)"
+      }
+    ]
   },
   "full_run": {
     "total_bench_time": "0 hours, 0 minutes, 14 seconds",
     "total_bench_seconds": 14,
     "git_versions": {
-      "yjit_bench": "01883e88f090ff8188a192edd120c7b3ec6e6532",
-      "yjit_metrics": "01883e88f090ff8188a192edd120c7b3ec6e6532"
+      "yjit_bench": "31f4d81d8d7af920db0c568aebceb7988dbec121",
+      "yjit_metrics": "31f4d81d8d7af920db0c568aebceb7988dbec121"
     },
     "ruby_config_opts": {
       "arm_yjit_stats": [

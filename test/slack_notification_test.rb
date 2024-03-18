@@ -17,7 +17,7 @@ class SlackNotificationTest < Minitest::Test
   BUILD_URL = "https://build-url"
   SLACK_CHANNEL = "#yjit-benchmark-ci"
   SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
-  DATA_GLOB = "test/data/2024-03-18-194352_basic_benchmark_*.json"
+  DATA_GLOB = "test/data/2024-03-18-203751*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
 
   def notify(args: [], job_result: 'success')

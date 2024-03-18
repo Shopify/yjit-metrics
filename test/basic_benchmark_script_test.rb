@@ -51,7 +51,7 @@ class BasicBenchmarkScriptTest < Minitest::Test
       args: %w[--warmup-itrs=0 --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=report --max-retries=1]
     )
 
-    assert_predicate result, :success?
+    refute_predicate result, :success?
 
     output_data.each do |data|
       assert_equal 2, data['version']
@@ -65,7 +65,14 @@ class BasicBenchmarkScriptTest < Minitest::Test
       assert_equal [0], data['failures_before_success']['pass']
       assert_equal [1], data['failures_before_success']['cycle_error']
 
-      assert_predicate data.fetch('benchmark_failures', :x), :nil?
+      failures = data['benchmark_failures']
+      assert_equal ['cycle_error'], failures.keys
+      assert_equal 1, failures['cycle_error'].size
+      assert_equal 1, failures['cycle_error'].first['exit_status']
+      assert_match(
+        %r{cycle_error/benchmark\.rb.+Time to fail},
+        failures['cycle_error'].first['summary']
+      )
     end
   end
 end
