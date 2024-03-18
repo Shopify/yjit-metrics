@@ -15,6 +15,10 @@ chruby 3.0.2
 
 # If there is uncommitted data after a benchmark run, get it into (all?) raw_benchmarks where it belongs
 cd ~/ym/yjit-metrics
+
+# NOTE: This data dir is not configurable. If we run a smoke test on jenkins
+# into a different data dir we explicitly do not want to include that here.
+# In that case this will run, find no data, and do nothing (which is what we want).
 ruby continuous_reporting/file_benchmark_data_into_raw.rb -d continuous_reporting/data
 
 ###### New repo - just for raw data
