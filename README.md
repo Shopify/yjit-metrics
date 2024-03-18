@@ -63,3 +63,8 @@ Are you making changes to reporting, or otherwise making sure you're correctly h
     ruby continuous_reporting/generate_and_upload_reports.rb --no-push
 
 Then a quick "git diff" in the pages directory can show you what, if anything, changed. The script will also print whether it found any pushable changes.
+
+### Output Format
+
+Changes to the JSON format may require a bump to the `version` entry (`lib/yjit-metrics.rb`)
+and translation logic in the code that processes the data (`lib/yjit-metrics/bench-results.rb`).
