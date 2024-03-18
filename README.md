@@ -44,7 +44,7 @@ You can find older examples of data-gathering scripts in the "runners" directory
 
 ## TruffleRuby
 
-While it's possible to install TruffleRuby via ruby-install, our experience has been that the JVM (non-default) version gets better results than the native/SubstrateVM version available via ruby-install. So: you're probably going to need to install ruby-build and install it yourself.
+Our experience has been that the JVM (non-default) version gets better results than the native/SubstrateVM version, so if you are going to install a release we recommend the truffleruby+graalvm variant (with ruby-build) or truffleruby-graalvm (with ruby-install).
 
 When you first try to run basic_benchmark.rb including a TruffleRuby configuration, basic_benchmark will clone ruby-build and tell you how to install it. After you do so, run basic_benchmark again and it will install TruffleRuby for you.
 
