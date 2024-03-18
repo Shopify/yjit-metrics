@@ -8,9 +8,6 @@ the latest YJIT statistics, gathered with yjit-metrics,
 YJIT-metrics uses the benchmarks in the
 [yjit-bench repository](https://github.com/Shopify/yjit-bench).
 
-You can see the latest benchmark reports
-[at speed.yjit.org](https://speed.yjit.org).
-
 ## Setup and Installation, Accuracy of Results
 
 To run benchmarks on Linux, you'll need sudo access and to run the following command:
