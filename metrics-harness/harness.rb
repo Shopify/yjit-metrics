@@ -26,6 +26,9 @@ OUT_JSON_PATH = File.expand_path(ENV.fetch('OUT_JSON_PATH', default_path))
 # starting with YJIT_METRICS before running it.
 IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" ]
 
+# Ignore unnecessary env vars that match any of the above patterns.
+IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
+
 YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
 
 yjit_metrics_using_gemfile = false
@@ -152,6 +155,7 @@ def run_benchmark(num_itrs_hint)
   yjit_stats = YJIT_MODULE&.runtime_stats
 
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
+  out_env_keys -= IGNORABLE_ENV
 
   # As a tempfile, this changes constantly but doesn't mean the benchmark results shouldn't be combined
   out_env_keys -= ["OUT_JSON_PATH"]
