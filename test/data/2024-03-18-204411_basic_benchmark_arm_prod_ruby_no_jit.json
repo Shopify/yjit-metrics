@@ -3,12 +3,12 @@
   "times": {
     "pass": [
       [
-        255.0590000464581
+        251.189999980852
       ]
     ],
     "cycle_error": [
       [
-        255.05300000077114
+        251.08600000385195
       ]
     ]
   },
@@ -34,10 +34,10 @@
   },
   "peak_mem_bytes": {
     "pass": [
-      14925824
+      14761984
     ],
     "cycle_error": [
-      13926400
+      12910592
     ]
   },
   "failures_before_success": {
@@ -45,7 +45,7 @@
       0
     ],
     "cycle_error": [
-      0
+      1
     ]
   },
   "benchmark_metadata": {
@@ -147,10 +147,17 @@
     "RbConfig configure_args": " '--disable-install-doc' '--disable-install-rdoc' '--enable-yjit' '--with-openssl-dir=/opt/homebrew/opt/openssl@1.1' '--prefix=/Users/rwstauner/.rubies/ruby-yjit-metrics-prod'"
   },
   "ruby_config_name": "arm_prod_ruby_no_jit",
-  "benchmark_failures": null,
+  "benchmark_failures": {
+    "cycle_error": [
+      {
+        "exit_status": 1,
+        "summary": "./benchmarks/cycle_error/benchmark.rb:24:in `block in <main>': Time to fail (RuntimeError)"
+      }
+    ]
+  },
   "full_run": {
-    "total_bench_time": "0 hours, 0 minutes, 14 seconds",
-    "total_bench_seconds": 14,
+    "total_bench_time": "0 hours, 0 minutes, 19 seconds",
+    "total_bench_seconds": 19,
     "git_versions": {
       "yjit_bench": "31f4d81d8d7af920db0c568aebceb7988dbec121",
       "yjit_metrics": "31f4d81d8d7af920db0c568aebceb7988dbec121"
