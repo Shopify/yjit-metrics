@@ -9,7 +9,7 @@ require_relative "test_helper"
 # This is a high-level integration test to execute the continuous_reporting/slack_build_notifier.rb entrypoint
 # and verify its behavior based on the calls it makes to the slack api.
 
-# You can regenerate test data by running test/generate_slack_data.sh and then updating the DATA_GLOB constant below.
+# You can regenerate test data by running test/generate_slack_data.sh.
 
 class SlackNotificationTest < Minitest::Test
   TEST_LIB = File.expand_path('lib', __dir__)
@@ -17,7 +17,7 @@ class SlackNotificationTest < Minitest::Test
   BUILD_URL = "https://build-url"
   SLACK_CHANNEL = "#yjit-benchmark-ci"
   SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
-  DATA_GLOB = "test/data/2024-03-18-204411*.json"
+  DATA_GLOB = "test/data/slack/*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
 
   def notify(args: [], job_result: 'success')
