@@ -7,7 +7,7 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-YJIT_RAW_DATA_REPO = File.expand_path File.join(__dir__, "../../raw-benchmark-data/raw_benchmark_data")
+YJIT_RAW_DATA_REPO = File.join(YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT, "raw_benchmark_data")
 
 DESTINATIONS = [
     YJIT_RAW_DATA_REPO,
