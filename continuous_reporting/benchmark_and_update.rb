@@ -36,10 +36,10 @@ MICRO_STDDEV_TOLERANCE = 2.0
 # tolerance needs to be significantly larger to avoid frequent false positives.
 MICRO_DROP_TOLERANCE = 0.20
 
-YM_PAGES_DIR = File.expand_path "#{__dir__}/../../yjit-metrics-pages"
-YM_RAW_DATA_DIR = "#{YM_PAGES_DIR}/raw_benchmark_data"
+BUILT_REPORTS_ROOT = YJITMetrics::ContinuousReporting::BUILT_REPORTS_ROOT
+RAW_BENCHMARK_ROOT = YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT
 
-YM_REPORT_DIR = File.expand_path "#{YM_PAGES_DIR}/_includes/reports/"
+YM_REPORT_DIR = File.expand_path "#{BUILT_REPORTS_ROOT}/_includes/reports/"
 if File.exist?(YM_REPORT_DIR)
     var_warmup_reports = Dir.glob(YM_REPORT_DIR + "/variable_warmup_*.warmup_settings.json").to_a
     if var_warmup_reports.empty?
@@ -204,7 +204,7 @@ end
 class BenchmarkDetails
     def initialize(timestamp)
         @timestamp = timestamp
-        benchmark_details_file = File.join(YM_PAGES_DIR, "_benchmarks", "bench_#{timestamp}.md")
+        benchmark_details_file = File.join(BUILT_REPORTS_ROOT, "_benchmarks", "bench_#{timestamp}.md")
         @data = YAML.load File.read(benchmark_details_file)
     end
 
@@ -215,7 +215,7 @@ class BenchmarkDetails
     def yjit_test_result
         yjit_file = @data["test_results"]["prod_ruby_with_yjit"]
         raise("Cannot locate latest YJIT data file for timestamp #{@timestamp}") unless yjit_file
-        File.join YM_PAGES_DIR, yjit_file
+        File.join RAW_BENCHMARK_ROOT, yjit_file
     end
 
     def yjit_permalink
