@@ -7,15 +7,9 @@ require "optparse"
 
 require_relative "../lib/yjit-metrics"
 
-YJIT_METRICS_PAGES_DIR = File.expand_path File.join(__dir__, "../../yjit-metrics-pages/raw_benchmark_data")
-unless File.exist?(YJIT_METRICS_PAGES_DIR)
-    raise "This script expects to be cloned in a repo right next to a \"yjit-metrics-pages\" repo of the `pages` branch of yjit-metrics"
-end
-
 YJIT_RAW_DATA_REPO = File.expand_path File.join(__dir__, "../../raw-benchmark-data/raw_benchmark_data")
 
 DESTINATIONS = [
-    #YJIT_METRICS_PAGES_DIR,
     YJIT_RAW_DATA_REPO,
 ]
 
