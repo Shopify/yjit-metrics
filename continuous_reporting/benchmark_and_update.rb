@@ -329,7 +329,7 @@ EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
 
 # If benchmark results drop noticeably, file a Github issue
 def check_perf_tripwires
-    Dir.chdir(__dir__ + "/../../yjit-metrics-pages/_includes/reports") do
+    Dir.chdir(YM_REPORT_DIR) do
         # Grab only non-platform-specific tripwire files that do *not* have a platform name in them,
         # but instead end in a six-digit timestamp.
         tripwire_files = Dir["*.tripwires.json"].to_a.select {|f| f =~ /\d{6}\.tripwires\.json\Z/}.sort
