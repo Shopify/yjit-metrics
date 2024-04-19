@@ -10,7 +10,7 @@ chruby 3.0.2
 
 cd ~/ym/yjit-metrics
 
-# Copy benchmark raw data into yjit-metrics-pages repo, generate reports, commit changes to Git.
+# Copy benchmark raw data into destination repo, generate reports, commit changes to Git.
 ruby continuous_reporting/generate_and_upload_reports.rb
 
 # Now we'll verify that we're not regenerating results when we shouldn't.

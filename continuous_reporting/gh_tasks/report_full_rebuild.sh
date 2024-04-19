@@ -10,7 +10,7 @@ chruby 3.0.2
 
 cd ~/ym/yjit-metrics
 
-# Copy benchmark raw data into yjit-metrics-pages repo, generate reports, commit changes to Git.
+# Copy benchmark raw data into destination repo, generate reports, commit changes to Git.
 # The --regenerate-reports argument will regenerate ***all*** reports, which can take quite a
 # long time. It will also occasionally hit a Ruby error, so we should update from 3.0.2 when
 # we can for "system" Ruby here.
