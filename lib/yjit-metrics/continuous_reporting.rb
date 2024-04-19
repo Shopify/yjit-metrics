@@ -3,8 +3,8 @@ module YJITMetrics
     # Dir in which yjit-metrics, yjit-bench, etc are cloned
     YM_ROOT_DIR = File.expand_path(File.join(__dir__, "../../.."))
 
-    # Clone of yjit-metrics repo, pages branch
-    YJIT_METRICS_PAGES_DIR = File.expand_path File.join(YM_ROOT_DIR, "yjit-metrics-pages")
+    # This repo.
+    YM_REPO = File.join(YM_ROOT_DIR, "yjit-metrics")
 
     # Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories
     RAW_BENCHMARK_ROOT = File.join(YM_ROOT_DIR, "raw-benchmark-data")
