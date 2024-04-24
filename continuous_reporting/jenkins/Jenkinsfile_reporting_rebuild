@@ -1,10 +1,20 @@
 // On-demand Jenkins reporting pipeline
 
+// Strings referencing env vars.
+// We will interpolate this into the command and the shell will evaluate the env vars.
+// Each stage should have `environment { SSH_HOST = credential(...) }` for the appropriate target server.
+ssh_args = '-o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15 -o "User=$SSH_USER" -i "$SSH_KEYFILE"'
+ssh_host = '$SSH_HOST'
+def ssh(shell_command, opts = [:]) {
+  println("ssh: ${shell_command}")
+  sh([script: "#!/bin/bash -e\nssh $ssh_args $ssh_host bash -e <<SSHEOF\n${shell_command}\nSSHEOF\n"] + opts)
+}
+
 pipeline {
     agent any
 
     environment {
-        AWS_INSTANCE_X86_64 = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')  // get IP address or name
+        SSH_HOST = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')
     }
 
     options {
@@ -23,16 +33,11 @@ pipeline {
 
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
-                    script {
-                        env.SSH_USER = SSH_USER
-                        env.SSH_KEYFILE = SSH_KEYFILE
-                        env.SSH_ARGS = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST = '$SSH_USER@$AWS_INSTANCE_X86_64'
-                    }
-
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && uname -a && git pull\""
-                    sh "ssh $SSH_ARGS $SSH_HOST \"cd ym/yjit-metrics && git checkout . && git clean -d -f reports _includes && git pull\""
-                    sh "ssh $SSH_ARGS $SSH_HOST \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_full_rebuild.sh'\""
+                  script {
+                    ssh "uname -a"
+                    ssh "cd ym/yjit-metrics && git pull && git checkout . && git clean -d -f reports _includes && git pull"
+                    ssh "ym/yjit-metrics/continuous_reporting/gh_tasks/report_full_rebuild.sh"
+                  }
                 }
             }
         }
