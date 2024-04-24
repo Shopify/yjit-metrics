@@ -8,7 +8,7 @@ module YJITMetrics::RepoManagement
             check_call("git clone '#{git_url}' '#{path}'")
         end
 
-        Dir.chdir(path) do
+        chdir(path) do
             if do_clean
                 check_call("git clean -d -f")
                 check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
@@ -36,7 +36,7 @@ module YJITMetrics::RepoManagement
     def clone_ruby_repo_with(path:, git_url:, git_branch:, config_opts:, config_env: [], install_to:)
         clone_repo_with(path: path, git_url: git_url, git_branch: git_branch)
 
-        Dir.chdir(path) do
+        chdir(path) do
             config_opts += [ "--prefix=#{install_to}" ]
 
             unless File.exist?("./configure")
