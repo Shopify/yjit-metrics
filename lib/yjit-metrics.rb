@@ -22,11 +22,9 @@ Dir.glob("yjit-metrics/timeline_report_types/*.rb", base: __dir__).each do |repo
 end
 
 module YJITMetrics
-    extend self # Make methods callable as YJITMetrics.method_name
+    include RepoManagement
 
-    include YJITMetrics::RepoManagement
-    # In Ruby 2.7.2, having extend self doesn't seem to extend YJITMetrics-the-object with the RepoManagement methods.
-    extend YJITMetrics::RepoManagement
+    extend self # Make methods callable as YJITMetrics.method_name
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
