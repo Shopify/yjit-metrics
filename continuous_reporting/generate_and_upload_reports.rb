@@ -9,25 +9,13 @@ require_relative "../lib/yjit-metrics"
 
 ### Required repos, etc, to build from
 
-# Dir in which yjit-metrics, yjit-bench, etc are cloned
-YM_ROOT_DIR = File.expand_path(File.join(__dir__, "../.."))
+YM_REPO = YJITMetrics::ContinuousReporting::YM_REPO
+RAW_BENCHMARK_ROOT = YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT
+RAW_REPORTS_ROOT = YJITMetrics::ContinuousReporting::RAW_REPORTS_ROOT
+BUILT_REPORTS_ROOT = YJITMetrics::ContinuousReporting::BUILT_REPORTS_ROOT
+GHPAGES_REPO = YJITMetrics::ContinuousReporting::GHPAGES_REPO
 
-# Clone of yjit-metrics repo, pages branch
-YJIT_METRICS_PAGES_DIR = File.expand_path File.join(YM_ROOT_DIR, "yjit-metrics-pages")
-
-# Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories
-RAW_BENCHMARK_ROOT = File.join(YM_ROOT_DIR, "raw-benchmark-data")
-
-# This contains Jekyll source files of various kinds - everything but the built reports
-RAW_REPORTS_ROOT = File.join(YM_ROOT_DIR, "raw-yjit-reports")
-
-# We cache all the built per-run reports, which can take a long time to rebuild
-BUILT_REPORTS_ROOT = File.join(YM_ROOT_DIR, "built-yjit-reports")
-
-# We have a separate repo for the final HTML, because creating the new orphan branch is fiddly
-GHPAGES_REPO = File.join(YM_ROOT_DIR, "ghpages-yjit-metrics")
-
-[YJIT_METRICS_PAGES_DIR, RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
+[RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
   unless File.exist?(dir)
     raise "We expected directory #{dir.inspect} to exist in order to generate reports!"
   end
@@ -137,10 +125,9 @@ if only_reports
     REPORTS_AND_FILES.select! { |k, _| only_reports.include?(k) }
 end
 
-# From here on out, we're just in the yjit-metrics checkout of "pages" -- until we can stop relying on it.
-Dir.chdir(YJIT_METRICS_PAGES_DIR)
+# This is probably unnecessary now.
+Dir.chdir(YM_REPO)
 puts "Switched to #{Dir.pwd}"
-YJITMetrics.check_call("git checkout pages")
 
 # Turn JSON files into reports where outdated - first, find out what test results we have.
 # json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
@@ -214,7 +201,7 @@ timestamps.each do |ts|
             reason ||= "we're missing files: #{missing_files.inspect}"
 
             puts "Running basic_report for timestamp #{ts} because #{reason} with data files #{test_files.inspect}"
-            YJITMetrics.check_call("ruby ../yjit-metrics/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
+            YJITMetrics.check_call("ruby #{YM_REPO}/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
 
             rf = basic_report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -252,7 +239,7 @@ timestamps.each do |ts|
                 # Add a field like blog_speed_details_x86_64_svg
                 YJITMetrics::PLATFORMS.each do |platform|
                     report_filename = "reports/#{report_name}_#{ts}.#{platform}.#{ext}"
-                    if File.exist?("_includes/#{report_filename}")
+                    if File.exist?("#{BUILT_REPORTS_ROOT}/_includes/#{report_filename}")
                         platforms[platform] = true
                         generated_reports[report_name + "_" + platform + "_" + ext.gsub(".", "_")] = report_filename
                     end
@@ -292,7 +279,7 @@ unless die_on_regenerate
 
     # It's possible to run only specific non-timeline reports -- then this would be empty.
     unless timeline_reports.empty?
-        YJITMetrics.check_call("ruby ../yjit-metrics/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
+        YJITMetrics.check_call("ruby #{YM_REPO}/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
     end
 
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.

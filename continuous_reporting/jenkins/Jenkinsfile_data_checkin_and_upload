@@ -30,7 +30,7 @@ pipeline {
     }
 
     stages {
-        // This stage commits and pushes the benchmark data from the yjit-metrics-pages directory, but doesn't get it there from yjit-metrics/continuous_reporting/data
+        // This stage commits and pushes the benchmark data from its directory, but doesn't get it there from yjit-metrics/continuous_reporting/data
         stage('data checkin') {
             parallel {
                 stage('data checkin x86_64') {
