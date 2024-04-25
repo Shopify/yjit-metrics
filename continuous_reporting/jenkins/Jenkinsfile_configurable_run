@@ -18,21 +18,46 @@
 
 // sh function: https://www.jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script
 
-// Jenkinsfiles use a Groovy DSL. Apparently it's really bad if this ever sees any credentials,
-// and Jenkins will notice this and complain. Good. However, also, "script" blocks get substituted
-// in directly somehow, so having the same variable multiple times is really bad and not really
-// scoped to one step/stage/block or another. So: things like SSH_HOST_X86 and SSH_HOST_ARM are
-// effectively global variables, which is why it's REALLY NOT OKAY to have a single SSH_HOST
-// variable that can take on different values in different places. Nope. It gets ONE value, and
-// last write wins. Thus, multiple globals for multiple values in this script. I'm very sorry.
-
 // Future improvements:
 //
 // * It would be really nice to *not* use throttling and SSH to do this with workers. But we'd need to limit the executors
 //   per Jenkins agent to 1, but only for certain Jenkins agents. Or throttle all builds on a particular agent. I'm not
 //   sure there's an easy way to do either one.
 
-def results = [:]
+// Strings referencing env vars.
+// We will interpolate this into the command and the shell will evaluate the env vars.
+// Each stage should have `environment { SSH_HOST = credential(...) }` for the appropriate target server.
+ssh_args = '-o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15 -o "User=$SSH_USER" -i "$SSH_KEYFILE"'
+ssh_host = '$SSH_HOST'
+def ssh(shell_command, opts = [:]) {
+  println("ssh: ${shell_command}")
+  sh([script: "#!/bin/bash -e\nssh $ssh_args $ssh_host bash -e <<SSHEOF\n${shell_command}\nSSHEOF\n"] + opts)
+}
+
+def scp(src, dest) {
+  sh "scp $ssh_args $src $dest"
+}
+
+results = [:]
+result_dir = "results"
+def benchmark_and_upload(arch) {
+  // Use specified yjit-metrics repo and name
+  ssh "YJIT_METRICS_REPO=${params.YJIT_METRICS_REPO} YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
+
+  unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
+  scp("bench_params.json", "$ssh_host:~/ym/yjit-metrics/")
+
+  // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
+  // runs when benchmarking succeeded but checking/reporting failed.
+  results[arch] = ssh("BENCH_PARAMS=bench_params.json ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh", [returnStatus: true])
+
+  scp("$ssh_host:~/ym/yjit-metrics/${params.DATA_DIR}/'*.json'", "./${result_dir}/")
+  archiveArtifacts(artifacts: "${result_dir}/*.json", allowEmptyArchive: true)
+
+  ssh "ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh"
+
+  ssh "rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
+}
 
 pipeline {
     agent any
@@ -50,21 +75,13 @@ pipeline {
 
         string(name: 'BENCH_TYPE', defaultValue: 'default', description: 'Benchmark type -- "default" uses variable warmup file and all benchmarks, "smoketest" is one iter of all benchmarks, can also give full specification, e.g. --warmup-itrs=0 --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=PLATFORM_prod_ruby_no_jit,PLATFORM_prod_ruby_with_yjit')
 
-        string(name: 'DATA_DIR', defaultValue: 'continuous_reporting/data', description: 'Data directory for output - continuous_reporting/data and single_iter_data are fine choices, but only /data gets filed into the CRuby reporting data')
+        string(name: 'DATA_DIR', defaultValue: 'continuous_reporting/data', description: 'Data directory for output; continuous_reporting/data will populate speed.yjit.org; use single_iter_data to discard results')
 
         booleanParam(name: 'DO_FULL_REBUILD', defaultValue: true, description: 'whether to remove all appropriate Ruby and gem directories to ensure a clean rebuild (note: slow)')
 
         booleanParam(name: 'WITH_X86_TRUFFLE', defaultValue: false, description: 'use presumed excess x86 runtime to run TruffleRuby yjit-bench iterations')
 
         // The benchmark timestamp can't be input manually, so it's not a parameter here
-    }
-
-    // I can't set CRUBY_NAME = params.CRUBY_NAME here to get an env var to match the param.
-    // I'm sure there's some reason why.
-    environment {
-        // docs: https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#handling-credentials
-        AWS_INSTANCE_X86_64 = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')  // get IP address or name
-        AWS_INSTANCE_AARCH64 = credentials('86e5f9a8-4c3a-4789-92ab-d617fba356e8') // get IP address or name
     }
 
     options {
@@ -79,36 +96,29 @@ pipeline {
 
     stages {
         stage('generate_params') {
+            environment {
+              SSH_HOST = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')
+            }
             steps {
-                // Don't want the keyfile to exist for long, so use a limited-scope block for withCredentials here.
-                // There's probably a better way to do this if I understood the Jenkinsfile DSL better.
-                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                    script {
-                        env.CRUBY_NAME = params.RUBY_VERSION  // Setting these once makes them available everywhere, for Groovy DSL reasons, I think?
-                        env.CRUBY_REPO = params.RUBY_REPO
-                        env.YJIT_BENCH_NAME = params.YJIT_BENCH_VERSION
-                        env.YJIT_BENCH_REPO = params.YJIT_BENCH_REPO
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
-                        env.BENCH_TYPE = params.BENCH_TYPE
-                        env.FULL_REBUILD = params.DO_FULL_REBUILD ? "yes" : "no"
-                        env.BENCH_DATA_DIR = params.DATA_DIR // This is where file_benchmark_data_into_raw.rb looks for report-of-record CRuby benchmark data
-                        env.SSH_USER_X86 = SSH_USER_X86
-                        env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                        env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                    }
+                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-x86', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                  script {
+                    // Remove any leftover results from prior runs.
+                    sh "rm -vrf ./$result_dir; mkdir -p $result_dir"
 
                     // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                     // runs when benchmarking succeeded but checking/reporting failed.
 
                     // Use specified yjit-metrics repo and name
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
+                    ssh "YJIT_METRICS_REPO=${params.YJIT_METRICS_REPO} YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
 
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c \'cd ym/yjit-metrics/ && FULL_REBUILD=$FULL_REBUILD BENCH_TYPE=\\\"$BENCH_TYPE\\\" YJIT_METRICS_NAME=$YJIT_METRICS_NAME YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_BENCH_NAME=$YJIT_BENCH_NAME YJIT_BENCH_REPO=$YJIT_BENCH_REPO CRUBY_NAME=$CRUBY_NAME CRUBY_REPO=$CRUBY_REPO BENCH_DATA_DIR=$BENCH_DATA_DIR ./continuous_reporting/gh_tasks/generate_bench_params.sh\'\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ym/yjit-metrics && cat bench_params.json\""
-                    sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/bench_params.json ."
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
+                    // BENCH_TYPE probably won't contain any troublesome characters (besides spaces),
+                    // but the simplest thing to do is wrap the whole thing in single quotes
+                    // and then replace any single quotes in the param with a break in the string and an escaped character.
+                    ssh "cd ym/yjit-metrics && FULL_REBUILD=${params.DO_FULL_REBUILD ? "yes" : "no"} BENCH_TYPE='${params.BENCH_TYPE.replaceAll("[']", { c -> "'\\$c'" })}' YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} YJIT_METRICS_REPO=${params.YJIT_METRICS_REPO} YJIT_BENCH_NAME=${params.YJIT_BENCH_VERSION} YJIT_BENCH_REPO=${params.YJIT_BENCH_REPO} CRUBY_NAME=${params.RUBY_VERSION} CRUBY_REPO=${params.RUBY_REPO} BENCH_DATA_DIR=${params.DATA_DIR} continuous_reporting/gh_tasks/generate_bench_params.sh"
+                    ssh "cat ym/yjit-metrics/bench_params.json"
+                    scp "$ssh_host:~/ym/yjit-metrics/bench_params.json", "."
+                    ssh "rm ym/yjit-metrics/bench_params.json"  // Don't leave params sitting around between jobs
+                  }
                 }
 
                 // docs: https://www.jenkins.io/doc/pipeline/steps/workflow-basic-steps/#stash-stash-some-files-to-be-used-later-in-the-build
@@ -119,69 +129,31 @@ pipeline {
         stage('benchmarking and data upload') {
             parallel {
                 stage('benchmarking and data upload x86_64') {
+                    environment {
+                      SSH_HOST = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')
+                    }
                     agent any
                     steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-x86', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
                           script {
-                            env.SSH_USER_X86 = SSH_USER_X86
-                            env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                            env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                            env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                            env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                            env.WITH_X86_TRUFFLE = params.WITH_X86_TRUFFLE
+                            benchmark_and_upload('x86')
 
-                            // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-
-                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
-                            sh "scp $SSH_ARGS_X86 bench_params.json $SSH_HOST_X86:~/ym/yjit-metrics/"
-
-                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
-                            // runs when benchmarking succeeded but checking/reporting failed.
-                            results["x86"] = sh(script: "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\"", returnStatus: true)
-
-                            dir = "results"
-                            sh "rm -vrf ${dir}; mkdir -p ${dir}"
-                            sh "scp $SSH_ARGS_X86 $SSH_HOST_X86:~/ym/yjit-metrics/${params.DATA_DIR}/'*.json' ./${dir}/"
-                            archiveArtifacts(artifacts: "${dir}/*.json", allowEmptyArchive: true)
-
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-
-                            sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
-
-                            sh "([ true = $WITH_X86_TRUFFLE ] && ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c './ym/yjit-metrics/continuous_reporting/gh_tasks/truffle_x86_benchmarks.sh'\") || echo OK"
+                            if (params.WITH_X86_TRUFFLE) {
+                              ssh "ym/yjit-metrics/continuous_reporting/gh_tasks/truffle_x86_benchmarks.sh || echo ignoring failure"
+                            }
                           }
                         }
                     }
                 }
                 stage('benchmarking and data upload AARCH64') {
                     agent any
+                    environment {
+                      SSH_HOST = credentials('86e5f9a8-4c3a-4789-92ab-d617fba356e8')
+                    }
                     steps {
-                        withCredentials([sshUserPrivateKey(credentialsId: '8f1183b4-3eae-40cc-8ef5-afce3637b181', keyFileVariable: 'SSH_KEYFILE_ARM', usernameVariable: 'SSH_USER_ARM')]) {
+                        withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-arm', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
                           script {
-                            env.SSH_USER_ARM = SSH_USER_ARM
-                            env.SSH_KEYFILE_ARM = SSH_KEYFILE_ARM
-                            env.SSH_ARGS_ARM = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_ARM -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                            env.SSH_HOST_ARM = '$SSH_USER_ARM@$AWS_INSTANCE_AARCH64'
-
-                            // Use specified yjit-metrics repo and name
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-
-                            unstash 'bench_params' // Get timestamp, CRuby SHA, yjit_metrics SHA, etc for this build
-                            sh "scp $SSH_ARGS_ARM bench_params.json $SSH_HOST_ARM:~/ym/yjit-metrics/"
-
-                            // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
-                            // runs when benchmarking succeeded but checking/reporting failed.
-                            results["arm"] = sh(script: "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c 'BENCH_PARAMS=bench_params.json . ./ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh'\"", returnStatus: true)
-
-                            dir = "results"
-                            sh "rm -vrf ${dir}; mkdir -p ${dir}"
-                            sh "scp $SSH_ARGS_ARM $SSH_HOST_ARM:~/ym/yjit-metrics/${params.DATA_DIR}/'*.json' ./${dir}/"
-                            archiveArtifacts(artifacts: "${dir}/*.json", allowEmptyArchive: true)
-
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/commit_benchmark_data.sh'\""
-
-                            sh "ssh $SSH_ARGS_ARM $SSH_HOST_ARM \"rm ym/yjit-metrics/bench_params.json\""  // Don't leave params sitting around between jobs
+                            benchmark_and_upload('arm')
                           }
                         }
                     }
@@ -191,28 +163,25 @@ pipeline {
 
         stage('reporting') {
             agent any
+            environment {
+              SSH_HOST = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')
+            }
 
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: '5a088c5c-117f-4647-982b-954973d217f9', keyFileVariable: 'SSH_KEYFILE_X86', usernameVariable: 'SSH_USER_X86')]) {
-                    script {
-                        env.SSH_USER_X86 = SSH_USER_X86
-                        env.SSH_KEYFILE_X86 = SSH_KEYFILE_X86
-                        env.SSH_ARGS_X86 = '-o StrictHostKeyChecking=no -i $SSH_KEYFILE_X86 -o TCPKeepAlive=yes -o ServerAliveCountMax=20 -o ServerAliveInterval=15'
-                        env.SSH_HOST_X86 = '$SSH_USER_X86@$AWS_INSTANCE_X86_64'
-                        env.YJIT_METRICS_NAME = params.YJIT_METRICS_VERSION
-                        env.YJIT_METRICS_REPO = params.YJIT_METRICS_REPO
-                    }
-
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"cd ~/ym/raw-benchmark-data && git pull\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"YJIT_METRICS_REPO=$YJIT_METRICS_REPO YJIT_METRICS_NAME=$YJIT_METRICS_NAME . ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \". ~/ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh\""
-                    sh "ssh $SSH_ARGS_X86 $SSH_HOST_X86 \"bash -l -c '. ./ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh'\""
+                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-x86', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
+                  script {
+                    ssh "cd ym/raw-benchmark-data && git pull"
+                    ssh "YJIT_METRICS_REPO=${params.YJIT_METRICS_REPO} YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
+                    ssh "ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_pages_repo.sh"
+                    ssh "ym/yjit-metrics/continuous_reporting/gh_tasks/report_and_upload.sh"
 
                     // The .max() method is not allowed without granting explicit access in jenkins.
-                    sh "exit ${results.values().sort().reverse().find {e -> e > 0} ?: 0}"
+                    if (results.values().sort().reverse().find {e -> e > 0}) {
+                      error("Build failed: ${results}")
+                    }
+                  }
                 }
             }
         }
     }
 }
-

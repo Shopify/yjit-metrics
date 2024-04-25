@@ -10,6 +10,7 @@ pipeline {
     }
 
     triggers {
+        // Currently UTC (likely whatever time jenkins and/or its server are configured to use).
         cron 'H 6,19 * * *'
     }
 
