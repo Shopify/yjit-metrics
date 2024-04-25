@@ -1,5 +1,6 @@
 # General-purpose benchmark management routines
 
+require 'benchmark'
 require 'fileutils'
 require 'tempfile'
 require 'json'
@@ -21,11 +22,9 @@ Dir.glob("yjit-metrics/timeline_report_types/*.rb", base: __dir__).each do |repo
 end
 
 module YJITMetrics
-    extend self # Make methods callable as YJITMetrics.method_name
+    include RepoManagement
 
-    include YJITMetrics::RepoManagement
-    # In Ruby 2.7.2, having extend self doesn't seem to extend YJITMetrics-the-object with the RepoManagement methods.
-    extend YJITMetrics::RepoManagement
+    extend self # Make methods callable as YJITMetrics.method_name
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
@@ -75,14 +74,23 @@ module YJITMetrics
       end
     end
 
-    # Checked system - error if the command fails
-    def check_call(command, verbose: false)
-        puts(command)
+    def chdir(dir, &block)
+      puts "### cd #{dir}"
+      Dir.chdir(dir, &block).tap do
+        puts "### cd #{Dir.pwd}" if block
+      end
+    end
 
-        if verbose
-            status = system(command, out: $stdout, err: :out)
-        else
-            status = system(command)
+    # Checked system - error if the command fails
+    def check_call(command)
+        # Use prefix to makes it easier to see in the log.
+        puts("## [#{Time.now}] #{command}")
+
+        status = nil
+        Benchmark.realtime do
+          status = system(command)
+        end.tap do |time|
+          printf "## (`#{command}` took %.2fs)\n", time
         end
 
         unless status

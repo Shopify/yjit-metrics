@@ -16,6 +16,7 @@
 
 START_TIME = Time.now
 
+require "benchmark"
 require "optparse"
 require "fileutils"
 require "etc"
@@ -529,7 +530,8 @@ end
 
 Dir.chdir(YJIT_BENCH_DIR) do
     all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
-        puts "Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"
+      Benchmark.realtime do
+        puts "## [#{Time.now}] Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"
 
         ruby = RUBY_CONFIGS[config][:build]
         ruby_opts = RUBY_CONFIGS[config][:opts]
@@ -605,6 +607,9 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
             intermediate_by_config[config].push json_path
         end
+      end.tap do |time|
+        printf "## took %.2fs for %s %s\n", time, config, bench_info[:name]
+      end
     end
 end
 
