@@ -67,7 +67,7 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
               yjit_data[stats_key] = entries.sum(0)
             elsif entries[0].is_a?(Float)
               yjit_data[stats_key] = entries.sum(0.0)
-            elsif entries[0].is_a?(Hash) && entries[0].values[0].is_a?(Integer)
+            elsif entries[0].is_a?(Hash) && entries[0].empty? || entries[0].values[0].is_a?(Integer)
               yjit_data[stats_key] = {}
               sub_keys = entries.flat_map(&:keys).uniq
               sub_keys.each do |sub_key|
