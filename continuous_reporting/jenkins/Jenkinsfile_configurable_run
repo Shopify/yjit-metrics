@@ -39,7 +39,6 @@ def scp(src, dest) {
 }
 
 results = [:]
-result_dir = "results"
 def benchmark_and_upload(arch) {
   // Use specified yjit-metrics repo and name
   ssh "YJIT_METRICS_REPO=${params.YJIT_METRICS_REPO} YJIT_METRICS_NAME=${params.YJIT_METRICS_VERSION} ym/yjit-metrics/continuous_reporting/gh_tasks/git_update_yjit_metrics_repo.sh"
@@ -51,6 +50,11 @@ def benchmark_and_upload(arch) {
   // runs when benchmarking succeeded but checking/reporting failed.
   results[arch] = ssh("BENCH_PARAMS=bench_params.json ym/yjit-metrics/continuous_reporting/gh_tasks/run_benchmarks.sh", [returnStatus: true])
 
+  result_dir = "results"
+  // Remove any leftover results from prior runs.
+  sh "rm -vrf ./$result_dir; mkdir -p $result_dir"
+
+  // Copy newly created data files to local dir for archiving.
   scp("$ssh_host:~/ym/yjit-metrics/${params.DATA_DIR}/'*.json'", "./${result_dir}/")
   archiveArtifacts(artifacts: "${result_dir}/*.json", allowEmptyArchive: true)
 
@@ -102,9 +106,6 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-x86', keyFileVariable: 'SSH_KEYFILE', usernameVariable: 'SSH_USER')]) {
                   script {
-                    // Remove any leftover results from prior runs.
-                    sh "rm -vrf ./$result_dir; mkdir -p $result_dir"
-
                     // Note: param-generation and benchmarking runs should NOT do a git clean to avoid wiping out successful benchmarking results, from
                     // runs when benchmarking succeeded but checking/reporting failed.
 
