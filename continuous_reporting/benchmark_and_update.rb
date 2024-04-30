@@ -40,16 +40,11 @@ BUILT_REPORTS_ROOT = YJITMetrics::ContinuousReporting::BUILT_REPORTS_ROOT
 RAW_BENCHMARK_ROOT = YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT
 
 YM_REPORT_DIR = File.expand_path "#{BUILT_REPORTS_ROOT}/_includes/reports/"
-if File.exist?(YM_REPORT_DIR)
+# NOTE: Variable warmup is currently disabled pending an investigation and refactor.
+VAR_WARMUP_FILE = if false # File.exist?(YM_REPORT_DIR)
     var_warmup_reports = Dir.glob(YM_REPORT_DIR + "/variable_warmup_*.warmup_settings.json").to_a
-    if var_warmup_reports.empty?
-        VAR_WARMUP_FILE = nil
-    else
-        # Grab the most recent
-        VAR_WARMUP_FILE = var_warmup_reports.sort[-1]
-    end
-else
-    VAR_WARMUP_FILE = nil
+    # Grab the most recent
+    var_warmup_reports.sort[-1]
 end
 
 def platform_for_config(config_name)
