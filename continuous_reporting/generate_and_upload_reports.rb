@@ -313,23 +313,27 @@ puts "Static site seems to build correctly. That means that GHPages should do th
 # Copy built _site directory into raw pages repo as a new single commit, to branch new_pages
 Dir.chdir GHPAGES_REPO
 puts "Switched to #{Dir.pwd}"
-YJITMetrics.check_call "git checkout empty"
-YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
-YJITMetrics.check_call "git checkout --orphan new_pages"
-YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
-YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
-YJITMetrics.check_call "touch .nojekyll"
-YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
-YJITMetrics.check_call "git add ."
-YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
-unless no_push
+# Currently this will only be true on the server.
+if File.exist?(".git")
+  YJITMetrics.check_call "git checkout empty"
+  YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
+  YJITMetrics.check_call "git checkout --orphan new_pages"
+  YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
+  YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
+  YJITMetrics.check_call "touch .nojekyll"
+  YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
+  YJITMetrics.check_call "git add ."
+  YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
+
+  unless no_push
     # Reset the pages branch to the new built site
     YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
     YJITMetrics.check_call "git push -f origin pages"
     YJITMetrics.check_call "git branch -D new_pages || echo ok" # Sometimes this fails for no obvious reason
-end
+  end
 
-YJITMetrics.check_call "git checkout empty"
+  YJITMetrics.check_call "git checkout empty"
+end
 
 puts "Finished generate_and_upload_reports successfully in #{YM_REPO}!"
