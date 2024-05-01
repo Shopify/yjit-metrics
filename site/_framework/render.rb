@@ -215,10 +215,10 @@ def build_site
   # symlinks. See https://stackoverflow.com/questions/357754/can-i-traverse-symlinked-directories-in-ruby-with-a-glob
   Dir["**{,/*/**}/*"].each do |repo_file|
     next if File.directory?(repo_file)
+    next if TOPLEVEL_SKIPPED.include?(repo_file)
 
     if repo_file[0] == "_"
       next if repo_file.start_with?("_site/")
-      next if TOPLEVEL_SKIPPED.include?(repo_file)
       next if SPECIAL_DIRS.any? { |dir| repo_file.start_with?(dir + "/") }
       next if COLLECTIONS.any? { |coll| repo_file.start_with?("_" + coll) }
       raise "Unexpected repo path starting with underscore: #{repo_file.inspect}"

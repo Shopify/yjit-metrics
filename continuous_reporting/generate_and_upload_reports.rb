@@ -322,7 +322,6 @@ if File.exist?(".git")
   YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
   YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
   YJITMetrics.check_call "touch .nojekyll"
-  YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
   YJITMetrics.check_call "git add ."
   YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
