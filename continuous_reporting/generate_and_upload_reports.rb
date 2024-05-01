@@ -11,11 +11,10 @@ require_relative "../lib/yjit-metrics"
 
 YM_REPO = YJITMetrics::ContinuousReporting::YM_REPO
 RAW_BENCHMARK_ROOT = YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT
-RAW_REPORTS_ROOT = YJITMetrics::ContinuousReporting::RAW_REPORTS_ROOT
 BUILT_REPORTS_ROOT = YJITMetrics::ContinuousReporting::BUILT_REPORTS_ROOT
 GHPAGES_REPO = YJITMetrics::ContinuousReporting::GHPAGES_REPO
 
-[RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
+[RAW_BENCHMARK_ROOT, BUILT_REPORTS_ROOT].each do |dir|
   unless File.exist?(dir)
     raise "We expected directory #{dir.inspect} to exist in order to generate reports!"
   end
@@ -285,11 +284,8 @@ unless die_on_regenerate
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
 end
 
-# Switch to raw-yjit-reports, which symlinks to the built reports
-Dir.chdir(RAW_REPORTS_ROOT)
+Dir.chdir("#{YM_REPO}/site")
 puts "Switched to #{Dir.pwd}"
-YJITMetrics.check_call "git checkout main && git pull"
-
 # Make sure it builds locally
 # Funny thing here - this picks up the Bundler config from this script, via env vars.
 # So it's important to include the kramdown gem, and others used in reporting, in
@@ -321,7 +317,7 @@ YJITMetrics.check_call "git checkout empty"
 YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
 YJITMetrics.check_call "git checkout --orphan new_pages"
 YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
-YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site/* ./"
+YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
 YJITMetrics.check_call "touch .nojekyll"
 YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
 YJITMetrics.check_call "git add ."
@@ -336,4 +332,4 @@ end
 
 YJITMetrics.check_call "git checkout empty"
 
-puts "Finished generate_and_upload_reports successfully in #{RAW_REPORTS_ROOT}!"
+puts "Finished generate_and_upload_reports successfully in #{YM_REPO}!"

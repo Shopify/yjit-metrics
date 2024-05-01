@@ -9,9 +9,6 @@ module YJITMetrics
     # Raw benchmark data gets written to a platform- and date-specific subdirectory, but will often be read from multiple subdirectories
     RAW_BENCHMARK_ROOT = File.join(YM_ROOT_DIR, "raw-benchmark-data")
 
-    # This contains Jekyll source files of various kinds - everything but the built reports
-    RAW_REPORTS_ROOT = File.join(YM_ROOT_DIR, "raw-yjit-reports")
-
     # We cache all the built per-run reports, which can take a long time to rebuild
     BUILT_REPORTS_ROOT = File.join(YM_ROOT_DIR, "built-yjit-reports")
 
