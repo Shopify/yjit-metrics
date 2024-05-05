@@ -60,6 +60,18 @@ class RenderContext
     render_file("_includes/#{path}", @metadata)
   end
 
+  PLATFORMS = %w[x86_64 aarch64]
+  PLATFORM_PATTERN = Regexp.union(PLATFORMS).to_s
+  def find_best(hash, pattern)
+    # There are several other keys that would match a more generic pattern so we
+    # specifically replace PLATFORM marker with possible values.
+    re = Regexp.compile(pattern.gsub(/PLATFORM/, PLATFORM_PATTERN))
+    # Get key/value pairs where key matches pattern for platforms.
+    pairs = hash.select { |k, v| k.to_s.match?(re) }
+    # If present use value with x86 key, else use whatever value we have.
+    (pairs.detect { |k,v| k.to_s.match?(/x86_64/) } || pairs.first)[1]
+  end
+
   def render_markdown(markdown)
     render_markdown(markdown)
   end
