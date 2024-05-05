@@ -543,7 +543,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         if @inactive
             # Can't get stats? Write an empty file.
             self.class.report_extensions.each do |ext|
-                File.open(filename + ".{@platform}.#{ext}", "w") { |f| f.write("") }
+                File.open(filename + ".#{@platform}.#{ext}", "w") { |f| f.write("") }
             end
             return
         end
