@@ -29,11 +29,11 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
-    PLATFORMS = ["x86_64", "arm", "aarch64"]
+    PLATFORMS = ["x86_64", "aarch64"]
 
-    uname_platform = `uname -m`.chomp.downcase
+    uname_platform = `uname -m`.chomp.downcase.sub(/^arm(\d+)$/, 'aarch\1')
     PLATFORM = PLATFORMS.detect { |platform| uname_platform.include?(platform) }
-    raise("yjit-metrics only supports running on x86_64 and arm64!") if !PLATFORM
+    raise("yjit-metrics only supports running on x86_64 and aarch64!") if !PLATFORM
 
     # This structure is returned by the benchmarking harness from a run.
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)

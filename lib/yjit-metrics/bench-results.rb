@@ -402,8 +402,11 @@ class YJITMetrics::ResultSet
                 raise "No arch provided in data file, and no x86_64 detected in RUBY_DESCRIPTION!"
             end
         end
-        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
-        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
+        recognized_platforms = YJITMetrics::PLATFORMS + ["arm64"]
+        ruby_meta["platform"] ||= recognized_platforms.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
+        ruby_meta["platform"] ||= recognized_platforms.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
+        raise "Uknown platform" if !ruby_meta["platform"]
+        ruby_meta["platform"].sub!(/^arm(\d+)$/, 'aarch\1')
         #@platform ||= ruby_meta["platform"]
 
         #if @platform != ruby_meta["platform"]
