@@ -208,6 +208,7 @@ def parse_collections
       item_data, _line, content = read_front_matter(File.join(base, file_w_frontmatter))
       item_data[:name] = file_w_frontmatter.split("/")[-1].gsub("_", "-") # Ah, Jekyll. There's probably some deep annoying meaning to why this is needed.
       item_data[:url] = "/#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
+      item_data[:url] += '.html' unless item_data[:url].end_with?('.html')
       item_data[:content] = content
       out[coll] << OpenStruct.new(item_data)
     end
