@@ -9,7 +9,6 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
     end
 
     NUM_RECENT=100
-    REPORT_PLATFORMS = ["x86_64", "aarch64"]
     def initialize(context)
         super
 
@@ -22,10 +21,10 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         time_format = "%Y %m %d %H %M %S"
 
         @series = {}
-        REPORT_PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
+        YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
         @context[:benchmark_order].each do |benchmark|
-            REPORT_PLATFORMS.each do |platform|
+            YJITMetrics::PLATFORMS.each do |platform|
                 yjit_config = "#{platform}_#{yjit_config_root}"
                 stats_config = "#{platform}_#{stats_config_root}"
                 no_jit_config = "#{platform}_#{no_jit_config_root}"
@@ -74,7 +73,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
         @stats_fields = @series.values[0][:all_time][0][:data][0].keys - [:time, :ruby_desc]
 
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks per-platform
-        REPORT_PLATFORMS.each do |platform|
+        YJITMetrics::PLATFORMS.each do |platform|
             yjit_config = "#{platform}_#{yjit_config_root}"
             # No Ruby desc for this? If so, that means no results for this platform
             next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config]
@@ -147,7 +146,7 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
 
     def write_files(out_dir)
         [:recent, :all_time].each do |duration|
-            REPORT_PLATFORMS.each do |platform|
+            YJITMetrics::PLATFORMS.each do |platform|
                 begin
                     @data_series = @series[platform][duration]
 

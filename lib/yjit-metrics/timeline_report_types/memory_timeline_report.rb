@@ -12,7 +12,6 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
     "MemoryTimelineReport<#{object_id}>"
   end
 
-  REPORT_PLATFORMS=["x86_64", "aarch64"]
   CONFIG_NAMES = {
     "no-jit" => "prod_ruby_no_jit",
     "yjit" => "prod_ruby_with_yjit",
@@ -28,7 +27,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
     time_format = "%Y %m %d %H %M %S"
 
     @series = {}
-    REPORT_PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
+    YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
     color_idx = 0
     @context[:benchmark_order].each.with_index do |benchmark, idx|
@@ -36,7 +35,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
         color = MUNIN_PALETTE[color_idx % MUNIN_PALETTE.size]
         color_idx += 1
 
-        REPORT_PLATFORMS.each do |platform|
+        YJITMetrics::PLATFORMS.each do |platform|
           config = "#{platform}_#{config_root}"
           points = @context[:timestamps].map do |ts|
             this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
@@ -66,7 +65,7 @@ class MemoryTimelineReport < YJITMetrics::TimelineReport
 
   def write_files(out_dir)
     [:recent, :all_time].each do |duration|
-      REPORT_PLATFORMS.each do |platform|
+      YJITMetrics::PLATFORMS.each do |platform|
         begin
           @data_series = @series[platform][duration].select { |s| CONFIG_ROOTS.any? { |config_root| s[:config].include?(config_root) } }
 

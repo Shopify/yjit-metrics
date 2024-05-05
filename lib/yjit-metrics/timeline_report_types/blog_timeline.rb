@@ -12,7 +12,6 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         "BlogTimelineReport<#{object_id}>"
     end
 
-    REPORT_PLATFORMS=["x86_64", "aarch64"]
     NUM_RECENT=100
     def initialize(context)
         super
@@ -23,11 +22,11 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
         time_format = "%Y %m %d %H %M %S"
 
         @series = {}
-        REPORT_PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
+        YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
         @context[:benchmark_order].each.with_index do |benchmark, idx|
             color = MUNIN_PALETTE[idx % MUNIN_PALETTE.size]
-            REPORT_PLATFORMS.each do |platform|
+            YJITMetrics::PLATFORMS.each do |platform|
                 config = "#{platform}_#{yjit_config_root}"
                 points = @context[:timestamps].map do |ts|
                     this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
@@ -56,7 +55,7 @@ class BlogTimelineReport < YJITMetrics::TimelineReport
 
     def write_files(out_dir)
         [:recent, :all_time].each do |duration|
-            REPORT_PLATFORMS.each do |platform|
+            YJITMetrics::PLATFORMS.each do |platform|
                 begin
                     @data_series = @series[platform][duration]
 
