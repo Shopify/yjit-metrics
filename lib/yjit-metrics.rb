@@ -32,7 +32,7 @@ module YJITMetrics
     PLATFORMS = ["x86_64", "aarch64"]
 
     uname_platform = `uname -m`.chomp.downcase.sub(/^arm(\d+)$/, 'aarch\1')
-    PLATFORM = PLATFORMS.detect { |platform| uname_platform.include?(platform) }
+    PLATFORM = PLATFORMS.detect { |platform| uname_platform == platform }
     raise("yjit-metrics only supports running on x86_64 and aarch64!") if !PLATFORM
 
     # This structure is returned by the benchmarking harness from a run.
