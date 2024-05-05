@@ -789,4 +789,17 @@ class YJITMetrics::TimelineReport
         @context = context
     end
 
+    # Look for "PLATFORM_#{name}"; prefer specified platform if present.
+    def find_config(name, platform: "x86_64")
+      matches = @context[:configs].select { |c| c.end_with?(name) }
+      matches.detect { |c| c.start_with?(platform) } || matches.first
+    end
+
+    # Strip PLATFORM from beginning of name
+    def platform_of_config(config)
+      YJITMetrics::PLATFORMS.each do |p|
+        return p if config.start_with?("#{p}_")
+      end
+      raise "Unknown platform in config '#{config}'"
+    end
 end

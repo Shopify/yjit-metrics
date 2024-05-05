@@ -88,7 +88,8 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
     def initialize(context)
         super
 
-        config_x86 = "x86_64_prod_ruby_with_yjit"
+        config = find_config("prod_ruby_with_yjit")
+        platform = platform_of_config(config)
 
         # This should match the JS parser in the template file
         time_format = "%Y %m %d %H %M %S"
@@ -96,9 +97,6 @@ class MiniTimelinesReport < YJITMetrics::TimelineReport
         @series = []
 
         @context[:selected_benchmarks].each do |benchmark|
-            platform = "x86_64"
-            config = config_x86
-
             points = @context[:timestamps].map do |ts|
                 this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
                 if this_point
