@@ -85,17 +85,17 @@ module YJITMetrics
     # Checked system - error if the command fails
     def check_call(command)
         # Use prefix to makes it easier to see in the log.
-        puts("## [#{Time.now}] #{command}")
+        puts("\e[33m## [#{Time.now}] #{command}\e[00m")
 
         status = nil
         Benchmark.realtime do
           status = system(command)
         end.tap do |time|
-          printf "## (`#{command}` took %.2fs)\n", time
+          printf "\e[34m## (`#{command}` took %.2fs)\e[00m\n", time
         end
 
         unless status
-            puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
+            puts "\e[31mCommand #{command.inspect} failed in directory #{Dir.pwd}\e[00m"
             raise RuntimeError.new
         end
     end
