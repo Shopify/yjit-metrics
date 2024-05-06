@@ -69,8 +69,8 @@ class YJITSpeedupTimelineReport < YJITMetrics::TimelineReport
             end
         end
 
-        # Grab the stats fields from the first stats point
-        @stats_fields = @series.values[0][:all_time][0][:data][0].keys - [:time, :ruby_desc]
+        # Grab the stats fields from the first stats point (for the first platform that has data).
+        @stats_fields = @series.values.reject { |v| v[:all_time].empty? }[0][:all_time][0][:data][0].keys - [:time, :ruby_desc]
 
         # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks per-platform
         YJITMetrics::PLATFORMS.each do |platform|
