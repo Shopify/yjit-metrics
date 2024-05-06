@@ -284,14 +284,8 @@ unless die_on_regenerate
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
 end
 
-Dir.chdir("#{YM_REPO}/site")
-puts "Switched to #{Dir.pwd}"
 # Make sure it builds locally
-# Funny thing here - this picks up the Bundler config from this script, via env vars.
-# So it's important to include the kramdown gem, and others used in reporting, in
-# the yjit-metrics Gemfile. Or you can run generate_and_upload_reports.rb from the
-# other directory, where it picks up the reporting Gemfile. That works too.
-YJITMetrics.check_call "bundle exec ruby -I./_framework _framework/render.rb build"
+YJITMetrics.check_call "site/exe build"
 
 puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
 

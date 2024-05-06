@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+def main(action)
+  Dir.chdir(File.expand_path("..", __dir__))
+
+  exec RbConfig.ruby, "-rbundler/setup", "site/_framework/render.rb", action
+end
+
+unless ARGV.size == 1
+  puts "Specify action of 'build' or 'serve'"
+  exit 1
+end
+
+main(ARGV.first)
