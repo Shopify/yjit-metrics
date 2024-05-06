@@ -3,6 +3,12 @@
 def main(action)
   Dir.chdir(File.expand_path("..", __dir__))
 
+  # Local dev.
+  if action == "serve"
+    system RbConfig.ruby, "continuous_reporting/file_benchmark_data_into_raw.rb", "-d", "data"
+    system RbConfig.ruby, "continuous_reporting/generate_and_upload_reports.rb"
+  end
+
   exec RbConfig.ruby, "-rbundler/setup", "site/_framework/render.rb", action
 end
 
