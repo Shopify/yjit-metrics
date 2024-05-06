@@ -166,7 +166,9 @@ end
 timestamps = json_timestamps.keys.sort
 timestamps.each do |ts|
     test_files = json_timestamps[ts]
+  if ENV['ALLOW_ARM_ONLY_REPORTS'] != '1'
     next unless test_files.any? { |tf| tf.include?("x86") } # Right now, ARM-only reports are very buggy.
+  end
     do_regenerate_year = regenerate_year && ts.start_with?(regenerate_year)
 
     REPORTS_AND_FILES.each do |report_name, details|
