@@ -122,6 +122,7 @@ def render_file_to_location(path, out_dir, metadata)
   steps = extensions.take_while { |ext| KNOWN_STEPS.include?(ext) }
   out_filename = out_dir + "/" + filename.delete_suffix("." + steps.reverse.join("."))
 
+  puts "## Rendering #{path}"
   front_matter_data, line_offset, file_content = read_front_matter(path)
 
   merged_metadata = front_matter_data.merge(metadata)
