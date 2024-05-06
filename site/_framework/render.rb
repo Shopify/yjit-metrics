@@ -5,8 +5,21 @@ require "yaml"
 require "fileutils"
 require "ostruct"
 
+REPO_DIR = File.expand_path("../../", __dir__)
+
+def find_dir(path)
+  server = File.expand_path("../#{path}", REPO_DIR)
+  local = File.expand_path("build/#{path}", REPO_DIR)
+  return server if File.exist?(server) && !File.exist?(local)
+  local
+end
+
 # For now, keep the equivalent of _config.yml in constants
+BUILT_YJIT_REPORTS = find_dir("built-yjit-reports")
 COLLECTIONS = [ "benchmarks" ]
+COLLECTION_BASES = {
+  "benchmarks" => BUILT_YJIT_REPORTS,
+}
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
 TOPLEVEL_SKIPPED = [ "_config.yml", "Gemfile", "Gemfile.lock" ]
 
@@ -57,7 +70,7 @@ class RenderContext
   def include(path)
     raise("Can't include nil or empty string!") if path.nil? || path.empty?
 
-    render_file("_includes/#{path}", @metadata)
+    render_file(File.join(BUILT_YJIT_REPORTS, "_includes", path), @metadata)
   end
 
   PLATFORMS = %w[x86_64 aarch64]
@@ -190,8 +203,8 @@ def parse_collections
   out = {}
   COLLECTIONS.each do |coll|
     out[coll] = []
-    Dir["_#{coll}/*.md"].each do |file_w_frontmatter|
-      item_data, _line, content = read_front_matter(file_w_frontmatter)
+    glob_with_base("_#{coll}/*.md", COLLECTION_BASES[coll]).each do |file_w_frontmatter, base|
+      item_data, _line, content = read_front_matter(File.join(base, file_w_frontmatter))
       item_data[:name] = file_w_frontmatter.split("/")[-1].gsub("_", "-") # Ah, Jekyll. There's probably some deep annoying meaning to why this is needed.
       item_data[:url] = "/#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
       item_data[:content] = content
@@ -201,8 +214,18 @@ def parse_collections
   out
 end
 
+def glob_with_base(glob, base)
+  Dir[glob, base: base].map { |f| [f, base] }
+end
+
+def find_files
+  glob_with_base('**/*', File.expand_path('..', __dir__)) +
+  glob_with_base('raw_benchmark_data/**/*', find_dir('raw-benchmark-data')) +
+  glob_with_base('reports/**/*', BUILT_YJIT_REPORTS)
+end
+
 def build_site
-  # cd to root of repo
+  # cd to root of builder dir
   Dir.chdir "#{__dir__}/.."
 
   # Remove old _site directory if present, and replace it with an empty one
@@ -213,8 +236,9 @@ def build_site
     require "yaml"
     autocopy = YAML.load(File.read("autocopy.yml"))
     autocopy.each do |src, dest|
-      FileUtils.mkdir_p File.expand_path(File.dirname(dest))
-      FileUtils.ln Dir.glob(src), dest, force: true
+      dest = File.expand_path(dest, BUILT_YJIT_REPORTS)
+      FileUtils.mkdir_p dest
+      FileUtils.ln glob_with_base(src, BUILT_YJIT_REPORTS).map { |f, b| File.join(b, f) }, dest, force: true
     end
   end
 
@@ -223,21 +247,21 @@ def build_site
   metadata = {}
   metadata[:site] = site_var
 
-  # Use a glob pattern that returns immediate children *and* follows one layer of
-  # symlinks. See https://stackoverflow.com/questions/357754/can-i-traverse-symlinked-directories-in-ruby-with-a-glob
-  Dir["**{,/*/**}/*"].each do |repo_file|
-    next if File.directory?(repo_file)
+  find_files.each do |repo_file, base|
+    full_path = File.join(base, repo_file)
+    next if File.directory?(full_path)
     next if TOPLEVEL_SKIPPED.include?(repo_file)
 
     if repo_file[0] == "_"
       next if repo_file.start_with?("_site/")
       next if SPECIAL_DIRS.any? { |dir| repo_file.start_with?(dir + "/") }
       next if COLLECTIONS.any? { |coll| repo_file.start_with?("_" + coll) }
+
       raise "Unexpected repo path starting with underscore: #{repo_file.inspect}"
     end
 
     out_dir = "_site/#{File.dirname repo_file}"
-    render_file_to_location(repo_file, out_dir, metadata)
+    render_file_to_location(full_path, out_dir, metadata)
   end
 
   # Now build entries for the collections
