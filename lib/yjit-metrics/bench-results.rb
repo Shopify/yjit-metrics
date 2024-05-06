@@ -32,6 +32,8 @@ module YJITMetrics::Stats
     end
 
     def stddev(values)
+        return 0 if values.size <= 1
+
         xbar = mean(values)
         diff_sqrs = values.map { |v| (v-xbar)*(v-xbar) }
         # Bessel's correction requires dividing by length - 1, not just length:
