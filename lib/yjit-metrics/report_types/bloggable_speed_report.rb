@@ -543,7 +543,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         if @inactive
             # Can't get stats? Write an empty file.
             self.class.report_extensions.each do |ext|
-                File.open(filename + ".{@platform}.#{ext}", "w") { |f| f.write("") }
+                File.open(filename + ".#{@platform}.#{ext}", "w") { |f| f.write("") }
             end
             return
         end
@@ -808,6 +808,15 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
     end
 
     def initialize(config_names, results, benchmarks: [])
+        # This report will only work with one platform at
+        # a time, so if we have yjit_stats for x86 prefer that one.
+        platform = "x86_64"
+        if results.configs_containing_full_yjit_stats.any? { |c| c.start_with?(platform) }
+          config_names = config_names.select { |c| c.start_with?(platform) }
+        else
+          platform = results.platforms.first
+        end
+
         # Set up the parent class, look up relevant data
         super
 
@@ -815,7 +824,7 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
 
         # This report can just run with one platform's data and everything's fine.
         # The iteration counts should be identical on other platforms.
-        look_up_data_by_ruby only_platforms: results.platforms[0]
+        look_up_data_by_ruby only_platforms: [platform]
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
@@ -861,7 +870,6 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
         html_output = script_template.result(binding)
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end
-
 end
 
 
@@ -931,7 +939,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
 
-            exit_report_url = "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_#{@timestamp_str}.#{bench_name}.html"
+            exit_report_url = "/reports/benchmarks/blog_exit_reports_#{@timestamp_str}.#{bench_name}.txt"
 
             bench_stats = @yjit_stats[bench_name][0]
 
@@ -980,7 +988,7 @@ class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
     end
 
     def self.report_extensions
-        ["bench_list.html"]
+        ["bench_list.txt"]
     end
 
     def write_file(filename)
@@ -993,11 +1001,11 @@ class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
         end
 
         @benchmark_names.each do |bench_name|
-            File.open("#{filename}.#{bench_name}.html", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
+            File.open("#{filename}.#{bench_name}.txt", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
         end
 
         # This is a file with a known name that we can look for when generating.
-        File.open("#{filename}.bench_list.html", "w") { |f| f.puts @benchmark_names.join("\n") }
+        File.open("#{filename}.bench_list.txt", "w") { |f| f.puts @benchmark_names.join("\n") }
     end
 end
 
@@ -1021,22 +1029,31 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         end
     end
 
+    X86_ONLY = ENV['ALLOW_ARM_ONLY_REPORTS'] != '1'
+
     def initialize(config_names, results, benchmarks: [])
         # Give the headline data for x86 processors, not ARM64.
         # No x86 data? Then no headline.
         x86_configs = config_names.select { |name| name.include?("x86_64") }
         if x86_configs.empty?
+          if X86_ONLY
             @no_data = true
             puts "WARNING: no x86_64 data for data: #{config_names.inspect}"
             return
+          end
+        else
+          config_names = x86_configs
         end
-        config_names = x86_configs
 
         # Set up the parent class, look up relevant data
         super
         return if @inactive # Can't get stats? Bail out.
 
-        look_up_data_by_ruby(only_platforms: ["x86_64"])
+        platform = "x86_64"
+        if !X86_ONLY && !results.platforms.include?(platform)
+          platform = results.platforms[0]
+        end
+        look_up_data_by_ruby(only_platforms: [platform])
 
         # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
         if @mjit_is_incomplete

@@ -19,6 +19,19 @@ class YJITMetrics::YJITStatsReport < YJITMetrics::Report
         # Take the specified reporting configurations and filter by which ones contain YJIT stats. The result should
         # be a single configuration to report on.
         filtered_stats_configs = results.configs_containing_full_yjit_stats & stats_configs
+
+        # The surrounding code seems to be from before we started running multiple platforms,
+        # so if that's what we have (multiple platforms) just limit to one so we can get the report.
+        if filtered_stats_configs.size > 1
+          # If the configs are the same but for different platforms, pick one.
+          # This regexp should be a constant but when this file is loaded
+          # the PLATFORMS constant hasn't been defined yet.
+          if filtered_stats_configs.map { |c| c.sub(/^#{Regexp.union(YJITMetrics::PLATFORMS)}_/, '') }.uniq.size == 1
+            x86 = filtered_stats_configs.select { |c| c.start_with?("x86_64") }
+            filtered_stats_configs = x86 unless x86.empty?
+          end
+        end
+
         @inactive = false
         if filtered_stats_configs.empty?
             puts "We didn't find any config with YJIT stats among #{stats_configs.inspect}!" if filtered_stats_configs.empty?

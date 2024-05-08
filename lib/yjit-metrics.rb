@@ -29,11 +29,11 @@ module YJITMetrics
 
     HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
-    PLATFORMS = ["x86_64", "arm", "aarch64"]
+    PLATFORMS = ["x86_64", "aarch64"]
 
-    uname_platform = `uname -m`.chomp.downcase
-    PLATFORM = PLATFORMS.detect { |platform| uname_platform.include?(platform) }
-    raise("yjit-metrics only supports running on x86_64 and arm64!") if !PLATFORM
+    uname_platform = `uname -m`.chomp.downcase.sub(/^arm(\d+)$/, 'aarch\1')
+    PLATFORM = PLATFORMS.detect { |platform| uname_platform == platform }
+    raise("yjit-metrics only supports running on x86_64 and aarch64!") if !PLATFORM
 
     # This structure is returned by the benchmarking harness from a run.
     JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
@@ -85,17 +85,17 @@ module YJITMetrics
     # Checked system - error if the command fails
     def check_call(command)
         # Use prefix to makes it easier to see in the log.
-        puts("## [#{Time.now}] #{command}")
+        puts("\e[33m## [#{Time.now}] #{command}\e[00m")
 
         status = nil
         Benchmark.realtime do
           status = system(command)
         end.tap do |time|
-          printf "## (`#{command}` took %.2fs)\n", time
+          printf "\e[34m## (`#{command}` took %.2fs)\e[00m\n", time
         end
 
         unless status
-            puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
+            puts "\e[31mCommand #{command.inspect} failed in directory #{Dir.pwd}\e[00m"
             raise RuntimeError.new
         end
     end

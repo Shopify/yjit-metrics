@@ -32,6 +32,8 @@ module YJITMetrics::Stats
     end
 
     def stddev(values)
+        return 0 if values.size <= 1
+
         xbar = mean(values)
         diff_sqrs = values.map { |v| (v-xbar)*(v-xbar) }
         # Bessel's correction requires dividing by length - 1, not just length:
@@ -402,8 +404,11 @@ class YJITMetrics::ResultSet
                 raise "No arch provided in data file, and no x86_64 detected in RUBY_DESCRIPTION!"
             end
         end
-        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
-        ruby_meta["platform"] ||= YJITMetrics::PLATFORMS.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
+        recognized_platforms = YJITMetrics::PLATFORMS + ["arm64"]
+        ruby_meta["platform"] ||= recognized_platforms.detect { |platform| (ruby_meta["uname -a"] || "").downcase.include?(platform) }
+        ruby_meta["platform"] ||= recognized_platforms.detect { |platform| (ruby_meta["arch"] || "").downcase.include?(platform) }
+        raise "Uknown platform" if !ruby_meta["platform"]
+        ruby_meta["platform"].sub!(/^arm(\d+)$/, 'aarch\1')
         #@platform ||= ruby_meta["platform"]
 
         #if @platform != ruby_meta["platform"]
@@ -786,4 +791,17 @@ class YJITMetrics::TimelineReport
         @context = context
     end
 
+    # Look for "PLATFORM_#{name}"; prefer specified platform if present.
+    def find_config(name, platform: "x86_64")
+      matches = @context[:configs].select { |c| c.end_with?(name) }
+      matches.detect { |c| c.start_with?(platform) } || matches.first
+    end
+
+    # Strip PLATFORM from beginning of name
+    def platform_of_config(config)
+      YJITMetrics::PLATFORMS.each do |p|
+        return p if config.start_with?("#{p}_")
+      end
+      raise "Unknown platform in config '#{config}'"
+    end
 end

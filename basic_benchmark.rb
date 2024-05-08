@@ -229,7 +229,7 @@ OptionParser.new do |opts|
 
     config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
     opts.on("--configs=CONFIGS", config_desc) do |configs|
-        configs_to_test = configs.split(",").map(&:strip).uniq
+        configs_to_test = configs.split(",").map(&:strip).map { |s| s.gsub('PLATFORM', YJITMetrics::PLATFORM) }.uniq
         bad_configs = configs_to_test - CONFIG_NAMES
         raise "Requested test configuration(s) don't exist: #{bad_configs.inspect}!\n\nLegal configs include: #{CONFIG_NAMES.inspect}" unless bad_configs.empty?
         wrong_platform_configs = configs_to_test - THIS_PLATFORM_CONFIGS

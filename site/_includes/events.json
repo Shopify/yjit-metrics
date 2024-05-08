@@ -1,0 +1,42 @@
+[
+  {
+    "time": "2022-01-26 22:00:00",
+    "description": "Drop in performance due to changing AWS instances"
+  },
+  {
+    "time": "2022-05-09 19:00:00",
+    "description": "Slowdown due to CRuby commit 85479b34f76d5b426c2a8"
+  },
+  {
+    "time": "2022-06-08 19:00:00",
+    "description": "Fix for May 9th slowdown, commit 8d57336360497e94"
+  },
+  {
+    "time": "2022-06-07 19:00:00",
+    "description": "Slowdown in some benchmarks due to configuring local Rubies with CC=clang"
+  },
+  {
+    "time": "2022-06-09 19:00:00",
+    "description": "Revert CC=clang config in yjit-metrics, fix June 7th slowdown"
+  },
+  {
+    "time": "2022-09-30 06:00:00",
+    "description": "ARM64 and yjit-metrics multiplatform changes; changes to warmup params; general benchmarking churn"
+  },
+  {
+    "time": "2023-01-10 08:00:00",
+    "description": "Several ActiveRecord benchmark changes in functionality, which resulted in lower speed"
+  },
+  {
+    "time": "2023-01-20 08:00:00",
+    "description": "Switchover to Jenkins, plus changes in warmup behaviour, though on same ARM AWS worker and different x86 AWS worker."
+  },
+  {
+    "time": "2023-03-01 12:22:00",
+    "description": "Added srand to yjit-metrics test harness"
+  },
+  {
+    "time": "2023-03-02 14:50:00",
+    "description": "Changed peak_mem_bytes to use /proc/smaps_rollup on Linux, not ps"
+  }
+]

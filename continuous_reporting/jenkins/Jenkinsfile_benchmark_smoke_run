@@ -17,6 +17,7 @@ pipeline {
     }
 
     environment {
+        BUNDLE_DEPLOYMENT = 'true'
         SLACK_OAUTH_TOKEN = credentials('684cd699-feae-4ef1-8483-e71440a73fcd')
         NOTIFIER_ARGS = "--template smoke_test --channels \"${params.SLACK_FAILURE_NOTIFY}\" --properties \"RUBY=${params.RUBY_VERSION},YJIT_BENCH=${params.YJIT_BENCH_VERSION},YJIT_METRICS=${params.YJIT_METRICS_VERSION}\""
     }

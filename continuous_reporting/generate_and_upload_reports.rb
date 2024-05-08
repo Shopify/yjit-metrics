@@ -11,11 +11,10 @@ require_relative "../lib/yjit-metrics"
 
 YM_REPO = YJITMetrics::ContinuousReporting::YM_REPO
 RAW_BENCHMARK_ROOT = YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT
-RAW_REPORTS_ROOT = YJITMetrics::ContinuousReporting::RAW_REPORTS_ROOT
 BUILT_REPORTS_ROOT = YJITMetrics::ContinuousReporting::BUILT_REPORTS_ROOT
 GHPAGES_REPO = YJITMetrics::ContinuousReporting::GHPAGES_REPO
 
-[RAW_BENCHMARK_ROOT, RAW_REPORTS_ROOT, BUILT_REPORTS_ROOT].each do |dir|
+[RAW_BENCHMARK_ROOT, BUILT_REPORTS_ROOT].each do |dir|
   unless File.exist?(dir)
     raise "We expected directory #{dir.inspect} to exist in order to generate reports!"
   end
@@ -52,7 +51,7 @@ REPORTS_AND_FILES = {
     },
     "blog_exit_reports" => {
         report_type: :basic_report,
-        extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but rarely with a fixed name.
+        extensions: [ "bench_list.txt" ], # Funny thing here - we generate a *lot* of exit report files, but rarely with a fixed name.
     },
     "iteration_count" => {
         report_type: :basic_report,
@@ -167,7 +166,9 @@ end
 timestamps = json_timestamps.keys.sort
 timestamps.each do |ts|
     test_files = json_timestamps[ts]
+  if ENV['ALLOW_ARM_ONLY_REPORTS'] != '1'
     next unless test_files.any? { |tf| tf.include?("x86") } # Right now, ARM-only reports are very buggy.
+  end
     do_regenerate_year = regenerate_year && ts.start_with?(regenerate_year)
 
     REPORTS_AND_FILES.each do |report_name, details|
@@ -285,17 +286,8 @@ unless die_on_regenerate
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
 end
 
-# Switch to raw-yjit-reports, which symlinks to the built reports
-Dir.chdir(RAW_REPORTS_ROOT)
-puts "Switched to #{Dir.pwd}"
-YJITMetrics.check_call "git checkout main && git pull"
-
 # Make sure it builds locally
-# Funny thing here - this picks up the Bundler config from this script, via env vars.
-# So it's important to include the kramdown gem, and others used in reporting, in
-# the yjit-metrics Gemfile. Or you can run generate_and_upload_reports.rb from the
-# other directory, where it picks up the reporting Gemfile. That works too.
-YJITMetrics.check_call "bundle exec ruby -I./_framework _framework/render.rb build"
+YJITMetrics.check_call "site/exe build"
 
 puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
 
@@ -317,23 +309,26 @@ puts "Static site seems to build correctly. That means that GHPages should do th
 # Copy built _site directory into raw pages repo as a new single commit, to branch new_pages
 Dir.chdir GHPAGES_REPO
 puts "Switched to #{Dir.pwd}"
-YJITMetrics.check_call "git checkout empty"
-YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
-YJITMetrics.check_call "git checkout --orphan new_pages"
-YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
-YJITMetrics.check_call "mv #{RAW_REPORTS_ROOT}/_site/* ./"
-YJITMetrics.check_call "touch .nojekyll"
-YJITMetrics.check_call "rm Gemfile Gemfile.lock" # Why aren't these excluded during render?
-YJITMetrics.check_call "git add ."
-YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
 
-unless no_push
+# Currently this will only be true on the server.
+if File.exist?(".git")
+  YJITMetrics.check_call "git checkout empty"
+  YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
+  YJITMetrics.check_call "git checkout --orphan new_pages"
+  YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
+  YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
+  YJITMetrics.check_call "touch .nojekyll"
+  YJITMetrics.check_call "git add ."
+  YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
+
+  unless no_push
     # Reset the pages branch to the new built site
     YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
     YJITMetrics.check_call "git push -f origin pages"
     YJITMetrics.check_call "git branch -D new_pages || echo ok" # Sometimes this fails for no obvious reason
+  end
+
+  YJITMetrics.check_call "git checkout empty"
 end
 
-YJITMetrics.check_call "git checkout empty"
-
-puts "Finished generate_and_upload_reports successfully in #{RAW_REPORTS_ROOT}!"
+puts "Finished generate_and_upload_reports successfully in #{YM_REPO}!"

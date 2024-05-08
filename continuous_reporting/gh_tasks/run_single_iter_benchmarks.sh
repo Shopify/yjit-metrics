@@ -12,6 +12,8 @@ chruby 3.0.2
 
 cd ~/ym/yjit-metrics
 
+bundle
+
 ruby continuous_reporting/benchmark_and_update.rb --benchmark-type smoketest --no-gh-issue --no-perf-tripwires --bench-params=$BENCH_PARAMS --data-dir=continuous_reporting/single_iter_data
 
 echo "Completed smoke-test benchmarking successfully."
