@@ -27,6 +27,8 @@ For that reason, where we-the-authors provide official numbers they will usually
 
 ## How to Use this Repo
 
+### Benchmark data
+
 You can run `./basic_benchmark.rb` to clone appropriate other repositories (yjit, yjit-bench) and run the benchmarks. You can also specify one or more benchmark names on the command line to run only those benchmarks: `./basic_benchmark.rb activerecord`
 
 `basic_benchmark.rb` also accepts many other parameters, such as a `--skip-git-updates` parameter for runs after the first to not "git pull" its repos and rebuild Ruby.
@@ -38,6 +40,24 @@ By default, `basic_benchmark`.rb will write JSON data files into the data direct
 Use `basic_report.rb --help` to get started. There are several different reports, and you can specify which data files to include and which benchmarks to show. By default `basic_report.rb` will load all data files that have the exact same, most recent timestamp. So if `basic_benchmark.rb` writes several files, `basic_report.rb` will use them all by default.
 
 You can find older examples of data-gathering scripts using `git log -- runners` (to see files that used to be in the "runners" directory) and post-processing scripts in the "formatters" directory.
+
+
+### speed.yjit.org site
+
+After collecting some data with `basic_benchmark.rb` you can generate the html
+site (hosted at speed.yjit.org) with a simple command:
+
+`site/exe serve`
+
+This will move files from `./data/` into a `build` directory,
+generate all the html files, and start a web server where you can view the site at `localhost:8000`.
+
+Some of the reports are built using `lib/yjit-metrics` and have templates in
+`lib/yjit-metrics/report_templates`.
+The rest of the files that build the site are found beneath `site`.
+There are `erb` files to generate additional pages
+and the script that does all the file rendering in `site/_framework/`.
+
 
 ## TruffleRuby
 
