@@ -808,6 +808,15 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
     end
 
     def initialize(config_names, results, benchmarks: [])
+        # This report will only work with one platform at
+        # a time, so if we have yjit_stats for x86 prefer that one.
+        platform = "x86_64"
+        if results.configs_containing_full_yjit_stats.any? { |c| c.start_with?(platform) }
+          config_names = config_names.select { |c| c.start_with?(platform) }
+        else
+          platform = results.platforms.first
+        end
+
         # Set up the parent class, look up relevant data
         super
 
@@ -815,7 +824,7 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
 
         # This report can just run with one platform's data and everything's fine.
         # The iteration counts should be identical on other platforms.
-        look_up_data_by_ruby only_platforms: results.platforms[0]
+        look_up_data_by_ruby only_platforms: [platform]
 
         # Sort benchmarks by headline/micro category, then alphabetically
         @benchmark_names.sort_by! { |bench_name|
@@ -861,7 +870,6 @@ class YJITMetrics::IterationCountReport < YJITMetrics::BloggableSingleReport
         html_output = script_template.result(binding)
         File.open(filename + ".html", "w") { |f| f.write(html_output) }
     end
-
 end
 
 
