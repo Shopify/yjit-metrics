@@ -51,7 +51,7 @@ REPORTS_AND_FILES = {
     },
     "blog_exit_reports" => {
         report_type: :basic_report,
-        extensions: [ "bench_list.html" ], # Funny thing here - we generate a *lot* of exit report files, but rarely with a fixed name.
+        extensions: [ "bench_list.txt" ], # Funny thing here - we generate a *lot* of exit report files, but rarely with a fixed name.
     },
     "iteration_count" => {
         report_type: :basic_report,

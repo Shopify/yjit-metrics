@@ -939,7 +939,7 @@ class YJITMetrics::BlogYJITStatsReport < YJITMetrics::BloggableSingleReport
                 bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
             end
 
-            exit_report_url = "https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_exit_reports_#{@timestamp_str}.#{bench_name}.html"
+            exit_report_url = "/reports/benchmarks/blog_exit_reports_#{@timestamp_str}.#{bench_name}.txt"
 
             bench_stats = @yjit_stats[bench_name][0]
 
@@ -988,7 +988,7 @@ class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
     end
 
     def self.report_extensions
-        ["bench_list.html"]
+        ["bench_list.txt"]
     end
 
     def write_file(filename)
@@ -1001,11 +1001,11 @@ class BlogStatsExitReports < YJITMetrics::BloggableSingleReport
         end
 
         @benchmark_names.each do |bench_name|
-            File.open("#{filename}.#{bench_name}.html", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
+            File.open("#{filename}.#{bench_name}.txt", "w") { |f| f.puts exit_report_for_benchmarks([bench_name]) }
         end
 
         # This is a file with a known name that we can look for when generating.
-        File.open("#{filename}.bench_list.html", "w") { |f| f.puts @benchmark_names.join("\n") }
+        File.open("#{filename}.bench_list.txt", "w") { |f| f.puts @benchmark_names.join("\n") }
     end
 end
 
