@@ -26,6 +26,7 @@ pipeline {
     }
 
     environment {
+        BUNDLE_DEPLOYMENT = 'true'
         SLACK_OAUTH_TOKEN = credentials('684cd699-feae-4ef1-8483-e71440a73fcd')
         NOTIFIER_ARGS = "--template build_status --channels \"${params.SLACK_FAILURE_NOTIFY}\""
     }

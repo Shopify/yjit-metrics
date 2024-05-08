@@ -29,6 +29,10 @@ pipeline {
         )
     }
 
+    environment {
+        BUNDLE_DEPLOYMENT = 'true'
+    }
+
     stages {
         // This stage commits and pushes the benchmark data from its directory, but doesn't get it there from yjit-metrics/continuous_reporting/data
         stage('data checkin') {

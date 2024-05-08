@@ -98,6 +98,10 @@ pipeline {
         )
     }
 
+    environment {
+      BUNDLE_DEPLOYMENT = 'true'
+    }
+
     stages {
         stage('generate_params') {
             environment {

@@ -11,6 +11,8 @@ chruby 3.0.2
 
 cd ~/ym/yjit-metrics
 
+bundle
+
 # Copy benchmark raw data into destination repo
 #ruby continuous_reporting/file_benchmark_data_into_raw.rb -d continuous_reporting/data
 

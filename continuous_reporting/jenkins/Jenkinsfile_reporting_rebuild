@@ -14,6 +14,7 @@ pipeline {
     agent any
 
     environment {
+        BUNDLE_DEPLOYMENT = 'true'
         SSH_HOST = credentials('2ea5f8cb-6fab-4454-b7cb-46ca2fd3cba7')
     }
 
