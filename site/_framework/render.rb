@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby -w
 
 require "erb"
+require "json"
 require "yaml"
 require "fileutils"
 require "ostruct"
@@ -71,6 +72,10 @@ class RenderContext
     raise("Can't include nil or empty string!") if path.nil? || path.empty?
 
     render_file(File.join(BUILT_YJIT_REPORTS, "_includes", path), @metadata)
+  end
+
+  def json(obj)
+    JSON.generate(obj)
   end
 
   PLATFORMS = %w[x86_64 aarch64]

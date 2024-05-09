@@ -129,7 +129,7 @@
       <%= content %>
       
       <script>
-        var platformsThisTimestamp = [ "<%= page.platforms.join '", "' %>" ];
+        var platformsThisTimestamp = <%= json(page.platforms) %>;
       
         // Create platform-selector DOM elements
         function addPlatformSelector(elt) {
