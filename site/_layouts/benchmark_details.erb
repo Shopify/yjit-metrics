@@ -85,12 +85,11 @@
       <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
 
       <ul>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.head.svg">Headlining benchmarks (x86_64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.svg">All benchmarks (x86_64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.x86_64.csv">CSV speed results (x86_64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.head.svg">Headlining benchmarks (AARCH64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.svg">All benchmarks (AARCH64)</a></li>
-        <li><a href="https://raw.githubusercontent.com/Shopify/yjit-metrics/pages/_includes/reports/blog_speed_details_<%= page.timestamp %>.aarch64.csv">CSV speed results (AARCH64)</a></li>
+        <% page.platforms.each do |platform| %>
+          <li><a href="/reports/platform_details/blog_speed_details_<%= page.timestamp %>.<%= platform %>.head.svg">Headlining benchmarks (<%= platform %>)</a></li>
+          <li><a href="/reports/platform_details/blog_speed_details_<%= page.timestamp %>.<%= platform %>.svg">All benchmarks (<%= platform %>)</a></li>
+          <li><a href="/reports/platform_details/blog_speed_details_<%= page.timestamp %>.<%= platform %>.csv">CSV speed results (<%= platform %>)</a></li>
+        <% end %>
       </ul>
 
       <h2 id="speed-table">Benchmarks Speed Details</h2>
