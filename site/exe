@@ -14,7 +14,7 @@ def main(action)
     system RbConfig.ruby, "continuous_reporting/generate_and_upload_reports.rb"
   end
 
-  exec RbConfig.ruby, "-rbundler/setup", "site/_framework/render.rb", action
+  exec RbConfig.ruby, "-rbundler/setup", "site/_framework/render.rb", "--no-build", action
 end
 
 unless ARGV.size == 1
