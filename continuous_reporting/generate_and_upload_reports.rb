@@ -250,7 +250,7 @@ timestamps.each do |ts|
 
         year, month, day, tm = ts.split("-")
         date_str = "#{year}-#{month}-#{day}"
-        time_str = "#{tm[0..1]}:#{tm[2..3]}:#{tm[4..5]}"
+        time_str = "#{tm[0..1]}:#{tm[2..3]}:#{tm[4..5]} UTC"
 
         bench_data = {
             "layout" => "benchmark_details",
