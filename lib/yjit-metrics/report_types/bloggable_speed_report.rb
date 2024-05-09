@@ -44,6 +44,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         raise "No data files for platform(s) #{only_platforms.inspect} in #{@config_names}!" if config_names.empty?
 
         @with_yjit_config = exactly_one_config_with_name(config_names, "with_yjit", "with-YJIT")
+        @with_prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
         @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
         @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
         @no_jit_config    = exactly_one_config_with_name(config_names, "no_jit", "no-JIT")
@@ -55,6 +56,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         ]
         @configs_with_human_names.push(["MJIT3.0", @with_mjit30_config]) if @with_mjit30_config
         @configs_with_human_names.push(["MJIT", @with_mjit_latest_config]) if @with_mjit_latest_config
+        @configs_with_human_names.push(["YJIT 3.3", @with_prev_yjit_config]) if @with_prev_yjit_config
         @configs_with_human_names.push(["YJIT", @with_yjit_config])
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
 

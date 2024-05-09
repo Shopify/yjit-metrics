@@ -26,6 +26,9 @@
 
 <p>
 	Tested Ruby version for YJIT and No-JIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% if @with_prev_yjit_config %>
+	Tested Ruby version for Ruby 3.3 YJIT: <tt><strong><%= @ruby_metadata_by_config[@with_prev_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% end %>
 <% if @with_mjit_latest_config %>
 	Tested Ruby version for Ruby latest MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_latest_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
 <% end %>

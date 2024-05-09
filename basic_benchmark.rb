@@ -96,6 +96,11 @@ RUBY_CONFIG_ROOTS = {
         opts: MJIT_ENABLED_OPTS + [ "--mjit-verbose=1" ],
         per_os_prefix: MJIT_PER_OS_OPTS,
     },
+    "prev_ruby_yjit" => {
+        build: "ruby-3.3.1",
+        opts: YJIT_ENABLED_OPTS,
+        per_os_prefix: YJIT_PER_OS_OPTS,
+    },
     "ruby_30" => {
         build: "ruby-3.0.2",
         opts: [],
@@ -138,7 +143,7 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit)
+DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit prev_ruby_yjit)
 configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
 bench_data = nil
 when_error = :report
@@ -297,6 +302,10 @@ RUBY_BUILDS = {
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prod"),
     },
+    "ruby-3.3.1" => {
+        install: "ruby-build",
+        full_clean: "rm -rf ~/.rubies/ruby-3.3.1",
+    },
     "ruby-3.0.0" => {
         install: "ruby-install",
         full_clean: "rm -rf ~/.rubies/ruby-3.0.0",
@@ -401,7 +410,7 @@ unless skip_git_updates
         when "ruby-build"
             next if installed_rubies.include?(ruby_build)
             puts "Installing Ruby #{ruby_build} via ruby-build..."
-            YJITMetrics.check_call("ruby-build #{ruby_build} ~/.rubies/#{ruby_build}")
+            YJITMetrics.check_call("ruby-build #{ruby_build} #{CHRUBY_RUBIES}/#{ruby_build}")
         when "repo"
             YJITMetrics.clone_ruby_repo_with \
                 path: build_info[:repo_path],
