@@ -190,6 +190,7 @@ class YJITMetrics::ResultSet
     # metadata?) and make sure the config does what it's labelled as.
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
         "with_yjit" => "YJIT",
+        "prev_ruby_yjit" => "YJIT 3.3",
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
         "no_jit" => "No JIT",
@@ -641,6 +642,9 @@ module YJITMetrics
             "x86_64_prod_ruby_with_yjit" => {
                 max_warmup_itrs: 30,
             },
+            "x86_64_prev_ruby_yjit" => {
+                max_warmup_itrs: 30,
+            },
             #"x86_64_prod_ruby_with_mjit" => {
             #    max_warmup_itrs: 75,
             #    max_warmup_time: 300, # in seconds; we try to let MJIT warm up "enough," but time and iters vary by workload
@@ -652,6 +656,9 @@ module YJITMetrics
                 max_warmup_itrs: 30,
             },
             "aarch64_prod_ruby_with_yjit" => {
+                max_warmup_itrs: 30,
+            },
+            "aarch64_prev_ruby_yjit" => {
                 max_warmup_itrs: 30,
             },
         },
