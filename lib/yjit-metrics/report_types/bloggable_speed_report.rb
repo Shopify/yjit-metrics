@@ -54,10 +54,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         @configs_with_human_names = [
             ["No JIT", @no_jit_config],
         ]
+        # TODO: get the ruby version from the description in the metadata
         @configs_with_human_names.push(["MJIT3.0", @with_mjit30_config]) if @with_mjit30_config
         @configs_with_human_names.push(["MJIT", @with_mjit_latest_config]) if @with_mjit_latest_config
         @configs_with_human_names.push(["YJIT 3.3", @with_prev_yjit_config]) if @with_prev_yjit_config
-        @configs_with_human_names.push(["YJIT", @with_yjit_config])
+        @configs_with_human_names.push(["YJIT 3.4dev", @with_yjit_config])
         @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
 
         # Grab relevant data from the ResultSet
