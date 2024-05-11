@@ -410,7 +410,10 @@ unless skip_git_updates
         when "ruby-build"
             next if installed_rubies.include?(ruby_build)
             puts "Installing Ruby #{ruby_build} via ruby-build..."
-            YJITMetrics.check_call("ruby-build #{ruby_build.sub(/^ruby-/, '')} #{CHRUBY_RUBIES}/#{ruby_build}")
+            Dir.chdir(RUBY_BUILD_DIR) do
+              YJITMetrics.check_call("git pull")
+              YJITMetrics.check_call("./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{CHRUBY_RUBIES}/#{ruby_build}")
+            end
         when "repo"
             YJITMetrics.clone_ruby_repo_with \
                 path: build_info[:repo_path],
