@@ -388,13 +388,9 @@ unless skip_git_updates
 
     need_ruby_build = builds_to_check.any? { |build| RUBY_BUILDS[build][:install] == "ruby-build" }
     if need_ruby_build
-        # ruby-build needs to be installed via sudo...
-        if `which ruby-build`.strip == ""
-            # No ruby-build installed. Make sure the repo is cloned and up to date, then tell the user to install it.
+        if !File.exist?(RUBY_BUILD_DIR)
             YJITMetrics.clone_repo_with path: RUBY_BUILD_DIR, git_url: RUBY_BUILD_GIT_URL, git_branch: RUBY_BUILD_GIT_BRANCH
 
-            puts "Ruby-build has been cloned to #{File.expand_path(RUBY_BUILD_DIR)}... From that directory, run 'sudo ./install.sh'."
-            exit -1
         end
     end
 
