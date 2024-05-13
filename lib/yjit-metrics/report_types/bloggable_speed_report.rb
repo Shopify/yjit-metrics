@@ -52,14 +52,15 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
-            ["No JIT", @no_jit_config],
-        ]
-        # TODO: get the ruby version from the description in the metadata
-        @configs_with_human_names.push(["MJIT3.0", @with_mjit30_config]) if @with_mjit30_config
-        @configs_with_human_names.push(["MJIT", @with_mjit_latest_config]) if @with_mjit_latest_config
-        @configs_with_human_names.push(["YJIT 3.3", @with_prev_yjit_config]) if @with_prev_yjit_config
-        @configs_with_human_names.push(["YJIT 3.4dev", @with_yjit_config])
-        @configs_with_human_names.push(["Truffle", @truffle_config]) if @truffle_config
+          ["No JIT", @no_jit_config],
+          ["MJIT3.0", @with_mjit30_config],
+          ["MJIT", @with_mjit_latest_config],
+          ["YJIT <version>", @with_prev_yjit_config],
+          ["YJIT <version>", @with_yjit_config],
+          ["Truffle", @truffle_config],
+        ].map do |(name, config)|
+          [name.sub(/<version>/, @result_set.ruby_version_for_config(config)), config] if config
+        end.compact
 
         # Grab relevant data from the ResultSet
         @times_by_config = {}
@@ -430,7 +431,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Set up the top legend with coloured boxes and Ruby config names
         top_legend_box_height = 0.03
-        top_legend_box_width = 0.08
+        top_legend_box_width = 0.1
         top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
         top_legend_item_width = plot_effective_width / n_configs

@@ -492,6 +492,16 @@ class YJITMetrics::ResultSet
         @ruby_metadata[config]
     end
 
+    def ruby_version_for_config(config)
+      return unless metadata = @ruby_metadata[config]
+
+      if (match = metadata["RUBY_DESCRIPTION"]&.match(/^(?:ruby\s+)?([0-9.]+\S*)/))
+        match[1]
+      else
+        metadata["RUBY_VERSION"]
+      end
+    end
+
     # What Ruby configurations does this ResultSet contain data for?
     def available_configs
         @ruby_metadata.keys
