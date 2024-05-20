@@ -284,9 +284,11 @@ end
 
 # Jekyll has various subcommands. Build and server are the two I care about.
 
+no_build = ARGV.delete("--no-build")
+
 if ARGV == ["server"] || ARGV == ["serve"]
   puts "Building site..."
-  build_site
+  build_site unless no_build
 
   require "webrick"
   doc_dir = File.join(__dir__, "../_site")
