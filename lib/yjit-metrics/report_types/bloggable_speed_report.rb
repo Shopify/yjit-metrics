@@ -44,6 +44,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         raise "No data files for platform(s) #{only_platforms.inspect} in #{@config_names}!" if config_names.empty?
 
         @with_yjit_config = exactly_one_config_with_name(config_names, "prod_ruby_with_yjit", "with-YJIT")
+        @prev_no_jit_config = exactly_one_config_with_name(config_names, "prev_ruby_no_jit", "prev-CRuby", none_okay: true)
         @with_prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
         @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
         @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
@@ -52,6 +53,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
+          ["CRuby <version>", @prev_no_jit_config],
           ["CRuby <version>", @no_jit_config],
           ["MJIT3.0", @with_mjit30_config],
           ["MJIT", @with_mjit_latest_config],
@@ -431,7 +433,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Set up the top legend with coloured boxes and Ruby config names
         top_legend_box_height = 0.03
-        top_legend_box_width = 0.1
+        top_legend_box_width = 0.12
         top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
         top_legend_item_width = plot_effective_width / n_configs

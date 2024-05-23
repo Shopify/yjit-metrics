@@ -194,6 +194,7 @@ class YJITMetrics::ResultSet
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
         "prod_ruby_no_jit" => "CRuby <version>",
+        "prev_ruby_no_jit" => "CRuby <version>",
         "truffleruby" => "TruffleRuby",
         "yjit_stats" => "YJIT <version> Stats",
     }
@@ -662,6 +663,9 @@ module YJITMetrics
             "x86_64_prod_ruby_with_yjit" => {
                 max_warmup_itrs: 30,
             },
+            "x86_64_prev_ruby_no_jit" => {
+                max_warmup_itrs: 30,
+            },
             "x86_64_prev_ruby_yjit" => {
                 max_warmup_itrs: 30,
             },
@@ -676,6 +680,9 @@ module YJITMetrics
                 max_warmup_itrs: 30,
             },
             "aarch64_prod_ruby_with_yjit" => {
+                max_warmup_itrs: 30,
+            },
+            "aarch64_prev_ruby_no_jit" => {
                 max_warmup_itrs: 30,
             },
             "aarch64_prev_ruby_yjit" => {
