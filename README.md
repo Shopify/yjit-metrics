@@ -39,7 +39,7 @@ By default, `basic_benchmark`.rb will write JSON data files into the data direct
 
 Use `basic_report.rb --help` to get started. There are several different reports, and you can specify which data files to include and which benchmarks to show. By default `basic_report.rb` will load all data files that have the exact same, most recent timestamp. So if `basic_benchmark.rb` writes several files, `basic_report.rb` will use them all by default.
 
-You can find older examples of data-gathering scripts using `git log -- runners` (to see files that used to be in the "runners" directory) and post-processing scripts in the "formatters" directory.
+You can find older examples of data-gathering scripts using `git log -- runners` (to see files that used to be in the "runners" directory) and `git log -- formatters` for post-processing scripts in the old "formatters" directory.
 
 
 ### speed.yjit.org site
