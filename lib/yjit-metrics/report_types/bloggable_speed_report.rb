@@ -43,23 +43,23 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         config_names = @config_names.select { |name| only_platforms.any? { |plat| name.include?(plat) } }
         raise "No data files for platform(s) #{only_platforms.inspect} in #{@config_names}!" if config_names.empty?
 
-        @with_yjit_config = exactly_one_config_with_name(config_names, "with_yjit", "with-YJIT")
+        @with_yjit_config = exactly_one_config_with_name(config_names, "prod_ruby_with_yjit", "with-YJIT")
         @with_prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
         @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
         @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
-        @no_jit_config    = exactly_one_config_with_name(config_names, "no_jit", "no-JIT")
+        @no_jit_config    = exactly_one_config_with_name(config_names, "prod_ruby_no_jit", "no-JIT")
         @truffle_config   = exactly_one_config_with_name(config_names, "truffleruby", "Truffle", none_okay: true)
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
-          ["No JIT", @no_jit_config],
+          ["CRuby <version>", @no_jit_config],
           ["MJIT3.0", @with_mjit30_config],
           ["MJIT", @with_mjit_latest_config],
           ["YJIT <version>", @with_prev_yjit_config],
           ["YJIT <version>", @with_yjit_config],
           ["Truffle", @truffle_config],
         ].map do |(name, config)|
-          [name.sub(/<version>/, @result_set.ruby_version_for_config(config)), config] if config
+          [@result_set.insert_version_for_config(name, config), config] if config
         end.compact
 
         # Grab relevant data from the ResultSet

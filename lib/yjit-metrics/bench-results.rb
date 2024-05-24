@@ -189,13 +189,13 @@ class YJITMetrics::ResultSet
     # to actually verify the configuration from the config's Ruby metadata (and other
     # metadata?) and make sure the config does what it's labelled as.
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
-        "with_yjit" => "YJIT",
-        "prev_ruby_yjit" => "YJIT 3.3",
+        "prod_ruby_with_yjit" => "YJIT <version>",
+        "prev_ruby_yjit" => "YJIT <version>",
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
-        "no_jit" => "No JIT",
-        "truffle" => "TruffleRuby",
-        "with_stats" => "YJIT Stats",
+        "prod_ruby_no_jit" => "CRuby <version>",
+        "truffleruby" => "TruffleRuby",
+        "yjit_stats" => "YJIT <version> Stats",
     }
     def table_of_configs_by_fragment(configs)
         configs_by_fragment = {}
@@ -215,6 +215,8 @@ class YJITMetrics::ResultSet
     # else we can determine from config names and/or result data. Only include configurations for which we have
     # results. Order by the req_configs order, if supplied, otherwise by order results were added in (internal
     # hash table order.)
+    # NOTE: This is currently only used by variable_warmup_report which discards the actual human names
+    # (it gets used to select and order the configs).
     def configs_with_human_names(req_configs = nil)
         # Only use requested configs for which we have data
         if req_configs
@@ -239,6 +241,8 @@ class YJITMetrics::ResultSet
             configs_by_platform[config_platform] << config
         end
 
+        # TODO: Get rid of this branch and the next and just use "human_name platform" consistently.
+
         # If each configuration only exists for a single platform, we'll use the platform names as human-readable names.
         if configs_by_platform.values.map(&:size).max == 1
             out = {}
@@ -261,8 +265,8 @@ class YJITMetrics::ResultSet
                 out = {}
                 # Order by req_configs
                 req_configs.each do |config|
-                    fragment = by_fragment.select { |frag, configs| configs[0] == config }
-                    human_name = CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment]
+                    fragment = by_fragment.detect { |frag, configs| configs[0] == config }.first
+                    human_name = insert_version_for_config(CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment], config)
                     out[human_name] = config
                 end
                 return out
@@ -288,6 +292,7 @@ class YJITMetrics::ResultSet
                 CONFIG_NAME_SPECIAL_CASE_FRAGMENTS.each do |fragment, human_name|
                     next unless frag_table[fragment]
                     single_config = frag_table[fragment][0]
+                    human_name = insert_version_for_config(human_name, single_config)
                     plat_frag_table[single_config] = "#{human_name} #{platform}"
                 end
             end
@@ -502,6 +507,10 @@ class YJITMetrics::ResultSet
       end
     end
 
+    def insert_version_for_config(str, config)
+      str.sub(/<version>/, ruby_version_for_config(config))
+    end
+
     # What Ruby configurations does this ResultSet contain data for?
     def available_configs
         @ruby_metadata.keys
@@ -634,6 +643,7 @@ class YJITMetrics::ResultSet
 end
 
 module YJITMetrics
+    # FIXME: Do we need this?
     # Default settings for Benchmark CI.
     # This is used by benchmark_and_update.rb for CI reporting directly.
     # It's also used by the VariableWarmupReport when selecting appropriate

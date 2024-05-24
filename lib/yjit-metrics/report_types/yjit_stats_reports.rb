@@ -220,16 +220,14 @@ class YJITMetrics::YJITStatsMultiRubyReport < YJITMetrics::YJITStatsReport
         super
 
         # We've figured out which config is the YJIT stats. Now which one is production stats with YJIT turned on?
-        # For now, let's assume it contains the string "with_yjit".
         alt_configs = config_names - [ @stats_config ]
-        with_yjit_configs = alt_configs.select { |name| name["with_yjit"] }
+        with_yjit_configs = alt_configs.select { |name| name.end_with?("prod_ruby_with_yjit") }
         raise "We found more than one candidate with-YJIT config (#{with_yjit_configs.inspect}) in this result set!" if with_yjit_configs.size > 1
         raise "We didn't find any config that looked like a with-YJIT config among #{config_names.inspect}!" if with_yjit_configs.empty?
         @with_yjit_config = with_yjit_configs[0]
 
-        # Now which one has no YJIT? Let's assume it contains the string "no_jit".
         alt_configs -= with_yjit_configs
-        no_yjit_configs = alt_configs.select { |name| name["no_jit"] }
+        no_yjit_configs = alt_configs.select { |name| name.end_with?("prod_ruby_no_jit") }
         raise "We found more than one candidate no-YJIT config (#{no_yjit_configs.inspect}) in this result set!" if no_yjit_configs.size > 1
         raise "We didn't find any config that looked like a no-YJIT config among #{config_names.inspect}!" if no_yjit_configs.empty?
         @no_yjit_config = no_yjit_configs[0]
