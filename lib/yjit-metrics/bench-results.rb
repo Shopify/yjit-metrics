@@ -215,6 +215,8 @@ class YJITMetrics::ResultSet
     # else we can determine from config names and/or result data. Only include configurations for which we have
     # results. Order by the req_configs order, if supplied, otherwise by order results were added in (internal
     # hash table order.)
+    # NOTE: This is currently only used by variable_warmup_report which discards the actual human names
+    # (it gets used to select and order the configs).
     def configs_with_human_names(req_configs = nil)
         # Only use requested configs for which we have data
         if req_configs
@@ -238,6 +240,8 @@ class YJITMetrics::ResultSet
             configs_by_platform[config_platform] ||= []
             configs_by_platform[config_platform] << config
         end
+
+        # TODO: Get rid of this branch and the next and just use "human_name platform" consistently.
 
         # If each configuration only exists for a single platform, we'll use the platform names as human-readable names.
         if configs_by_platform.values.map(&:size).max == 1
@@ -639,6 +643,7 @@ class YJITMetrics::ResultSet
 end
 
 module YJITMetrics
+    # FIXME: Do we need this?
     # Default settings for Benchmark CI.
     # This is used by benchmark_and_update.rb for CI reporting directly.
     # It's also used by the VariableWarmupReport when selecting appropriate
