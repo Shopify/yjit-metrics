@@ -189,12 +189,12 @@ class YJITMetrics::ResultSet
     # to actually verify the configuration from the config's Ruby metadata (and other
     # metadata?) and make sure the config does what it's labelled as.
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
-        "with_yjit" => "YJIT",
+        "prod_ruby_with_yjit" => "YJIT",
         "prev_ruby_yjit" => "YJIT 3.3",
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
-        "no_jit" => "No JIT",
-        "truffle" => "TruffleRuby",
+        "prod_ruby_no_jit" => "No JIT",
+        "truffleruby" => "TruffleRuby",
         "with_stats" => "YJIT Stats",
     }
     def table_of_configs_by_fragment(configs)

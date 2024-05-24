@@ -26,11 +26,11 @@ class TestBasicReporting < Minitest::Test
 
     def test_creating_yjit_stats_multi_ruby_report
         results = YJITMetrics::ResultSet.new
-        results.add_for_config "no_jit", JSON.load(File.read "test/data/2021-09-13-100043_basic_benchmark_prod_ruby_no_jit.json")
-        results.add_for_config "with_yjit", JSON.load(File.read "test/data/2021-09-13-100043_basic_benchmark_prod_ruby_with_yjit.json")
+        results.add_for_config "prod_ruby_no_jit", JSON.load(File.read "test/data/2021-09-13-100043_basic_benchmark_prod_ruby_no_jit.json")
+        results.add_for_config "prod_ruby_with_yjit", JSON.load(File.read "test/data/2021-09-13-100043_basic_benchmark_prod_ruby_with_yjit.json")
         results.add_for_config "with_stats", JSON.load(File.read "test/data/2021-09-13-100043_basic_benchmark_yjit_stats.json")
 
-        report = YJITMetrics::YJITStatsMultiRubyReport.new [ "no_jit", "with_yjit", "with_stats" ], results
+        report = YJITMetrics::YJITStatsMultiRubyReport.new [ "prod_ruby_no_jit", "prod_ruby_with_yjit", "with_stats" ], results
         report.to_s
     end
 
