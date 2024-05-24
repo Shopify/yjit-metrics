@@ -189,13 +189,13 @@ class YJITMetrics::ResultSet
     # to actually verify the configuration from the config's Ruby metadata (and other
     # metadata?) and make sure the config does what it's labelled as.
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
-        "prod_ruby_with_yjit" => "YJIT",
-        "prev_ruby_yjit" => "YJIT 3.3",
+        "prod_ruby_with_yjit" => "YJIT <version>",
+        "prev_ruby_yjit" => "YJIT <version>",
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
-        "prod_ruby_no_jit" => "No JIT",
+        "prod_ruby_no_jit" => "No JIT <version>",
         "truffleruby" => "TruffleRuby",
-        "yjit_stats" => "YJIT Stats",
+        "yjit_stats" => "YJIT <version> Stats",
     }
     def table_of_configs_by_fragment(configs)
         configs_by_fragment = {}
@@ -262,7 +262,7 @@ class YJITMetrics::ResultSet
                 # Order by req_configs
                 req_configs.each do |config|
                     fragment = by_fragment.detect { |frag, configs| configs[0] == config }.first
-                    human_name = CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment]
+                    human_name = insert_version_for_config(CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment], config)
                     out[human_name] = config
                 end
                 return out
@@ -288,6 +288,7 @@ class YJITMetrics::ResultSet
                 CONFIG_NAME_SPECIAL_CASE_FRAGMENTS.each do |fragment, human_name|
                     next unless frag_table[fragment]
                     single_config = frag_table[fragment][0]
+                    human_name = insert_version_for_config(human_name, single_config)
                     plat_frag_table[single_config] = "#{human_name} #{platform}"
                 end
             end
@@ -500,6 +501,10 @@ class YJITMetrics::ResultSet
       else
         metadata["RUBY_VERSION"]
       end
+    end
+
+    def insert_version_for_config(str, config)
+      str.sub(/<version>/, ruby_version_for_config(config))
     end
 
     # What Ruby configurations does this ResultSet contain data for?
