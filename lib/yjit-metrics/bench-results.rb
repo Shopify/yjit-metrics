@@ -261,7 +261,7 @@ class YJITMetrics::ResultSet
                 out = {}
                 # Order by req_configs
                 req_configs.each do |config|
-                    fragment = by_fragment.select { |frag, configs| configs[0] == config }
+                    fragment = by_fragment.detect { |frag, configs| configs[0] == config }.first
                     human_name = CONFIG_NAME_SPECIAL_CASE_FRAGMENTS[fragment]
                     out[human_name] = config
                 end
