@@ -195,7 +195,7 @@ class YJITMetrics::ResultSet
         "ruby_30_with_mjit" => "MJIT-3.0",
         "prod_ruby_no_jit" => "No JIT",
         "truffleruby" => "TruffleRuby",
-        "with_stats" => "YJIT Stats",
+        "yjit_stats" => "YJIT Stats",
     }
     def table_of_configs_by_fragment(configs)
         configs_by_fragment = {}

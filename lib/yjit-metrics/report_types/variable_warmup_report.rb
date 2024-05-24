@@ -34,7 +34,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
         config_order += configs.select { |c| c["prev_ruby_yjit"] }.sort # optional
         config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort
-        config_order += configs.select { |c| c["with_stats"] }.sort # Stats configs *also* take time to run
+        config_order += configs.select { |c| c["yjit_stats"] }.sort # Stats configs *also* take time to run
         @configs_with_human_names = @result_set.configs_with_human_names(config_order)
 
         # Grab relevant data from the ResultSet
