@@ -82,12 +82,8 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
 
     # Figure out how many iterations, warmup and non-, for each Ruby config and benchmark
     def iterations_for_configs_and_benchmarks(default_settings)
-        # Initial "blank" settings for each relevant config and benchmark
-        looked_up_configs = @configs_with_human_names.map { |_, config| config }.sort
-
         # Note: default_configs are config *roots*, not full configurations
         default_configs = default_settings["configs"].keys.sort
-        all_configs = (looked_up_configs + default_configs).uniq.sort
 
         warmup_settings = default_configs.to_h do |config|
             [ config, @benchmark_names.to_h do |bench_name|
