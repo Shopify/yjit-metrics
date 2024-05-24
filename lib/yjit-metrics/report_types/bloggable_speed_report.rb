@@ -162,10 +162,8 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
     def calc_mem_stats_by_config
         @peak_mb_by_config = {}
-        @mem_ratio_by_config = {}
         @configs_with_human_names.map { |name, config| config }.each do |config|
             @peak_mb_by_config[config] = []
-            @mem_ratio_by_config[config] = []
         end
         @mem_overhead_factor_by_benchmark = []
 
@@ -175,21 +173,12 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         one_mib = 1024 * 1024.0 # As a float
 
         @benchmark_names.each.with_index do |benchmark_name, idx|
-            no_jit_bytes = mean(@peak_mem_by_config[@no_jit_config][benchmark_name])
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_by_config[config].push nil
-                    if config != @no_jit_config
-                        @mem_ratio_by_config[config].push nil
-                    end
                 else
                     this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
                     @peak_mb_by_config[config].push(this_config_bytes / one_mib)
-
-                    # Total mem ratios - not currently displayed
-                    if config != @no_jit_config
-                        @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
-                    end
                 end
             end
 
@@ -709,7 +698,6 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
                 [ @inline_mem_used[idx], @outline_mem_used[idx] ]
                 #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
-                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
@@ -726,7 +714,6 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
                 [ @inline_mem_used[idx], @outline_mem_used[idx], @mem_overhead_factor_by_benchmark[idx] * 100.0 ]
                 #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
-                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
