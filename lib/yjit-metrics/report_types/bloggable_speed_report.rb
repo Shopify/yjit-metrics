@@ -52,7 +52,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
-          ["No JIT <version>", @no_jit_config],
+          ["CRuby <version>", @no_jit_config],
           ["MJIT3.0", @with_mjit30_config],
           ["MJIT", @with_mjit_latest_config],
           ["YJIT <version>", @with_prev_yjit_config],

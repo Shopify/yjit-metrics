@@ -193,7 +193,7 @@ class YJITMetrics::ResultSet
         "prev_ruby_yjit" => "YJIT <version>",
         "prod_ruby_with_mjit" => "MJIT",
         "ruby_30_with_mjit" => "MJIT-3.0",
-        "prod_ruby_no_jit" => "No JIT <version>",
+        "prod_ruby_no_jit" => "CRuby <version>",
         "truffleruby" => "TruffleRuby",
         "yjit_stats" => "YJIT <version> Stats",
     }
