@@ -2,6 +2,8 @@
 
 require_relative "test_helper"
 
+require "rbconfig"
+
 # This is a high-level integration test to execute the main ./basic_benchmark.rb entrypoint
 # and verify its behavior based on the data in the resulting output files.
 
@@ -35,6 +37,7 @@ class BasicBenchmarkScriptTest < Minitest::Test
   def run_script(args: [], configs: [])
     system(
       env,
+      RbConfig.ruby,
       @script,
       '--skip-git-updates',
       '--output', @output,

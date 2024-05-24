@@ -7,6 +7,7 @@ require 'net/http'
 
 require "yaml"
 require "optparse"
+require 'rbconfig'
 
 # TODO: should the benchmark-run and perf-check parts of this script be separated? Probably.
 
@@ -274,7 +275,7 @@ def run_benchmarks
         end
 
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
-        YJITMetrics.check_call "ruby basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
+        YJITMetrics.check_call "#{RbConfig.ruby} basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
     end
 end
 
@@ -283,7 +284,7 @@ def report_and_upload
         # This should copy the data directory into the Jekyll directories for generating reports,
         # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
         # GitHub tokens. The push can be done explicitly, later, not from this script.
-        YJITMetrics.check_call "ruby generate_and_upload_reports.rb -d data --no-push --no-report"
+        YJITMetrics.check_call "#{RbConfig.ruby} generate_and_upload_reports.rb -d data --no-push --no-report"
 
         # Delete the files from this run since they've now been processed.
         old_data_files = Dir["#{DATA_DIR}/*"].to_a
