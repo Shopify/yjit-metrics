@@ -1075,7 +1075,6 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         # "Ratio of total times" method
         #@yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
-        #@yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
 
         headline_runtimes = headline_benchmarks.map do |bench_name|
             bench_idx = @benchmark_names.index(bench_name)
