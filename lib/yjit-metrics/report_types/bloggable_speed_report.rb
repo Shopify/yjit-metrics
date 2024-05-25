@@ -44,14 +44,19 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         raise "No data files for platform(s) #{only_platforms.inspect} in #{@config_names}!" if config_names.empty?
 
         @with_yjit_config = exactly_one_config_with_name(config_names, "prod_ruby_with_yjit", "with-YJIT")
+        @prev_no_jit_config = exactly_one_config_with_name(config_names, "prev_ruby_no_jit", "prev-CRuby", none_okay: true)
         @with_prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
         @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
         @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
         @no_jit_config    = exactly_one_config_with_name(config_names, "prod_ruby_no_jit", "no-JIT")
         @truffle_config   = exactly_one_config_with_name(config_names, "truffleruby", "Truffle", none_okay: true)
 
+        # Prefer previous CRuby if present otherwise current CRuby.
+        @baseline_config = @prev_no_jit_config || @no_jit_config
+
         # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
         @configs_with_human_names = [
+          ["CRuby <version>", @prev_no_jit_config],
           ["CRuby <version>", @no_jit_config],
           ["MJIT3.0", @with_mjit30_config],
           ["MJIT", @with_mjit_latest_config],
@@ -111,7 +116,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @mean_by_config[config] = []
             @rsd_pct_by_config[config] = []
             @total_time_by_config[config] = 0.0
-            @speedup_by_config[config] = [] unless config == @no_jit_config
+            @speedup_by_config[config] = [] unless config == @baseline_config
         end
 
         @yjit_ratio = []
@@ -126,11 +131,11 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 @rsd_pct_by_config[config].push this_config_rel_stddev_pct
             end
 
-            no_jit_mean = @mean_by_config[@no_jit_config][-1] # Last pushed -- the one for this benchmark
-            no_jit_rel_stddev_pct = @rsd_pct_by_config[@no_jit_config][-1]
-            no_jit_rel_stddev = no_jit_rel_stddev_pct / 100.0  # Get ratio, not percent
+            baseline_mean = @mean_by_config[@baseline_config][-1] # Last pushed -- the one for this benchmark
+            baseline_rel_stddev_pct = @rsd_pct_by_config[@baseline_config][-1]
+            baseline_rel_stddev = baseline_rel_stddev_pct / 100.0  # Get ratio, not percent
             @configs_with_human_names.each do |name, config|
-                next if config == @no_jit_config
+                next if config == @baseline_config
 
                 this_config_mean = @mean_by_config[config][-1]
 
@@ -139,8 +144,8 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                 else
                     this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
                     this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
-                    speed_ratio = no_jit_mean / this_config_mean
-                    speed_rel_stddev = Math.sqrt(no_jit_rel_stddev * no_jit_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
+                    speed_ratio = baseline_mean / this_config_mean
+                    speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
                     @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
                 end
 
@@ -160,10 +165,8 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
     def calc_mem_stats_by_config
         @peak_mb_by_config = {}
-        @mem_ratio_by_config = {}
         @configs_with_human_names.map { |name, config| config }.each do |config|
             @peak_mb_by_config[config] = []
-            @mem_ratio_by_config[config] = []
         end
         @mem_overhead_factor_by_benchmark = []
 
@@ -173,23 +176,17 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
         one_mib = 1024 * 1024.0 # As a float
 
         @benchmark_names.each.with_index do |benchmark_name, idx|
-            no_jit_bytes = mean(@peak_mem_by_config[@no_jit_config][benchmark_name])
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_by_config[config].push nil
-                    if config != @no_jit_config
-                        @mem_ratio_by_config[config].push nil
-                    end
                 else
                     this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
                     @peak_mb_by_config[config].push(this_config_bytes / one_mib)
-
-                    # Total mem ratios - not currently displayed
-                    if config != @no_jit_config
-                        @mem_ratio_by_config[config].push(this_config_bytes / no_jit_bytes)
-                    end
                 end
             end
+
+            # Here we use @with_yjit_config and @no_jit_config directly (not @baseline_config)
+            # to compare the memory difference of yjit vs no_jit on the same version.
 
             yjit_mem_usage = @peak_mem_by_config[@with_yjit_config][benchmark_name].sum
             no_jit_mem_usage = @peak_mem_by_config[@no_jit_config][benchmark_name].sum
@@ -247,7 +244,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         @headings = [ "bench" ] +
             @configs_with_human_names.flat_map { |name, config| [ "#{name} (ms)", "#{name} RSD" ] } +
-            @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
+            @configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : [ "#{name} spd", "#{name} spd RSD" ] } +
             [ "% in YJIT" ]
         # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                                           # Benchmark name
@@ -275,7 +272,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         @benchmark_names.map.with_index do |bench_name, idx|
             [ bench_name ] +
                 @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_pct_by_config[config][idx] ] } +
-                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @speedup_by_config[config][idx] } +
+                @configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : @speedup_by_config[config][idx] } +
                 [ @yjit_ratio[idx] ]
         end
     end
@@ -291,7 +288,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             end
             [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
                 @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_pct_by_config[config][idx] ] } +
-                @configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @speedup_by_config[config][idx] } +
+                @configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : @speedup_by_config[config][idx] } +
                 [ @yjit_ratio[idx] ]
         end
     end
@@ -431,7 +428,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Set up the top legend with coloured boxes and Ruby config names
         top_legend_box_height = 0.03
-        top_legend_box_width = 0.1
+        top_legend_box_width = 0.12
         top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
         top_legend_item_width = plot_effective_width / n_configs
@@ -458,15 +455,15 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         benchmarks.each.with_index do |bench_name, bench_short_idx|
             bench_idx = @benchmark_names.index(bench_name)
 
-            no_jit_mean = @mean_by_config[@no_jit_config][bench_idx]
+            baseline_mean = @mean_by_config[@baseline_config][bench_idx]
 
             bars_width_start = bench_left_edge[bench_short_idx]
             ruby_configs.each.with_index do |config, config_idx|
                 human_name = ruby_human_names[config_idx]
 
-                if config == @no_jit_config
+                if config == @baseline_config
                     speedup = 1.0 # No-JIT is always exactly 1x No-JIT
-                    rsd_pct = @rsd_pct_by_config[@no_jit_config][bench_idx]
+                    rsd_pct = @rsd_pct_by_config[@baseline_config][bench_idx]
                 else
                     speedup, rsd_pct = @speedup_by_config[config][bench_idx]
                 end
@@ -690,7 +687,7 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
         @headings = [ "bench" ] +
             @configs_with_human_names.map { |name, config| "#{name} mem (MiB)"} +
             [ "Inline Code", "Outlined Code", "YJIT Mem overhead" ]
-            #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : [ "#{name} mem ratio" ] }
+            #@configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : [ "#{name} mem ratio" ] }
         # Col formats are only used when formatting entries for a text table, not for CSV
         @col_formats = [ "%s" ] +                               # Benchmark name
             [ "%d" ] * @configs_with_human_names.size +         # Mem usage per-Ruby
@@ -707,7 +704,6 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
                 [ @inline_mem_used[idx], @outline_mem_used[idx] ]
                 #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
-                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
@@ -724,7 +720,6 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
                 @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
                 [ @inline_mem_used[idx], @outline_mem_used[idx], @mem_overhead_factor_by_benchmark[idx] * 100.0 ]
                 #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]
-                #@configs_with_human_names.flat_map { |name, config| config == @no_jit_config ? [] : @mem_ratio_by_config[config][idx] }
         end
     end
 
@@ -1076,9 +1071,10 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
         calc_speed_stats_by_config
 
+        # For these ratios we compare current yjit and no_jit directly (not @baseline_config).
+
         # "Ratio of total times" method
         #@yjit_vs_cruby_ratio = @total_time_by_config[@no_jit_config] / @total_time_by_config[@with_yjit_config]
-        #@yjit_vs_mjit_ratio = @total_time_by_config[@with_mjit_config] / @total_time_by_config[@with_yjit_config]
 
         headline_runtimes = headline_benchmarks.map do |bench_name|
             bench_idx = @benchmark_names.index(bench_name)

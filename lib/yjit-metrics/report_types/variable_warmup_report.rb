@@ -30,7 +30,9 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         # It matters because we want the output reports to be stable with no churn in Git.
         bench_configs = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"]
         configs = @result_set.config_names
-        config_order = configs.select { |c| c["prod_ruby_no_jit"] }.sort
+        config_order = []
+        config_order += configs.select { |c| c["prev_ruby_no_jit"] }.sort # optional
+        config_order += configs.select { |c| c["prod_ruby_no_jit"] }.sort
         config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
         config_order += configs.select { |c| c["prev_ruby_yjit"] }.sort # optional
         config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort

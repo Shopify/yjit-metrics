@@ -46,6 +46,8 @@ YJIT_PER_OS_OPTS = SETARCH_OPTS
 MJIT_PER_OS_OPTS = SETARCH_OPTS
 TRUFFLE_PER_OS_OPTS = {}
 
+PREV_RUBY_BUILD = "ruby-3.3.1"
+
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
 # that partially define a configuration.
@@ -96,8 +98,13 @@ RUBY_CONFIG_ROOTS = {
         opts: MJIT_ENABLED_OPTS + [ "--mjit-verbose=1" ],
         per_os_prefix: MJIT_PER_OS_OPTS,
     },
+    "prev_ruby_no_jit" => {
+        build: PREV_RUBY_BUILD,
+        opts: NO_JIT_OPTS,
+        per_os_prefix: CRUBY_PER_OS_OPTS,
+    },
     "prev_ruby_yjit" => {
-        build: "ruby-3.3.1",
+        build: PREV_RUBY_BUILD,
         opts: YJIT_ENABLED_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
@@ -143,7 +150,7 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit prev_ruby_yjit)
+DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit prev_ruby_yjit prev_ruby_no_jit)
 configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
 bench_data = nil
 when_error = :report
