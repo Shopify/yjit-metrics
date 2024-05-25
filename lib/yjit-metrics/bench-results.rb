@@ -694,7 +694,7 @@ module YJITMetrics
         "min_bench_time" => 20,
         "min_warmup_itrs" => 5,
         "max_warmup_itrs" => 75,
-        "max_itr_time" => 480 * 60,  # Used to stop at 300 minutes to avoid GHActions 360 min cutoff. Now the 7pm run needs to not overlap the 6am run.
+        "max_itr_time" => 8 * 3600,  # Used to stop at 300 minutes to avoid GHActions 360 min cutoff. Now the 7pm run needs to not overlap the 6am run.
     }
 end
 
