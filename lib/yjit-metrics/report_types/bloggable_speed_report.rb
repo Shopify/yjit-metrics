@@ -340,6 +340,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         plot_bottom_edge = 1.0 - bottom_key_height
         plot_width = 1.0 - left_axis_width - right_whitespace
         plot_height = 1.0 - bottom_key_height - top_whitespace
+        plot_right_edge = 1.0 - right_whitespace
 
         svg.rect x: ratio_to_x(plot_left_edge), y: ratio_to_y(plot_top_edge),
             width: ratio_to_x(plot_width), height: ratio_to_y(plot_height),
@@ -374,7 +375,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         plot_effective_width = plot_width * (1.0 - 2 * plot_padding_ratio)
         plot_effective_left = plot_left_edge + plot_width * plot_padding_ratio
         each_bench_width = plot_effective_width / n_benchmarks
-        bar_width = each_bench_width / (n_configs + 1)
+        bar_width = each_bench_width / n_configs
 
         first_bench_left_edge = plot_left_edge + (plot_width * plot_padding_ratio)
         bench_left_edge = (0...n_benchmarks).map { |idx| first_bench_left_edge + idx * each_bench_width }
@@ -418,12 +419,28 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
                 x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
                 stroke: axis_colour
-            svg.text ("%.1f" % div_value),
+            if div_value == 1.0
+              text_opts = {
+                x: ratio_to_x((plot_left_edge - tick_length) / 2),
+                text_anchor: "middle",
+                font_weight: "bold",
+                font_size: "x-small",
+                fill: text_colour
+              }
+              svg.text "CRuby",
+                y: ratio_to_y(tick_y),
+                **text_opts
+              svg.text @result_set.ruby_version_for_config(@baseline_config),
+                y: ratio_to_y(tick_y).to_f + ratio_to_y(0.0175).to_f,
+                **text_opts
+            else
+              svg.text ("%.1f" % div_value),
                 x: ratio_to_x(plot_left_edge - 3 * tick_length), y: ratio_to_y(tick_y),
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
                 fill: text_colour
+            end
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
@@ -431,9 +448,15 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         top_legend_box_width = 0.12
         top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
-        top_legend_item_width = plot_effective_width / n_configs
-        n_configs.times do |config_idx|
-            item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
+
+        # Don't add a legend label for the baseline config (the label for that is on the axis).
+        legend_config_indices = n_configs.times.reject { |i| @configs_with_human_names[i][1] == @baseline_config }
+        # Offset by 1 if we removed a label, 0 if we didn't.
+        config_index_offset = n_configs - legend_config_indices.size
+
+        top_legend_item_width = plot_effective_width / legend_config_indices.size
+        legend_config_indices.each do |config_idx|
+            item_center_x = plot_effective_left + top_legend_item_width * (config_idx - config_index_offset + 0.5)
             item_center_y = plot_top_edge + 0.025
             svg.rect \
                 x: ratio_to_x(item_center_x - 0.5 * top_legend_box_width),
@@ -450,6 +473,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 fill: top_legend_text_colour
         end
 
+        baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
 
         # Okay. Now let's plot a lot of boxes and whiskers.
         benchmarks.each.with_index do |bench_name, bench_short_idx|
@@ -482,6 +506,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     bar_right = bar_left + bar_width
                     bar_lr_center = bar_left + 0.5 * bar_width
                     bar_top = plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height
+
+                    if config == @baseline_config
+                      next
+                    end
+
                     svg.rect \
                         x: ratio_to_x(bar_left),
                         y: ratio_to_y(bar_top),
@@ -523,6 +552,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 text_anchor: "end",
                 transform: "rotate(-60, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
         end
+
+        # Horizontal line for baseline of CRuby at 1.0.
+        svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: axis_colour
 
         svg
     end
