@@ -4,6 +4,7 @@ require "json"
 require "yaml"
 require "fileutils"
 require "optparse"
+require "rbconfig"
 
 require_relative "../lib/yjit-metrics"
 
@@ -202,7 +203,7 @@ timestamps.each do |ts|
             reason ||= "we're missing files: #{missing_files.inspect}"
 
             puts "Running basic_report for timestamp #{ts} because #{reason} with data files #{test_files.inspect}"
-            YJITMetrics.check_call("ruby #{YM_REPO}/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
+            YJITMetrics.check_call("#{RbConfig.ruby} #{YM_REPO}/basic_report.rb -d #{RAW_BENCHMARK_ROOT} --report=#{report_name} -o #{BUILT_REPORTS_ROOT}/_includes/reports -w #{test_files.join(" ")}")
 
             rf = basic_report_filenames(report_name, ts)
             files_not_found = rf.select { |f| !File.exist? f }
@@ -280,7 +281,7 @@ unless die_on_regenerate
 
     # It's possible to run only specific non-timeline reports -- then this would be empty.
     unless timeline_reports.empty?
-        YJITMetrics.check_call("ruby #{YM_REPO}/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
+        YJITMetrics.check_call("#{RbConfig.ruby} #{YM_REPO}/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
     end
 
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
