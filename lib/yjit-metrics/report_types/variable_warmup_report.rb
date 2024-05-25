@@ -36,9 +36,7 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
         config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
         config_order += configs.select { |c| c["prev_ruby_yjit"] }.sort # optional
         config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort
-        # TODO: Something about this calculation is off, when we include the
-        # data from the stats config it overestimates the time spent.
-        # config_order += configs.select { |c| c["yjit_stats"] }.sort # Stats configs *also* take time to run
+        config_order += configs.select { |c| c["yjit_stats"] }.sort # Stats configs *also* take time to run
         @configs_with_human_names = @result_set.configs_with_human_names(config_order)
 
         # Grab relevant data from the ResultSet
@@ -165,9 +163,9 @@ class YJITMetrics::VariableWarmupReport < YJITMetrics::Report
 
             # Do we need to reduce the time taken?
             if est_time > default_settings["max_itr_time"]
-                puts "Maximum allowed time: #{default_settings["max_itr_time"].inspect}sec"
-                puts "Estimated run time on #{platform}: #{est_time.inspect}sec"
-                raise "This is where logic to do something statistical and clever would go!"
+                warn "Maximum allowed time: #{default_settings["max_itr_time"].inspect}sec"
+                warn "Estimated run time on #{platform}: #{est_time.inspect}sec"
+                warn "This is where logic to do something statistical and clever would go!"
             end
         end
 
