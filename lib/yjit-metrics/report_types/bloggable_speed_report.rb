@@ -351,6 +351,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         ruby_configs = @configs_with_human_names.map { |name, config| config }
         ruby_human_names = @configs_with_human_names.map(&:first)
         ruby_config_bar_colour = Hash[ruby_configs.zip(RUBY_BAR_COLOURS)]
+        baseline_colour = ruby_config_bar_colour[@baseline_config]
         n_configs = ruby_configs.size
         n_benchmarks = benchmarks.size
 
@@ -419,28 +420,12 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
                 x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
                 stroke: axis_colour
-            if div_value == 1.0
-              text_opts = {
-                x: ratio_to_x((plot_left_edge - tick_length) / 2),
-                text_anchor: "middle",
-                font_weight: "bold",
-                font_size: "x-small",
-                fill: text_colour
-              }
-              svg.text "CRuby",
-                y: ratio_to_y(tick_y),
-                **text_opts
-              svg.text @result_set.ruby_version_for_config(@baseline_config),
-                y: ratio_to_y(tick_y).to_f + ratio_to_y(0.0175).to_f,
-                **text_opts
-            else
-              svg.text ("%.1f" % div_value),
+            svg.text ("%.1f" % div_value),
                 x: ratio_to_x(plot_left_edge - 3 * tick_length), y: ratio_to_y(tick_y),
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
                 fill: text_colour
-            end
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
@@ -449,14 +434,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         top_legend_text_height = 0.025  # Turns out we can't directly specify this...
         legend_box_stroke_colour = "#888"
 
-        # Don't add a legend label for the baseline config (the label for that is on the axis).
-        legend_config_indices = n_configs.times.reject { |i| @configs_with_human_names[i][1] == @baseline_config }
-        # Offset by 1 if we removed a label, 0 if we didn't.
-        config_index_offset = n_configs - legend_config_indices.size
-
-        top_legend_item_width = plot_effective_width / legend_config_indices.size
-        legend_config_indices.each do |config_idx|
-            item_center_x = plot_effective_left + top_legend_item_width * (config_idx - config_index_offset + 0.5)
+        top_legend_item_width = plot_effective_width / n_configs
+        n_configs.times do |config_idx|
+            item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
             item_center_y = plot_top_edge + 0.025
             svg.rect \
                 x: ratio_to_x(item_center_x - 0.5 * top_legend_box_width),
@@ -554,7 +534,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
 
         # Horizontal line for baseline of CRuby at 1.0.
-        svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: axis_colour
+        svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: baseline_colour
 
         svg
     end
