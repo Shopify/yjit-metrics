@@ -458,7 +458,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
-                fill: legend_text_color
+                fill: legend_text_color,
+                **(legend_text_color == Theme.text_on_bar_color ? Theme.legend_text_attrs : {})
         end
 
         baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
