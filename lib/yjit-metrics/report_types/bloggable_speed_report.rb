@@ -427,7 +427,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         top_legend_box_height = 0.032
         top_legend_box_width = 0.12
         top_legend_text_height = 0.015
-        legend_box_stroke_colour = "#888"
 
         top_legend_item_width = plot_effective_width / n_configs
         n_configs.times do |config_idx|
@@ -452,7 +451,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 width: ratio_to_x(top_legend_box_width),
                 height: ratio_to_y(top_legend_box_height),
                 fill: ruby_config_bar_colour[ruby_configs[config_idx]],
-                stroke: legend_box_stroke_colour
+                **Theme.legend_box_attrs
             end
             svg.text @configs_with_human_names[config_idx][0],
                 x: ratio_to_x(item_center_x),
