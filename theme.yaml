@@ -9,10 +9,10 @@ bar_chart_colors:
   - '#DC267F'
   - '#FE6100'
 
-axis_color: "#000"
-background_color: "#EEE"
+axis_color: &axis_color "#000"
+background_color: &background_color "#EEE"
 text_color: "#111"
-text_on_bar_color: "#EEE"
+text_on_bar_color: *background_color
 
 legend_box_attrs:
   stroke: "#888"
