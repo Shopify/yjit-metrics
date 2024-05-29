@@ -352,6 +352,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         ruby_human_names = @configs_with_human_names.map(&:first)
         ruby_config_bar_colour = Hash[ruby_configs.zip(RUBY_BAR_COLOURS)]
         baseline_colour = ruby_config_bar_colour[@baseline_config]
+        baseline_strokewidth = 2
         n_configs = ruby_configs.size
         n_benchmarks = benchmarks.size
 
@@ -438,19 +439,34 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         n_configs.times do |config_idx|
             item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
             item_center_y = plot_top_edge + 0.025
-            svg.rect \
+            this_top_legend_text_colour = top_legend_text_colour
+            if @configs_with_human_names[config_idx][1] == @baseline_config
+              this_top_legend_text_colour = axis_colour
+              left = item_center_x - 0.5 * top_legend_box_width
+              y = item_center_y - 0.5 * top_legend_box_height + top_legend_box_height
+              svg.line \
+                x1: ratio_to_x(left),
+                y1: ratio_to_y(y),
+                x2: ratio_to_x(left + top_legend_box_width),
+                y2: ratio_to_y(y),
+                stroke: baseline_colour,
+                "stroke-width": 2
+            else
+              svg.rect \
                 x: ratio_to_x(item_center_x - 0.5 * top_legend_box_width),
                 y: ratio_to_y(item_center_y - 0.5 * top_legend_box_height),
                 width: ratio_to_x(top_legend_box_width),
                 height: ratio_to_y(top_legend_box_height),
                 fill: ruby_config_bar_colour[ruby_configs[config_idx]],
                 stroke: legend_box_stroke_colour
+            end
             svg.text @configs_with_human_names[config_idx][0],
-                x: ratio_to_x(item_center_x), y: ratio_to_y(item_center_y + 0.5 * top_legend_text_height),
+                x: ratio_to_x(item_center_x),
+                y: ratio_to_y(item_center_y + 0.5 * top_legend_text_height),
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
-                fill: top_legend_text_colour
+                fill: this_top_legend_text_colour
         end
 
         baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
@@ -534,7 +550,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
 
         # Horizontal line for baseline of CRuby at 1.0.
-        svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: baseline_colour
+        svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: baseline_colour, "stroke-width": baseline_strokewidth
 
         svg
     end
