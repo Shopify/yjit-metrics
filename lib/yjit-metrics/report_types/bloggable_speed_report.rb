@@ -424,9 +424,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
-        top_legend_box_height = 0.03
+        top_legend_box_height = 0.032
         top_legend_box_width = 0.12
-        top_legend_text_height = 0.025  # Turns out we can't directly specify this...
+        top_legend_text_height = 0.015
         legend_box_stroke_colour = "#888"
 
         top_legend_item_width = plot_effective_width / n_configs
