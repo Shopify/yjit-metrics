@@ -319,7 +319,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             :xmlns => "http://www.w3.org/2000/svg",
             "xmlns:xlink" => "http://www.w3.org/1999/xlink"  # background: '#ddd'
 
-
         # Reserve some width on the left for the axis. Include a bit of right-side whitespace.
         left_axis_width = 0.05
         right_whitespace = 0.01
@@ -512,14 +511,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     top_whisker_y = bar_top - stddev_ratio * plot_effective_height
                     svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
                         x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                     bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
                     svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
                         x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                     svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
                         x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                 end
             end
 
