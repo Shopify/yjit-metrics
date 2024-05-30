@@ -1,0 +1,25 @@
+---
+# Assigned in order to each version of ruby shown in bar charts.
+bar_chart_colors:
+  # reordered IBM Palette: https://davidmathlogic.com/colorblind/#%23648FFF-%23785EF0-%23DC267F-%23FE6100-%23FFB000
+  # cooler colors for CRuby, warmer colors for YJIT
+  - '#648FFF'
+  - '#785EF0'
+  - '#FFB000'
+  - '#DC267F'
+  - '#FE6100'
+
+axis_color: &axis_color "#000"
+background_color: &background_color "#fff"
+text_color: "#111"
+text_on_bar_color: *background_color
+
+legend_box_attrs:
+  stroke: none
+
+legend_text_attrs:
+  style: "text-shadow: 0 0 1px #000;"
+
+stddev_marker_attrs:
+  stroke-dasharray: "1,0.5"
+  stroke: "#333c"

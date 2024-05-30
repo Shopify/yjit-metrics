@@ -1,3 +1,7 @@
+# frozen_string_literal.
+
+require_relative "./theme"
+
 # Make sure YJITMetrics namespace is declared
 module YJITMetrics; end
 
@@ -700,6 +704,8 @@ end
 
 # Shared utility methods for reports that use a single "blob" of results
 class YJITMetrics::Report
+    Theme = YJITMetrics::Theme
+
     include YJITMetrics::Stats
 
     def self.subclasses

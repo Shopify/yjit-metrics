@@ -310,9 +310,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         (ratio * 600.0).to_s
     end
 
-    # These will be assigned in order to each Ruby
-    RUBY_BAR_COLOURS = [ "#7070f8", "orange", "green", "#4F3A7A" ]
-
     def svg_object(benchmarks: @benchmark_names)
         # If we render a comparative report to file, we need victor for SVG output.
         require "victor"
@@ -321,11 +318,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             :viewBox => "0 0 1000 600",
             :xmlns => "http://www.w3.org/2000/svg",
             "xmlns:xlink" => "http://www.w3.org/1999/xlink"  # background: '#ddd'
-
-        axis_colour = "#000"
-        background_colour = "#EEE"
-        text_colour = "#111"
-        top_legend_text_colour = "#EEE"
 
         # Reserve some width on the left for the axis. Include a bit of right-side whitespace.
         left_axis_width = 0.05
@@ -344,13 +336,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         svg.rect x: ratio_to_x(plot_left_edge), y: ratio_to_y(plot_top_edge),
             width: ratio_to_x(plot_width), height: ratio_to_y(plot_height),
-            stroke: axis_colour, fill: background_colour
+            stroke: Theme.axis_color,
+            fill: Theme.background_color
 
 
         # Basic info on Ruby configs and benchmarks
         ruby_configs = @configs_with_human_names.map { |name, config| config }
         ruby_human_names = @configs_with_human_names.map(&:first)
-        ruby_config_bar_colour = Hash[ruby_configs.zip(RUBY_BAR_COLOURS)]
+        ruby_config_bar_colour = Hash[ruby_configs.zip(Theme.bar_chart_colors)]
         baseline_colour = ruby_config_bar_colour[@baseline_config]
         baseline_strokewidth = 2
         n_configs = ruby_configs.size
@@ -420,28 +413,27 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             tick_y = plot_effective_top + (1.0 - tick_distance_from_zero) * plot_effective_height
             svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
                 x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
-                stroke: axis_colour
+                stroke: Theme.axis_color
             svg.text ("%.1f" % div_value),
                 x: ratio_to_x(plot_left_edge - 3 * tick_length), y: ratio_to_y(tick_y),
                 text_anchor: "end",
                 font_weight: "bold",
                 font_size: font_size,
-                fill: text_colour
+                fill: Theme.text_color
         end
 
         # Set up the top legend with coloured boxes and Ruby config names
-        top_legend_box_height = 0.03
+        top_legend_box_height = 0.032
         top_legend_box_width = 0.12
-        top_legend_text_height = 0.025  # Turns out we can't directly specify this...
-        legend_box_stroke_colour = "#888"
+        top_legend_text_height = 0.015
 
         top_legend_item_width = plot_effective_width / n_configs
         n_configs.times do |config_idx|
             item_center_x = plot_effective_left + top_legend_item_width * (config_idx + 0.5)
             item_center_y = plot_top_edge + 0.025
-            this_top_legend_text_colour = top_legend_text_colour
+            legend_text_color = Theme.text_on_bar_color
             if @configs_with_human_names[config_idx][1] == @baseline_config
-              this_top_legend_text_colour = axis_colour
+              legend_text_color = Theme.axis_color
               left = item_center_x - 0.5 * top_legend_box_width
               y = item_center_y - 0.5 * top_legend_box_height + top_legend_box_height
               svg.line \
@@ -458,7 +450,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 width: ratio_to_x(top_legend_box_width),
                 height: ratio_to_y(top_legend_box_height),
                 fill: ruby_config_bar_colour[ruby_configs[config_idx]],
-                stroke: legend_box_stroke_colour
+                **Theme.legend_box_attrs
             end
             svg.text @configs_with_human_names[config_idx][0],
                 x: ratio_to_x(item_center_x),
@@ -466,7 +458,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
-                fill: this_top_legend_text_colour
+                fill: legend_text_color,
+                **(legend_text_color == Theme.text_on_bar_color ? Theme.legend_text_attrs : {})
         end
 
         baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
@@ -519,14 +512,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     top_whisker_y = bar_top - stddev_ratio * plot_effective_height
                     svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
                         x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                     bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
                     svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
                         x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                     svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
                         x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
-                        stroke: axis_colour
+                        **Theme.stddev_marker_attrs
                 end
             end
 
@@ -534,14 +527,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             bars_width_middle = bars_width_start + 0.5 * each_bench_width
             svg.line x1: ratio_to_x(bars_width_middle), y1: ratio_to_y(plot_bottom_edge),
                 x2: ratio_to_x(bars_width_middle), y2: ratio_to_y(plot_bottom_edge + tick_length),
-                stroke: axis_colour
+                stroke: Theme.axis_color
 
             text_end_x = bars_width_middle
             text_end_y = plot_bottom_edge + tick_length * 3
             svg.text bench_name.gsub(/\.rb$/, ""),
                 x: ratio_to_x(text_end_x),
                 y: ratio_to_y(text_end_y),
-                fill: text_colour,
+                fill: Theme.text_color,
                 font_size: font_size,
                 font_family: "monospace",
                 font_weight: "bold",
