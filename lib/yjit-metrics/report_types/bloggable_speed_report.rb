@@ -369,18 +369,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         plot_padding_ratio = 0.05
         plot_effective_width = plot_width * (1.0 - 2 * plot_padding_ratio)
         plot_effective_left = plot_left_edge + plot_width * plot_padding_ratio
-        each_bench_width = plot_effective_width / n_benchmarks
-        bar_width = each_bench_width / n_configs
-
-        first_bench_left_edge = plot_left_edge + (plot_width * plot_padding_ratio)
-        bench_left_edge = (0...n_benchmarks).map { |idx| first_bench_left_edge + idx * each_bench_width }
-
 
         # And some heights...
         plot_top_whitespace = 0.15 * plot_height
         plot_effective_top = plot_top_edge + plot_top_whitespace
         plot_effective_height = plot_height - plot_top_whitespace
-
 
         # Add axis markers down the left side
         tick_length = 0.008
@@ -399,7 +392,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         raise "Error figuring out axis scale with max speedup ratio: #{max_speedup_ratio.inspect} (pow10: #{largest_power_of_10.inspect})!" if division_value.nil?
         division_ratio_per_value = plot_effective_height / max_speedup_ratio
 
-        # Now find all the x-axis tick locations
+        # Now find all the y-axis tick locations
         divisions = []
         cur_div = 0.0
         loop do
@@ -464,13 +457,15 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
 
+        bar_data = []
+
         # Okay. Now let's plot a lot of boxes and whiskers.
         benchmarks.each.with_index do |bench_name, bench_short_idx|
+          bar_data << {label: bench_name.delete_suffix('.rb'), bars: []}
             bench_idx = @benchmark_names.index(bench_name)
 
             baseline_mean = @mean_by_config[@baseline_config][bench_idx]
 
-            bars_width_start = bench_left_edge[bench_short_idx]
             ruby_configs.each.with_index do |config, config_idx|
                 human_name = ruby_human_names[config_idx]
 
@@ -491,55 +486,96 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
                     tooltip_text = "#{"%.2f" % speedup}x baseline speed (#{human_name})"
 
-                    bar_left = bars_width_start + config_idx * bar_width
-                    bar_right = bar_left + bar_width
-                    bar_lr_center = bar_left + 0.5 * bar_width
-                    bar_top = plot_effective_top + (1.0 - bar_height_ratio) * plot_effective_height
-
                     if config == @baseline_config
                       next
                     end
 
-                    svg.rect \
-                        x: ratio_to_x(bar_left),
-                        y: ratio_to_y(bar_top),
-                        width: ratio_to_x(bar_width),
-                        height: ratio_to_y(bar_height_ratio * plot_effective_height),
-                        fill: ruby_config_bar_colour[config],
-                        data_tooltip: tooltip_text
-
-                    # Whiskers should be centered around the top of the bar, at a distance of one stddev.
-                    top_whisker_y = bar_top - stddev_ratio * plot_effective_height
-                    svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(top_whisker_y),
-                        x2: ratio_to_x(bar_right), y2: ratio_to_y(top_whisker_y),
-                        **Theme.stddev_marker_attrs
-                    bottom_whisker_y = bar_top + stddev_ratio * plot_effective_height
-                    svg.line x1: ratio_to_x(bar_left), y1: ratio_to_y(bottom_whisker_y),
-                        x2: ratio_to_x(bar_right), y2: ratio_to_y(bottom_whisker_y),
-                        **Theme.stddev_marker_attrs
-                    svg.line x1: ratio_to_x(bar_lr_center), y1: ratio_to_y(top_whisker_y),
-                        x2: ratio_to_x(bar_lr_center), y2: ratio_to_y(bottom_whisker_y),
-                        **Theme.stddev_marker_attrs
+                    bar_data.last[:bars] << {
+                      value: bar_height_ratio,
+                      fill: ruby_config_bar_colour[config],
+                      tooltip: tooltip_text,
+                      stddev_ratio: stddev_ratio,
+                    }
                 end
             end
+        end
 
-            # Below all the bars, we'll want a tick on the bottom axis and a name of the benchmark
-            bars_width_middle = bars_width_start + 0.5 * each_bench_width
-            svg.line x1: ratio_to_x(bars_width_middle), y1: ratio_to_y(plot_bottom_edge),
-                x2: ratio_to_x(bars_width_middle), y2: ratio_to_y(plot_bottom_edge + tick_length),
-                stroke: Theme.axis_color
+        # Determine bar width by counting the bars and adding the number of groups
+        # for bar-sized space before each group, plus one for the right side of the graph.
+        num_groups = bar_data.size
+        bar_width = plot_width / (num_groups + bar_data.map { |x| x[:bars].size }.sum + 1)
 
-            text_end_x = bars_width_middle
-            text_end_y = plot_bottom_edge + tick_length * 3
-            svg.text bench_name.gsub(/\.rb$/, ""),
-                x: ratio_to_x(text_end_x),
-                y: ratio_to_y(text_end_y),
-                fill: Theme.text_color,
-                font_size: font_size,
-                font_family: "monospace",
-                font_weight: "bold",
-                text_anchor: "end",
-                transform: "rotate(-60, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})"
+        # Start at the y-axis.
+        left = plot_left_edge
+        bar_data.each.with_index do |data, group_index|
+          data[:bars].each.with_index do |bar, bar_index|
+            # Move position one width over to place this bar.
+            left += bar_width
+
+            bar_left = left
+            bar_center = bar_left + 0.5 * bar_width
+            bar_right = bar_left + bar_width
+            bar_top = plot_effective_top + (1.0 - bar[:value]) * plot_effective_height
+            bar_height = bar[:value] * plot_effective_height
+
+            svg.rect \
+              x: ratio_to_x(bar_left),
+              y: ratio_to_y(bar_top),
+              width: ratio_to_x(bar_width),
+              height: ratio_to_y(bar_height),
+              fill: bar[:fill],
+              data_tooltip: bar[:tooltip]
+
+            if bar[:stddev_ratio]
+              # Whiskers should be centered around the top of the bar, at a distance of one stddev.
+              stddev_top = bar_top - bar[:stddev_ratio] * plot_effective_height
+              stddev_bottom = bar_top + bar[:stddev_ratio] * plot_effective_height
+
+              svg.line \
+                x1: ratio_to_x(bar_left),
+                y1: ratio_to_y(stddev_top),
+                x2: ratio_to_x(bar_right),
+                y2: ratio_to_y(stddev_top),
+                **Theme.stddev_marker_attrs
+              svg.line \
+                x1: ratio_to_x(bar_left),
+                y1: ratio_to_y(stddev_bottom),
+                x2: ratio_to_x(bar_right),
+                y2: ratio_to_y(stddev_bottom),
+                **Theme.stddev_marker_attrs
+              svg.line \
+                x1: ratio_to_x(bar_center),
+                y1: ratio_to_y(stddev_top),
+                x2: ratio_to_x(bar_center),
+                y2: ratio_to_y(stddev_bottom),
+                **Theme.stddev_marker_attrs
+            end
+          end
+
+          # Place a tick on the x-axis in the middle of the group and print label.
+          group_right = left + bar_width
+          group_left = (group_right - (bar_width * data[:bars].size))
+          middle = group_left + (group_right - group_left) / 2
+          svg.line \
+            x1: ratio_to_x(middle),
+            y1: ratio_to_y(plot_bottom_edge),
+            x2: ratio_to_x(middle),
+            y2: ratio_to_y(plot_bottom_edge + tick_length),
+            stroke: Theme.axis_color
+
+          text_end_x = middle
+          text_end_y = plot_bottom_edge + tick_length * 3
+          svg.text data[:label],
+            x: ratio_to_x(text_end_x),
+            y: ratio_to_y(text_end_y),
+            fill: Theme.text_color,
+            font_size: font_size,
+            text_anchor: "end",
+            transform: "rotate(-60, #{ratio_to_x(text_end_x)}, #{ratio_to_y(text_end_y)})",
+            **data.fetch(:label_attrs, {})
+
+          # After a group of bars leave the space of one bar width before the next group.
+          left += bar_width
         end
 
         # Horizontal line for baseline of CRuby at 1.0.
