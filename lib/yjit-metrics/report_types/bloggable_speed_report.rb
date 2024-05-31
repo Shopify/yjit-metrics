@@ -500,6 +500,26 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             end
         end
 
+        geomeans = ruby_configs.each_with_object({}) do |config, h|
+          next unless @speedup_by_config[config]
+          values = benchmarks.map { |bench| @speedup_by_config[config][ @benchmark_names.index(bench) ]&.first }.compact
+          h[config] = geomean(values)
+        end
+
+        bar_data << {
+          label: "geomean*",
+          label_attrs: {font_style: "italic"},
+          bars: ruby_configs.map.with_index do |config, index|
+            next if config == @baseline_config
+            value = geomeans[config]
+            {
+              value: value / max_speedup_ratio,
+              fill: ruby_config_bar_colour[config],
+              tooltip: sprintf("%.2fx baseline speed (%s)", value, ruby_human_names[index]),
+            }
+          end.compact,
+        }
+
         # Determine bar width by counting the bars and adding the number of groups
         # for bar-sized space before each group, plus one for the right side of the graph.
         num_groups = bar_data.size
