@@ -116,7 +116,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @mean_by_config[config] = []
             @rsd_pct_by_config[config] = []
             @total_time_by_config[config] = 0.0
-            @speedup_by_config[config] = [] unless config == @baseline_config
+            @speedup_by_config[config] = []
         end
 
         @yjit_ratio = []
@@ -135,18 +135,26 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             baseline_rel_stddev_pct = @rsd_pct_by_config[@baseline_config][-1]
             baseline_rel_stddev = baseline_rel_stddev_pct / 100.0  # Get ratio, not percent
             @configs_with_human_names.each do |name, config|
-                next if config == @baseline_config
-
                 this_config_mean = @mean_by_config[config][-1]
 
                 if this_config_mean.nil?
                     @speedup_by_config[config].push [nil, nil]
                 else
                     this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
-                    this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
+                    # Use (baseline / this) so that the bar goes up as the value (test duration) goes down.
                     speed_ratio = baseline_mean / this_config_mean
-                    speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
-                    @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
+
+                    # Why do we treat these differently?
+                    speed_rsd = if config == @baseline_config
+                      this_config_rel_stddev_pct
+                    else
+                      this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
+                      # Why do we add baseline_rel_stddev**2?
+                      speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
+                      speed_rel_stddev * 100.0
+                    end
+
+                    @speedup_by_config[config].push [speed_ratio, speed_rsd]
                 end
 
             end
@@ -310,10 +318,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         (ratio * 600.0).to_s
     end
 
-    def svg_object(benchmarks: @benchmark_names)
-        # If we render a comparative report to file, we need victor for SVG output.
-        require "victor"
-
+    def svg_object(relative_values_by_config_and_benchmark, benchmarks: @benchmark_names)
         svg = Victor::SVG.new :template => :minimal,
             :viewBox => "0 0 1000 600",
             :xmlns => "http://www.w3.org/2000/svg",
@@ -350,17 +355,17 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         n_benchmarks = benchmarks.size
 
 
-        # How high do speedup ratios go?
-        max_speedup_ratio = benchmarks.map { |bench_name|
-            bench_idx = @benchmark_names.index(bench_name)
-            @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench[bench_idx][0] }.compact.max
-        }.max
-        if max_speedup_ratio.nil?
-            $stderr.puts "Error finding Y axis. Benchmarks: #{benchmarks.inspect}."
-            $stderr.puts "Speedup data: #{@speedup_by_config.inspect}"
-            raise "Error finding axis Y scale for benchmarks: #{benchmarks.inspect}"
-        end
+        # How high do ratios go?
+        max_value = benchmarks.map do |bench_name|
+          bench_idx = @benchmark_names.index(bench_name)
+          relative_values_by_config_and_benchmark.values.map { |by_bench| by_bench[bench_idx][0] }.compact.max
+        end.max
 
+        if max_value.nil?
+          $stderr.puts "Error finding Y axis. Benchmarks: #{benchmarks.inspect}."
+          $stderr.puts "data: #{relative_values_by_config_and_benchmark.inspect}"
+          raise "Error finding axis Y scale for benchmarks: #{benchmarks.inspect}"
+        end
 
         # Now let's calculate some widths...
 
@@ -379,18 +384,18 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         tick_length = 0.008
         font_size = "small"
         # This is the largest power-of-10 multiple of the no-JIT mean that we'd see on the axis. Often it's 1 (ten to the zero.)
-        largest_power_of_10 = 10.0 ** Math.log10(max_speedup_ratio).to_i
+        largest_power_of_10 = 10.0 ** Math.log10(max_value).to_i
         # Let's get some nice even numbers for possible distances between ticks
         candidate_division_values =
             [ largest_power_of_10 * 5, largest_power_of_10 * 2, largest_power_of_10, largest_power_of_10 / 2, largest_power_of_10 / 5,
                 largest_power_of_10 / 10, largest_power_of_10 / 20 ]
         # We'll try to show between about 4 and 10 ticks along the axis, at nice even-numbered spots.
         division_value = candidate_division_values.detect do |div_value|
-            divs_shown = (max_speedup_ratio / div_value).to_i
+            divs_shown = (max_value / div_value).to_i
             divs_shown >= 4 && divs_shown <= 10
         end
-        raise "Error figuring out axis scale with max speedup ratio: #{max_speedup_ratio.inspect} (pow10: #{largest_power_of_10.inspect})!" if division_value.nil?
-        division_ratio_per_value = plot_effective_height / max_speedup_ratio
+        raise "Error figuring out axis scale with max ratio: #{max_value.inspect} (pow10: #{largest_power_of_10.inspect})!" if division_value.nil?
+        division_ratio_per_value = plot_effective_height / max_value
 
         # Now find all the y-axis tick locations
         divisions = []
@@ -398,11 +403,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         loop do
             divisions.push cur_div
             cur_div += division_value
-            break if cur_div > max_speedup_ratio
+            break if cur_div > max_value
         end
 
         divisions.each do |div_value|
-            tick_distance_from_zero = div_value / max_speedup_ratio
+            tick_distance_from_zero = div_value / max_value
             tick_y = plot_effective_top + (1.0 - tick_distance_from_zero) * plot_effective_height
             svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
                 x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
@@ -455,7 +460,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 **(legend_text_color == Theme.text_on_bar_color ? Theme.legend_text_attrs : {})
         end
 
-        baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
+        baseline_y = plot_effective_top + (1.0 - (1.0 / max_value)) * plot_effective_height
 
         bar_data = []
 
@@ -464,27 +469,25 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
           bar_data << {label: bench_name.delete_suffix('.rb'), bars: []}
             bench_idx = @benchmark_names.index(bench_name)
 
-            baseline_mean = @mean_by_config[@baseline_config][bench_idx]
-
             ruby_configs.each.with_index do |config, config_idx|
                 human_name = ruby_human_names[config_idx]
 
+                relative_value, rsd_pct = relative_values_by_config_and_benchmark[config][bench_idx]
+
                 if config == @baseline_config
-                    speedup = 1.0 # No-JIT is always exactly 1x No-JIT
-                    rsd_pct = @rsd_pct_by_config[@baseline_config][bench_idx]
-                else
-                    speedup, rsd_pct = @speedup_by_config[config][bench_idx]
+                  # Sanity check.
+                  raise "Unexpected relative value for baseline config" if relative_value != 1.0
                 end
 
-                # If speedup is nil, there's no such benchmark in this specific case.
-                if speedup != nil
+                # If relative_value is nil, there's no such benchmark in this specific case.
+                if relative_value != nil
                     rsd_ratio = rsd_pct / 100.0
-                    bar_height_ratio = speedup / max_speedup_ratio
+                    bar_height_ratio = relative_value / max_value
 
                     # The calculated number is rel stddev and is scaled by bar height.
                     stddev_ratio = bar_height_ratio * rsd_ratio
 
-                    tooltip_text = "#{"%.2f" % speedup}x baseline speed (#{human_name})"
+                    tooltip_text = "#{"%.2f" % relative_value}x baseline (#{human_name})"
 
                     if config == @baseline_config
                       next
@@ -501,8 +504,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
 
         geomeans = ruby_configs.each_with_object({}) do |config, h|
-          next unless @speedup_by_config[config]
-          values = benchmarks.map { |bench| @speedup_by_config[config][ @benchmark_names.index(bench) ]&.first }.compact
+          next unless relative_values_by_config_and_benchmark[config]
+          values = benchmarks.map { |bench| relative_values_by_config_and_benchmark[config][ @benchmark_names.index(bench) ]&.first }.compact
           h[config] = geomean(values)
         end
 
@@ -513,9 +516,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             next if config == @baseline_config
             value = geomeans[config]
             {
-              value: value / max_speedup_ratio,
+              value: value / max_value,
               fill: ruby_config_bar_colour[config],
-              tooltip: sprintf("%.2fx baseline speed (%s)", value, ruby_human_names[index]),
+              tooltip: sprintf("%.2fx baseline (%s)", value, ruby_human_names[index]),
             }
           end.compact,
         }
@@ -651,7 +654,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             if bench_names.empty?
                 contents = ""
             else
-                contents = svg_object(benchmarks: bench_names).render
+                contents = svg_object(@speedup_by_config, benchmarks: bench_names).render
             end
 
             File.open(filename + "." + @platform + extension, "w") { |f| f.write(contents) }
@@ -668,7 +671,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         write_to_csv(filename + ".#{@platform}.csv", [@headings] + report_table_data)
     end
-
 end
 
 class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
