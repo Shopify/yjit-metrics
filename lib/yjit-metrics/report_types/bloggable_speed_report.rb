@@ -201,15 +201,21 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             end
 
             baseline_mean = @peak_mb_by_config[@baseline_config][-1]
+            baseline_rsd = rel_stddev(@peak_mem_by_config[@baseline_config][benchmark_name])
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_relative_by_config[config].push [nil]
                 else
                     values = @peak_mem_by_config[config][benchmark_name]
                     this_config_mean_mb = mean(values) / one_mib
-                    rsd = rel_stddev_pct(values)
+                    # For baseline use rsd.  For other configs we need to add the baseline rsd to this rsd.
+                    # (See comments for speedup calculations).
+                    rsd = if config == @baseline_config
+                            baseline_rsd
+                          else
+                            Math.sqrt(baseline_rsd ** 2 + rel_stddev(values) ** 2)
+                          end
                     # Use (this / baseline) so that bar goes up as value (mem usage) of *this* goes up.
-                    # TODO: Do we want `rsd = Math.sqrt(baseline_rel_stddev ** 2 + rsd ** 2)` like we have for speedup ?
                     @peak_mb_relative_by_config[config].push [this_config_mean_mb / baseline_mean, rsd]
                 end
             end
