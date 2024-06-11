@@ -62,24 +62,43 @@
         These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
       </p>
 
+      <%
+          SPEED_DESC = "Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better."
+          MEMORY_DESC = "Memory usage of each Ruby implementation relative to the CRuby interpreter. Lower is better."
+      %>
+
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
+            <%= SPEED_DESC %>
+      </div>
 
-        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.head.svg">
+            <%= MEMORY_DESC %>
       </div>
 
       <h2 id="other-graph">Other Benchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
-        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+            <%= SPEED_DESC %>
+      </div>
+
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.back.svg">
+            <%= MEMORY_DESC %>
       </div>
 
       <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
-        Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+            <%= SPEED_DESC %>
+      </div>
+
+      <div style="width: 800px;" data-platform-selector="yes"
+        data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.micro.svg">
+            <%= MEMORY_DESC %>
       </div>
 
       <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
