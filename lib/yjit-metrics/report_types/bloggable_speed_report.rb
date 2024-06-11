@@ -173,8 +173,10 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
     def calc_mem_stats_by_config
         @peak_mb_by_config = {}
+        @peak_mb_relative_by_config = {}
         @configs_with_human_names.map { |name, config| config }.each do |config|
             @peak_mb_by_config[config] = []
+            @peak_mb_relative_by_config[config] = []
         end
         @mem_overhead_factor_by_benchmark = []
 
@@ -187,9 +189,24 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_by_config[config].push nil
+                    @peak_mb_relative_by_config[config].push [nil, nil]
                 else
                     this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
                     @peak_mb_by_config[config].push(this_config_bytes / one_mib)
+                end
+            end
+
+            baseline_mean = @peak_mb_by_config[@baseline_config][-1]
+            @configs_with_human_names.each do |name, config|
+                if @peak_mem_by_config[config][benchmark_name].nil?
+                    @peak_mb_relative_by_config[config].push [nil]
+                else
+                    values = @peak_mem_by_config[config][benchmark_name]
+                    this_config_mean_mb = mean(values) / one_mib
+                    rsd = rel_stddev_pct(values)
+                    # Use (this / baseline) so that bar goes up as value (mem usage) of *this* goes up.
+                    # TODO: Do we want `rsd = Math.sqrt(baseline_rel_stddev ** 2 + rsd ** 2)` like we have for speedup ?
+                    @peak_mb_relative_by_config[config].push [this_config_mean_mb / baseline_mean, rsd]
                 end
             end
 
@@ -224,6 +241,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     end
 
     def initialize(orig_config_names, results, platform:, benchmarks: [])
+        # Dumb hack for subclasses until we refactor everything.
+        return super(orig_config_names, results, benchmarks: benchmarks) unless self.class == YJITMetrics::SpeedDetailsReport
+
         unless YJITMetrics::PLATFORMS.include?(platform)
             raise "Invalid platform for #{self.class.name}: #{platform.inspect}!"
         end
@@ -726,9 +746,9 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
     end
 end
 
-# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# This report is to compare YJIT's memory usage versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
-class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
+class YJITMetrics::MemoryDetailsReport < YJITMetrics::SpeedDetailsReport
     # This report requires a platform name and can't be auto-instantiated by basic_report.rb.
     # Instead, its child report(s) can instantiate it for a specific platform.
     #def self.report_name
@@ -736,19 +756,20 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
     #end
 
     def self.report_extensions
-        [ "html" ]
+        [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(config_names, platform, results, benchmarks: [])
+    def initialize(config_names, results, platform:, benchmarks: [])
         unless YJITMetrics::PLATFORMS.include?(platform)
-            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+            raise "Invalid platform for #{self.class.name}: #{platform.inspect}!"
         end
         @platform = platform
 
         # Set up the parent class, look up relevant data
         # Permit non-same-platform stats config
         config_names = config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
-        super(config_names, results, benchmarks: benchmarks)
+        # FIXME: Drop the platform: platform when we stop inheriting from SpeedDetailsReport.
+        super(config_names, results, platform: platform, benchmarks: benchmarks)
         return if @inactive
 
         look_up_data_by_ruby
@@ -804,69 +825,27 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
             "\nMemory usage is in MiB (mebibytes,) rounded. Ratio is versus interpreted baseline CRuby.\n"
     end
 
-    def write_file(filename)
-        if @inactive
-            # Can't get stats? Write an empty file.
-            self.class.report_extensions.each do |ext|
-                File.open(filename + ".#{@platform}.#{ext}", "w") { |f| f.write("") }
-            end
-            return
-        end
-
-        # Memory details report, with tables and text descriptions
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
-        html_output = script_template.result(binding)
-        File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
+    def html_template_path
+      File.expand_path("../report_templates/blog_memory_details.html.erb", __dir__)
     end
 
+    def relative_values_by_config_and_benchmark
+      @peak_mb_relative_by_config
+    end
+
+    # FIXME: We aren't reporting on the tripwires currently, but it makes sense to implement it and report on it.
+    def tripwires
+      {}
+    end
 end
 
-class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::Report
+class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::SpeedDetailsMultiplatformReport
     def self.report_name
         "blog_memory_details"
     end
 
-    # Report-extensions tries to be data-agnostic. That doesn't work very well here.
-    # It turns out that the platforms in the result set determine a lot of the
-    # files we generate. So we approximate by generating (sometimes-empty) indicator
-    # files. That way we still rebuild all the platform-specific files if they have
-    # been removed or a new type is added.
-    def self.report_extensions
-        ::YJITMetrics::MemoryDetailsReport.report_extensions
-    end
-
-    def initialize(config_names, results, benchmarks: [])
-        # We need to instantiate N sub-reports for N platforms
-        @platforms = results.platforms
-        @sub_reports = {}
-        @platforms.each do |platform|
-            platform_config_names = config_names.select { |name| name.start_with?(platform) }
-
-            # If we can't find a config with stats for this platform, is there one in x86_64?
-            unless platform_config_names.detect { |config| config.include?("yjit_stats") }
-                x86_stats_config = config_names.detect { |config| config.start_with?("x86_64") && config.include?("yjit_stats") }
-                puts "Can't find #{platform} stats config, falling back to using x86_64 stats"
-                platform_config_names << x86_stats_config if x86_stats_config
-            end
-
-            @sub_reports[platform] = ::YJITMetrics::MemoryDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
-            if @sub_reports[platform].inactive
-                raise "Unable to produce stats-capable report for platform #{platform.inspect} in MemoryDetailsMultiplatformReport!"
-            end
-        end
-    end
-
-    def write_file(filename)
-        # First, write out per-platform reports
-        @sub_reports.each do |platform, report|
-            # Each sub-report will add the platform name for itself
-            report.write_file(filename)
-        end
-
-        # For each of these types, we'll just include for each platform and we can switch display
-        # in the Jekyll site. They exist, but there's no combined multiplatform version.
-        # We'll create an empty 'tracker' file for the combined version.
-        File.open("#{filename}.html", "w") { |f| f.write("") }
+    def self.single_report_class
+      ::YJITMetrics::MemoryDetailsReport
     end
 end
 

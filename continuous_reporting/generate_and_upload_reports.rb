@@ -40,7 +40,7 @@ REPORTS_AND_FILES = {
     },
     "blog_memory_details" => {
         report_type: :basic_report,
-        extensions: [ "html" ],
+        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
     },
     "blog_yjit_stats" => {
         report_type: :basic_report,
