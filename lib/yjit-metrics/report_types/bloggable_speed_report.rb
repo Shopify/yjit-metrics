@@ -223,9 +223,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(orig_config_names, platform, results, benchmarks: [])
+    def initialize(orig_config_names, results, platform:, benchmarks: [])
         unless YJITMetrics::PLATFORMS.include?(platform)
-            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+            raise "Invalid platform for #{self.class.name}: #{platform.inspect}!"
         end
         @platform = platform
 
@@ -591,7 +591,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         svg
     end
 
-    def speedup_tripwires
+    def tripwires
         tripwires = {}
         micro = micro_benchmarks
         @benchmark_names.each_with_index do |bench_name, idx|
@@ -602,6 +602,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             }
         end
         tripwires
+    end
+
+    def html_template_path
+      File.expand_path("../report_templates/blog_speed_details.html.erb", __dir__)
+    end
+
+    def relative_values_by_config_and_benchmark
+      @speedup_by_config
     end
 
     def write_file(filename)
@@ -638,19 +646,19 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             if bench_names.empty?
                 contents = ""
             else
-                contents = svg_object(@speedup_by_config, benchmarks: bench_names).render
+                contents = svg_object(relative_values_by_config_and_benchmark, benchmarks: bench_names).render
             end
 
             File.open(filename + "." + @platform + extension, "w") { |f| f.write(contents) }
         end
 
         # First the 'regular' details report, with tables and text descriptions
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
+        script_template = ERB.new File.read(html_template_path)
         html_output = script_template.result(binding)
         File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
 
         # The Tripwire report is used to tell when benchmark performance drops suddenly
-        json_data = speedup_tripwires
+        json_data = tripwires
         File.open(filename + ".#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
         write_to_csv(filename + ".#{@platform}.csv", [@headings] + report_table_data)
@@ -662,13 +670,17 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
         "blog_speed_details"
     end
 
+    def self.single_report_class
+      ::YJITMetrics::SpeedDetailsReport
+    end
+
     # Report-extensions tries to be data-agnostic. That doesn't work very well here.
     # It turns out that the platforms in the result set determine a lot of the
     # files we generate. So we approximate by generating (sometimes-empty) indicator
     # files. That way we still rebuild all the platform-specific files if they have
     # been removed or a new type is added.
     def self.report_extensions
-        ::YJITMetrics::SpeedDetailsReport.report_extensions
+        single_report_class.report_extensions
     end
 
     def initialize(config_names, results, benchmarks: [])
@@ -686,7 +698,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
             end
 
             raise("Can't find a stats config for this platform in #{config_names.inspect}!") if platform_config_names.empty?
-            @sub_reports[platform] = ::YJITMetrics::SpeedDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
+            @sub_reports[platform] = self.class.single_report_class.new(platform_config_names, results, platform: platform, benchmarks: benchmarks)
             if @sub_reports[platform].inactive
                 puts "Platform config names: #{platform_config_names.inspect}"
                 puts "All config names: #{config_names.inspect}"
@@ -707,7 +719,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
         # For each of these types, we'll just include for each platform and we can switch display
         # in the Jekyll site. They exist, but there's no combined multiplatform version.
         # We'll create an empty 'tracker' file for the combined version.
-        ::YJITMetrics::SpeedDetailsReport.report_extensions.each do |ext|
+        self.class.report_extensions.each do |ext|
             outfile = "#{filename}.#{ext}"
             File.open(outfile, "w") { |f| f.write("") }
         end
