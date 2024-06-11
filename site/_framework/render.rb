@@ -93,6 +93,15 @@ class RenderContext
   def render_markdown(markdown)
     render_markdown(markdown)
   end
+
+  TEXT = {
+    speed_graph: "Speed of each Ruby implementation relative to the baseline CRuby measurement. Higher is better.",
+    memory_graph: "Memory usage of each Ruby implementation relative to the baseline CRuby measurement. Lower is better."
+  }
+
+  def text(key)
+    TEXT.fetch(key)
+  end
 end
 
 def read_front_matter(path)

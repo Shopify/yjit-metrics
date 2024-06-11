@@ -116,7 +116,7 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @mean_by_config[config] = []
             @rsd_pct_by_config[config] = []
             @total_time_by_config[config] = 0.0
-            @speedup_by_config[config] = [] unless config == @baseline_config
+            @speedup_by_config[config] = []
         end
 
         @yjit_ratio = []
@@ -135,18 +135,30 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             baseline_rel_stddev_pct = @rsd_pct_by_config[@baseline_config][-1]
             baseline_rel_stddev = baseline_rel_stddev_pct / 100.0  # Get ratio, not percent
             @configs_with_human_names.each do |name, config|
-                next if config == @baseline_config
-
                 this_config_mean = @mean_by_config[config][-1]
 
                 if this_config_mean.nil?
                     @speedup_by_config[config].push [nil, nil]
                 else
                     this_config_rel_stddev_pct = @rsd_pct_by_config[config][-1]
-                    this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
+                    # Use (baseline / this) so that the bar goes up as the value (test duration) goes down.
                     speed_ratio = baseline_mean / this_config_mean
-                    speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
-                    @speedup_by_config[config].push [ speed_ratio, speed_rel_stddev * 100.0 ]
+
+                    # For non-baseline we add the rsd for the config to the rsd
+                    # for the baseline to determine the full variance bounds.
+                    # For just the baseline we don't need to add anything.
+                    speed_rsd = if config == @baseline_config
+                      this_config_rel_stddev_pct
+                    else
+                      this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
+                      # Because we are dividing the baseline mean by this mean
+                      # to get a ratio we need to add the variance of each (the
+                      # baseline and this config) to determine the full error bounds.
+                      speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
+                      speed_rel_stddev * 100.0
+                    end
+
+                    @speedup_by_config[config].push [speed_ratio, speed_rsd]
                 end
 
             end
@@ -165,8 +177,10 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
 
     def calc_mem_stats_by_config
         @peak_mb_by_config = {}
+        @peak_mb_relative_by_config = {}
         @configs_with_human_names.map { |name, config| config }.each do |config|
             @peak_mb_by_config[config] = []
+            @peak_mb_relative_by_config[config] = []
         end
         @mem_overhead_factor_by_benchmark = []
 
@@ -179,9 +193,30 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
             @configs_with_human_names.each do |name, config|
                 if @peak_mem_by_config[config][benchmark_name].nil?
                     @peak_mb_by_config[config].push nil
+                    @peak_mb_relative_by_config[config].push [nil, nil]
                 else
                     this_config_bytes = mean(@peak_mem_by_config[config][benchmark_name])
                     @peak_mb_by_config[config].push(this_config_bytes / one_mib)
+                end
+            end
+
+            baseline_mean = @peak_mb_by_config[@baseline_config][-1]
+            baseline_rsd = rel_stddev(@peak_mem_by_config[@baseline_config][benchmark_name])
+            @configs_with_human_names.each do |name, config|
+                if @peak_mem_by_config[config][benchmark_name].nil?
+                    @peak_mb_relative_by_config[config].push [nil]
+                else
+                    values = @peak_mem_by_config[config][benchmark_name]
+                    this_config_mean_mb = mean(values) / one_mib
+                    # For baseline use rsd.  For other configs we need to add the baseline rsd to this rsd.
+                    # (See comments for speedup calculations).
+                    rsd = if config == @baseline_config
+                            baseline_rsd
+                          else
+                            Math.sqrt(baseline_rsd ** 2 + rel_stddev(values) ** 2)
+                          end
+                    # Use (this / baseline) so that bar goes up as value (mem usage) of *this* goes up.
+                    @peak_mb_relative_by_config[config].push [this_config_mean_mb / baseline_mean, rsd]
                 end
             end
 
@@ -211,25 +246,22 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     #    "blog_speed_details"
     #end
 
-    # If we can't get stats, the report won't produce sensible results.
-    attr_reader :inactive
-
     def self.report_extensions
         [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(orig_config_names, platform, results, benchmarks: [])
+    def initialize(orig_config_names, results, platform:, benchmarks: [])
+        # Dumb hack for subclasses until we refactor everything.
+        return super(orig_config_names, results, benchmarks: benchmarks) unless self.class == YJITMetrics::SpeedDetailsReport
+
         unless YJITMetrics::PLATFORMS.include?(platform)
-            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+            raise "Invalid platform for #{self.class.name}: #{platform.inspect}!"
         end
         @platform = platform
 
         # Permit non-same-platform stats config
         config_names = orig_config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
         raise("Can't find any stats configuration in #{orig_config_names.inspect}!") if config_names.empty?
-
-        # This can be set up using set_extra_info later.
-        @filename_permalinks = {}
 
         # Set up the parent class, look up relevant data
         super(config_names, results, benchmarks: benchmarks)
@@ -255,16 +287,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         @col_formats[13] = "<b>%.2fx</b>" # Boldface the YJIT speedup column.
 
         calc_speed_stats_by_config
-    end
-
-    def set_extra_info(info)
-        super
-
-        if info[:filenames]
-            info[:filenames].each do |filename|
-                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/raw_benchmark_data/#{filename}"
-            end
-        end
     end
 
     # Printed to console
@@ -310,10 +332,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         (ratio * 600.0).to_s
     end
 
-    def svg_object(benchmarks: @benchmark_names)
-        # If we render a comparative report to file, we need victor for SVG output.
-        require "victor"
-
+    def svg_object(relative_values_by_config_and_benchmark, benchmarks: @benchmark_names)
         svg = Victor::SVG.new :template => :minimal,
             :viewBox => "0 0 1000 600",
             :xmlns => "http://www.w3.org/2000/svg",
@@ -350,17 +369,17 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         n_benchmarks = benchmarks.size
 
 
-        # How high do speedup ratios go?
-        max_speedup_ratio = benchmarks.map { |bench_name|
-            bench_idx = @benchmark_names.index(bench_name)
-            @speedup_by_config.values.map { |speedup_by_bench| speedup_by_bench[bench_idx][0] }.compact.max
-        }.max
-        if max_speedup_ratio.nil?
-            $stderr.puts "Error finding Y axis. Benchmarks: #{benchmarks.inspect}."
-            $stderr.puts "Speedup data: #{@speedup_by_config.inspect}"
-            raise "Error finding axis Y scale for benchmarks: #{benchmarks.inspect}"
-        end
+        # How high do ratios go?
+        max_value = benchmarks.map do |bench_name|
+          bench_idx = @benchmark_names.index(bench_name)
+          relative_values_by_config_and_benchmark.values.map { |by_bench| by_bench[bench_idx][0] }.compact.max
+        end.max
 
+        if max_value.nil?
+          $stderr.puts "Error finding Y axis. Benchmarks: #{benchmarks.inspect}."
+          $stderr.puts "data: #{relative_values_by_config_and_benchmark.inspect}"
+          raise "Error finding axis Y scale for benchmarks: #{benchmarks.inspect}"
+        end
 
         # Now let's calculate some widths...
 
@@ -379,18 +398,18 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         tick_length = 0.008
         font_size = "small"
         # This is the largest power-of-10 multiple of the no-JIT mean that we'd see on the axis. Often it's 1 (ten to the zero.)
-        largest_power_of_10 = 10.0 ** Math.log10(max_speedup_ratio).to_i
+        largest_power_of_10 = 10.0 ** Math.log10(max_value).to_i
         # Let's get some nice even numbers for possible distances between ticks
         candidate_division_values =
             [ largest_power_of_10 * 5, largest_power_of_10 * 2, largest_power_of_10, largest_power_of_10 / 2, largest_power_of_10 / 5,
                 largest_power_of_10 / 10, largest_power_of_10 / 20 ]
         # We'll try to show between about 4 and 10 ticks along the axis, at nice even-numbered spots.
         division_value = candidate_division_values.detect do |div_value|
-            divs_shown = (max_speedup_ratio / div_value).to_i
+            divs_shown = (max_value / div_value).to_i
             divs_shown >= 4 && divs_shown <= 10
         end
-        raise "Error figuring out axis scale with max speedup ratio: #{max_speedup_ratio.inspect} (pow10: #{largest_power_of_10.inspect})!" if division_value.nil?
-        division_ratio_per_value = plot_effective_height / max_speedup_ratio
+        raise "Error figuring out axis scale with max ratio: #{max_value.inspect} (pow10: #{largest_power_of_10.inspect})!" if division_value.nil?
+        division_ratio_per_value = plot_effective_height / max_value
 
         # Now find all the y-axis tick locations
         divisions = []
@@ -398,11 +417,11 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         loop do
             divisions.push cur_div
             cur_div += division_value
-            break if cur_div > max_speedup_ratio
+            break if cur_div > max_value
         end
 
         divisions.each do |div_value|
-            tick_distance_from_zero = div_value / max_speedup_ratio
+            tick_distance_from_zero = div_value / max_value
             tick_y = plot_effective_top + (1.0 - tick_distance_from_zero) * plot_effective_height
             svg.line x1: ratio_to_x(plot_left_edge - tick_length), y1: ratio_to_y(tick_y),
                 x2: ratio_to_x(plot_left_edge), y2: ratio_to_y(tick_y),
@@ -455,7 +474,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                 **(legend_text_color == Theme.text_on_bar_color ? Theme.legend_text_attrs : {})
         end
 
-        baseline_y = plot_effective_top + (1.0 - (1.0 / max_speedup_ratio)) * plot_effective_height
+        baseline_y = plot_effective_top + (1.0 - (1.0 / max_value)) * plot_effective_height
 
         bar_data = []
 
@@ -464,27 +483,25 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
           bar_data << {label: bench_name.delete_suffix('.rb'), bars: []}
             bench_idx = @benchmark_names.index(bench_name)
 
-            baseline_mean = @mean_by_config[@baseline_config][bench_idx]
-
             ruby_configs.each.with_index do |config, config_idx|
                 human_name = ruby_human_names[config_idx]
 
+                relative_value, rsd_pct = relative_values_by_config_and_benchmark[config][bench_idx]
+
                 if config == @baseline_config
-                    speedup = 1.0 # No-JIT is always exactly 1x No-JIT
-                    rsd_pct = @rsd_pct_by_config[@baseline_config][bench_idx]
-                else
-                    speedup, rsd_pct = @speedup_by_config[config][bench_idx]
+                  # Sanity check.
+                  raise "Unexpected relative value for baseline config" if relative_value != 1.0
                 end
 
-                # If speedup is nil, there's no such benchmark in this specific case.
-                if speedup != nil
+                # If relative_value is nil, there's no such benchmark in this specific case.
+                if relative_value != nil
                     rsd_ratio = rsd_pct / 100.0
-                    bar_height_ratio = speedup / max_speedup_ratio
+                    bar_height_ratio = relative_value / max_value
 
                     # The calculated number is rel stddev and is scaled by bar height.
                     stddev_ratio = bar_height_ratio * rsd_ratio
 
-                    tooltip_text = "#{"%.2f" % speedup}x baseline speed (#{human_name})"
+                    tooltip_text = "#{"%.2f" % relative_value}x baseline (#{human_name})"
 
                     if config == @baseline_config
                       next
@@ -501,8 +518,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         end
 
         geomeans = ruby_configs.each_with_object({}) do |config, h|
-          next unless @speedup_by_config[config]
-          values = benchmarks.map { |bench| @speedup_by_config[config][ @benchmark_names.index(bench) ]&.first }.compact
+          next unless relative_values_by_config_and_benchmark[config]
+          values = benchmarks.map { |bench| relative_values_by_config_and_benchmark[config][ @benchmark_names.index(bench) ]&.first }.compact
           h[config] = geomean(values)
         end
 
@@ -513,9 +530,9 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             next if config == @baseline_config
             value = geomeans[config]
             {
-              value: value / max_speedup_ratio,
+              value: value / max_value,
               fill: ruby_config_bar_colour[config],
-              tooltip: sprintf("%.2fx baseline speed (%s)", value, ruby_human_names[index]),
+              tooltip: sprintf("%.2fx baseline (%s)", value, ruby_human_names[index]),
             }
           end.compact,
         }
@@ -546,7 +563,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
               fill: bar[:fill],
               data_tooltip: bar[:tooltip]
 
-            if bar[:stddev_ratio]
+            if bar[:stddev_ratio]&.nonzero?
               # Whiskers should be centered around the top of the bar, at a distance of one stddev.
               stddev_top = bar_top - bar[:stddev_ratio] * plot_effective_height
               stddev_bottom = bar_top + bar[:stddev_ratio] * plot_effective_height
@@ -604,7 +621,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         svg
     end
 
-    def speedup_tripwires
+    def tripwires
         tripwires = {}
         micro = micro_benchmarks
         @benchmark_names.each_with_index do |bench_name, idx|
@@ -615,6 +632,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             }
         end
         tripwires
+    end
+
+    def html_template_path
+      File.expand_path("../report_templates/blog_speed_details.html.erb", __dir__)
+    end
+
+    def relative_values_by_config_and_benchmark
+      @speedup_by_config
     end
 
     def write_file(filename)
@@ -651,29 +676,32 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             if bench_names.empty?
                 contents = ""
             else
-                contents = svg_object(benchmarks: bench_names).render
+                contents = svg_object(relative_values_by_config_and_benchmark, benchmarks: bench_names).render
             end
 
             File.open(filename + "." + @platform + extension, "w") { |f| f.write(contents) }
         end
 
         # First the 'regular' details report, with tables and text descriptions
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_speed_details.html.erb")
+        script_template = ERB.new File.read(html_template_path)
         html_output = script_template.result(binding)
         File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
 
         # The Tripwire report is used to tell when benchmark performance drops suddenly
-        json_data = speedup_tripwires
+        json_data = tripwires
         File.open(filename + ".#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
         write_to_csv(filename + ".#{@platform}.csv", [@headings] + report_table_data)
     end
-
 end
 
 class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
     def self.report_name
         "blog_speed_details"
+    end
+
+    def self.single_report_class
+      ::YJITMetrics::SpeedDetailsReport
     end
 
     # Report-extensions tries to be data-agnostic. That doesn't work very well here.
@@ -682,7 +710,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
     # files. That way we still rebuild all the platform-specific files if they have
     # been removed or a new type is added.
     def self.report_extensions
-        ::YJITMetrics::SpeedDetailsReport.report_extensions
+        single_report_class.report_extensions
     end
 
     def initialize(config_names, results, benchmarks: [])
@@ -700,7 +728,7 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
             end
 
             raise("Can't find a stats config for this platform in #{config_names.inspect}!") if platform_config_names.empty?
-            @sub_reports[platform] = ::YJITMetrics::SpeedDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
+            @sub_reports[platform] = self.class.single_report_class.new(platform_config_names, results, platform: platform, benchmarks: benchmarks)
             if @sub_reports[platform].inactive
                 puts "Platform config names: #{platform_config_names.inspect}"
                 puts "All config names: #{config_names.inspect}"
@@ -721,16 +749,16 @@ class YJITMetrics::SpeedDetailsMultiplatformReport < YJITMetrics::Report
         # For each of these types, we'll just include for each platform and we can switch display
         # in the Jekyll site. They exist, but there's no combined multiplatform version.
         # We'll create an empty 'tracker' file for the combined version.
-        ::YJITMetrics::SpeedDetailsReport.report_extensions.each do |ext|
+        self.class.report_extensions.each do |ext|
             outfile = "#{filename}.#{ext}"
             File.open(outfile, "w") { |f| f.write("") }
         end
     end
 end
 
-# This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
+# This report is to compare YJIT's memory usage versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
-class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
+class YJITMetrics::MemoryDetailsReport < YJITMetrics::SpeedDetailsReport
     # This report requires a platform name and can't be auto-instantiated by basic_report.rb.
     # Instead, its child report(s) can instantiate it for a specific platform.
     #def self.report_name
@@ -738,19 +766,20 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
     #end
 
     def self.report_extensions
-        [ "html" ]
+        [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
 
-    def initialize(config_names, platform, results, benchmarks: [])
+    def initialize(config_names, results, platform:, benchmarks: [])
         unless YJITMetrics::PLATFORMS.include?(platform)
-            raise "Invalid platform for SpeedDetailsReport: #{platform.inspect}!"
+            raise "Invalid platform for #{self.class.name}: #{platform.inspect}!"
         end
         @platform = platform
 
         # Set up the parent class, look up relevant data
         # Permit non-same-platform stats config
         config_names = config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
-        super(config_names, results, benchmarks: benchmarks)
+        # FIXME: Drop the platform: platform when we stop inheriting from SpeedDetailsReport.
+        super(config_names, results, platform: platform, benchmarks: benchmarks)
         return if @inactive
 
         look_up_data_by_ruby
@@ -806,69 +835,27 @@ class YJITMetrics::MemoryDetailsReport < YJITMetrics::BloggableSingleReport
             "\nMemory usage is in MiB (mebibytes,) rounded. Ratio is versus interpreted baseline CRuby.\n"
     end
 
-    def write_file(filename)
-        if @inactive
-            # Can't get stats? Write an empty file.
-            self.class.report_extensions.each do |ext|
-                File.open(filename + ".#{@platform}.#{ext}", "w") { |f| f.write("") }
-            end
-            return
-        end
-
-        # Memory details report, with tables and text descriptions
-        script_template = ERB.new File.read(__dir__ + "/../report_templates/blog_memory_details.html.erb")
-        html_output = script_template.result(binding)
-        File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
+    def html_template_path
+      File.expand_path("../report_templates/blog_memory_details.html.erb", __dir__)
     end
 
+    def relative_values_by_config_and_benchmark
+      @peak_mb_relative_by_config
+    end
+
+    # FIXME: We aren't reporting on the tripwires currently, but it makes sense to implement it and report on it.
+    def tripwires
+      {}
+    end
 end
 
-class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::Report
+class YJITMetrics::MemoryDetailsMultiplatformReport < YJITMetrics::SpeedDetailsMultiplatformReport
     def self.report_name
         "blog_memory_details"
     end
 
-    # Report-extensions tries to be data-agnostic. That doesn't work very well here.
-    # It turns out that the platforms in the result set determine a lot of the
-    # files we generate. So we approximate by generating (sometimes-empty) indicator
-    # files. That way we still rebuild all the platform-specific files if they have
-    # been removed or a new type is added.
-    def self.report_extensions
-        ::YJITMetrics::MemoryDetailsReport.report_extensions
-    end
-
-    def initialize(config_names, results, benchmarks: [])
-        # We need to instantiate N sub-reports for N platforms
-        @platforms = results.platforms
-        @sub_reports = {}
-        @platforms.each do |platform|
-            platform_config_names = config_names.select { |name| name.start_with?(platform) }
-
-            # If we can't find a config with stats for this platform, is there one in x86_64?
-            unless platform_config_names.detect { |config| config.include?("yjit_stats") }
-                x86_stats_config = config_names.detect { |config| config.start_with?("x86_64") && config.include?("yjit_stats") }
-                puts "Can't find #{platform} stats config, falling back to using x86_64 stats"
-                platform_config_names << x86_stats_config if x86_stats_config
-            end
-
-            @sub_reports[platform] = ::YJITMetrics::MemoryDetailsReport.new(platform_config_names, platform, results, benchmarks: benchmarks)
-            if @sub_reports[platform].inactive
-                raise "Unable to produce stats-capable report for platform #{platform.inspect} in MemoryDetailsMultiplatformReport!"
-            end
-        end
-    end
-
-    def write_file(filename)
-        # First, write out per-platform reports
-        @sub_reports.each do |platform, report|
-            # Each sub-report will add the platform name for itself
-            report.write_file(filename)
-        end
-
-        # For each of these types, we'll just include for each platform and we can switch display
-        # in the Jekyll site. They exist, but there's no combined multiplatform version.
-        # We'll create an empty 'tracker' file for the combined version.
-        File.open("#{filename}.html", "w") { |f| f.write("") }
+    def self.single_report_class
+      ::YJITMetrics::MemoryDetailsReport
     end
 end
 
