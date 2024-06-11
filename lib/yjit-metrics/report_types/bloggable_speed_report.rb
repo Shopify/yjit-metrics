@@ -553,7 +553,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
               fill: bar[:fill],
               data_tooltip: bar[:tooltip]
 
-            if bar[:stddev_ratio]
+            if bar[:stddev_ratio]&.nonzero?
               # Whiskers should be centered around the top of the bar, at a distance of one stddev.
               stddev_top = bar_top - bar[:stddev_ratio] * plot_effective_height
               stddev_bottom = bar_top + bar[:stddev_ratio] * plot_effective_height
