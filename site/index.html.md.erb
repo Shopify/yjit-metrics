@@ -32,19 +32,27 @@ layout: basic
     <a href="<%= relative_url last_bench.url %>"><button>Latest Full Details</button></a>
   </div>
 
+  <hr style="width: 50%"/>
+
   <div style="text-align: center;">
+    <h3 style="text-align: center;">Performance on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
   <%= include(find_best(last_bench.reports, "blog_speed_details_PLATFORM_head_svg")) %>
   </a>
-  Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better.
+  <%= text(:speed_graph) %>
   </div>
 
+  <hr style="width: 50%"/>
+
   <div style="text-align: center;">
+    <h3 style="text-align: center;">Memory Usage on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
   <%= include(find_best(last_bench.reports, "blog_memory_details_PLATFORM_head_svg")) %>
   </a>
-  Memory usage of each Ruby implementation relative to the CRuby interpreter. Lower is better.
+  <%= text(:memory_graph) %>
   </div>
+
+  <hr style="width: 50%"/>
 </div>
 
 <!-- Timeline Graph -->

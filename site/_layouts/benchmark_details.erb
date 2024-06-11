@@ -56,49 +56,50 @@
       </span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
       </div>
       
-      <h2 id="headlining-graph">Headlining Benchmarks</h2>
+      <h2 id="headline-speed-graph">Performance on Headline Benchmarks</h2>
       
       <p>
         These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
       </p>
 
-      <%
-          SPEED_DESC = "Speed of each Ruby implementation (iterations/second) relative to the CRuby interpreter. Higher is better."
-          MEMORY_DESC = "Memory usage of each Ruby implementation relative to the CRuby interpreter. Lower is better."
-      %>
-
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
-            <%= SPEED_DESC %>
+            <%= text(:speed_graph) %>
       </div>
+
+      <h2 id="headline-memory-graph">Memory Usage on Headline Benchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.head.svg">
-            <%= MEMORY_DESC %>
+            <%= text(:memory_graph) %>
       </div>
 
-      <h2 id="other-graph">Other Benchmarks</h2>
+      <h2 id="other-speed-graph">Performance on Other Benchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
-            <%= SPEED_DESC %>
+            <%= text(:speed_graph) %>
       </div>
+
+      <h2 id="other-memory-graph">Memory Usage on Other Benchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.back.svg">
-            <%= MEMORY_DESC %>
+            <%= text(:memory_graph) %>
       </div>
 
-      <h2 id="microbenchmarks-graph">MicroBenchmarks</h2>
+      <h2 id="microbenchmarks-speed-graph">Performance on MicroBenchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
-            <%= SPEED_DESC %>
+            <%= text(:speed_graph) %>
       </div>
+
+      <h2 id="microbenchmarks-memory-graph">Memory Usage on MicroBenchmarks</h2>
 
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.micro.svg">
-            <%= MEMORY_DESC %>
+            <%= text(:memory_graph) %>
       </div>
 
       <h2 id="raw-data">Want Raw Graphs and CSV?</h2>
