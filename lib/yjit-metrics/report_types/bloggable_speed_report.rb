@@ -233,9 +233,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         config_names = orig_config_names.select { |name| name.start_with?(platform) || name.include?("yjit_stats") }
         raise("Can't find any stats configuration in #{orig_config_names.inspect}!") if config_names.empty?
 
-        # This can be set up using set_extra_info later.
-        @filename_permalinks = {}
-
         # Set up the parent class, look up relevant data
         super(config_names, results, benchmarks: benchmarks)
         return if @inactive # Can't get stats? Bail out.
@@ -260,16 +257,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         @col_formats[13] = "<b>%.2fx</b>" # Boldface the YJIT speedup column.
 
         calc_speed_stats_by_config
-    end
-
-    def set_extra_info(info)
-        super
-
-        if info[:filenames]
-            info[:filenames].each do |filename|
-                @filename_permalinks[filename] = "https://shopify.github.io/yjit-metrics/raw_benchmark_data/#{filename}"
-            end
-        end
     end
 
     # Printed to console
