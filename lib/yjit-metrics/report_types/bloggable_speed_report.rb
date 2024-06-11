@@ -144,12 +144,16 @@ class YJITMetrics::BloggableSingleReport < YJITMetrics::YJITStatsReport
                     # Use (baseline / this) so that the bar goes up as the value (test duration) goes down.
                     speed_ratio = baseline_mean / this_config_mean
 
-                    # Why do we treat these differently?
+                    # For non-baseline we add the rsd for the config to the rsd
+                    # for the baseline to determine the full variance bounds.
+                    # For just the baseline we don't need to add anything.
                     speed_rsd = if config == @baseline_config
                       this_config_rel_stddev_pct
                     else
                       this_config_rel_stddev = this_config_rel_stddev_pct / 100.0 # Get ratio, not percent
-                      # Why do we add baseline_rel_stddev**2?
+                      # Because we are dividing the baseline mean by this mean
+                      # to get a ratio we need to add the variance of each (the
+                      # baseline and this config) to determine the full error bounds.
                       speed_rel_stddev = Math.sqrt(baseline_rel_stddev * baseline_rel_stddev + this_config_rel_stddev * this_config_rel_stddev)
                       speed_rel_stddev * 100.0
                     end
