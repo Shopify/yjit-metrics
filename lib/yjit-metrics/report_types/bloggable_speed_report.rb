@@ -219,9 +219,6 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
     #    "blog_speed_details"
     #end
 
-    # If we can't get stats, the report won't produce sensible results.
-    attr_reader :inactive
-
     def self.report_extensions
         [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
     end
