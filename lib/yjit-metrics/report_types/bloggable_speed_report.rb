@@ -1149,15 +1149,21 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
             bench_no_jit_mean = @mean_by_config[@no_jit_config][bench_idx]
             bench_yjit_mean = @mean_by_config[@with_yjit_config][bench_idx]
+            prev_yjit_mean = @mean_by_config.dig(@prev_yjit_config, bench_idx)
 
-            [ bench_yjit_mean, bench_no_jit_mean ]
+            [ bench_yjit_mean, bench_no_jit_mean, prev_yjit_mean ]
         end
         # Geometric mean of headlining benchmarks only
-        @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, no_jit_mean| no_jit_mean / yjit_mean }
+        @yjit_vs_cruby_ratio = geomean headline_runtimes.map { |yjit_mean, no_jit_mean, _| no_jit_mean / yjit_mean }
+
+        if @prev_yjit_config
+          @yjit_vs_prev_yjit_ratio = geomean headline_runtimes.map { |yjit_mean, _, prev_yjit| prev_yjit / yjit_mean }
+        end
 
         @railsbench_idx = @benchmark_names.index("railsbench")
         if @railsbench_idx
             @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+            @yjit_vs_prev_yjit_railsbench_ratio = @mean_by_config[@prev_yjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
         end
     end
 
