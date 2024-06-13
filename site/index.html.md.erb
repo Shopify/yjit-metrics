@@ -1,5 +1,9 @@
 ---
 layout: basic
+urls:
+  yjit: https://github.com/Shopify/yjit
+  yjit_bench: https://github.com/Shopify/yjit-bench
+  ruby: https://github.com/ruby/ruby
 ---
 
 <% last_bench = site.benchmarks[-1] %>
@@ -8,7 +12,14 @@ layout: basic
 <div class="headline-box">
 
   <p>
-  How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href="https://github.com/Shopify/yjit-bench">benchmarks</a> as of <strong>  <%= last_bench.date_str %> <%= last_bench.time_str %></strong>?
+    <a href="<%= urls[:yjit] %>">YJIT</a>
+    metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
+    as of <strong><%= last_bench.date_str %></strong>
+
+    <% if last_bench.yjit_commit %>
+      using Ruby
+      <a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..10] %></a>
+    <% end %>
   </p>
 
   <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
