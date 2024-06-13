@@ -42,7 +42,11 @@ def ruby_metadata
     {
         "RUBY_VERSION" => RUBY_VERSION,
         "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
+        "RUBY_PATCHLEVEL" => RUBY_PATCHLEVEL,
         "RUBY_ENGINE" => RUBY_ENGINE,
+        "RUBY_ENGINE_VERSION" => RUBY_ENGINE_VERSION,
+        "RUBY_PLATFORM" => RUBY_PLATFORM,
+        "RUBY_REVISION" => RUBY_REVISION,
         "which ruby" => `which ruby`,
         "hostname" => `hostname`,
         "ec2 instance id" => `wget -q --timeout 1 --tries 2 -O - http://169.254.169.254/latest/meta-data/instance-id`,
