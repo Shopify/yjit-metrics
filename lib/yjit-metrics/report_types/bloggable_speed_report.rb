@@ -1084,16 +1084,24 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
 
     def format_speedup(ratio)
         if ratio >= 1.01
-            "%.1f%% faster" % ((ratio - 1.0) * 100)
+            "%.1f%% faster than" % ((ratio - 1.0) * 100)
         elsif ratio < 0.99
-            "%.1f%% slower" % ((1.0 - ratio) * 100)
+            "%.1f%% slower than" % ((1.0 - ratio) * 100)
         else
-            "the same speed" # Grammar's not perfect here
+            "the same speed as"
         end
+    end
+
+    def platforms
+      @result_set.platforms
     end
 
     def yjit_bench_file_url(path)
       "https://github.com/Shopify/yjit-bench/blob/#{@result_set.full_run_info&.dig("git_versions", "yjit_bench") || "main"}/#{path}"
+    end
+
+    def ruby_version(config)
+      @result_set.ruby_version_for_config(config)
     end
 
     X86_ONLY = ENV['ALLOW_ARM_ONLY_REPORTS'] != '1'
