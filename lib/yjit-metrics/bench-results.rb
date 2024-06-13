@@ -426,6 +426,11 @@ class YJITMetrics::ResultSet
         #    raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
         #end
 
+        @full_run ||= benchmark_results["full_run"]
+        if @full_run != benchmark_results["full_run"]
+          warn "The 'full_run' data should not change within the same run!"
+        end
+
         @peak_mem[config_name] ||= {}
         benchmark_results["peak_mem_bytes"].each do |benchmark_name, mem_bytes|
             benchmark_name = benchmark_name.sub(/.rb$/, "") if normalize_bench_names
@@ -510,6 +515,10 @@ class YJITMetrics::ResultSet
       else
         metadata["RUBY_VERSION"]
       end
+    end
+
+    def full_run_info
+      @full_run
     end
 
     def insert_version_for_config(str, config)

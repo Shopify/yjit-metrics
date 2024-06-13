@@ -1092,6 +1092,10 @@ class YJITMetrics::SpeedHeadlineReport < YJITMetrics::BloggableSingleReport
         end
     end
 
+    def yjit_bench_file_url(path)
+      "https://github.com/Shopify/yjit-bench/blob/#{@result_set.full_run_info&.dig("git_versions", "yjit_bench") || "main"}/#{path}"
+    end
+
     X86_ONLY = ENV['ALLOW_ARM_ONLY_REPORTS'] != '1'
 
     def initialize(config_names, results, benchmarks: [])
