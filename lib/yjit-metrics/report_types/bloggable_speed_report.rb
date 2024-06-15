@@ -569,8 +569,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
             if bar[:label]
               bar_labels << {
-                x: bar_left + 0.004,
-                y: bar_top - 0.01,
+                x: bar_left + 0.002,
+                y: bar_top - 0.0125,
                 text: bar[:label],
               }
             end
@@ -632,23 +632,27 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Do value labels last so that they are above bars, variance whiskers, etc.
         bar_labels.each do |label|
-          text_length = ratio_to_x(0.02)
+          font_size = "0.5em" # xx-small is equivalent to 9px or 0.5625em at the default browser font size.
+          label_text_height = text_height * 0.8
+          text_length = 0.0175
+          transform = "rotate(-60, #{ratio_to_x(label[:x] + (bar_width * 0.5))}, #{ratio_to_y(label[:y])})"
+
           svg.rect \
-            x: ratio_to_x(label[:x]),
-            y: ratio_to_y(label[:y] - 0.9 * text_height),
-            width: text_length,
-            height: ratio_to_y(text_height),
-            transform: "rotate(-60, #{ratio_to_x(label[:x] + (bar_width * 0.5))}, #{ratio_to_y(label[:y])})",
+            x: ratio_to_x(label[:x] - text_length * 0.01),
+            y: ratio_to_y(label[:y] - 0.925 * label_text_height),
+            width: ratio_to_x(text_length * 1.02),
+            height: ratio_to_y(label_text_height),
+            transform: transform,
             **Theme.bar_text_background_attrs
 
           svg.text label[:text],
             x: ratio_to_x(label[:x]),
             y: ratio_to_y(label[:y]),
             fill: Theme.text_color,
-            font_size: "x-small",
+            font_size: font_size,
             text_anchor: "start",
-            textLength: text_length,
-            transform: "rotate(-60, #{ratio_to_x(label[:x] + (bar_width * 0.5))}, #{ratio_to_y(label[:y])})",
+            textLength: ratio_to_x(text_length),
+            transform: transform,
             **Theme.bar_text_attrs
         end
 
