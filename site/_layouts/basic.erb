@@ -1,3 +1,6 @@
+---
+title: "YJIT Benchmarks"
+---
 <!DOCTYPE html>
 <!-- Copied from Slate default and modified -->
 <html lang="en-US">
@@ -8,6 +11,7 @@
     <meta name="viewport" content="width=device-width,maximum-scale=2">
     <script src="assets/js/clipboard.min.js"></script>
     <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css">
+    <title><%= title %></title>
 
     <style media="all">
       #svg_tooltip {
@@ -28,6 +32,19 @@
       }
       .timeline-report-explanation {
         text-align: center;
+      }
+      footer ul {
+        display: inline-block;
+      }
+      footer ul li {
+        display: inline-block;
+        margin-right: 0.5em;
+      }
+      footer ul li:last-child {
+        margin-right: 0;
+      }
+      .headline-box ul {
+        padding-left: 0;
       }
     </style>
 
@@ -54,9 +71,9 @@
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <ul style="display: inline-block;">
-          <li style="display: inline-block;"><a href="<%= relative_url "about.html" %>">About YJIT Benchmarks</a>&nbsp;&nbsp;</li>
-          <li style="display: inline-block;"><a href="<%= relative_url "history.html" %>">Raw Results History</a>&nbsp;&nbsp;</li>
+        <ul>
+          <li><a href="<%= relative_url "about.html" %>">About YJIT Benchmarks</a></li>
+          <li><a href="<%= relative_url "history.html" %>">Raw Results History</a></li>
         </ul>
       </footer>
     </div>

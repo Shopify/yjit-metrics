@@ -26,8 +26,8 @@
 
 <p>
 	Tested Ruby version for development CRuby and YJIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-<% if @with_prev_yjit_config %>
-	Tested Ruby version for stable CRuby and YJIT: <tt><strong><%= @ruby_metadata_by_config[@with_prev_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
+<% if @prev_yjit_config %>
+	Tested Ruby version for stable CRuby and YJIT: <tt><strong><%= @ruby_metadata_by_config[@prev_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
 <% end %>
 <% if @with_mjit_latest_config %>
 	Tested Ruby version for Ruby latest MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_latest_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>

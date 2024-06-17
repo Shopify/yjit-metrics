@@ -51,17 +51,10 @@
       <!-- Content specific to benchmark details -->
       <h2>Details for Benchmarks at <%= page.date_str %> <%= page.time_str %></h2>
 
-      <div>
-      <span style="font-weight: bold; font-size: 125%;"><%= include page.reports[:blog_speed_headline_html] %>
-      </span><br/> The basic "faster" measurement is the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a> of all "headlining" x86 benchmarks on this page.
-      </div>
+      <div><%= include page.reports[:blog_speed_headline_html] %></div>
       
       <h2 id="headline-speed-graph">Performance on Headline Benchmarks</h2>
       
-      <p>
-        These are "headlining" because the "overall" speedup above is based on these benchmarks specifically.
-      </p>
-
       <div style="width: 800px;" data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
             <%= text(:speed_graph) %>

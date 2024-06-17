@@ -1,2 +1,25 @@
-Overall YJIT is <%= format_speedup(@yjit_vs_cruby_ratio) %> than interpreted CRuby! <br/>
-<% if @railsbench_idx %>On Railsbench specifically, YJIT is <%= format_speedup @yjit_vs_cruby_railsbench_ratio %> than CRuby!<% end %>
+Using the <a href="https://en.wikipedia.org/wiki/Geometric_mean">geomean</a>
+of the <a href="<%= yjit_bench_file_url("benchmarks.yml") %>">headline benchmarks</a>
+<%= "for x86" if platforms.include?("x86_64") %>
+
+YJIT <%= ruby_version(@with_yjit_config) %> is
+
+<ul style="list-style: none">
+  <li><%= format_speedup(@yjit_vs_cruby_ratio) %> CRuby <%= ruby_version(@no_jit_config) %></li>
+
+  <% if @prev_yjit_config %>
+    <li><%= format_speedup(@yjit_vs_prev_yjit_ratio) %> YJIT <%= ruby_version(@prev_yjit_config) %></li>
+  <% end %>
+</ul>
+
+<% if @railsbench_idx %>
+  On <a href="<%= yjit_bench_file_url("benchmarks/railsbench/benchmark.rb") %>">railsbench</a> it is
+
+  <ul style="list-style: none">
+    <li><%= format_speedup @yjit_vs_cruby_railsbench_ratio %> CRuby <%= ruby_version(@no_jit_config) %></li>
+
+    <% if @prev_yjit_config %>
+      <li><%= format_speedup(@yjit_vs_prev_yjit_railsbench_ratio) %> YJIT <%= ruby_version(@prev_yjit_config) %></li>
+    <% end %>
+  </ul>
+<% end %>

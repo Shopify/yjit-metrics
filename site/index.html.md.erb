@@ -1,5 +1,9 @@
 ---
 layout: basic
+urls:
+  yjit: https://github.com/Shopify/yjit
+  yjit_bench: https://github.com/Shopify/yjit-bench
+  ruby: https://github.com/ruby/ruby
 ---
 
 <% last_bench = site.benchmarks[-1] %>
@@ -8,10 +12,17 @@ layout: basic
 <div class="headline-box">
 
   <p>
-  How is <a href="https://github.com/Shopify/yjit">YJIT's</a> speed on its <a href="https://github.com/Shopify/yjit-bench">benchmarks</a> as of <strong>  <%= last_bench.date_str %> <%= last_bench.time_str %></strong>?
+    <a href="<%= urls[:yjit] %>">YJIT</a>
+    metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
+    as of <strong><%= last_bench.date_str %></strong>
+
+    <% if last_bench.yjit_commit %>
+      using Ruby
+      <a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..10] %></a>
+    <% end %>
   </p>
 
-  <span style="font-weight: bold; font-size: 125%"><%= include last_bench.reports[:blog_speed_headline_html] %></span>
+  <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
 
   <% for platform in last_bench.platforms %>
   <div class="headline-button">
@@ -25,12 +36,9 @@ layout: basic
   <h2 style="text-align: center;">Latest Headlining Results vs CRuby</h2>
 
   <p style="text-align: center;">
-    "Overall" in the headline means results on these benchmarks. Click through for more benchmarks.
+    These "headlining" benchmarks are used for the above measurements.
+    There are more benchmarks on the <a href="<%= relative_url last_bench.url %>">Full Details Page</a>.
   </p>
-
-  <div style="text-align: center;">
-    <a href="<%= relative_url last_bench.url %>"><button>Latest Full Details</button></a>
-  </div>
 
   <hr style="width: 50%"/>
 
@@ -53,6 +61,10 @@ layout: basic
   </div>
 
   <hr style="width: 50%"/>
+
+  <div style="text-align: center;">
+    <a href="<%= relative_url last_bench.url %>"><button>See more benchmarks</button></a>
+  </div>
 </div>
 
 <!-- Timeline Graph -->
