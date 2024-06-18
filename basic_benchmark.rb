@@ -415,7 +415,7 @@ unless skip_git_updates
             puts "Installing Ruby #{ruby_build} via ruby-build..."
             Dir.chdir(RUBY_BUILD_DIR) do
               YJITMetrics.check_call("git pull")
-              YJITMetrics.check_call("./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{CHRUBY_RUBIES}/#{ruby_build}")
+              YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{CHRUBY_RUBIES}/#{ruby_build}")
             end
         when "repo"
             YJITMetrics.clone_ruby_repo_with \
