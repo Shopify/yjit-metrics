@@ -543,6 +543,13 @@ def write_crash_file(error_info, crash_report_dir)
     error_info[:crash_files].each { |f| FileUtils.mv f, "#{crash_report_dir}/" }
 end
 
+def load_averages
+  file = '/proc/loadavg'
+  File.readable?(file) ? File.read(file).strip : `uptime`.match(/load averages?: ([0-9., ]+)/)[1].gsub(/,/, '')
+end
+
+load_averages_before = load_averages
+
 Dir.chdir(YJIT_BENCH_DIR) do
     all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
       Benchmark.realtime do
@@ -661,6 +668,8 @@ intermediate_by_config.each do |config, int_files|
         "total_bench_seconds" => total_seconds,
         "git_versions" => GIT_VERSIONS, # yjit-metrics version, yjit-bench version, etc.
         "ruby_config_opts" => ruby_config_opts, # command-line options for each Ruby configuration
+        "load_before" => load_averages_before,
+        "load_after" => load_averages,
     }
 
     json_path = OUTPUT_DATA_PATH + "/#{timestamp}_basic_benchmark_#{config}.json"
