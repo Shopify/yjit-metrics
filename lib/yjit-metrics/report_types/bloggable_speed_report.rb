@@ -437,7 +437,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         # Set up the top legend with coloured boxes and Ruby config names
         top_legend_box_height = 0.032
         top_legend_box_width = 0.12
-        top_legend_text_height = 0.015
+        text_height = 0.015
 
         top_legend_item_width = plot_effective_width / n_configs
         n_configs.times do |config_idx|
@@ -466,7 +466,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             end
             svg.text @configs_with_human_names[config_idx][0],
                 x: ratio_to_x(item_center_x),
-                y: ratio_to_y(item_center_y + 0.5 * top_legend_text_height),
+                y: ratio_to_y(item_center_y + 0.5 * text_height),
                 font_size: font_size,
                 text_anchor: "middle",
                 font_weight: "bold",
@@ -510,6 +510,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
                     bar_data.last[:bars] << {
                       value: bar_height_ratio,
                       fill: ruby_config_bar_colour[config],
+                      label: sprintf("%.2f", relative_value),
                       tooltip: tooltip_text,
                       stddev_ratio: stddev_ratio,
                     }
@@ -532,6 +533,7 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
             {
               value: value / max_value,
               fill: ruby_config_bar_colour[config],
+              label: sprintf("%.2f", value),
               tooltip: sprintf("%.2fx baseline (%s)", value, ruby_human_names[index]),
             }
           end.compact,
@@ -541,6 +543,8 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
         # for bar-sized space before each group, plus one for the right side of the graph.
         num_groups = bar_data.size
         bar_width = plot_width / (num_groups + bar_data.map { |x| x[:bars].size }.sum + 1)
+
+        bar_labels = []
 
         # Start at the y-axis.
         left = plot_left_edge
@@ -562,6 +566,14 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
               height: ratio_to_y(bar_height),
               fill: bar[:fill],
               data_tooltip: bar[:tooltip]
+
+            if bar[:label]
+              bar_labels << {
+                x: bar_left + 0.002,
+                y: bar_top - 0.0125,
+                text: bar[:label],
+              }
+            end
 
             if bar[:stddev_ratio]&.nonzero?
               # Whiskers should be centered around the top of the bar, at a distance of one stddev.
@@ -617,6 +629,32 @@ class YJITMetrics::SpeedDetailsReport < YJITMetrics::BloggableSingleReport
 
         # Horizontal line for baseline of CRuby at 1.0.
         svg.line x1: ratio_to_x(plot_left_edge), y1: ratio_to_y(baseline_y), x2: ratio_to_x(plot_right_edge), y2: ratio_to_y(baseline_y), stroke: baseline_colour, "stroke-width": baseline_strokewidth
+
+        # Do value labels last so that they are above bars, variance whiskers, etc.
+        bar_labels.each do |label|
+          font_size = "0.5em" # xx-small is equivalent to 9px or 0.5625em at the default browser font size.
+          label_text_height = text_height * 0.8
+          text_length = 0.0175
+          transform = "rotate(-60, #{ratio_to_x(label[:x] + (bar_width * 0.5))}, #{ratio_to_y(label[:y])})"
+
+          svg.rect \
+            x: ratio_to_x(label[:x] - text_length * 0.01),
+            y: ratio_to_y(label[:y] - 0.925 * label_text_height),
+            width: ratio_to_x(text_length * 1.02),
+            height: ratio_to_y(label_text_height),
+            transform: transform,
+            **Theme.bar_text_background_attrs
+
+          svg.text label[:text],
+            x: ratio_to_x(label[:x]),
+            y: ratio_to_y(label[:y]),
+            fill: Theme.text_color,
+            font_size: font_size,
+            text_anchor: "start",
+            textLength: ratio_to_x(text_length),
+            transform: transform,
+            **Theme.bar_text_attrs
+        end
 
         svg
     end
