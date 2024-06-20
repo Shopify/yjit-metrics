@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby -w
 
+require "digest"
 require "erb"
 require "json"
 require "yaml"
@@ -101,6 +102,12 @@ class RenderContext
 
   def text(key)
     TEXT.fetch(key)
+  end
+
+  def asset_url(asset)
+    path = "assets/#{asset}"
+    hash = Digest::MD5.file(File.expand_path(path, File.dirname(__dir__))).hexdigest[0..8]
+    "/assets/#{asset}?#{hash}"
   end
 end
 
