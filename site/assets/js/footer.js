@@ -83,3 +83,25 @@ clipboard.on('error', function(e) {
   console.error('Action:', e.action);
   console.error('Trigger:', e.trigger);
 });
+
+// Find UTC timestamps on the page and change them to browser local time.
+function convertTimeStampsToLocal() {
+  // Use en-CA to get YYYY-MM-DD style.
+  var fmt = new Intl.DateTimeFormat('en-CA', {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    day: "numeric",
+    year: "numeric",
+    month: "numeric",
+    hour12: false,
+    // timeZoneName: "short" => "MST", "shortOffset" => "GMT - 7"
+    timeZoneName: "shortOffset",
+  });
+  document.querySelectorAll('.timestamp').forEach(function(el) {
+    var ts = el.innerText;
+    el.title = (el.title || '') + ts;
+    el.innerText = fmt.format(new Date(ts)).replace(/,/, '');
+  });
+}
+convertTimeStampsToLocal();
