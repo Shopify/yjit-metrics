@@ -1,3 +1,9 @@
+---
+urls:
+  yjit: https://github.com/Shopify/yjit
+  yjit_bench: https://github.com/Shopify/yjit-bench
+  ruby: https://github.com/ruby/ruby
+---
 <!DOCTYPE html>
 <!-- Copied from Slate default and modified -->
 <html lang="en-US">
@@ -50,6 +56,15 @@
 
       <!-- Content specific to benchmark details -->
       <h2>Details for Benchmarks at <span class="timestamp"><%= page.date_str %> <%= page.time_str %></span></h2>
+
+      <p>
+        <a href="<%= urls[:yjit] %>">YJIT</a>
+        metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
+        <% if page.yjit_commit %>
+          using Ruby
+          <a href="<%= urls[:ruby] %>/commit/<%= page.yjit_commit %>"><%= page.yjit_commit[0..10] %></a>
+        <% end %>
+      </p>
 
       <div><%= include page.reports[:blog_speed_headline_html] %></div>
       
