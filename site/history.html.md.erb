@@ -15,7 +15,7 @@ with other Rubies.
   <% date_benchmarks.each do |benchmark| %>
     <% bench_index += 1 %>
 
-<h4 id="<%= benchmark.timestamp %>"><%= benchmark.date_str %> <%= benchmark.time_str %></h4>
+<h4 id="<%= benchmark.timestamp %>" class="timestamp"><%= benchmark.date_str %> <%= benchmark.time_str %></h4>
 
 <% if bench_index < 50 %>
 <div style="width: 800px;">
