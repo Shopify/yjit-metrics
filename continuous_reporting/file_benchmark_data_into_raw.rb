@@ -5,7 +5,7 @@ require "yaml"
 require "fileutils"
 require "optparse"
 
-require_relative "../lib/yjit-metrics"
+require_relative "../lib/yjit_metrics"
 
 YJIT_RAW_DATA_REPO = File.join(YJITMetrics::ContinuousReporting::RAW_BENCHMARK_ROOT, "raw_benchmark_data")
 

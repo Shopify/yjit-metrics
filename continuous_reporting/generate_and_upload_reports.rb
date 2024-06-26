@@ -6,7 +6,7 @@ require "fileutils"
 require "optparse"
 require "rbconfig"
 
-require_relative "../lib/yjit-metrics"
+require_relative "../lib/yjit_metrics"
 
 ### Required repos, etc, to build from
 

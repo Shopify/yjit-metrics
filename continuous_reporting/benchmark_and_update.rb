@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative "../lib/yjit-metrics"
+require_relative "../lib/yjit_metrics"
 
 require 'fileutils'
 require 'net/http'

@@ -3,7 +3,7 @@
 require "optparse"
 require "json"
 
-require_relative "../lib/yjit-metrics"
+require_relative "../lib/yjit_metrics"
 
 # A particular run through the benchmarking system has a number of important parameters.
 # Most, though not all, are captured in the JSON file produced here. In general,

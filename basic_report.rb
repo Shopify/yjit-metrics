@@ -2,7 +2,7 @@
 
 require "json"
 require "optparse"
-require_relative "lib/yjit-metrics"
+require_relative "lib/yjit_metrics"
 
 RESULT_SET = YJITMetrics::ResultSet.new
 
