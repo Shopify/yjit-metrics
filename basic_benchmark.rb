@@ -20,7 +20,7 @@ require "benchmark"
 require "optparse"
 require "fileutils"
 require "etc"
-require_relative "lib/yjit-metrics"
+require_relative "lib/yjit_metrics"
 
 # Default settings for benchmark sampling
 DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs

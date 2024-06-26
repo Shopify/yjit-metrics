@@ -52,8 +52,8 @@ site (hosted at speed.yjit.org) with a simple command:
 This will move files from `./data/` into a `build` directory,
 generate all the html files, and start a web server where you can view the site at `localhost:8000`.
 
-Some of the reports are built using `lib/yjit-metrics` and have templates in
-`lib/yjit-metrics/report_templates`.
+Some of the reports are built using `lib/yjit_metrics` and have templates in
+`lib/yjit_metrics/report_templates`.
 The rest of the files that build the site are found beneath `site`.
 There are `erb` files to generate additional pages
 and the script that does all the file rendering in `site/_framework/`.
@@ -87,7 +87,7 @@ Then a quick "git diff" in the pages directory can show you what, if anything, c
 ### Output Format
 
 Changes to the JSON format may require a bump to the `version` entry (`lib/yjit-metrics.rb`)
-and translation logic in the code that processes the data (`lib/yjit-metrics/bench-results.rb`).
+and translation logic in the code that processes the data (`lib/yjit_metrics/result_set.rb`).
 
 ### Tests
 

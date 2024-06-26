@@ -2,9 +2,7 @@
 
 require "json"
 require "optparse"
-require_relative "lib/yjit-metrics"
-
-require_relative "lib/yjit-metrics/timeline_report_types/all_timeline_reports_lib"
+require_relative "lib/yjit_metrics"
 
 report_class_by_name = YJITMetrics::TimelineReport.report_name_hash
 # By sorting, we make sure that the first report name that returns true from .start_with? is the "real" match.
