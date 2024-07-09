@@ -327,23 +327,26 @@ puts "Switched to #{Dir.pwd}"
 
 # Currently this will only be true on the server.
 if File.exist?(".git")
-  YJITMetrics.check_call "git checkout empty"
-  YJITMetrics.check_call "git branch -D new_pages || echo ok" # If the local new_pages branch exists, delete it
-  YJITMetrics.check_call "git checkout --orphan new_pages"
-  YJITMetrics.check_call "git rm --cached -r .gitignore && rm -f .gitignore"
-  YJITMetrics.check_call "mv #{YM_REPO}/site/_site/* ./"
+  branch = "pages"
+
+  YJITMetrics.check_call "git checkout #{branch}" # Should already be on this branch (no-op).
+
+  YJITMetrics.check_call "rsync --exclude=.git -ar --ignore-times --delete #{YM_REPO}/site/_site/ ./"
+
   YJITMetrics.check_call "touch .nojekyll"
   YJITMetrics.check_call "git add ."
-  YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
+  if `git status --porcelain=1 --untracked-files=no | grep -E '^[A-Z]' | wc -l`.strip.to_i.nonzero?
+    YJITMetrics.check_call "git commit -m 'Rebuilt site HTML'"
+  else
+    puts "No changes found"
+  end
 
   unless no_push
     # Reset the pages branch to the new built site
-    YJITMetrics.check_call "git checkout pages && git reset --hard new_pages"
-    YJITMetrics.check_call "git push -f origin pages"
-    YJITMetrics.check_call "git branch -D new_pages || echo ok" # Sometimes this fails for no obvious reason
+    YJITMetrics.check_call "git push -f origin #{branch}"
   end
 
-  YJITMetrics.check_call "git checkout empty"
+  YJITMetrics.check_call "git gc"
 end
 
 puts "Finished generate_and_upload_reports successfully in #{YM_REPO}!"
