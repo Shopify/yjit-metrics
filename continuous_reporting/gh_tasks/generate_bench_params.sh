@@ -8,7 +8,6 @@ set -e
 chruby 3.0.2
 
 cd ~/ym/yjit-metrics
-git checkout main && git pull
 
 bundle
 
