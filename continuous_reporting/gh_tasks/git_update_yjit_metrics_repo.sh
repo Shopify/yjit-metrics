@@ -29,3 +29,7 @@ git fetch current_repo
 git clean -ffdx
 git restore -SW .
 git checkout current_repo/$YJIT_METRICS_NAME
+
+# All this ref switching can leave cruft in the git database.
+# Clean it to keep disk space under control.
+git gc
