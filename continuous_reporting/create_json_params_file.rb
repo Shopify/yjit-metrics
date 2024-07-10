@@ -138,9 +138,38 @@ def sha_for_name_in_dir(name:, dir:, repo:, desc:)
   end
 end
 
+def commit_timestamp(name:, dir:)
+  Dir.chdir(dir) do
+    ts = `git log --pretty=format:%ci -1 #{name}`.strip
+    # FIXME: requires ruby 3.3
+    Time.new(ts).utc.strftime("%F-%H%M%S")
+  end
+rescue => error
+  warn "Error fetching timestamp for #{name} in #{repo}: #{error.message}"
+end
+
 yjit_metrics_sha = sha_for_name_in_dir name: yjit_metrics_name, dir: YJIT_METRICS_DIR, repo: yjit_metrics_repo, desc: "yjit_metrics"
 yjit_bench_sha = sha_for_name_in_dir name: yjit_bench_name, dir: YJIT_BENCH_DIR, repo: yjit_bench_repo, desc: "yjit_bench"
 cruby_sha = sha_for_name_in_dir name: cruby_name, dir: CRUBY_DIR, repo: cruby_repo, desc: "Ruby"
+
+cruby_ts = commit_timestamp name: cruby_name, dir: CRUBY_DIR
+
+SHA_TIMESTAMPS = {
+  "7afc16aa48beb093b06eb978bc430f90dd771690" => "2024-05-19-030835", # 7afc16aa48beb093b06eb978bc430f90dd771690_2024-05-19 12:08:35 +0900
+  "ad636033e2fdafb417873a3cb8667351033307b1" => "2024-05-19-030805", # ad636033e2fdafb417873a3cb8667351033307b1_2024-05-19 12:08:05 +0900
+  "b73dd8f6d0d04fec834c4aae0139cf6c0270f780" => "2024-06-17-074056", # b73dd8f6d0d04fec834c4aae0139cf6c0270f780_2024-06-17 07:40:56 +0000
+  "cdf33ed5f37f9649c482c3ba1d245f0d80ac01ce" => "2024-06-18-162825", # cdf33ed5f37f9649c482c3ba1d245f0d80ac01ce_2024-06-18 09:28:25 -0700
+  "d037c5196a14c03e72746ccdf0437b5dd4f80a69" => "2024-05-19-163049", # d037c5196a14c03e72746ccdf0437b5dd4f80a69_2024-05-20 01:30:49 +0900
+  "48ebd77e595d569b225151ef281aae537d95d6f5" => "2024-05-19-142450", # 48ebd77e595d569b225151ef281aae537d95d6f5_2024-05-19 23:24:50 +0900
+  "921f22e563d6372d9f853f87d48b11c479126da9" => "2024-06-18-151523", # 921f22e563d6372d9f853f87d48b11c479126da9_2024-06-18 15:15:23 +0000
+  "b73dd8f6d0d04fec834c4aae0139cf6c0270f780" => "2024-06-17-074056", # b73dd8f6d0d04fec834c4aae0139cf6c0270f780_2024-06-17 07:40:56 +0000
+}
+sha_ts = SHA_TIMESTAMPS[cruby_sha]
+puts SHA_TIMESTAMPS.inspect, cruby_sha.inspect, SHA_TIMESTAMPS[cruby_sha].inspect
+#output_ts = cruby_ts if cruby_name != "master"
+puts "TS: #{output_ts.inspect} #{sha_ts.inspect}"
+output_ts = sha_ts
+exit 1 unless sha_ts
 
 output = {
   ts: output_ts,
