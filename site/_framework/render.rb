@@ -43,14 +43,14 @@ class RenderContext
   end
 
   def method_missing(name, *args, **keywords)
-    if @metadata[name.to_s]
-      return @metadata[name.to_s]
-    end
+    return @metadata[name.to_s] if @metadata.key?(name.to_s)
+
     super
   end
 
   def respond_to_missing?(name)
-    return true if @metadata[name.to_s]
+    return true if @metadata.key?(name.to_s)
+
     super
   end
 
