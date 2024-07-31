@@ -56,6 +56,7 @@ def ruby_metadata
 
         # Ruby compile-time settings: do we want to record more of them?
         "RbConfig configure_args" => RbConfig::CONFIG["configure_args"],
+        "RbConfig CC_VERSION_MESSAGE" => RbConfig::CONFIG["CC_VERSION_MESSAGE"],
     }
 end
 
