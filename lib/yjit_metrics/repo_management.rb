@@ -62,7 +62,8 @@ module YJITMetrics
           check_call("make clean")
         end
 
-        check_call("make -j16 install")
+        check_call("make -j16")
+        check_call("make install")
       end
     end
   end
