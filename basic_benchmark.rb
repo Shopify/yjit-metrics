@@ -46,7 +46,7 @@ YJIT_PER_OS_OPTS = SETARCH_OPTS
 MJIT_PER_OS_OPTS = SETARCH_OPTS
 TRUFFLE_PER_OS_OPTS = {}
 
-PREV_RUBY_BUILD = "ruby-3.3.3"
+PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
 
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
@@ -273,6 +273,7 @@ end
 
 YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
+YJIT_PREV_REF = "v3_3_4"
 
 def full_clean_yjit_cruby(flavor)
     repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
@@ -310,8 +311,12 @@ RUBY_BUILDS = {
         full_clean: full_clean_yjit_cruby("prod"),
     },
     PREV_RUBY_BUILD => {
-        install: "ruby-build",
-        full_clean: "rm -rf ~/.rubies/#{PREV_RUBY_BUILD}",
+        install: "repo",
+        git_url: YJIT_GIT_URL,
+        git_branch: YJIT_PREV_REF,
+        repo_path: "#{repo_root}/prev-ruby",
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
+        full_clean: full_clean_yjit_cruby("prev"),
     },
     "ruby-3.0.0" => {
         install: "ruby-install",
