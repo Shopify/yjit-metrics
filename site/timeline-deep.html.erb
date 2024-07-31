@@ -324,38 +324,41 @@ function setRequestError() {
 // Default to x86_64 recent-only data
 setRequestPending();
 fetch("/reports/timeline/blog_timeline.data.x86_64.recent.js").then(function (response) {
-    if(response.ok) {
-        return response.text().then(function (data) {
-            setRequestFinished();
-            eval(data);
-            updateGraphFromData();
-            rescaleGraphFromFetchedData();
+  if(!response.ok) {
+    throw(new Error('Response failed: ' + response.statusText));
+  }
 
-            var handler = function(event) {
-                // Did they click a platform radio button? If not, we ignore it.
-                if(!event.target.matches('#plat-select-fieldset input[type="radio"]')) return;
+  return response.text().then(function (data) {
+    setRequestFinished();
+    eval(data);
+    updateGraphFromData();
+    rescaleGraphFromFetchedData();
+  });
+}).catch(setRequestError)
+  .then(function(x) {
+    var handler = function(event) {
+      // Did they click a platform radio button? If not, we ignore it.
+      if(!event.target.matches('#plat-select-fieldset input[type="radio"]')) return;
 
-                setRequestPending();
-                var newDataSet = event.target.value;
-                fetch("/reports/timeline/blog_timeline.data." + newDataSet + ".js").then(function(response) {
-                    if(response.ok) {
-                        return response.text().then(function(data) {
-                            setRequestFinished();
-                            eval(data);
-                            rescaleGraphFromFetchedData();
-                        });
-                    } else {
-                        setRequestError();
-                    }
-                });
-            };
-            // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
-            document.addEventListener('click', handler);
+      setRequestPending();
+      var newDataSet = event.target.value;
+      fetch("/reports/timeline/blog_timeline.data." + newDataSet + ".js").then(function(response) {
+        if(!response.ok) {
+          throw(new Error('Response failed: ' + response.statusText));
+        }
+
+        return response.text().then(function(data) {
+          setRequestFinished();
+          eval(data);
+          rescaleGraphFromFetchedData();
         });
-    } else {
-        setRequestError();
-    }
-});
+      }).catch(setRequestError);
+    };
+
+    // If anybody clicks a platform radio button, send a new request and cancel the old one, if any.
+    document.addEventListener('click', handler);
+  })
+  .catch(console.error);
 
 // Handle legend and checkboxes
 document.getElementById("bottom_selection_checkboxes").style.display = "block";
