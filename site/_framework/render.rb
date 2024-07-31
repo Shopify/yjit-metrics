@@ -6,6 +6,7 @@ require "json"
 require "yaml"
 require "fileutils"
 require "ostruct"
+require "shellwords"
 
 REPO_DIR = File.expand_path("../../", __dir__)
 
@@ -108,6 +109,15 @@ class RenderContext
     path = "assets/#{asset}"
     hash = Digest::MD5.file(File.expand_path(path, File.dirname(__dir__))).hexdigest[0..8]
     "/assets/#{asset}?#{hash}"
+  end
+
+  def configure_args(args)
+    Shellwords.split(args).map do |arg|
+      next if arg.match?(/^--prefix=/)
+
+      # Wrap in single quotes only if it seems necessary.
+      arg.match?(%r{^[^-a-zA-Z]|[^[-_a-zA-Z0-9:@\/=]]}) ? "'#{arg}'" : arg
+    end.compact
   end
 end
 

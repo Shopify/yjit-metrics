@@ -11,16 +11,11 @@ urls:
 <!-- Headline Box -->
 <div class="headline-box">
 
-  <p>
+  <div>
     <a href="<%= urls[:yjit] %>">YJIT</a>
     metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
     as of <strong><%= last_bench.date_str %></strong>
-
-    <% if last_bench.yjit_commit %>
-      using Ruby
-      <a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..10] %></a>
-    <% end %>
-  </p>
+  </div>
 
   <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
 
@@ -29,6 +24,39 @@ urls:
     <a href="<%= relative_url last_bench.url %>#<%= platform %>"><button>Latest Full Details (<%= platform %>)</button></a>
   </div>
   <% end %>
+
+  <div class="build-config">
+    YJIT <%= last_bench.yjit_ruby_version %> build configuration
+    <dl>
+      <% if last_bench.yjit_ruby_description %>
+        <dt>Ruby</dt>
+        <dd><code>
+          <% match = last_bench.yjit_ruby_description.match(/(.+? )([0-9a-fA-F]+)(\).*)/) %>
+          <%= match[1] %><a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit.yield_self { |c| c.start_with?(match[2]) ? c : match[2] } %>"><%= match[2] %></a><%= match[3] %>
+        </code></dd>
+      <% elsif last_bench.yjit_commit %>
+        <dt>Ruby</dt>
+        <dd><a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..9] %></a></dd>
+      <% end %>
+
+      <% if last_bench.yjit_configure_args %>
+        <dt>Configure args</dt>
+        <dd><code class="configure-args">
+          <% configure_args(last_bench.yjit_configure_args).each do |arg| %>
+            <%# Wrap each argument in a "no-wrap" tag to discourage breaking on the dashes that are common in command line args. %>
+            <span class="nowrap"><%= arg %></span>
+          <% end %>
+        </code></dd>
+      <% end %>
+
+      <% if last_bench.yjit_cc_version %>
+        <dt>Compiler</dt>
+        <dd><code class="compiled-with"><%= last_bench.yjit_cc_version %></code></dd>
+      <% end %>
+
+    </dl>
+  </div>
+
 </div>
 
 <!-- Latest Headlining Results -->
