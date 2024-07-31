@@ -284,6 +284,16 @@ module YJITMetrics
       #  raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
       #end
 
+      # Delete items that we want to ignore from the "full_run" warning.
+      %w[
+        total_bench_time
+        total_bench_seconds
+        load_before
+        load_after
+      ].each do |key|
+        benchmark_results["full_run"].delete(key)
+      end
+
       @full_run ||= benchmark_results["full_run"]
       if @full_run != benchmark_results["full_run"]
         warn "The 'full_run' data should not change within the same run (#{file})!"
