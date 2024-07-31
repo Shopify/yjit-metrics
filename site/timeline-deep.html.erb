@@ -20,10 +20,11 @@ document.timeline_data = {} // For sharing data w/ handlers
 </p>
 
 <div class="timeline_report">
-    <img class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none" />
     <div class="graph-error" style="display: none"><span style="color: red; font-size: 300%;">Error Loading Data (please reload page)</span></div>
-    <form>
-        <fieldset id="plat-select-fieldset" style="border: 1px solid black">
+    <div>
+      <img class="graph-loading" src="/images/loading.gif" height="32" width="32" style="position: absolute; display: none" />
+      <form>
+        <fieldset id="plat-select-fieldset" style="border: 1px solid black; margin: 0 0 0 32px;">
             <legend>Select Dataset</legend>
 
             <input type="radio" id="platform-radio-x86-recent" name="plat-data-select" value="x86_64.recent" checked />
@@ -38,7 +39,8 @@ document.timeline_data = {} // For sharing data w/ handlers
             <input type="radio" id="platform-radio-aarch-recent" name="plat-data-select" value="aarch64.all_time" />
             <label for="platform-radio-aarch-recent">AWS Graviton ARM64 All-Time</label>
         </fieldset>
-    </form>
+      </form>
+    </div>
     <%= include "reports/blog_timeline.html" %>
 </div>
 
