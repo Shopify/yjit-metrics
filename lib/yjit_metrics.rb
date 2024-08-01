@@ -111,6 +111,10 @@ module YJITMetrics
     output
   end
 
+  def config_without_platform(config_name)
+    config_name.sub(/^#{Regexp.union(PLATFORMS)}_/, '')
+  end
+
   def run_harness_script_from_string(script,
       local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
       crash_file_check: true,

@@ -293,6 +293,9 @@ module YJITMetrics
       ].each do |key|
         benchmark_results["full_run"]&.delete(key)
       end
+      benchmark_results&.dig("full_run", "ruby_config_opts")&.transform_keys! do |k|
+        YJITMetrics.config_without_platform(k)
+      end
 
       @full_run ||= benchmark_results["full_run"]
       if @full_run != benchmark_results["full_run"]
