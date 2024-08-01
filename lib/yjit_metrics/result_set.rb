@@ -291,7 +291,7 @@ module YJITMetrics
         load_before
         load_after
       ].each do |key|
-        benchmark_results["full_run"].delete(key)
+        benchmark_results["full_run"]&.delete(key)
       end
 
       @full_run ||= benchmark_results["full_run"]
