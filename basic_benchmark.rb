@@ -666,13 +666,19 @@ intermediate_by_config.each do |config, int_files|
     merged_data["ruby_config_name"] = config
     merged_data["benchmark_failures"] = failed_benchmarks[config]
 
+    # Items in "full_run" should be the same for any run included in this timestamp group
+    # (so nothing specific to this execution since we merge results from multiple machines).
     merged_data["full_run"] = {
-        # Include total time for the whole run, not just this benchmark, to monitor how long
-        # large jobs run for.
-        "total_bench_time" => "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds",
-        "total_bench_seconds" => total_seconds,
         "git_versions" => GIT_VERSIONS, # yjit-metrics version, yjit-bench version, etc.
         "ruby_config_opts" => ruby_config_opts, # command-line options for each Ruby configuration
+    }
+
+    # Extra is a top-level key for anything that might be interesting but isn't used.
+    merged_data["extra"] = {
+        # Include total time for the whole run, not just this benchmark,
+        # to monitor how long large jobs run for.
+        "total_bench_time" => "#{total_hours} hours, #{minutes} minutes, #{seconds} seconds",
+        "total_bench_seconds" => total_seconds,
         "load_before" => load_averages_before,
         "load_after" => load_averages,
     }

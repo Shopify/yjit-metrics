@@ -121,7 +121,7 @@ puts "Loading #{relevant_results.size} data files..."
 relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
     begin
-        RESULT_SET.add_for_config(config_name, benchmark_data)
+        RESULT_SET.add_for_config(config_name, benchmark_data, file: filepath)
     rescue
         puts "Error adding data from #{filepath.inspect}!"
         raise

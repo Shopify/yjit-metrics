@@ -105,7 +105,7 @@ relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
 
     begin
         result_set_by_ts[timestamp] ||= YJITMetrics::ResultSet.new
-        result_set_by_ts[timestamp].add_for_config(config_name, benchmark_data)
+        result_set_by_ts[timestamp].add_for_config(config_name, benchmark_data, file: filepath)
     rescue
         puts "Error adding data from #{filepath.inspect}!"
         raise

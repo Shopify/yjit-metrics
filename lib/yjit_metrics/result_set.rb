@@ -191,7 +191,7 @@ module YJITMetrics
     # and (optional) hash of YJIT stats. However, there should normally only
     # be one set of Ruby metadata, not one per benchmark run. Ruby metadata is
     # assumed to be constant for a specific compiled copy of Ruby over all runs.
-    def add_for_config(config_name, benchmark_results, normalize_bench_names: true)
+    def add_for_config(config_name, benchmark_results, normalize_bench_names: true, file: nil)
       if !benchmark_results.has_key?("version")
         puts "No version entry in benchmark results - falling back to version 1 file format."
 
@@ -284,9 +284,19 @@ module YJITMetrics
       #  raise "A single ResultSet may only contain data from one platform, not #{@platform.inspect} AND #{ruby_meta["platform"].inspect}!"
       #end
 
+      # Delete items that we want to ignore from the "full_run" warning.
+      %w[
+        total_bench_time
+        total_bench_seconds
+        load_before
+        load_after
+      ].each do |key|
+        benchmark_results["full_run"].delete(key)
+      end
+
       @full_run ||= benchmark_results["full_run"]
       if @full_run != benchmark_results["full_run"]
-        warn "The 'full_run' data should not change within the same run!"
+        warn "The 'full_run' data should not change within the same run (#{file})!"
       end
 
       @peak_mem[config_name] ||= {}
