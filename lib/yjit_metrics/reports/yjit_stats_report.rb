@@ -30,7 +30,7 @@ module YJITMetrics
         # If the configs are the same but for different platforms, pick one.
         # This regexp should be a constant but when this file is loaded
         # the PLATFORMS constant hasn't been defined yet.
-        if filtered_stats_configs.map { |c| c.sub(/^#{Regexp.union(YJITMetrics::PLATFORMS)}_/, '') }.uniq.size == 1
+        if filtered_stats_configs.map { |c| YJITMetrics.config_without_platform(c) }.uniq.size == 1
         x86 = filtered_stats_configs.select { |c| c.start_with?("x86_64") }
         filtered_stats_configs = x86 unless x86.empty?
         end

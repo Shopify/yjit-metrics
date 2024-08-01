@@ -649,8 +649,10 @@ total_hours = total_minutes / 60
 seconds = total_seconds % 60
 minutes = total_minutes % 60
 
-ruby_config_opts = {}
-configs_to_test.each { |config| ruby_config_opts[config] = RUBY_CONFIGS[config][:opts] }
+# Make a hash of {"prod_yjit" => ["--yjit"]} to keep a record of the ruby opts used for each config.
+ruby_config_opts = configs_to_test.inject({}) do |h, config|
+  h.merge(YJITMetrics.config_without_platform(config) => RUBY_CONFIGS[config][:opts])
+end
 
 puts "All intermediate runs finished, merging to final files..."
 intermediate_by_config.each do |config, int_files|
