@@ -12,9 +12,8 @@ module YJITMetrics
           check_call("git checkout .") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes
           check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
           check_call("git checkout #{git_branch}")
-          if git_branch =~ /\A[0-9a-zA-Z]{5}/
-            # Don't do a "git pull" on a raw SHA
-          else
+          # Only pull if we are on a branch.
+          if system("git symbolic-ref HEAD")
             check_call("git pull")
           end
         else
