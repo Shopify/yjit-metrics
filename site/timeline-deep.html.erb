@@ -139,7 +139,6 @@ var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(se
   return series.value_range;
 });
 
-
 function updateGraphFromData() {
     updateDomainsAndAxesFromData();
 
@@ -228,8 +227,6 @@ function updateGraphFromData() {
 
 }
 
-
-
 // Handle legend and checkboxes
 document.getElementById("bottom_selection_checkboxes").style.display = "block";
 var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
@@ -254,6 +251,5 @@ var updateAllFromCheckbox = buildUpdateAllFromCheckbox(function(series, bench){
 
 setupTimeline({
   timelineType: <%= timeline_type.inspect %>
-
 });
 </script>
