@@ -242,7 +242,7 @@ module YJITMetrics
 
     File.open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') do |file|
       if file.read.strip != '1'
-        puts("You forgot to disable turbo: (note: sudo ./setup.sh will do this)")
+        puts("You forgot to disable turbo: (note: `./setup.sh cpu` will do this)")
         puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
         exit(-1)
       end
@@ -254,7 +254,7 @@ module YJITMetrics
 
     File.open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') do |file|
       if file.read.strip != '100'
-        puts("You forgot to set the min perf percentage to 100: (note: sudo ./setup.sh will do this)")
+        puts("You forgot to set the min perf percentage to 100: (note: `./setup.sh cpu` will do this)")
         puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
         exit(-1)
       end

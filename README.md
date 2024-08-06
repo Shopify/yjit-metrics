@@ -12,7 +12,7 @@ YJIT-metrics uses the benchmarks in the
 
 To run benchmarks on Linux, you'll need sudo access and to run the following command:
 
-    sudo ./setup.sh
+    ./setup.sh cpu
 
 You'll need to do the same for each reboot, or do the following:
 
