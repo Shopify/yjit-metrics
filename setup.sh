@@ -40,9 +40,43 @@ setup-packages () {
   && true
 }
 
+setup-ruby-build () {
+  local dir=${RUBY_BUILD:-$HOME/ym/ruby-build}
+  if ! [[ -x "$dir/bin/ruby-build" ]]; then
+    git clone https://github.com/rbenv/ruby-build "$dir"
+  else
+    (cd "$dir" && git pull)
+  fi
+  PATH=$dir/bin:$PATH
+}
+
+setup-ruby () {
+  local version=3.3.4
+  local prefix=/usr/local/ruby
+
+  if ! "$prefix"/bin/ruby -e 'exit 1 unless RUBY_VERSION == ARGV[0]' "$version"; then
+    local user=`id -nu`
+
+    # Remove any old version.
+    sudo rm -rf "$prefix"
+    # Allow user-level install.
+    sudo mkdir -p "$prefix"
+    sudo chown "$user" "$prefix"
+
+    setup-ruby-build
+    ruby-build "$version" "$prefix"
+  fi
+
+  # Put into PATH without any fuss.
+  for i in ruby gem bundle; do
+    sudo ln -sf "$prefix/bin/$i" /usr/local/bin/$i
+  done
+}
+
 setup-all () {
   setup-cpu
   setup-packages
+  setup-ruby
 }
 
 if [[ $(id -u) = 0 ]]; then
@@ -59,7 +93,7 @@ fi
 
 cat <<USAGE >&2
 Usage: $0 action
-Where action is: cpu, packages, or all
+Where action is: cpu, packages, ruby, or all
 USAGE
 
 exit 1
