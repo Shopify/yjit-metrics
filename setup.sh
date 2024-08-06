@@ -24,6 +24,7 @@ setup-packages () {
     autoconf \
     bison \
     build-essential \
+    cargo \
     libffi-dev \
     libgdbm-dev \
     libgmp-dev \
