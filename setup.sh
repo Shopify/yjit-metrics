@@ -21,8 +21,22 @@ setup-cpu () {
 
 setup-packages () {
   sudo apt-get install -y \
+    autoconf \
+    bison \
+    build-essential \
+    libffi-dev \
+    libgdbm-dev \
+    libgmp-dev \
+    libncurses5-dev \
+    libreadline6-dev \
     libsqlite3-dev \
+    libssl-dev \
+    libyaml-dev \
+    ruby \
+    rustc \
     sqlite3 \
+    zlib1g-dev \
+    $(if [[ -r /etc/ec2_version ]]; then echo linux-tools-aws linux-tools-"`uname -r`"; fi) \
   && true
 }
 
