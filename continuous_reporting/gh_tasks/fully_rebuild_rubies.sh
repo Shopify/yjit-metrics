@@ -3,6 +3,7 @@
 set -e
 
 # This will uninstall all gems, among other side effects.
+rm -rf ~/.rubies/ruby-yjit-metrics-prev/*
 rm -rf ~/.rubies/ruby-yjit-metrics-debug/*
 rm -rf ~/.rubies/ruby-yjit-metrics-prod/*
 rm -rf ~/.rubies/ruby-yjit-metrics-stats/*
