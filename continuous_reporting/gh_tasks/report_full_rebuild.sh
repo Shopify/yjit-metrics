@@ -1,21 +1,15 @@
-#!/bin/bash -l
+#!/bin/bash
 
 # This script assumes that benchmark_prep_task has been run first to clean, rebuild and reinstall.
 
 set -e
-
-# We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
-# Also we're gonna be messing with the installed prerelease Rubies a fair bit.
-chruby 3.0.2
 
 cd ~/ym/yjit-metrics
 
 bundle
 
 # Copy benchmark raw data into destination repo, generate reports, commit changes to Git.
-# The --regenerate-reports argument will regenerate ***all*** reports, which can take quite a
-# long time. It will also occasionally hit a Ruby error, so we should update from 3.0.2 when
-# we can for "system" Ruby here.
+# The --regenerate-reports argument will regenerate ***all*** reports, which can take quite a long time.
 ruby continuous_reporting/generate_and_upload_reports.rb --regenerate-reports
 
 # Now we'll verify that we're not regenerating results when we shouldn't.

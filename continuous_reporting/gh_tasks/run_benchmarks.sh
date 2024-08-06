@@ -1,9 +1,7 @@
-#!/bin/bash -l
-# Note: may need a login shell, depending how chruby is installed.
+#!/bin/bash
 
 set -e
 
-chruby 3.0.2
 cd ~/ym/yjit-metrics
 
 bundle

@@ -73,8 +73,8 @@ pipeline {
         }
         failure {
             sh "ls ./results/*.json || true"
-            sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=fail results/*.json'"
+            sh "bundle"
+            sh "ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=fail results/*.json"
             sh "rm -rvf ./results/"
         }
     }

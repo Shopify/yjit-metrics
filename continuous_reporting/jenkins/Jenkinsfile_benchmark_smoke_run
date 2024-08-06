@@ -40,12 +40,12 @@ pipeline {
 
     post {
         success {
-            sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=success'"
+            sh "bundle"
+            sh "ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=success"
         }
         failure {
-            sh "bash -l -c 'chruby 3.0.2 && bundle'"
-            sh "bash -l -c 'chruby 3.0.2 && ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=fail'"
+            sh "bundle"
+            sh "ruby continuous_reporting/slack_build_notifier.rb $NOTIFIER_ARGS --properties STATUS=fail"
         }
     }
 }
