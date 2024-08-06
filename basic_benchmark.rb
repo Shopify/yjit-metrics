@@ -108,23 +108,6 @@ RUBY_CONFIG_ROOTS = {
         opts: YJIT_ENABLED_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
-    "ruby_30" => {
-        build: "ruby-3.0.2",
-        opts: [],
-        per_os_prefix: CRUBY_PER_OS_OPTS,
-    },
-    # This is arguably the fastest-tuned MJIT to have existed. We used it as a competitive benchmark for YJIT.
-    "ruby_30_with_mjit" => {
-        build: "ruby-3.0.0",
-        opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
-        per_os_prefix: MJIT_PER_OS_OPTS,
-        install: "ruby-install",
-    },
-    "truffleruby" => {
-        build: "truffleruby+graalvm-21.2.0",
-        opts: [ "--jvm" ],
-        per_os_prefix: TRUFFLE_PER_OS_OPTS,
-    },
 }
 
 RUBY_CONFIGS = {}
@@ -317,14 +300,6 @@ RUBY_BUILDS = {
         repo_path: "#{repo_root}/prev-ruby",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prev"),
-    },
-    "ruby-3.0.0" => {
-        install: "ruby-install",
-        full_clean: "rm -rf ~/.rubies/ruby-3.0.0",
-    },
-    "ruby-3.0.2" => {
-        install: "ruby-install",
-        full_clean: "rm -rf ~/.rubies/ruby-3.0.2",
     },
     "truffleruby+graalvm-21.2.0" => {
         install: "ruby-build",
