@@ -260,7 +260,7 @@ YJIT_PREV_REF = "v3_3_4"
 
 def full_clean_yjit_cruby(flavor)
     repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
-    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor} && rm -rf ~/.gem/ruby/3.2.0"
+    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor}"
 end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
