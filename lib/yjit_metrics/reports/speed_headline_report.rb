@@ -101,7 +101,9 @@ module YJITMetrics
       @railsbench_idx = @benchmark_names.index("railsbench")
       if @railsbench_idx
         @yjit_vs_cruby_railsbench_ratio = @mean_by_config[@no_jit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
-        @yjit_vs_prev_yjit_railsbench_ratio = @mean_by_config[@prev_yjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+        if @prev_yjit_config
+          @yjit_vs_prev_yjit_railsbench_ratio = @mean_by_config[@prev_yjit_config][@railsbench_idx] / @mean_by_config[@with_yjit_config][@railsbench_idx]
+        end
       end
     end
 
