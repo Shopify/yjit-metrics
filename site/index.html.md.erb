@@ -19,10 +19,9 @@ urls:
 
   <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
 
+  Latest Full Details:
   <% for platform in last_bench.platforms %>
-  <div class="headline-button">
-    <a href="<%= relative_url last_bench.url %>#<%= platform %>"><button>Latest Full Details (<%= platform %>)</button></a>
-  </div>
+    <a href="<%= relative_url last_bench.url %>?platform=<%= platform %>"><button><%= platform %></button></a>
   <% end %>
 
   <div class="build-config">
