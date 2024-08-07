@@ -35,6 +35,16 @@ urls:
       .timeline-report-explanation {
         text-align: center;
       }
+      h2[id] a.para {
+        color: #777;
+        margin-left: -0.75em;
+        padding: 0 0.1em;
+        visibility: hidden;
+        text-decoration: none;
+      }
+      h2[id]:hover a.para {
+        visibility: visible;
+      }
     </style>
 
   </head>
@@ -342,6 +352,11 @@ urls:
             var wrapperElt = document.getElementById(`plat-wrapper-${platCtr}`);
             makePlatGraphRequest(wrapperElt, newPlatform);
           }
+        });
+
+        // Automatically add a hidden link tag to each h2 that has an id to make it easy to click and copy a link to that fragment.
+        document.querySelectorAll('h2[id]').forEach(function(el) {
+          el.innerHTML = '<a class="para" href="#' + el.getAttribute('id') + '">¶</a>' + el.innerHTML;
         });
       </script>
       <!-- End content specific to benchmark details -->      
