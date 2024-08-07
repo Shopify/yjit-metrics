@@ -278,11 +278,11 @@ urls:
           var error = wrapperElt.querySelector(".graph-error");
           error.style.display = "block";
         }
-      
-        function getPlatformFromHashParam() {
-          var hash = window.location.hash;
-          var platform = hash.slice(1);
-      
+
+        function getPlatformFromUrl() {
+          // Search url for either "?platform=aarch64" or "#aarch64".
+          var platform = (new URLSearchParams(location.search)).get('platform') || location.hash.slice(1);
+
           document.querySelectorAll(".platformError").forEach(function(elt) { elt.parentNode.removeChild(elt); });
           if(platform == "aarch64" || platform == "x86_64") {
             return platform;
@@ -296,7 +296,7 @@ urls:
             document.querySelectorAll(".platform_graph_wrapper").forEach(function(elt) {
               var msg = document.createElement("p");
               msg.className = "platformError";
-              msg.innerHTML = "<b style='color: red'>Error in URL hash parameter, please fix platform name!</b>"
+              msg.innerHTML = "<b style='color: red'>Error in URL parameter, please fix platform name!</b>"
               elt.prepend(msg);
             });
             return "x86_64";
@@ -315,12 +315,12 @@ urls:
         }
       
         // We have DOM elements in place. Now we start AJAX-fetching all the detail graphs.
-        var currentPlatform = getPlatformFromHashParam(); // For now, always default to x86_64 on page load
+        var currentPlatform = getPlatformFromUrl(); // For now, always default to x86_64 on page load
         updatePageFromCurrentPlatform();
       
-        // If a platform hash parameter is added (or equivalently, clicked), change the platform to the new one.
+        // If a platform parameter is added (or equivalently, clicked), change the platform to the new one.
         window.addEventListener("hashchange", function () {
-          currentPlatform = getPlatformFromHashParam();
+          currentPlatform = getPlatformFromUrl();
           updatePageFromCurrentPlatform();
         });
       
