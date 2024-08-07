@@ -145,9 +145,8 @@ module YJITMetrics
     # that won't happen by default.
     $stdout.sync = true
 
-    # Passing -l to bash makes sure to load .bash_profile for chruby.
     err_r, err_w = IO.pipe
-    local_popen.call(["bash", "-l", tf.path], err: err_w) do |script_out_io|
+    local_popen.call(["bash", tf.path], err: err_w) do |script_out_io|
       harness_script_pid = script_out_io.pid
       script_output = ""
       loop do
@@ -392,7 +391,7 @@ module YJITMetrics
     script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
     # These are used in the ERB template
     template_settings = {
-      pre_benchmark_code: (with_chruby ? "chruby && chruby #{with_chruby}" : "") + "\n" +
+      pre_benchmark_code: (with_chruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_chruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
       env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),

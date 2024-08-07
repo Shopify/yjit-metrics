@@ -31,8 +31,6 @@ IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
 
 YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
 
-yjit_metrics_using_gemfile = false
-
 srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
 
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
@@ -63,8 +61,6 @@ end
 # Specify a Gemfile and directory to use; install gems; do any extra per-benchmark setup.
 # This varies from the yjit-bench harness method because it specifies one exact Bundler version.
 def use_gemfile(extra_setup_cmd: nil)
-  yjit_metrics_using_gemfile = true
-
   setup_cmds([ "bundle install --quiet", extra_setup_cmd].compact)
 
   # Need to be in the appropriate directory
@@ -72,12 +68,6 @@ def use_gemfile(extra_setup_cmd: nil)
 end
 
 def setup_cmds(c)
-  chruby_stanza = ""
-  if ENV['RUBY_ROOT']
-    ruby_name = ENV['RUBY_ROOT'].split("/")[-1]
-    chruby_stanza = "chruby && chruby #{ruby_name}"
-  end
-
   env_bundler = ENV['FORCE_BUNDLER_VERSION']
   bundler_cmd = "bundle"
   if env_bundler # Should always be true in yjit-metrics
@@ -96,11 +86,6 @@ def setup_cmds(c)
   script = <<~SCRIPT
     set -e # Die on errors
 
-    # If Shopify-specific devtools script exists on this computer, source it.
-    [ -f /opt/dev/dev.sh ] && . /opt/dev/dev.sh
-
-    #{chruby_stanza}
-
     #{c.join("\n")}
   SCRIPT
 
@@ -111,7 +96,7 @@ def setup_cmds(c)
   begin
     t.write(script)
     t.close # Not closing/flushing your tempfile can mean successfully running an empty script
-    system("bash -l #{t.path}") || raise("Error running setup_cmds! Failing!")
+    system("bash #{t.path}") || raise("Error running setup_cmds! Failing!")
   ensure
     t.close
     t.unlink
