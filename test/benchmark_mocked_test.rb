@@ -100,7 +100,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
         })
 
         ss = YJITMetrics::ShellSettings.new({
-            chruby: nil,
+            ruby: nil,
             ruby_opts: [ "--with-fake-jit" ],
             enable_core_dumps: false,
             on_error: nil,
@@ -141,7 +141,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
             assert_equal "single_bench", err_info[:benchmark_name], "On_error callback should receive the correct benchmark name!"
             assert_equal "/path/to/single_bench.rb", err_info[:benchmark_path], "On_error callback should receive the correct benchmark path!"
             assert_equal [ "--with-fake-jit" ], err_info[:shell_settings][:ruby_opts], "On_error callback should receive the correct ruby_opts!"
-            assert_equal "fakeruby-1.2.3", err_info[:shell_settings][:chruby], "On_error callback should receive the correct with_chruby!"
+            assert_equal "fakeruby-1.2.3", err_info[:shell_settings][:ruby], "On_error callback should receive the correct with_ruby!"
         end
 
         hs = YJITMetrics::HarnessSettings.new({
@@ -152,7 +152,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
 
         ss = YJITMetrics::ShellSettings.new({
             ruby_opts: [ "--with-fake-jit" ],
-            chruby: "fakeruby-1.2.3",
+            ruby: "fakeruby-1.2.3",
             enable_core_dumps: false,
             on_error: on_err_proc,
             # Missing: additional non-Ruby command-line params

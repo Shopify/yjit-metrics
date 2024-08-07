@@ -336,7 +336,7 @@ module YJITMetrics
   # for each sampling run. That means which Ruby, which Ruby and shell options,
   # what env vars to set, whether core dumps are enabled, what to do on error and more.
   class ShellSettings
-    LEGAL_SETTINGS = [ :ruby_opts, :prefix, :chruby, :enable_core_dumps, :on_error, :bundler_version ]
+    LEGAL_SETTINGS = [ :ruby_opts, :prefix, :ruby, :enable_core_dumps, :on_error, :bundler_version ]
 
     def initialize(settings)
       illegal_keys = settings.keys - LEGAL_SETTINGS
@@ -386,12 +386,12 @@ module YJITMetrics
       FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
     }
 
-    with_chruby = shell_settings[:chruby]
+    with_ruby = shell_settings[:ruby]
 
     script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
     # These are used in the ERB template
     template_settings = {
-      pre_benchmark_code: (with_chruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_chruby}/bin:$PATH" : "") + "\n" +
+      pre_benchmark_code: (with_ruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_ruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
       env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
