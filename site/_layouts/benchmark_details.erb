@@ -233,6 +233,9 @@ urls:
 
           setRequestPending(wrapperElt);
 
+          // Update the URL to reflect the current platform without adding to the history.
+          window.history.replaceState({}, null, "?platform=" + platform + window.location.hash);
+
           // Is there a pending fetch for another platform? Abort it.
           if(fetchCancel[platCtr]) {
             fetchCancel[platCtr].abort();
