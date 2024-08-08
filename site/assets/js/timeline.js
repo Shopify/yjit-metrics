@@ -125,7 +125,78 @@ function setCheckboxesFromHashParam(cb) {
   });
 }
 
+// Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
+var idleTimeout = null;
+
+function idled() { idleTimeout = null; }
+
+var drawWhiskers = false;
+function updateChart() {
+    const extent = d3.event.selection
+
+    // If no selection, back to initial coordinate. Otherwise, update X axis domain
+    if (!extent) {
+        if (!idleTimeout) {
+            return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
+        }
+        x.domain(d3.extent(all_series_time_range));
+    } else {
+        x.domain([x.invert(extent[0]), x.invert(extent[1])]);
+        // Remove the grey brush area as soon as the selection has been done
+        document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
+    }
+    // Update axis and circle position
+    // Note: this doesn't seem to work with the other update function. Why not?
+    xAxisGroup.transition().duration(1000).call(xAxis)
+
+    svg
+        .selectAll("circle.whiskerdot")
+        .transition().duration(1000)
+        .attr("cx", function(d) { return x(d.date) } )
+        .attr("cy", function(d) { return y(d.value) } )
+        ;
+
+    if (drawWhiskers) {
+      svg
+        .selectAll("line.whiskercenter")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
+
+      svg
+        .selectAll("line.whiskertop")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
+        ;
+
+      svg
+        .selectAll("line.whiskerbottom")
+        .transition().duration(1000)
+        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
+        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
+        ;
+    }
+
+    svg
+        .selectAll("path.line")
+        .transition().duration(1000)
+        .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+        );
+}
+
 function setupTimeline(opts) {
+  drawWhiskers = opts.whiskers;
+
   // Default to x86_64 recent-only data
   setRequestPending();
   fetch("/reports/timeline/"+opts.timelineType+"_timeline.data.x86_64.recent.js")

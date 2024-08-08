@@ -59,11 +59,6 @@ var clip = svg.append("defs").append("svg:clipPath")
     .attr("x", 0)
     .attr("y", 0);
 
-// Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
-var idleTimeout = null;
-
-function idled() { idleTimeout = null; }
-
 function updateChart() {
     const extent = d3.event.selection
 
