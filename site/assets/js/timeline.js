@@ -20,7 +20,8 @@ function setRequestFinished() {
   document.querySelector(".graph-error").style.display = "none";
 }
 
-function setRequestError() {
+function setRequestError(x) {
+  console.error(x);
   document.querySelector(".graph-loading").style.display = "none";
   document.querySelector(".graph-error").style.display = "block";
 }
