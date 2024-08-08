@@ -1,5 +1,4 @@
-#!/bin/bash -l
-# Note: may need a login shell, depending how chruby is installed.
+#!/bin/bash
 
 set -e
 

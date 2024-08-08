@@ -1,17 +1,12 @@
-#!/bin/bash -l
-# Note: may need a login shell, depending how chruby is installed.
+#!/bin/bash
 
 set -e
 
-# We'll use a released Ruby here to maximize the odds that the test harness runs even when YJIT is broken.
-# Also we're gonna be messing with the installed prerelease Rubies a fair bit.
-chruby 3.0.2
-
 # This will uninstall all gems, among other side effects.
+rm -rf ~/.rubies/ruby-yjit-metrics-prev/*
 rm -rf ~/.rubies/ruby-yjit-metrics-debug/*
 rm -rf ~/.rubies/ruby-yjit-metrics-prod/*
 rm -rf ~/.rubies/ruby-yjit-metrics-stats/*
-rm -rf ~/.gem/ruby/3.2.0
 
 # This isn't a 100% cleanup -- no ./configure, for instance, which basic_benchmark.rb will only do if the current config looks wrong
 cd ~/ym/prod-yjit && git clean -d -x -f

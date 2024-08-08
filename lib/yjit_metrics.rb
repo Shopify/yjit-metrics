@@ -145,9 +145,8 @@ module YJITMetrics
     # that won't happen by default.
     $stdout.sync = true
 
-    # Passing -l to bash makes sure to load .bash_profile for chruby.
     err_r, err_w = IO.pipe
-    local_popen.call(["bash", "-l", tf.path], err: err_w) do |script_out_io|
+    local_popen.call(["bash", tf.path], err: err_w) do |script_out_io|
       harness_script_pid = script_out_io.pid
       script_output = ""
       loop do
@@ -242,7 +241,7 @@ module YJITMetrics
 
     File.open('/sys/devices/system/cpu/intel_pstate/no_turbo', mode='r') do |file|
       if file.read.strip != '1'
-        puts("You forgot to disable turbo: (note: sudo ./setup.sh will do this)")
+        puts("You forgot to disable turbo: (note: `./setup.sh cpu` will do this)")
         puts("  sudo sh -c 'echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo'")
         exit(-1)
       end
@@ -254,7 +253,7 @@ module YJITMetrics
 
     File.open('/sys/devices/system/cpu/intel_pstate/min_perf_pct', mode='r') do |file|
       if file.read.strip != '100'
-        puts("You forgot to set the min perf percentage to 100: (note: sudo ./setup.sh will do this)")
+        puts("You forgot to set the min perf percentage to 100: (note: `./setup.sh cpu` will do this)")
         puts("  sudo sh -c 'echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct'")
         exit(-1)
       end
@@ -337,7 +336,7 @@ module YJITMetrics
   # for each sampling run. That means which Ruby, which Ruby and shell options,
   # what env vars to set, whether core dumps are enabled, what to do on error and more.
   class ShellSettings
-    LEGAL_SETTINGS = [ :ruby_opts, :prefix, :chruby, :enable_core_dumps, :on_error, :bundler_version ]
+    LEGAL_SETTINGS = [ :ruby_opts, :prefix, :ruby, :enable_core_dumps, :on_error, :bundler_version ]
 
     def initialize(settings)
       illegal_keys = settings.keys - LEGAL_SETTINGS
@@ -387,12 +386,12 @@ module YJITMetrics
       FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
     }
 
-    with_chruby = shell_settings[:chruby]
+    with_ruby = shell_settings[:ruby]
 
     script_template = ERB.new File.read(__dir__ + "/../metrics-harness/run_harness.sh.erb")
     # These are used in the ERB template
     template_settings = {
-      pre_benchmark_code: (with_chruby ? "chruby && chruby #{with_chruby}" : "") + "\n" +
+      pre_benchmark_code: (with_ruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_ruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
       env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),

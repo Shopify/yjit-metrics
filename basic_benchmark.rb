@@ -108,23 +108,6 @@ RUBY_CONFIG_ROOTS = {
         opts: YJIT_ENABLED_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
     },
-    "ruby_30" => {
-        build: "ruby-3.0.2",
-        opts: [],
-        per_os_prefix: CRUBY_PER_OS_OPTS,
-    },
-    # This is arguably the fastest-tuned MJIT to have existed. We used it as a competitive benchmark for YJIT.
-    "ruby_30_with_mjit" => {
-        build: "ruby-3.0.0",
-        opts: [ "--jit", "--jit-max-cache=10000", "--jit-min-calls=10" ],
-        per_os_prefix: MJIT_PER_OS_OPTS,
-        install: "ruby-install",
-    },
-    "truffleruby" => {
-        build: "truffleruby+graalvm-21.2.0",
-        opts: [ "--jvm" ],
-        per_os_prefix: TRUFFLE_PER_OS_OPTS,
-    },
 }
 
 RUBY_CONFIGS = {}
@@ -277,7 +260,7 @@ YJIT_PREV_REF = "v3_3_4"
 
 def full_clean_yjit_cruby(flavor)
     repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
-    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor} && rm -rf ~/.gem/ruby/3.2.0"
+    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor}"
 end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
@@ -318,14 +301,6 @@ RUBY_BUILDS = {
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prev"),
     },
-    "ruby-3.0.0" => {
-        install: "ruby-install",
-        full_clean: "rm -rf ~/.rubies/ruby-3.0.0",
-    },
-    "ruby-3.0.2" => {
-        install: "ruby-install",
-        full_clean: "rm -rf ~/.rubies/ruby-3.0.2",
-    },
     "truffleruby+graalvm-21.2.0" => {
         install: "ruby-build",
         full_clean: "rm -rf ~/.rubies/truffleruby+graalvm-21.2.0",
@@ -363,7 +338,7 @@ YJITMetrics.per_os_checks
 
 OUTPUT_DATA_PATH = output_path[0] == "/" ? output_path : File.expand_path("#{__dir__}/#{output_path}")
 
-CHRUBY_RUBIES = "#{ENV['HOME']}/.rubies"
+RUBIES = "#{ENV['HOME']}/.rubies"
 
 # Check which OS we are running
 def this_os
@@ -406,7 +381,7 @@ unless skip_git_updates
         end
     end
 
-    installed_rubies = Dir.glob("*", base: CHRUBY_RUBIES)
+    installed_rubies = Dir.glob("*", base: RUBIES)
 
     builds_to_check.each do |ruby_build|
         build_info = RUBY_BUILDS[ruby_build]
@@ -420,14 +395,14 @@ unless skip_git_updates
             puts "Installing Ruby #{ruby_build} via ruby-build..."
             Dir.chdir(RUBY_BUILD_DIR) do
               YJITMetrics.check_call("git pull")
-              YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{CHRUBY_RUBIES}/#{ruby_build}")
+              YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{RUBIES}/#{ruby_build}")
             end
         when "repo"
             YJITMetrics.clone_ruby_repo_with \
                 path: build_info[:repo_path],
                 git_url: build_info[:git_url],
                 git_branch: build_info[:git_branch] || "main",
-                install_to: CHRUBY_RUBIES + "/" + ruby_build,
+                install_to: RUBIES + "/" + ruby_build,
                 config_opts: build_info[:config_opts],
                 config_env: build_info[:config_env] || []
         else
@@ -529,7 +504,7 @@ configs_to_test.each { |config| intermediate_by_config[config] = [] }
 def write_crash_file(error_info, crash_report_dir)
     exc = error_info[:exception]
     bench = error_info[:benchmark_name]
-    ruby = error_info[:shell_settings][:chruby]
+    ruby = error_info[:shell_settings][:ruby]
 
     FileUtils.mkdir_p(crash_report_dir)
 
@@ -596,7 +571,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
         shell_settings = YJITMetrics::ShellSettings.new({
             ruby_opts: ruby_opts,
             prefix: per_os_prefix[this_os],
-            chruby: ruby,
+            ruby: ruby,
             on_error: on_error,
             enable_core_dumps: (when_error == :report ? true : false),
             bundler_version: bundler_version,
