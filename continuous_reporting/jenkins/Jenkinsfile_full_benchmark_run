@@ -46,7 +46,7 @@ pipeline {
                     string(name: 'BENCH_TYPE', value: 'default'),
                     string(name: 'DATA_DIR', value: 'continuous_reporting/data'),
                     booleanParam(name: 'DO_FULL_REBUILD', value: params.DO_FULL_REBUILD),
-                    booleanParam(name: 'WITH_X86_TRUFFLE', value: true)
+                    booleanParam(name: 'WITH_X86_TRUFFLE', value: false)
                   ],
                   propagate: false,
                 )
