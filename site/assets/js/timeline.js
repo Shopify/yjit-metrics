@@ -125,6 +125,23 @@ function setCheckboxesFromHashParam(cb) {
   });
 }
 
+function setHashParamFromCheckboxes() {
+  var newHash = document.timeline_data.current_stat || "";
+
+  checkboxes.forEach(function (cb) {
+    if(cb.checked) {
+      var bench = cb.getAttribute("data-benchmark");
+      newHash += "+" + bench
+    }
+  });
+
+  if (newHash[0] == "+"){
+    newHash = newHash.slice(1); // Remove extra leading plus
+  }
+
+  window.location.hash = newHash;
+}
+
 // Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
 var idleTimeout = null;
 

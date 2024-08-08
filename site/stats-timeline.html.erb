@@ -156,19 +156,6 @@ document.getElementById("bottom_selection_checkboxes").style.display = "block";
 var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
 var stats_select = document.getElementById("stat_field_dropdown_select");
 
-function setHashParamFromCheckboxes() {
-  //console.log("setHashParamFromCheckboxes");
-  var newHash = document.timeline_data.current_stat;
-  checkboxes.forEach(function (cb) {
-    if(cb.checked) {
-      var bench = cb.getAttribute("data-benchmark");
-      newHash += "+" + bench
-    }
-  });
-
-  window.location.hash = newHash;
-}
-
 stats_select.addEventListener("change", function () {
   // Set up new timeline_data.current_stat
   document.timeline_data.current_stat = stats_select.value;

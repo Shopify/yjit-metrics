@@ -165,20 +165,6 @@ function updateGraphFromData() {
 document.getElementById("bottom_selection_checkboxes").style.display = "block";
 var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
 
-function setHashParamFromCheckboxes() {
-  //console.log("setHashParamFromCheckboxes");
-  var newHash = "";
-  checkboxes.forEach(function (cb) {
-    if(cb.checked) {
-      var bench = cb.getAttribute("data-benchmark");
-      newHash += "+" + bench
-    }
-  });
-  newHash = newHash.slice(1); // Remove extra leading plus
-
-  window.location.hash = newHash;
-}
-
 var updateAllFromCheckbox = buildUpdateAllFromCheckbox(function(series, bench){ 
   return series.name == "prod_ruby_with_yjit-" + bench
 })
