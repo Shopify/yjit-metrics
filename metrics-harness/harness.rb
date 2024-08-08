@@ -83,25 +83,10 @@ def setup_cmds(c)
     end
   end
 
-  script = <<~SCRIPT
-    set -e # Die on errors
-
-    #{c.join("\n")}
-  SCRIPT
-
-  puts "Running script...\n============\n#{script}\n============\n"
-
-  require "tempfile"
-  t = Tempfile.new("yjit-metrics-harness")
-  begin
-    t.write(script)
-    t.close # Not closing/flushing your tempfile can mean successfully running an empty script
-    system("bash #{t.path}") || raise("Error running setup_cmds! Failing!")
-  ensure
-    t.close
-    t.unlink
+  c.each do |cmd|
+    puts "Running: #{cmd}"
+    system(cmd) || raise("Error running setup_cmds! Failing!")
   end
-
 end
 
 # Takes a block as input
