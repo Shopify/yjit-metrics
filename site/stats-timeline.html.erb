@@ -6,23 +6,23 @@ timeline_type: yjit_stats
 ---
 
 <script>
-    // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
-    // set the dimensions and margins of the graph
-    var margin = {top: 10, right: 30, bottom: 70, left: 40},
-        width = 800 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
-    var svg = d3.select("#timeline_rs_chart")
-    .append("svg")
-        .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        //.attr("width", width + margin.left + margin.right)
-        //.attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    //.attr("width", width + margin.left + margin.right)
+    //.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
