@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "yaml"
 
 require_relative "./yjit_stats_report"
@@ -7,6 +8,8 @@ require_relative "./yjit_stats_report"
 # present and accounted for. This is a "single" report in the sense that it's conceptually at a single
 # time, even though it can be multiple runs and Rubies. What it is *not* is results over time as YJIT and
 # the benchmarks change.
+# This is a parent class for other reports and is not directly instantiated itself.
+# As an example, SpeedDetailsMultiplatformReport will instantiate SpeedDetailsReport (a subclass of this class) once per platform.
 module YJITMetrics
   class BloggableSingleReport < YJITStatsReport
     REPO_ROOT = File.expand_path("../../../..", __dir__)
@@ -89,6 +92,11 @@ module YJITMetrics
       @yjit_stats = @result_set.yjit_stats_for_config_by_benchmark(@stats_config, in_runs: in_runs)
       @benchmark_names = filter_benchmark_names(@times_by_config[@with_yjit_config].keys)
 
+      # Keep track of missing benchmarks so that in the loop we still check for
+      # all so that warnings show everything missing from each config.
+      # Then at the end we can remove the ones that aren't available for all.
+      missing_benchmarks = []
+
       @times_by_config.each do |config_name, config_results|
         if config_results.nil? || config_results.empty?
           raise("No results for configuration #{config_name.inspect} in #{self.class}!")
@@ -100,9 +108,16 @@ module YJITMetrics
           if config_name == @with_mjit_latest_config
             @mjit_is_incomplete = true
           else
-            raise("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+            warn("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+            missing_benchmarks.concat(no_result_benchmarks)
           end
         end
+      end
+
+      unless missing_benchmarks.empty?
+        missing_benchmarks.uniq!
+        warn("Removing benchmarks that are not present in all configs: #{missing_benchmarks.inspect}")
+        @benchmark_names -= missing_benchmarks
       end
 
       no_stats_benchmarks = @benchmark_names.select { |bench_name| !@yjit_stats[bench_name] || !@yjit_stats[bench_name][0] || @yjit_stats[bench_name][0].empty? }
