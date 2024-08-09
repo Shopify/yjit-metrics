@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "../timeline_report"
 
 module YJITMetrics
@@ -7,14 +8,7 @@ module YJITMetrics
       "mini_timelines"
     end
 
-    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
-    def inspect
-      "MiniTimelinesReport<#{object_id}>"
-    end
-
-    def initialize(context)
-      super
-
+    def build_series!
       config = find_config("prod_ruby_with_yjit")
       platform = platform_of_config(config)
 

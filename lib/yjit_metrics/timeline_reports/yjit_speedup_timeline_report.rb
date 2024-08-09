@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "../timeline_report"
 
 module YJITMetrics
@@ -7,15 +8,7 @@ module YJITMetrics
       "yjit_stats_timeline"
     end
 
-    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
-    def inspect
-      "YJITSpeedupTimelineReport<#{object_id}>"
-    end
-
-    NUM_RECENT=100
-    def initialize(context)
-      super
-
+    def build_series!
       yjit_config_root = "prod_ruby_with_yjit"
       stats_config_root = "yjit_stats"
       no_jit_config_root = "prod_ruby_no_jit"
@@ -146,28 +139,6 @@ module YJITMetrics
           end
         end
       end
-    end
-
-    def write_files(out_dir)
-      [:recent, :all_time].each do |duration|
-        YJITMetrics::PLATFORMS.each do |platform|
-          begin
-            @data_series = @series[platform][duration]
-
-            script_template = ERB.new File.read(__dir__ + "/../report_templates/yjit_stats_timeline_data_template.js.erb")
-            text = script_template.result(binding)
-            File.open("#{out_dir}/reports/timeline/yjit_stats_timeline.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
-          rescue
-            puts "Error writing data file for #{platform} #{duration} data!"
-            raise
-          end
-        end
-      end
-
-      script_template = ERB.new File.read(__dir__ + "/../report_templates/yjit_stats_timeline_d3_template.html.erb")
-      #File.write("/tmp/erb_template.txt", script_template.src)
-      html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
-      File.open("#{out_dir}/_includes/reports/yjit_stats_timeline.html", "w") { |f| f.write(html_output) }
     end
   end
 end
