@@ -39,6 +39,11 @@ module YJITMetrics
 
     include YJITMetrics::Stats
 
+    # These objects have *gigantic* internal state. For debuggability, don't print the whole thing.
+    def inspect
+      "#{self.class.name}<#{object_id}>"
+    end
+
     def self.subclasses
       @subclasses ||= []
       @subclasses
@@ -62,8 +67,58 @@ module YJITMetrics
       out
     end
 
+    # We offer graphs for "all time" and "recent".
+    # Recent is just the subset of the last X results.
+    NUM_RECENT = 100
+
     def initialize(context)
       @context = context
+      build_series!
+    end
+
+    def build_row(ts, this_point, this_ruby_desc)
+      # These fields are from the ResultSet summary
+      [ ts, this_point["mean"], this_point["stddev"], this_ruby_desc ]
+    end
+
+    def build_series!
+      # This should match the JS parser in the template file
+      time_format = "%Y %m %d %H %M %S"
+
+      @series = {}
+      YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
+
+      color_idx = 0
+      @context[:benchmark_order].each.with_index do |benchmark, idx|
+        self.class::CONFIG_NAMES.each do |config_root, config_human_name|
+          color = MUNIN_PALETTE[color_idx % MUNIN_PALETTE.size]
+          color_idx += 1
+
+          YJITMetrics::PLATFORMS.each do |platform|
+            config = "#{platform}_#{config_root}"
+            points = @context[:timestamps].map do |ts|
+              this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
+              if this_point
+                this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
+                build_row(ts.strftime(time_format), this_point, this_ruby_desc)
+              else
+                nil
+              end
+            end
+            points.compact!
+            next if points.empty?
+
+            visible = @context[:selected_benchmarks].include?(benchmark)
+
+            s_all_time = { config: config, config_human_name: config_human_name, benchmark: benchmark, name: "#{config_root}-#{benchmark}", platform: platform, visible: visible, color: color, data: points }
+            s_recent = s_all_time.dup
+            s_recent[:data] = s_recent[:data].last(NUM_RECENT)
+
+            @series[platform][:recent].push s_recent
+            @series[platform][:all_time].push s_all_time
+          end
+        end
+      end
     end
 
     # Look for "PLATFORM_#{name}"; prefer specified platform if present.
@@ -79,6 +134,27 @@ module YJITMetrics
       end
 
       raise "Unknown platform in config '#{config}'"
+    end
+
+    def write_files(out_dir)
+      [:recent, :all_time].each do |duration|
+        YJITMetrics::PLATFORMS.each do |platform|
+          begin
+            @data_series = @series[platform][duration]
+
+            script_template = ERB.new File.read(File.expand_path("report_templates/#{self.class.report_name}_data_template.js.erb", __dir__))
+            text = script_template.result(binding)
+            File.open("#{out_dir}/reports/timeline/#{self.class.report_name}.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
+          rescue
+            puts "Error writing data file for #{platform} #{duration} data!"
+            raise
+          end
+        end
+      end
+
+      script_template = ERB.new File.read(File.expand_path("report_templates/#{self.class.report_name}_d3_template.html.erb", __dir__))
+      html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
+      File.open("#{out_dir}/_includes/reports/#{self.class.report_name}.html", "w") { |f| f.write(html_output) }
     end
   end
 end

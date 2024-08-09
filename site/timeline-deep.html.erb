@@ -6,23 +6,23 @@ timeline_type: blog
 ---
 
 <script>
-    // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
-    // set the dimensions and margins of the graph
-    var margin = {top: 10, right: 30, bottom: 70, left: 40},
-        width = 800 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 70, left: 40},
+    width = 800 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
-    var svg = d3.select("#timeline_rs_chart")
-    .append("svg")
-        .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        //.attr("width", width + margin.left + margin.right)
-        //.attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+// append the svg object to the body of the page
+var svg = d3.select("#timeline_rs_chart")
+  .append("svg")
+    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    //.attr("width", width + margin.left + margin.right)
+    //.attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
 
 // Add X axis --> it is a date format
 var x = d3.scaleTime()
@@ -60,72 +60,6 @@ var clip = svg.append("defs").append("svg:clipPath")
     .attr("x", 0)
     .attr("y", -20);
 
-// Code borrowed from https://d3-graph-gallery.com/graph/line_brushZoom.html
-var idleTimeout = null;
-
-function idled() { idleTimeout = null; }
-
-function updateChart() {
-    const extent = d3.event.selection
-
-    // If no selection, back to initial coordinate. Otherwise, update X axis domain
-    if (!extent) {
-        if (!idleTimeout) {
-            return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
-        }
-        x.domain(d3.extent(all_series_time_range));
-    } else {
-        x.domain([x.invert(extent[0]), x.invert(extent[1])]);
-        // Remove the grey brush area as soon as the selection has been done
-        document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
-    }
-    // Update axis and circle position
-    // Note: this doesn't seem to work with the other update function. Why not?
-    xAxisGroup.transition().duration(1000).call(xAxis)
-
-    svg
-        .selectAll("circle.whiskerdot")
-        .transition().duration(1000)
-        .attr("cx", function(d) { return x(d.date) } )
-        .attr("cy", function(d) { return y(d.value) } )
-        ;
-
-    svg
-        .selectAll("line.whiskercenter")
-        .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) } )
-        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) } )
-        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
-        ;
-
-    svg
-        .selectAll("line.whiskertop")
-        .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
-        .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
-        .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
-        ;
-
-    svg
-        .selectAll("line.whiskerbottom")
-        .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
-        .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
-        .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
-        ;
-
-    svg
-        .selectAll("path.line")
-        .transition().duration(1000)
-        .attr("d", d3.line()
-            .x(function(d) { return x(d.date) })
-            .y(function(d) { return y(d.value) })
-        );
-}
-
 var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
     .extent( [ [0,0], [width,height] ] ) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
     .on("end", updateChart);
@@ -146,7 +80,7 @@ function updateGraphFromData() {
     svg.selectAll("g.svg_tl_data")
         .data(data_series, (item) => item.name)
         .join("g")
-            .attr("class", d => "svg_tl_data " + d.name)
+            .attr("class", d => "svg_tl_data " + d.name + " benchmark-" + d.benchmark)
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 
@@ -231,25 +165,8 @@ function updateGraphFromData() {
 document.getElementById("bottom_selection_checkboxes").style.display = "block";
 var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
 
-function setHashParamFromCheckboxes() {
-  //console.log("setHashParamFromCheckboxes");
-  var newHash = "";
-  checkboxes.forEach(function (cb) {
-    if(cb.checked) {
-      var bench = cb.getAttribute("data-benchmark");
-      newHash += "+" + bench
-    }
-  });
-  newHash = newHash.slice(1); // Remove extra leading plus
-
-  window.location.hash = newHash;
-}
-
-var updateAllFromCheckbox = buildUpdateAllFromCheckbox(function(series, bench){ 
-  return series.name == "prod_ruby_with_yjit-" + bench
-})
-
 setupTimeline({
+  whiskers: true,
   timelineType: <%= timeline_type.inspect %>
 });
 </script>
