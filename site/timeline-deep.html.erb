@@ -80,7 +80,7 @@ function updateGraphFromData() {
     svg.selectAll("g.svg_tl_data")
         .data(data_series, (item) => item.name)
         .join("g")
-            .attr("class", d => "svg_tl_data " + d.name)
+            .attr("class", d => "svg_tl_data " + d.name + " benchmark-" + d.benchmark)
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 
@@ -164,10 +164,6 @@ function updateGraphFromData() {
 // Handle legend and checkboxes
 document.getElementById("bottom_selection_checkboxes").style.display = "block";
 var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
-
-var updateAllFromCheckbox = buildUpdateAllFromCheckbox(function(series, bench){ 
-  return series.name == "prod_ruby_with_yjit-" + bench
-})
 
 setupTimeline({
   whiskers: true,

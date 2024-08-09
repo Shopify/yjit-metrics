@@ -82,7 +82,7 @@ function updateGraphFromData() {
     svg.selectAll("g.svg_tl_data")
         .data(data_series, (item) => item.name)
         .join("g")
-            .attr("class", d => "svg_tl_data " + d.name)
+            .attr("class", d => "svg_tl_data " + d.name + " benchmark-" + d.benchmark)
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 

@@ -113,7 +113,7 @@ function updateGraphFromData() {
     svg.selectAll("g.svg_tl_data")
         .data(data_series, (item) => item.name)
         .join("g")
-            .attr("class", d => "svg_tl_data " + d.name)
+            .attr("class", d => "svg_tl_data " + d.name + " benchmark-" + d.benchmark)
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 
@@ -164,10 +164,6 @@ stats_select.addEventListener("change", function () {
   setHashParamFromCheckboxes(); // new current_stat goes into the hashparam
   updateGraphFromData();
 });
-
-var updateAllFromCheckbox = buildUpdateAllFromCheckbox(function(series, bench){
-  return series.config == (series.platform + "_prod_ruby_with_yjit") && series.benchmark == bench
-})
 
 setupTimeline({
   setCheckboxesFromHashParamCallback: function (benchmarks) {

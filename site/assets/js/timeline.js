@@ -72,33 +72,33 @@ function buildUpdateDomainsAndAxesFromData(getSeriesValueRange){
   }
 }
 
-function buildUpdateAllFromCheckbox(seriesMatches) {
-  return function updateAllFromCheckbox(cb) {
+function updateAllFromCheckbox(cb) {
     var bench = cb.getAttribute("data-benchmark");
-    var legendBox = document.querySelector("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
-    var graphSeries = document.querySelector("svg g.prod_ruby_with_yjit-" + bench);
+    var legendBox = document.querySelectorAll("#timeline_legend_child li[data-benchmark=\"" + bench + "\"]");
 
-    var thisDataSeries;
+    // Find the graph series for this benchmark
+    var matchingGraphs = document.querySelectorAll("svg g.benchmark-" + bench);
+    var matchingSeries = [];
     if(data_series) {
       data_series.forEach(function (series) {
-        if(seriesMatches(series, bench)) {
-          thisDataSeries = series;
+        if(series.benchmark == bench) {
+          matchingSeries.push(series);
         }
       });
     }
 
-    if(cb.checked) {
-      /* Make series visible */
-      if(thisDataSeries) { thisDataSeries.visible = true; }
-      legendBox.style.display = "inline-block";
-      if(graphSeries) { graphSeries.style.visibility = "visible"; }
-    } else {
-      /* Make series invisible */
-      if(thisDataSeries) { thisDataSeries.visible = false; }
-      legendBox.style.display = "none";
-      if(graphSeries) { graphSeries.style.visibility = "hidden"; }
-    }
-  }
+    var visibility = cb.checked ? "visible" : "hidden";
+    var display = cb.checked ? "inline-block" : "none";
+
+    matchingSeries.forEach(function(series) {
+      series.visible = cb.checked;
+    });
+    legendBox.forEach(function(elt) {
+      elt.style.display = display;
+    });
+    matchingGraphs.forEach(function(series) {
+      series.style.visibility = visibility;
+    });
 }
 
 function setCheckboxesFromHashParam(cb) {
