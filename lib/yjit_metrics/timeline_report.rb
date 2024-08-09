@@ -67,6 +67,8 @@ module YJITMetrics
       out
     end
 
+    # We offer graphs for "all time" and "recent".
+    # Recent is just the subset of the last X results.
     NUM_RECENT = 100
 
     def initialize(context)
