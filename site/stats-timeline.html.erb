@@ -6,77 +6,7 @@ timeline_type: yjit_stats
 ---
 
 <script>
-// D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
-// set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 70, left: 40},
-    width = 800 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
-
-// append the svg object to the body of the page
-var svg = d3.select("#timeline_rs_chart")
-  .append("svg")
-    .attr("viewBox", "0 0 " + (width + margin.left + margin.right) + " " + (height + margin.top + margin.bottom))
-    .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-    //.attr("width", width + margin.left + margin.right)
-    //.attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-// Add X axis --> it is a date format
-var x = d3.scaleTime()
-    .domain([0, 1])
-    .range([ 0, width ]);
-document.timeline_data.x_axis_function = x; /* Export for the event handlers */
-var xAxis = d3.axisBottom(x);
-var xAxisGroup = svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .attr("class", "x_axis_group")
-    .call(xAxis);
-xAxisGroup.selectAll("text")
-    .attr("transform", "rotate(-60)")
-    .style("text-anchor", "end");
-document.timeline_data.x_axis = xAxis;
-document.timeline_data.x_axis_group = xAxisGroup;
-
-// Add Y axis
-var y = d3.scaleLinear()
-        .domain([0, 1.0])  // Dynamically generate later
-        .range([ height, 0 ]);
-document.timeline_data.y_axis_function = y; /* Export for the event handlers */
-document.timeline_data.y_axis = d3.axisLeft(y);
-let formatValue = d3.format(".2s");
-document.timeline_data.y_axis.tickFormat(function (d) { return formatValue(d); });
-document.timeline_data.top_svg_group = svg.append("g")
-  .call(document.timeline_data.y_axis);
-
-var clip = svg.append("defs").append("svg:clipPath")
-    .attr("id", "clip")
-    .append("svg:rect")
-    .attr("width", width + 30 )
-    .attr("height", height )
-    .attr("x", 0)
-    .attr("y", 0);
-
-function updateChart() {
-    const extent = d3.event.selection
-
-    // If no selection, back to initial coordinate. Otherwise, update X axis domain
-    if (!extent) {
-        if (!idleTimeout) {
-            return (idleTimeout = setTimeout(idled, 350)); // This allows to wait a little bit
-        }
-        x.domain(d3.extent(all_series_time_range));
-    } else {
-        x.domain([x.invert(extent[0]), x.invert(extent[1])]);
-        // Remove the grey brush area as soon as the selection has been done
-        document.timeline_data.top_svg_group.select(".brush").call(brush.move, null);
-    }
-    // Update axis and circle position
-    // Note: this doesn't seem to work with the other update function. Why not?
-    xAxisGroup.transition().duration(1000).call(xAxis)
-
+function updateChartCallback({svg, x, y}) {
     svg
         .selectAll(".centerdot.circle")
         .transition().duration(1000)
@@ -92,15 +22,6 @@ function updateChart() {
         );
 }
 
-var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
-    .extent( [ [0,0], [width,height] ] ) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-    .on("end", updateChart);
-
-document.timeline_data.top_svg_group
-    .append("g")
-    .attr("class", "brush")
-    .call(brush);
-
 var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(series){
   return series.value_range[document.timeline_data.current_stat];
 });
@@ -108,6 +29,8 @@ var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(se
     // Using JS values like data_series, update the SVG graph data
 function updateGraphFromData() {
     updateDomainsAndAxesFromData();
+    var x = document.timeline_data.x_axis_function;
+    var y = document.timeline_data.y_axis_function;
 
     // Add top-level SVG groups for data series
     svg.selectAll("g.svg_tl_data")
@@ -152,8 +75,6 @@ function updateGraphFromData() {
     }
 
 // Handle legend, checkboxes and stats dropdown
-document.getElementById("bottom_selection_checkboxes").style.display = "block";
-var checkboxes = document.querySelectorAll("#bottom_selection_checkboxes li input");
 var stats_select = document.getElementById("stat_field_dropdown_select");
 
 stats_select.addEventListener("change", function () {
@@ -172,4 +93,5 @@ setupTimeline({
   },
   timelineType: <%= timeline_type.inspect %>
 });
+
 </script>
