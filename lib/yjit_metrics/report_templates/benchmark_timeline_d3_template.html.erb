@@ -1,0 +1,38 @@
+<div id="timeline_rs_chart"></div>
+
+<div id="legend_parent_flexbox" style="display: flex; justify-content: center;">
+  <div id="timeline_legend_child">
+    <ul style="display:inline-block">
+      <% @data_series.each do |this_series| %>
+      <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
+        <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %> <%= this_series[:config_human_name] %></strong> &nbsp;&nbsp;
+        </span>
+      </li>
+<% end %>
+    </ul>
+  </div>
+</div>
+
+<div class="timeline-report-explanation">
+  Y axis values are the total number of seconds to run the benchmark - lower is better.<br/>
+  Whiskers are shown 2 standard deviations higher and lower.
+</div>
+
+<div id="bottom_selection_checkboxes" style="display: none;">
+  <ul>
+    <% @data_series.each_with_object({}) do |this_series, seen| %>
+    <%
+      # Each benchmark ran under multiple configs.  Only show each benchmark once.
+      next if seen[this_series[:benchmark]]
+      seen[this_series[:benchmark]] = true
+    %>
+    <li>
+      <input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" />
+      <span style='background: <%= this_series[:color] %>'>
+        &nbsp;&nbsp; <strong style="color: white;"><%= this_series[:benchmark] %></strong> &nbsp;&nbsp;
+      </span>
+    </li>
+  <% end %>
+  </ul>
+</div>
