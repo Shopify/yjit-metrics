@@ -4,9 +4,12 @@ var data_series;
 var all_series_time_range;
 var svg;
 var checkboxes;
-
-var whiskerStrokeWidth = 1.0;
-var whiskerBarWidth = 5;
+var timeline = {
+  whiskers: false,
+  whiskerColor: "#1117",
+  whiskerStrokeWidth: 1.0,
+  whiskerBarWidth: 5,
+};
 
 document.timeline_data = {} // For sharing data w/ handlers
 
@@ -218,7 +221,6 @@ var idleTimeout = null;
 
 function idled() { idleTimeout = null; }
 
-var drawWhiskers = false;
 function updateChart() {
     const extent = d3.event.selection
     var x = document.timeline_data.x_axis_function;
@@ -252,7 +254,7 @@ function updateChartCallback({svg, x, y}) {
         .attr("cy", function(d) { return y(d.value) } )
         ;
 
-    if (drawWhiskers) {
+    if (timeline.whiskers) {
       svg
         .selectAll("line.whiskercenter")
         .transition().duration(1000)
@@ -265,18 +267,18 @@ function updateChartCallback({svg, x, y}) {
       svg
         .selectAll("line.whiskertop")
         .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         ;
 
       svg
         .selectAll("line.whiskerbottom")
         .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         ;
     }
@@ -330,7 +332,7 @@ function updateGraphFromData() {
           .join("circle")
           .attr("class", "whiskerdot " + item.name)
           .attr("fill", item.color)
-          .attr("r", 4.0)
+          .attr("r", timeline.whiskerRadius || 4.0)
           .attr("cx", function(d) { return x(d.date) } )
           .attr("cy", function(d) { return y(d.value) } )
           .attr("data-tooltip", function(d) {
@@ -342,12 +344,12 @@ function updateGraphFromData() {
         ;
 
         // Add the whiskers, which are an I-shape of lines
-        var middle_lines = group.selectAll("line.whiskercenter." + item.name)
+      group.selectAll("line.whiskercenter." + item.name)
         .data(item.data, (d) => d.date)
         .join("line")
         .attr("class", "whiskercenter " + item.name)
-        .attr("stroke", "black")
-        .attr("stroke-width", whiskerStrokeWidth)
+        .attr("stroke", timeline.whiskerColor)
+        .attr("stroke-width", timeline.whiskerStrokeWidth)
         .attr("x1", function(d) { return x(d.date) } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("x2", function(d) { return x(d.date) } )
@@ -355,28 +357,28 @@ function updateGraphFromData() {
         .attr("clip-path", "url(#clip)")
         ;
 
-        var top_whiskers = group.selectAll("line.whiskertop." + item.name)
+      group.selectAll("line.whiskertop." + item.name)
         .data(item.data, (d) => d.date)
         .join("line")
         .attr("class", "whiskertop " + item.name)
-        .attr("stroke", "black")
-        .attr("stroke-width", whiskerStrokeWidth)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("stroke", timeline.whiskerColor)
+        .attr("stroke-width", timeline.whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
 
-        var bottom_whiskers = group.selectAll("line.whiskerbottom." + item.name)
+      group.selectAll("line.whiskerbottom." + item.name)
         .data(item.data, (d) => d.date)
         .join("line")
         .attr("class", "whiskerbottom " + item.name)
-        .attr("stroke", "black")
-        .attr("stroke-width", whiskerStrokeWidth)
-        .attr("x1", function(d) { return x(d.date) - whiskerBarWidth / 2.0 } )
+        .attr("stroke", timeline.whiskerColor)
+        .attr("stroke-width", timeline.whiskerStrokeWidth)
+        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
@@ -384,9 +386,8 @@ function updateGraphFromData() {
 }
 
 function setupTimeline(opts) {
+  Object.assign(timeline, opts);
   initSVG(opts);
-
-  drawWhiskers = opts.whiskers;
 
   // Handle legend and checkboxes
   document.getElementById("bottom_selection_checkboxes").style.display = "block";
