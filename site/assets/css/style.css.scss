@@ -1,0 +1,67 @@
+@import "slate.scss";
+
+div.headline-box {
+  text-align: center;
+  border: 1px inset #888;
+  padding: 1.5em;
+}
+
+.headline-box .headline-button {
+  margin-top: 1em;
+}
+
+h1, h2 {
+  margin-top: 2em;
+}
+
+#header_wrap h1 {
+  text-align: center;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+h2[id] a.para {
+  color: #777;
+  margin-left: -0.75em;
+  padding: 0 0.1em;
+  visibility: hidden;
+  text-decoration: none;
+}
+h2[id]:hover a.para {
+  visibility: visible;
+}
+
+#svg_tooltip {
+  background: white;
+  border:  1px solid black;
+  border-radius: 5px;
+  padding: 5px;
+  position: absolute;
+  display: none;
+}
+
+#svg_tooltip_sha_copied {
+  background: white;
+  border:  1px solid black;
+  border-radius: 5px;
+  padding: 5px;
+  position: absolute;
+  display: none;
+}
+
+.timeline-report-explanation {
+  text-align: center;
+}
+
+footer ul {
+  display: inline-block;
+  li {
+    display: inline-block;
+    margin-right: 0.5em;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

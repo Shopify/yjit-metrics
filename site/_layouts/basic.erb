@@ -10,45 +10,12 @@ title: "YJIT Benchmarks"
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
     <script src="assets/js/clipboard.min.js"></script>
-    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="<%= asset_url('css/style.css') %>">
     <title><%= title %></title>
 
     <style media="all">
-      #svg_tooltip {
-        background: white;
-        border:  1px solid black;
-        border-radius: 5px;
-        padding: 5px;
-        position: absolute;
-        display: none;
-      }
-      #svg_tooltip_sha_copied {
-        background: white;
-        border:  1px solid black;
-        border-radius: 5px;
-        padding: 5px;
-        position: absolute;
-        display: none;
-      }
-      .timeline-report-explanation {
-        text-align: center;
-      }
-      footer ul {
-        display: inline-block;
-      }
-      footer ul li {
-        display: inline-block;
-        margin-right: 0.5em;
-      }
-      footer ul li:last-child {
-        margin-right: 0;
-      }
       .headline-box ul {
         padding-left: 0;
-      }
-
-      .nowrap {
-        white-space: nowrap;
       }
 
       .build-config {
@@ -77,7 +44,6 @@ title: "YJIT Benchmarks"
         padding: 0.1rem;
       }
     </style>
-
   </head>
 
   <body>
