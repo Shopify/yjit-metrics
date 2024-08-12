@@ -297,7 +297,7 @@ RUBY_BUILDS = {
         install: "repo",
         git_url: YJIT_GIT_URL,
         git_branch: YJIT_PREV_REF,
-        repo_path: "#{repo_root}/prev-ruby",
+        repo_path: "#{repo_root}/prev-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prev"),
     },
