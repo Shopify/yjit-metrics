@@ -63,6 +63,10 @@ REPORTS_AND_FILES = {
         report_type: :timeline_report,
         extensions: [ "html" ],
     },
+    "benchmark_timeline" => {
+        report_type: :timeline_report,
+        extensions: [ "html" ],
+    },
     "mini_timelines" => {
         report_type: :timeline_report,
         extensions: [ "html" ],

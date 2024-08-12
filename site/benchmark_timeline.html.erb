@@ -1,0 +1,14 @@
+---
+layout: timeline
+show_overall: false
+subtitle: Benchmark Results Over Time
+timeline_type: benchmark
+---
+
+<script>
+setupTimeline({
+  whiskers: true,
+  whiskerRadius: 2.0,
+  timelineType: <%= timeline_type.inspect %>
+});
+</script>
