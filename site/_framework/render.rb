@@ -6,6 +6,7 @@ require "json"
 require "yaml"
 require "fileutils"
 require "ostruct"
+require "sass-embedded"
 require "shellwords"
 
 REPO_DIR = File.expand_path("../../", __dir__)
@@ -26,11 +27,13 @@ COLLECTION_BASES = {
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
 TOPLEVEL_SKIPPED = [ "_config.yml", "Gemfile", "Gemfile.lock" ]
 
-# TODO: handle _sass dir - just pregenerate up-front?
-
 def render_markdown(text)
   require "kramdown"
   Kramdown::Document.new(text).to_html
+end
+
+def render_scss(content)
+  Sass.compile_string(content, load_paths: [File.expand_path("../_sass", __dir__)], style: :compressed).css
 end
 
 # RenderContext is an OpenStruct with some additional helper methods
@@ -107,6 +110,7 @@ class RenderContext
 
   def asset_url(asset)
     path = "assets/#{asset}"
+    path += ".scss" if asset.end_with?(".css")
     hash = Digest::MD5.file(File.expand_path(path, File.dirname(__dir__))).hexdigest[0..8]
     "/assets/#{asset}?#{hash}"
   end
@@ -133,7 +137,7 @@ def read_front_matter(path)
   end
 end
 
-KNOWN_STEPS = ["erb", "md"]
+KNOWN_STEPS = ["erb", "md", "scss"]
 
 # Render the file at path to out_dir, using metadata and the frontmatter in path if present.
 # Writes the file to its new location. If path has transformable extensions like .md or .erb,
@@ -171,6 +175,8 @@ def render_file_to_location(path, out_dir, metadata)
       contents = dsl.instance_eval(erb_tmpl.src, path, 1 + line_offset)
     when "md"
       contents = render_markdown(contents)
+    when "scss"
+      contents = render_scss(contents)
     else
       raise "Unknown content-step or file extension: #{step.inspect} out of #{steps.inspect}"
     end
