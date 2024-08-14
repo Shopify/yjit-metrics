@@ -48,6 +48,8 @@ VAR_WARMUP_FILE = if false # File.exist?(YM_REPORT_DIR)
     var_warmup_reports.sort[-1]
 end
 
+puts "Running benchmarks on #{YJITMetrics::PLATFORM}"
+
 def platform_for_config(config_name)
     p = YJITMetrics::PLATFORMS.detect { |platform| config_name.start_with?(platform) }
     raise("No platform name for config: #{config_name.inspect}!") unless p
