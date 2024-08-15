@@ -27,7 +27,11 @@ module YJITMetrics
           if this_point
             this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
             # These fields are from the ResultSet summary
-            [ ts.strftime(TIME_FORMAT), this_point["mean"], this_ruby_desc ]
+            {
+              time: ts.strftime(TIME_FORMAT),
+              value: this_point["mean"],
+              ruby_desc: this_ruby_desc,
+            }
           else
             nil
           end

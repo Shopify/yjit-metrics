@@ -40,21 +40,21 @@ function updateGraphFromData() {
         .attr("stroke", item.color)
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
-            .x(function(d) { return x(d.date) })
+            .x(function(d) { return x(d.time) })
             .y(function(d) { return y(d.value) })
             )
         .attr("clip-path", "url(#clip)");
 
         // Add a circle at each datapoint
         var circles = group.selectAll("circle.whiskerdot." + item.name)
-        .data(item.data, (d) => d.date)
+        .data(item.data, (d) => d.time)
         .join("circle")
         .attr("class", "whiskerdot " + item.name)
         .attr("fill", item.color)
         .attr("r", 4.0)
-        .attr("cx", function(d) { return x(d.date) } )
+        .attr("cx", function(d) { return x(d.time) } )
         .attr("cy", function(d) { return y(d.value) } )
-        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.date) + ": " + commaPrinter(d.value) + " bytes<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
+        .attr("data-tooltip", function(d) { return item.benchmark + " at " + timePrinter(d.time) + ": " + commaPrinter(d.value) + " bytes<br/>" + item.platform + " Ruby " + d.ruby_desc; } )
         .attr("clip-path", "url(#clip)")
         ;
     });

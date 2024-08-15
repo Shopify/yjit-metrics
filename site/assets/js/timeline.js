@@ -117,6 +117,8 @@ function timeRange(series) {
 
 function buildUpdateDomainsAndAxesFromData(getSeriesValueRange){
   return function updateDomainsAndAxesFromData() {
+    if(!data_series || !data_series[0]) return;
+
     // Find the new data scale based on visible series
     var minY = 0.0;
     var maxY = 1.0;
@@ -259,7 +261,7 @@ function updateChartCallback({svg, x, y}) {
     svg
         .selectAll("circle.whiskerdot")
         .transition().duration(1000)
-        .attr("cx", function(d) { return x(d.date) } )
+        .attr("cx", function(d) { return x(d.time) } )
         .attr("cy", function(d) { return y(d.value) } )
         ;
 
@@ -267,27 +269,27 @@ function updateChartCallback({svg, x, y}) {
       svg
         .selectAll("line.whiskercenter")
         .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) } )
+        .attr("x1", function(d) { return x(d.time) } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) } )
+        .attr("x2", function(d) { return x(d.time) } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         ;
 
       svg
         .selectAll("line.whiskertop")
         .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         ;
 
       svg
         .selectAll("line.whiskerbottom")
         .transition().duration(1000)
-        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         ;
     }
@@ -296,7 +298,7 @@ function updateChartCallback({svg, x, y}) {
         .selectAll("path.line")
         .transition().duration(1000)
         .attr("d", d3.line()
-            .x(function(d) { return x(d.date) })
+            .x(function(d) { return x(d.time) })
             .y(function(d) { return y(d.value) })
         );
 }
@@ -338,21 +340,21 @@ function updateGraphFromData() {
         .attr("stroke-width", 1.5)
         .attr("d",
           d3.line()
-            .x(function(d) { return x(d.date) })
+            .x(function(d) { return x(d.time) })
             .y(function(d) { return y(d.value) })
         ).attr("clip-path", "url(#clip)");
 
         // Add a circle at each datapoint
         group.selectAll("circle.whiskerdot." + item.name)
-          .data(item.data, (d) => d.date)
+          .data(item.data, (d) => d.time)
           .join("circle")
           .attr("class", "whiskerdot " + item.name)
           .attr("fill", item.color)
           .attr("r", timeline.whiskerRadius || 4.0)
-          .attr("cx", function(d) { return x(d.date) } )
+          .attr("cx", function(d) { return x(d.time) } )
           .attr("cy", function(d) { return y(d.value) } )
           .attr("data-tooltip", function(d) {
-            return item.benchmark + " at " + timePrinter(d.date) + ": " +
+            return item.benchmark + " at " + timePrinter(d.time) + ": " +
               d.value.toFixed(1) + " sec" +
               "<br/>" + item.platform + " Ruby " + d.ruby_desc;
           })
@@ -361,44 +363,57 @@ function updateGraphFromData() {
 
         // Add the whiskers, which are an I-shape of lines
       group.selectAll("line.whiskercenter." + item.name)
-        .data(item.data, (d) => d.date)
+        .data(item.data, (d) => d.time)
         .join("line")
         .attr("class", "whiskercenter " + item.name)
         .attr("stroke", timeline.whiskerColor)
         .attr("stroke-width", timeline.whiskerStrokeWidth)
-        .attr("x1", function(d) { return x(d.date) } )
+        .attr("x1", function(d) { return x(d.time) } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) } )
+        .attr("x2", function(d) { return x(d.time) } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
 
       group.selectAll("line.whiskertop." + item.name)
-        .data(item.data, (d) => d.date)
+        .data(item.data, (d) => d.time)
         .join("line")
         .attr("class", "whiskertop " + item.name)
         .attr("stroke", timeline.whiskerColor)
         .attr("stroke-width", timeline.whiskerStrokeWidth)
-        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value + 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
 
       group.selectAll("line.whiskerbottom." + item.name)
-        .data(item.data, (d) => d.date)
+        .data(item.data, (d) => d.time)
         .join("line")
         .attr("class", "whiskerbottom " + item.name)
         .attr("stroke", timeline.whiskerColor)
         .attr("stroke-width", timeline.whiskerStrokeWidth)
-        .attr("x1", function(d) { return x(d.date) - timeline.whiskerBarWidth / 2.0 } )
+        .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
-        .attr("x2", function(d) { return x(d.date) + timeline.whiskerBarWidth / 2.0 } )
+        .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
         .attr("y2", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("clip-path", "url(#clip)")
         ;
     });
+}
+
+function loadDataSeries(json) {
+  data_series = JSON.parse(json).data;
+  if(data_series.length == 0){
+    throw(new Error('No data for selection'))
+  }
+  data_series.forEach(function(d){
+    d.data.forEach(function(item){
+      // Transform strings into time objects.
+      item.time = timeParser(item.time);
+    });
+  });
 }
 
 function setupTimeline(opts) {
@@ -411,7 +426,7 @@ function setupTimeline(opts) {
 
   // Default to x86_64 recent-only data
   setRequestPending();
-  fetch("/reports/timeline/"+opts.timelineType+"_timeline.data.x86_64.recent.js")
+  fetch("/reports/timeline/"+opts.timelineType+"_timeline.data.x86_64.recent.json")
     .then(function (response) {
       if(!response.ok) {
         throw(new Error('Response failed: ' + response.statusText));
@@ -419,7 +434,7 @@ function setupTimeline(opts) {
 
       return response.text().then(function (data) {
         setRequestFinished();
-        eval(data);
+        loadDataSeries(data);
         updateGraphFromData();
         rescaleGraphFromFetchedData();
       });
@@ -432,14 +447,14 @@ function setupTimeline(opts) {
 
         setRequestPending();
         var newDataSet = event.target.value;
-        fetch("/reports/timeline/"+opts.timelineType+"_timeline.data." + newDataSet + ".js").then(function(response) {
+        fetch("/reports/timeline/"+opts.timelineType+"_timeline.data." + newDataSet + ".json").then(function(response) {
           if(!response.ok) {
             throw(new Error('Response failed: ' + response.statusText));
           }
 
           return response.text().then(function(data) {
             setRequestFinished();
-            eval(data);
+            loadDataSeries(data);
             rescaleGraphFromFetchedData();
           });
         }).catch(setRequestError);

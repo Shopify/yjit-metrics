@@ -81,7 +81,12 @@ module YJITMetrics
 
     def build_row(ts, this_point, this_ruby_desc)
       # These fields are from the ResultSet summary
-      [ ts, this_point["mean"], this_point["stddev"], this_ruby_desc ]
+      {
+        time: ts,
+        value: this_point["mean"],
+        stddev: this_point["stddev"],
+        ruby_desc: this_ruby_desc,
+      }
     end
 
     def build_series!
@@ -150,17 +155,17 @@ module YJITMetrics
       [:recent, :all_time].each do |duration|
         YJITMetrics::PLATFORMS.each do |platform|
           begin
-            @data_series = @series[platform][duration]
-
-            script_template = ERB.new File.read(File.expand_path("report_templates/#{self.class.report_name}_data_template.js.erb", __dir__))
-            text = script_template.result(binding)
-            File.open("#{out_dir}/reports/timeline/#{self.class.report_name}.data.#{platform}.#{duration}.js", "w") { |f| f.write(text) }
+            File.open("#{out_dir}/reports/timeline/#{self.class.report_name}.data.#{platform}.#{duration}.json", "w") do |f|
+              f.write(JSON.pretty_generate({data: @series[platform][duration]}))
+            end
           rescue
             puts "Error writing data file for #{platform} #{duration} data!"
             raise
           end
         end
       end
+
+      @data_series = @series.values.map { |x| x[:all_time] if !x[:all_time].empty? }.compact.first
 
       script_template = ERB.new File.read(File.expand_path("report_templates/#{self.class.report_name}_d3_template.html.erb", __dir__))
       html_output = script_template.result(binding) # Evaluate an Erb template with template_settings
