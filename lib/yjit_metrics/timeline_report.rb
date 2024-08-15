@@ -136,6 +136,10 @@ module YJITMetrics
       raise "Unknown platform in config '#{config}'"
     end
 
+    def data_human_name(series)
+      self.class::CONFIG_NAMES[series[:name].delete_suffix("-#{series[:benchmark]}")]
+    end
+
     def write_files(out_dir)
       [:recent, :all_time].each do |duration|
         YJITMetrics::PLATFORMS.each do |platform|

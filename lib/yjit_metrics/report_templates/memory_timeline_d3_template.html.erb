@@ -8,7 +8,7 @@
       <% @data_series.each do |this_series| %>
         <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
         <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
-          <strong style="color: white;"><%= this_series[:benchmark] %> <%= this_series[:config_human_name] %></strong> &nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %> <%= data_human_name(this_series) %></strong> &nbsp;&nbsp;
         </span>
       </li>
       <% end %>
