@@ -301,8 +301,15 @@ function updateChartCallback({svg, x, y}) {
         );
 }
 
+function getMinMax(vals) {
+  return [
+    Math.min.apply(null, vals),
+    Math.max.apply(null, vals),
+  ];
+}
+
 var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(series){
-  return series.value_range;
+  return series.value_range ||= getMinMax(series.data.map(x => x.value));
 });
 
 function updateGraphFromData() {

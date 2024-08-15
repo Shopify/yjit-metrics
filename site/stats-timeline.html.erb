@@ -23,7 +23,8 @@ function updateChartCallback({svg, x, y}) {
 }
 
 var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(series){
-  return series.value_range[document.timeline_data.current_stat];
+  var current = document.timeline_data.current_stat;
+  return (series.value_range ||= {})[current] ||= getMinMax(series.data.map(d => d[current]));
 });
 
     // Using JS values like data_series, update the SVG graph data
