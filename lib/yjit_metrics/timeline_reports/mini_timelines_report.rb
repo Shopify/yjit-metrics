@@ -8,6 +8,13 @@ module YJITMetrics
       "mini_timelines"
     end
 
+    SELECTED_BENCHMARKS = %w[
+      railsbench
+      optcarrot
+      liquid-render
+      activerecord
+    ].freeze
+
     def build_series!
       config = find_config("prod_ruby_with_yjit")
       platform = platform_of_config(config)
@@ -17,7 +24,7 @@ module YJITMetrics
 
       @series = []
 
-      @context[:selected_benchmarks].each do |benchmark|
+      SELECTED_BENCHMARKS.each do |benchmark|
         points = @context[:timestamps].map do |ts|
           this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
           if this_point

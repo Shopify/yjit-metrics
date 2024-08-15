@@ -12,8 +12,6 @@ all_report_names = report_class_by_name.keys.sort
 data_dir = "data"
 output_dir = "."
 
-# Default benchmarks and configs to compare
-benchmarks = [ "railsbench", "optcarrot", "liquid-render", "activerecord" ]
 reports = all_report_names.dup
 
 OptionParser.new do |opts|
@@ -27,10 +25,6 @@ OptionParser.new do |opts|
 
     opts.on("-o DIR", "--output-dir DIR", "Jekyll root dir for writing output files (default: current dir)") do |dir|
         output_dir = dir
-    end
-
-    opts.on("-b BENCH_NAMES", "--benchmarks BENCH_NAMES", "Benchmarks to include or to make visible by default") do |bench|
-        benchmarks = bench.split(",")
     end
 
     opts.on("-r REPORTS", "--reports REPORTS", "Run these reports on the data (known reports: #{all_report_names.join(", ")})") do |str|
@@ -129,8 +123,6 @@ end
 all_benchmarks.uniq!
 all_benchmarks.sort!
 
-benchmarks = benchmarks & all_benchmarks
-
 context = {
     result_set_by_timestamp: result_set_by_ts,
     summary_by_timestamp: summary_by_ts,
@@ -140,7 +132,6 @@ context = {
     timestamps: all_timestamps,
     timestamps_with_stats: stats_timestamps,
 
-    selected_benchmarks: benchmarks,
     benchmark_order: all_benchmarks,
 }
 
