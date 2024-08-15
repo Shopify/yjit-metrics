@@ -71,6 +71,9 @@ module YJITMetrics
     # Recent is just the subset of the last X results.
     NUM_RECENT = 100
 
+    # This should match the JS parser in the template file.
+    TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
     def initialize(context)
       @context = context
       build_series!
@@ -82,9 +85,6 @@ module YJITMetrics
     end
 
     def build_series!
-      # This should match the JS parser in the template file
-      time_format = "%Y %m %d %H %M %S"
-
       @series = {}
       YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
@@ -100,7 +100,7 @@ module YJITMetrics
               this_point = @context[:summary_by_timestamp].dig(ts, config, benchmark)
               if this_point
                 this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
-                build_row(ts.strftime(time_format), this_point, this_ruby_desc)
+                build_row(ts.strftime(TIME_FORMAT), this_point, this_ruby_desc)
               else
                 nil
               end

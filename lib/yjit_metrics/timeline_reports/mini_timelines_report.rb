@@ -19,9 +19,6 @@ module YJITMetrics
       config = find_config("prod_ruby_with_yjit")
       platform = platform_of_config(config)
 
-      # This should match the JS parser in the template file
-      time_format = "%Y %m %d %H %M %S"
-
       @series = []
 
       SELECTED_BENCHMARKS.each do |benchmark|
@@ -30,7 +27,7 @@ module YJITMetrics
           if this_point
             this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][config][ts] || "unknown"
             # These fields are from the ResultSet summary
-            [ ts.strftime(time_format), this_point["mean"], this_ruby_desc ]
+            [ ts.strftime(TIME_FORMAT), this_point["mean"], this_ruby_desc ]
           else
             nil
           end

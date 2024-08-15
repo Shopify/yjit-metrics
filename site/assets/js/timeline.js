@@ -1,4 +1,4 @@
-var timeParser = d3.timeParse("%Y %m %d %H %M %S");
+var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 var timePrinter = d3.timeFormat("%b %d %I%p");
 var data_series;
 var all_series_time_range;

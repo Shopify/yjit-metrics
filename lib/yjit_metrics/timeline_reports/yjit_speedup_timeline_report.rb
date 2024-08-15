@@ -14,9 +14,6 @@ module YJITMetrics
       no_jit_config_root = "prod_ruby_no_jit"
       x86_stats_config = "x86_64_#{stats_config_root}"
 
-      # This should match the JS parser in the template file
-      time_format = "%Y %m %d %H %M %S"
-
       @series = {}
       YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
 
@@ -35,7 +32,7 @@ module YJITMetrics
               this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
               # These fields are from the ResultSet summary
               out = {
-                time: ts.strftime(time_format),
+                time: ts.strftime(TIME_FORMAT),
                 yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
                 ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                 side_exits: this_point_stats["yjit_stats"]["side_exits"],
@@ -87,14 +84,14 @@ module YJITMetrics
 
           ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
           point_mean = {
-            time: ts.strftime(time_format),
+            time: ts.strftime(TIME_FORMAT),
             ruby_desc: ruby_desc,
           }
           point_geomean = point_mean.dup
           @stats_fields.each do |field|
             begin
               points = @context[:benchmark_order].map.with_index do |bench, b_idx|
-                t_str = ts.strftime(time_format)
+                t_str = ts.strftime(TIME_FORMAT)
                 this_bench_data = @series[platform][:all_time][b_idx]
                 if this_bench_data
                   t_in_series = this_bench_data[:data].detect { |point_info| point_info[:time] == t_str }
