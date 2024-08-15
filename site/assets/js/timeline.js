@@ -106,14 +106,23 @@ function updateAllFromCheckboxes() {
   });
 }
 
+function timeRange(series) {
+  if (!series || !series.data) return [];
+
+  return [
+    series.data[0].time,
+    series.data[ series.data.length - 1 ].time,
+  ];
+}
+
 function buildUpdateDomainsAndAxesFromData(getSeriesValueRange){
   return function updateDomainsAndAxesFromData() {
     // Find the new data scale based on visible series
     var minY = 0.0;
     var maxY = 1.0;
-    var minX = data_series[0].time_range[0];
-    var maxX = data_series[0].time_range[1];
+    let [minX, maxX] = timeRange(data_series[0]);
     data_series.forEach(function (series) {
+      let seriesTimeRange = timeRange(series);
       let valueRange = getSeriesValueRange(series);
       if(series.visible && valueRange[0] < minY) {
         minY = valueRange[0];
@@ -121,11 +130,11 @@ function buildUpdateDomainsAndAxesFromData(getSeriesValueRange){
       if(series.visible && valueRange[1] > maxY) {
         maxY = valueRange[1];
       }
-      if(series.visible && series.time_range[0] < minX) {
-        minX = series.time_range[0];
+      if(series.visible && seriesTimeRange[0] < minX) {
+        minX = seriesTimeRange[0];
       }
-      if(series.visible && series.time_range[1] > maxX) {
-        maxX = series.time_range[1];
+      if(series.visible && seriesTimeRange[1] > maxX) {
+        maxX = seriesTimeRange[1];
       }
     });
     var yAxis = document.timeline_data.y_axis;
