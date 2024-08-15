@@ -31,7 +31,13 @@ module YJITMetrics
         points.compact!
         next if points.empty?
 
-        @series.push({ config: config, benchmark: benchmark, name: "#{config}-#{benchmark}", platform: platform, data: points })
+        @series.push({
+          config: config,
+          benchmark: benchmark,
+          name: "#{config}-#{benchmark}",
+          platform: platform,
+          data: points,
+        })
       end
 
       #@series.sort_by! { |s| s[:name] }

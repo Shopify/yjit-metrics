@@ -57,10 +57,14 @@ module YJITMetrics
           points.compact!
           next if points.empty?
 
-          visible = @context[:selected_benchmarks].include?(benchmark)
-
-          s = { config: yjit_config, benchmark: benchmark, name: "#{yjit_config_root}-#{benchmark}", platform: platform, visible: visible, data: points }
-          s_recent = { config: yjit_config, benchmark: benchmark, name: "#{yjit_config_root}-#{benchmark}", platform: platform, visible: visible, data: points.last(NUM_RECENT) }
+          s = {
+            # config: yjit_config,
+            benchmark: benchmark,
+            name: "#{yjit_config_root}-#{benchmark}",
+            platform: platform,
+            data: points,
+          }
+          s_recent = s.dup.merge(data: points.last(NUM_RECENT))
           @series[platform][:all_time].push s
           @series[platform][:recent].push s_recent
         end
