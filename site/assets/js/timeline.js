@@ -409,6 +409,9 @@ function loadDataSeries(json) {
     throw(new Error('No data for selection'))
   }
   data_series.forEach(function(d){
+    // Combine identifying fields into one to simplify the rest of the js.
+    d.name = d.config + '-' + d.benchmark;
+
     d.data.forEach(function(item){
       // Transform strings into time objects.
       item.time = timeParser(item.time);

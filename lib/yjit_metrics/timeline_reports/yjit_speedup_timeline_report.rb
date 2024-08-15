@@ -55,9 +55,8 @@ module YJITMetrics
           next if points.empty?
 
           s = {
-            # config: yjit_config,
+            config: yjit_config_root,
             benchmark: benchmark,
-            name: "#{yjit_config_root}-#{benchmark}",
             platform: platform,
             data: points,
           }

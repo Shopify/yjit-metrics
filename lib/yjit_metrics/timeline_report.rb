@@ -114,10 +114,8 @@ module YJITMetrics
             next if points.empty?
 
             s_all_time = {
-              # config: config,
-              # config_human_name: config_human_name,
+              config: config_root,
               benchmark: benchmark,
-              name: "#{config_root}-#{benchmark}",
               platform: platform,
               color: color,
               data: points,
@@ -148,7 +146,7 @@ module YJITMetrics
     end
 
     def data_human_name(series)
-      self.class::CONFIG_NAMES[series[:name].delete_suffix("-#{series[:benchmark]}")]
+      self.class::CONFIG_NAMES[series[:config]]
     end
 
     def write_files(out_dir)
