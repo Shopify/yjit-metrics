@@ -15,7 +15,11 @@ module YJITMetrics
 
     def build_row(ts, this_point, this_ruby_desc)
       # These fields are from the ResultSet summary - peak_mem_bytes is an array because multiple runs are possible
-      [ ts, this_point["peak_mem_bytes"].max, this_ruby_desc ]
+      {
+       time: ts,
+       value: this_point["peak_mem_bytes"].max,
+       ruby_desc: this_ruby_desc,
+      }
     end
   end
 end

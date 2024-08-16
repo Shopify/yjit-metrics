@@ -8,7 +8,7 @@
       <% @data_series.each do |this_series| %>
         <li style="display: none" data-benchmark="<%= this_series[:benchmark] %>">
         <span style='background: <%= this_series[:color] %>'>&nbsp;&nbsp;
-          <strong style="color: white;"><%= this_series[:benchmark] %> <%= this_series[:config_human_name] %></strong> &nbsp;&nbsp;
+          <strong style="color: white;"><%= this_series[:benchmark] %> <%= data_human_name(this_series) %></strong> &nbsp;&nbsp;
         </span>
       </li>
       <% end %>
@@ -22,10 +22,11 @@
 
 <div id="bottom_selection_checkboxes" style="display: none;">
   <ul>
-    <% @data_series.each do |this_series| %>
+    <% @data_series.each_with_object({}) do |this_series, seen| %>
     <%
-      # This report has exactly two configs with all the same benchmarks.  We only need to show each benchmark once here.
-      next if this_series[:config].end_with?("prod_ruby_no_jit")
+      # Each benchmark ran under multiple configs.  Only show each benchmark once.
+      next if seen[this_series[:benchmark]]
+      seen[this_series[:benchmark]] = true
     %>
     <li>
       <input type="checkbox" data-benchmark="<%= this_series[:benchmark]%>" />

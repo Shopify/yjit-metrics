@@ -3,7 +3,7 @@
 require_relative "../timeline_report"
 
 module YJITMetrics
-  class TimingTimelineReport < TimelineReport
+  class BenchmarkTimelineReport < TimelineReport
     def self.report_name
       "benchmark_timeline"
     end

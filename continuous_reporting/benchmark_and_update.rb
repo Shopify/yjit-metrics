@@ -322,9 +322,6 @@ def timestr_from_ts(ts)
     end
 end
 
-# If something starts getting false positives, we'll ignore it. Example bad benchmark: jekyll
-EXCLUDE_HIGH_NOISE_BENCHMARKS = [ "jekyll" ]
-
 # If benchmark results drop noticeably, file a Github issue
 def check_perf_tripwires
     Dir.chdir(YM_REPORT_DIR) do
@@ -366,7 +363,6 @@ def check_one_perf_tripwire_file(current_filename, compared_filename, verbose: V
     compared_data.each do |bench_name, values|
         # Only compare if both sets of data have the benchmark
         next unless current_data[bench_name]
-        next if EXCLUDE_HIGH_NOISE_BENCHMARKS.include?(bench_name)
 
         current_mean = current_data[bench_name]["mean"]
         current_rsd_pct = current_data[bench_name]["rsd_pct"]
