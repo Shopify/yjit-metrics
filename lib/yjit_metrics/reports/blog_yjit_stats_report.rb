@@ -51,6 +51,7 @@ module YJITMetrics
         "Bind Alloc" => "Number of Ruby bindings allocated",
         "Bind Set" => "Number of variables set via bindings",
         "Const Bumps" => "Number of times Ruby clears its internal constant cache",
+        "Compile Time MS" => "Time YJIT spent compiling blocks in Milliseconds",
       }
 
       # Col formats are only used when formatting entries for a text table, not for CSV
@@ -89,6 +90,7 @@ module YJITMetrics
           bench_stats["binding_allocations"],
           bench_stats["binding_set"],
           bench_stats["constant_state_bumps"],
+          (bench_stats["compile_time_ns"] / 1_000_000.0),
         ]
 
       end

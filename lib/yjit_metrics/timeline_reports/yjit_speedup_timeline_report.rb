@@ -34,6 +34,8 @@ module YJITMetrics
               out = {
                 time: ts.strftime(TIME_FORMAT),
                 yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
+                # Make this a smaller float here so that calculating the geomean below doesn't produce Infinity.
+                compile_time_ms: this_point_stats["yjit_stats"]["compile_time_ns"] / 1_000_000.0,
                 ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                 side_exits: this_point_stats["yjit_stats"]["side_exits"],
                 invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"] || 0,
