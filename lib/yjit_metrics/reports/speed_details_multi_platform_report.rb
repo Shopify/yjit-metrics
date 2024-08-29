@@ -55,7 +55,7 @@ module YJITMetrics
       # extensions:
 
       # For each of these types, we'll just include for each platform and we can switch display
-      # in the Jekyll site. They exist, but there's no combined multiplatform version.
+      # in the site. They exist, but there's no combined multiplatform version.
       # We'll create an empty 'tracker' file for the combined version.
       self.class.report_extensions.each do |ext|
         outfile = "#{filename}.#{ext}"

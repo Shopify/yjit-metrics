@@ -23,7 +23,7 @@ OptionParser.new do |opts|
         data_dir = dir
     end
 
-    opts.on("-o DIR", "--output-dir DIR", "Jekyll root dir for writing output files (default: current dir)") do |dir|
+    opts.on("-o DIR", "--output-dir DIR", "Root dir for writing output files (default: current dir)") do |dir|
         output_dir = dir
     end
 

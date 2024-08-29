@@ -283,7 +283,7 @@ end
 
 def report_and_upload
     Dir.chdir __dir__ do
-        # This should copy the data directory into the Jekyll directories for generating reports,
+        # This should copy the data directory into the directories for generating reports,
         # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
         # GitHub tokens. The push can be done explicitly, later, not from this script.
         YJITMetrics.check_call "#{RbConfig.ruby} generate_and_upload_reports.rb -d data --no-push --no-report"
