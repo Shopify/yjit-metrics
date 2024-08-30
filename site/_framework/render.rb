@@ -24,7 +24,7 @@ COLLECTION_BASES = {
   "benchmarks" => BUILT_YJIT_REPORTS,
 }
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
-TOPLEVEL_SKIPPED = [ "Gemfile", "Gemfile.lock" ]
+TOPLEVEL_SKIPPED = [ "exe", "Gemfile", "Gemfile.lock" ]
 
 def render_markdown(text)
   require "kramdown"
