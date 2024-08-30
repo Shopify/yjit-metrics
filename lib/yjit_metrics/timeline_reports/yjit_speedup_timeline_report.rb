@@ -122,10 +122,10 @@ module YJITMetrics
           data_mean.push(point_mean)
           data_geomean.push(point_geomean)
         end
-        overall_mean = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config_root}-overall-mean", platform: platform, visible: true, data: data_mean }
-        overall_geomean = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config_root}-overall-geomean", platform: platform, visible: true, data: data_geomean }
-        overall_mean_recent = { config: yjit_config, benchmark: "overall-mean", name: "#{yjit_config_root}-overall-mean", platform: platform, visible: true, data: data_mean.last(NUM_RECENT) }
-        overall_geomean_recent = { config: yjit_config, benchmark: "overall-geomean", name: "#{yjit_config_root}-overall-geomean", platform: platform, visible: true, data: data_geomean.last(NUM_RECENT) }
+        overall_mean = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean }
+        overall_geomean = { config: yjit_config_root, benchmark: "overall-geomean", platform: platform, data: data_geomean }
+        overall_mean_recent = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean.last(NUM_RECENT) }
+        overall_geomean_recent = { config: yjit_config_root, benchmark: "overall-geomean", platform: platform, data: data_geomean.last(NUM_RECENT) }
 
         @series[platform][:all_time].prepend overall_geomean
         @series[platform][:all_time].prepend overall_mean
