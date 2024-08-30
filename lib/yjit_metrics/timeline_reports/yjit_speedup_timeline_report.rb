@@ -8,6 +8,8 @@ module YJITMetrics
       "yjit_stats_timeline"
     end
 
+    FIRST_COMPILE_TIME_TS = DateTime.new(2023, 9, 12, 19, 8, 13)
+
     def build_series!
       yjit_config_root = "prod_ruby_with_yjit"
       stats_config_root = "yjit_stats"
@@ -35,7 +37,7 @@ module YJITMetrics
                 time: ts.strftime(TIME_FORMAT),
                 yjit_speedup: this_point_cruby["mean"] / this_point_yjit["mean"],
                 # Make this a smaller float here so that calculating the geomean below doesn't produce Infinity.
-                compile_time_ms: this_point_stats["yjit_stats"]["compile_time_ns"] / 1_000_000.0,
+                compile_time_ms: (this_point_stats["yjit_stats"]["compile_time_ns"] &./ 1_000_000.0),
                 ratio_in_yjit: this_point_stats["yjit_stats"]["yjit_ratio_pct"],
                 side_exits: this_point_stats["yjit_stats"]["side_exits"],
                 invalidation_count: this_point_stats["yjit_stats"]["invalidation_count"] || 0,
@@ -106,9 +108,15 @@ module YJITMetrics
               raise
             end
             points.compact!
-            raise("No data points for stat #{field.inspect} for TS #{ts.inspect}") if points.empty?
-            point_mean[field] = mean(points)
-            point_geomean[field] = geomean(points)
+
+            if points.empty?
+              if !(:compile_time_ms == field && ts < FIRST_COMPILE_TIME_TS)
+                warn("No data points for stat #{field.inspect} for TS #{ts.inspect}")
+              end
+            else
+              point_mean[field] = mean(points)
+              point_geomean[field] = geomean(points)
+            end
           end
 
           data_mean.push(point_mean)
