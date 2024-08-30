@@ -271,9 +271,8 @@ def run_benchmarks
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
-        old_data_files = Dir["#{DATA_DIR}/*.json"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
+        Dir["#{DATA_DIR}/*.json"].each do |f|
+            FileUtils.rm f
         end
 
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
