@@ -18,14 +18,13 @@ def find_dir(path)
   local
 end
 
-# For now, keep the equivalent of _config.yml in constants
 BUILT_YJIT_REPORTS = find_dir("built-yjit-reports")
 COLLECTIONS = [ "benchmarks" ]
 COLLECTION_BASES = {
   "benchmarks" => BUILT_YJIT_REPORTS,
 }
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
-TOPLEVEL_SKIPPED = [ "_config.yml", "Gemfile", "Gemfile.lock" ]
+TOPLEVEL_SKIPPED = [ "Gemfile", "Gemfile.lock" ]
 
 def render_markdown(text)
   require "kramdown"
