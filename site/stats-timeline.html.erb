@@ -42,11 +42,13 @@ function updateGraphFromData() {
             ;
 
     data_series.forEach(function(item) {
+      var current_stat = document.timeline_data.current_stat;
+      var data = item.data.filter(x => x[current_stat] != null);
       var group = svg.select("svg g.svg_tl_data." + item.name);
 
       // Add the graph line
       group.selectAll("path")
-        .data([item.data])
+        .data([data])
         .join("path")
         .attr("class", "line")
         .attr("fill", "none")
@@ -55,20 +57,20 @@ function updateGraphFromData() {
         .attr("d",
           d3.line()
             .x(function(d) { return x(d.time) })
-            .y(function(d) { return y(d[document.timeline_data.current_stat]) })
+            .y(function(d) { return y(d[current_stat]) })
         ).attr("clip-path", "url(#clip)");
 
         // Add a circle at each datapoint
         group.selectAll("circle.centerdot." + item.name)
-          .data(item.data, (d) => d.time).join("circle")
+          .data(data, (d) => d.time).join("circle")
           .attr("class", "circle centerdot " + item.name)
           .attr("fill", item.color)
           .attr("r", 1.5)
           .attr("cx", function(d) { return x(d.time) } )
-          .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
+          .attr("cy", function(d) { return y(d[current_stat]) } )
           .attr("data-tooltip", function(d) {
               return item.benchmark + " at " + timePrinter(d.time) + ": " +
-                  (d[document.timeline_data.current_stat]).toFixed(1) +
+                  (d[current_stat]).toFixed(1) +
                   "<br/>" + item.platform + " Ruby " + d.ruby_desc;
           })
           .attr("clip-path", "url(#clip)");
