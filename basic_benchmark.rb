@@ -305,6 +305,7 @@ RUBY_BUILDS = {
         install: "ruby-build",
         full_clean: "rm -rf ~/.rubies/truffleruby+graalvm-21.2.0",
     },
+    # can also do "name" => { install: "ruby-build", full_clean: "rm -rf ~/.rubies/name" }
 }
 
 SKIPPED_COMBOS = [

@@ -348,6 +348,8 @@ if File.exist?(".git")
   branch = "pages"
 
   YJITMetrics.check_call "git checkout #{branch}" # Should already be on this branch (no-op).
+  # If there were any changes in the remote we could maybe do something like
+  # "git fetch current_repo" and "git reset --hard origin/#{branch}"
 
   YJITMetrics.check_call "rsync --exclude=.git -ar --ignore-times --delete #{YM_REPO}/site/_site/ ./"
 
