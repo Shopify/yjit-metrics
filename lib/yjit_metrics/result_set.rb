@@ -452,6 +452,7 @@ module YJITMetrics
       "inline_code_size",
       "outlined_code_size",
       #"exec_instruction",  # exec_instruction changed name to yjit_insns_count -- only one of the two will be present in a dataset
+      "compile_time_ns",
       "yjit_insns_count",
       "vm_insns_count",
       "compiled_iseq_count",
