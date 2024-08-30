@@ -280,30 +280,6 @@ def run_benchmarks
     end
 end
 
-def report_and_upload
-    Dir.chdir __dir__ do
-        # This should copy the data directory into the directories for generating reports,
-        # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
-        # GitHub tokens. The push can be done explicitly, later, not from this script.
-        YJITMetrics.check_call "#{RbConfig.ruby} generate_and_upload_reports.rb -d data --no-push --no-report"
-
-        # Delete the files from this run since they've now been processed.
-        old_data_files = Dir["#{DATA_DIR}/*"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
-        end
-    end
-end
-
-def clear_latest_data
-    Dir.chdir __dir__ do
-        old_data_files = Dir["#{DATA_DIR}/*"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
-        end
-    end
-end
-
 def ts_from_tripwire_filename(filename)
     filename.split("blog_speed_details_")[1].split(".")[0]
 end
