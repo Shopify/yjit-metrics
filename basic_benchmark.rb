@@ -57,6 +57,7 @@ PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
 #
 # Right now we use the config name itself to communicate this data
 # to the reporting tasks. That's bad and we should stop :-/
+# NOTE: to use "ruby-abc" with --skip-git-updates and no full rebuild just insert: "ruby-abc" => {build: "ruby-abc", opts: SOME_JIT_OPTS, per_os_prefix: CRUBY_PER_OS_OPTS}
 RUBY_CONFIG_ROOTS = {
     "debug_ruby_no_yjit" => {
         build: "ruby-yjit-metrics-debug",
