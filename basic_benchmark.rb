@@ -483,7 +483,7 @@ end
 all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
         benchmark_list.to_a.flat_map do |bench_info|
-            bench_info[:name] = bench_info[:name].gsub(/\.rb$/, "")
+            bench_info[:name] = bench_info[:name].delete_suffix('.rb')
             if SKIPPED_COMBOS.include?([ "*", bench_info[:name] ]) ||
               SKIPPED_COMBOS.include?([ config, bench_info[:name] ])
                 puts "Skipping: #{config} / #{bench_info[:name]}..."
