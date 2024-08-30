@@ -304,6 +304,7 @@ function updateChartCallback({svg, x, y}) {
 }
 
 function getMinMax(vals) {
+  vals = vals.filter(v => v != null);
   return [
     Math.min.apply(null, vals),
     Math.max.apply(null, vals),
