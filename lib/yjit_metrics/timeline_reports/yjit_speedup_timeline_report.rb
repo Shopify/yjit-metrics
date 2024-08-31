@@ -23,7 +23,7 @@ module YJITMetrics
           yjit_config = "#{platform}_#{yjit_config_root}"
           stats_config = "#{platform}_#{stats_config_root}"
           no_jit_config = "#{platform}_#{no_jit_config_root}"
-          points = @context[:timestamps_with_stats].map do |ts|
+          points = @context[:timestamps].map do |ts|
             this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
             next unless this_point_stats
 
@@ -82,7 +82,7 @@ module YJITMetrics
 
         data_mean = []
         data_geomean = []
-        @context[:timestamps_with_stats].map.with_index do |ts, t_idx|
+        @context[:timestamps].each do |ts|
           # Only use timestamps that have stats configs so we match the ones we used above.
           next unless @context[:summary_by_timestamp].dig(ts, stats_config)
 
@@ -126,6 +126,7 @@ module YJITMetrics
           data_mean.push(point_mean)
           data_geomean.push(point_geomean)
         end
+
         overall_mean = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean }
         overall_geomean = { config: yjit_config_root, benchmark: "overall-geomean", platform: platform, data: data_geomean }
         overall_mean_recent = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean.last(NUM_RECENT) }
