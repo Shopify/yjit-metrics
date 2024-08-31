@@ -14,7 +14,6 @@ module YJITMetrics
       yjit_config_root = "prod_ruby_with_yjit"
       stats_config_root = "yjit_stats"
       no_jit_config_root = "prod_ruby_no_jit"
-      x86_stats_config = "x86_64_#{stats_config_root}"
 
       @series = {}
       YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
@@ -25,11 +24,12 @@ module YJITMetrics
           stats_config = "#{platform}_#{stats_config_root}"
           no_jit_config = "#{platform}_#{no_jit_config_root}"
           points = @context[:timestamps_with_stats].map do |ts|
+            this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
+            next unless this_point_stats
+
             this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
             this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
-            # If no same-platform stats, fall back to x86_64 stats if available
-            this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark) ||
-              @context[:summary_by_timestamp].dig(ts, x86_stats_config, benchmark)
+
             if this_point_yjit && this_point_stats
               this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
               # These fields are from the ResultSet summary
@@ -45,7 +45,7 @@ module YJITMetrics
               }
               if out[:ratio_in_yjit].nil? || out[:side_exits].nil? || out[:invalidation_count].nil?
                 puts "Problem location: Benchmark #{benchmark.inspect} platform #{platform.inspect} timestamp #{ts.inspect}"
-                puts "Stats config(s): #{stats_config.inspect} / #{x86_stats_config.inspect}"
+                puts "Stats config(s): #{stats_config.inspect}"
                 puts "Bad output sample: #{out.inspect}"
                 puts "Stats array: #{this_point_stats["yjit_stats"]}"
                 raise("Found point with nil as summary!")
