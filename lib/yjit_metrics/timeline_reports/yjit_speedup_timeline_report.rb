@@ -76,12 +76,16 @@ module YJITMetrics
       # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks per-platform
       YJITMetrics::PLATFORMS.each do |platform|
         yjit_config = "#{platform}_#{yjit_config_root}"
+        stats_config = "#{platform}_#{stats_config_root}"
         # No Ruby desc for this? If so, that means no results for this platform
         next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config]
 
         data_mean = []
         data_geomean = []
         @context[:timestamps_with_stats].map.with_index do |ts, t_idx|
+          # Only use timestamps that have stats configs so we match the ones we used above.
+          next unless @context[:summary_by_timestamp].dig(ts, stats_config)
+
           # No Ruby desc for this platform/timestamp combo? If so, that means no results for this platform and timestamp.
           next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts]
 
