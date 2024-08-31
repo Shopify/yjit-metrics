@@ -57,6 +57,7 @@ PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
 #
 # Right now we use the config name itself to communicate this data
 # to the reporting tasks. That's bad and we should stop :-/
+# NOTE: to use "ruby-abc" with --skip-git-updates and no full rebuild just insert: "ruby-abc" => {build: "ruby-abc", opts: SOME_JIT_OPTS, per_os_prefix: CRUBY_PER_OS_OPTS}
 RUBY_CONFIG_ROOTS = {
     "debug_ruby_no_yjit" => {
         build: "ruby-yjit-metrics-debug",
@@ -305,6 +306,7 @@ RUBY_BUILDS = {
         install: "ruby-build",
         full_clean: "rm -rf ~/.rubies/truffleruby+graalvm-21.2.0",
     },
+    # can also do "name" => { install: "ruby-build", full_clean: "rm -rf ~/.rubies/name" }
 }
 
 SKIPPED_COMBOS = [
@@ -482,7 +484,7 @@ end
 all_runs = (0...num_runs).flat_map do |run_num|
     configs_to_test.flat_map do |config|
         benchmark_list.to_a.flat_map do |bench_info|
-            bench_info[:name] = bench_info[:name].gsub(/\.rb$/, "")
+            bench_info[:name] = bench_info[:name].delete_suffix('.rb')
             if SKIPPED_COMBOS.include?([ "*", bench_info[:name] ]) ||
               SKIPPED_COMBOS.include?([ config, bench_info[:name] ])
                 puts "Skipping: #{config} / #{bench_info[:name]}..."

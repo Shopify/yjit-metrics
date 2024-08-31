@@ -271,37 +271,12 @@ def run_benchmarks
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
-        old_data_files = Dir["#{DATA_DIR}/*.json"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
+        Dir["#{DATA_DIR}/*.json"].each do |f|
+            FileUtils.rm f
         end
 
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
         YJITMetrics.check_call "#{RbConfig.ruby} basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
-    end
-end
-
-def report_and_upload
-    Dir.chdir __dir__ do
-        # This should copy the data directory into the directories for generating reports,
-        # run any reports it needs to. We will tell it *not* to push to Git since we often won't have
-        # GitHub tokens. The push can be done explicitly, later, not from this script.
-        YJITMetrics.check_call "#{RbConfig.ruby} generate_and_upload_reports.rb -d data --no-push --no-report"
-
-        # Delete the files from this run since they've now been processed.
-        old_data_files = Dir["#{DATA_DIR}/*"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
-        end
-    end
-end
-
-def clear_latest_data
-    Dir.chdir __dir__ do
-        old_data_files = Dir["#{DATA_DIR}/*"].to_a
-        unless old_data_files.empty?
-            old_data_files.each { |f| FileUtils.rm f }
-        end
     end
 end
 

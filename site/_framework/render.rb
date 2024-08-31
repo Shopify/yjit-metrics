@@ -24,7 +24,7 @@ COLLECTION_BASES = {
   "benchmarks" => BUILT_YJIT_REPORTS,
 }
 SPECIAL_DIRS = [ "_layouts", "_includes", "_sass", "_framework" ]
-TOPLEVEL_SKIPPED = [ "Gemfile", "Gemfile.lock" ]
+TOPLEVEL_SKIPPED = [ "exe", "Gemfile", "Gemfile.lock" ]
 
 def render_markdown(text)
   require "kramdown"
@@ -276,7 +276,11 @@ def build_site
     autocopy.each do |src, dest|
       dest = File.expand_path(dest, BUILT_YJIT_REPORTS)
       FileUtils.mkdir_p dest
-      FileUtils.ln glob_with_base(src, BUILT_YJIT_REPORTS).map { |f, b| File.join(b, f) }, dest, force: true
+
+      src_files = glob_with_base(src, BUILT_YJIT_REPORTS).map { |f, b| File.join(b, f) }
+      next if src_files.empty?
+
+      FileUtils.ln src_files, dest, force: true
     end
   end
 

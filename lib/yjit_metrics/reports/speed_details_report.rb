@@ -246,6 +246,8 @@ module YJITMetrics
 
       bar_data = []
 
+      # We could draw the baseline here to put it behind the bars.
+
       # Okay. Now let's plot a lot of boxes and whiskers.
       benchmarks.each.with_index do |bench_name, bench_short_idx|
         bar_data << {label: bench_name.delete_suffix('.rb'), bars: []}
