@@ -14,7 +14,6 @@ module YJITMetrics
       yjit_config_root = "prod_ruby_with_yjit"
       stats_config_root = "yjit_stats"
       no_jit_config_root = "prod_ruby_no_jit"
-      x86_stats_config = "x86_64_#{stats_config_root}"
 
       @series = {}
       YJITMetrics::PLATFORMS.each { |platform| @series[platform] = { :recent => [], :all_time => [] } }
@@ -24,12 +23,13 @@ module YJITMetrics
           yjit_config = "#{platform}_#{yjit_config_root}"
           stats_config = "#{platform}_#{stats_config_root}"
           no_jit_config = "#{platform}_#{no_jit_config_root}"
-          points = @context[:timestamps_with_stats].map do |ts|
+          points = @context[:timestamps].map do |ts|
+            this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark)
+            next unless this_point_stats
+
             this_point_yjit = @context[:summary_by_timestamp].dig(ts, yjit_config, benchmark)
             this_point_cruby = @context[:summary_by_timestamp].dig(ts, no_jit_config, benchmark)
-            # If no same-platform stats, fall back to x86_64 stats if available
-            this_point_stats = @context[:summary_by_timestamp].dig(ts, stats_config, benchmark) ||
-              @context[:summary_by_timestamp].dig(ts, x86_stats_config, benchmark)
+
             if this_point_yjit && this_point_stats
               this_ruby_desc = @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts] || "unknown"
               # These fields are from the ResultSet summary
@@ -45,7 +45,7 @@ module YJITMetrics
               }
               if out[:ratio_in_yjit].nil? || out[:side_exits].nil? || out[:invalidation_count].nil?
                 puts "Problem location: Benchmark #{benchmark.inspect} platform #{platform.inspect} timestamp #{ts.inspect}"
-                puts "Stats config(s): #{stats_config.inspect} / #{x86_stats_config.inspect}"
+                puts "Stats config(s): #{stats_config.inspect}"
                 puts "Bad output sample: #{out.inspect}"
                 puts "Stats array: #{this_point_stats["yjit_stats"]}"
                 raise("Found point with nil as summary!")
@@ -76,12 +76,16 @@ module YJITMetrics
       # Calculate overall yjit speedup, yjit ratio, etc. over all benchmarks per-platform
       YJITMetrics::PLATFORMS.each do |platform|
         yjit_config = "#{platform}_#{yjit_config_root}"
+        stats_config = "#{platform}_#{stats_config_root}"
         # No Ruby desc for this? If so, that means no results for this platform
         next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config]
 
         data_mean = []
         data_geomean = []
-        @context[:timestamps_with_stats].map.with_index do |ts, t_idx|
+        @context[:timestamps].each do |ts|
+          # Only use timestamps that have stats configs so we match the ones we used above.
+          next unless @context[:summary_by_timestamp].dig(ts, stats_config)
+
           # No Ruby desc for this platform/timestamp combo? If so, that means no results for this platform and timestamp.
           next unless @context[:ruby_desc_by_config_and_timestamp][yjit_config][ts]
 
@@ -122,6 +126,7 @@ module YJITMetrics
           data_mean.push(point_mean)
           data_geomean.push(point_geomean)
         end
+
         overall_mean = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean }
         overall_geomean = { config: yjit_config_root, benchmark: "overall-geomean", platform: platform, data: data_geomean }
         overall_mean_recent = { config: yjit_config_root, benchmark: "overall-mean", platform: platform, data: data_mean.last(NUM_RECENT) }
