@@ -137,3 +137,5 @@ reports.each do |report_name|
     report = report_class_by_name[report_name].new context
     report.write_files(output_dir)
 end
+
+printf "Timeline report RSS: %dMB\n", `ps -p #{$$} -o rss=`.to_i / 1024
