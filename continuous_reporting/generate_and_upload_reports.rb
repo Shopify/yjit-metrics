@@ -369,4 +369,6 @@ if File.exist?(".git")
   YJITMetrics.check_call "git gc"
 end
 
+printf "Reporting RSS: %dMB\n", `ps -p #{$$} -o rss=`.to_i / 1024
+
 puts "Finished generate_and_upload_reports successfully in #{YM_REPO}!"
