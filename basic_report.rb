@@ -149,3 +149,5 @@ reports.each do |report_name|
     #print report.to_s
     #puts
 end
+
+printf "Basic report RSS: %dMB\n", `ps -p #{$$} -o rss=`.to_i / 1024
