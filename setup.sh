@@ -75,7 +75,8 @@ setup-repos () {
 }
 
 setup-ruby-build () {
-  local dir=${RUBY_BUILD:-$HOME/ym/ruby-build}
+  local dir=${RUBY_BUILD:-$HOME/src/ruby-build}
+  mkdir -p "${dir%/*}"
   if ! [[ -x "$dir/bin/ruby-build" ]]; then
     git clone https://github.com/rbenv/ruby-build "$dir"
   else
