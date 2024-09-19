@@ -88,8 +88,9 @@ setup-ruby-build () {
 setup-ruby () {
   local version=3.3.4
   local prefix=/usr/local/ruby
+  local exe="$prefix/bin/ruby"
 
-  if ! "$prefix"/bin/ruby -e 'exit 1 unless RUBY_VERSION == ARGV[0]' "$version"; then
+  if ! [[ -x "$exe" ]] || ! "$exe" -e 'exit 1 unless RUBY_VERSION == ARGV[0]' "$version"; then
     local user=`id -nu`
 
     # Remove any old version.
