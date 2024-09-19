@@ -3,14 +3,13 @@
 
 require 'slack-ruby-client'
 
-SLACK_TOKEN = ENV["SLACK_OAUTH_TOKEN"]
-
-unless SLACK_TOKEN
-  raise "Can't run slack_build_notifier.rb without a Slack token in env var SLACK_OAUTH_TOKEN!"
-end
-
 Slack.configure do |config|
-  config.token = ENV["SLACK_OAUTH_TOKEN"]
+  config.token = ENV.fetch("SLACK_OAUTH_TOKEN") do
+    file = ENV.fetch("SLACK_TOKEN_FILE") do
+      raise "Can't run slack_build_notifier.rb without SLACK_OAUTH_TOKEN or SLACK_TOKEN_FILE!"
+    end
+    File.read(file).strip
+  end
 end
 
 def slack_client
