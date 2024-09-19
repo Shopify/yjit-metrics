@@ -22,13 +22,15 @@ class SlackNotificationTest < Minitest::Test
 
   def notify(args: [], job_result: 'success')
     file = Tempfile.new('yjit-metrics-slack').tap(&:close)
+    token_file = Tempfile.new('slack-token').tap { |f| f.puts('test-token'); f.close }
 
     system(
       {
         'BUILD_URL' => BUILD_URL,
         'JOB_NAME' => JOB_NAME,
         'YJIT_METRICS_SLACK_DUMP' => file.path,
-        'SLACK_OAUTH_TOKEN' => 'test-token',
+        # 'SLACK_OAUTH_TOKEN' => 'test-token',
+        'SLACK_TOKEN_FILE' => token_file.path,
       },
       RbConfig.ruby,
       "-I#{TEST_LIB}",
