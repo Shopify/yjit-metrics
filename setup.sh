@@ -57,6 +57,23 @@ setup-packages () {
   && true
 }
 
+setup-repos () {
+  local dir=${REPOS_DIR:-$HOME/ym}
+  mkdir -p "$dir"
+  cd "$dir"
+
+  # Setup one clone of ruby/ruby for each "ruby-config" we want to build.
+  [[ -d prod-yjit ]]  || git clone https://github.com/ruby/ruby prod-yjit
+  [[ -d prev-yjit ]]  || git clone --no-hardlinks prod-yjit prev-yjit
+  [[ -d stats-yjit ]] || git clone --no-hardlinks prod-yjit stats-yjit
+
+  # In case this script isn't being run from the repo.
+  [[ -d yjit-metrics ]] || git clone https://github.com/Shopify/yjit-metrics
+
+  # Clone raw-benchmark-data for pushing results.
+  [[ -d raw-benchmark-data ]] || git clone https://github.com/yjit-raw/benchmark-data raw-benchmark-data
+}
+
 setup-ruby-build () {
   local dir=${RUBY_BUILD:-$HOME/ym/ruby-build}
   if ! [[ -x "$dir/bin/ruby-build" ]]; then
@@ -94,6 +111,7 @@ setup-all () {
   setup-cpu
   setup-packages
   setup-ruby
+  setup-repos
 }
 
 if [[ $(id -u) = 0 ]]; then
@@ -117,7 +135,7 @@ done
 if $usage; then
   cat <<USAGE >&2
   Usage: $0 action...
-  Where actions are: cpu, packages, ruby, or all
+  Where actions are: cpu, packages, ruby, repos, or all
 USAGE
   exit 1
 fi
