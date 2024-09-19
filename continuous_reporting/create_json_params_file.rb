@@ -115,25 +115,30 @@ end.parse!
 
 raise "--benchmark-data-dir is required!" unless benchmark_data_dir
 
+def non_empty(s)
+  s = s.strip
+  s unless s.empty?
+end
+
+# Resolve to a commit sha or return nil.
+def git_sha(ref)
+  # This command prints nothing unless it resolves the arg to a commit sha in this repo.
+  non_empty(`git rev-parse --revs-only --verify -q --end-of-options #{ref.inspect}^{commit}`)
+end
+
 def sha_for_name_in_dir(name:, dir:, repo:, desc:)
   Dir.chdir(dir) do
     system("git remote remove current_repo") # Don't care if this succeeds or not
     system("git remote add current_repo #{repo}")
     system("git fetch current_repo") || raise("Error trying to fetch latest revisions for #{desc}!")
 
-    out = `git log -n 1 --pretty=oneline current_repo/#{name}`
-    unless out && out.strip != ""
-      # The git log above did nothing useful... Is it already a SHA?
-      out = `git log -n 1 --pretty=oneline #{name}`
+    # Look for remote branches.  If that fails check if it's already a (form of a) SHA.
+    sha = git_sha("current_repo/#{name}") || git_sha(name)
 
-      if name.strip =~ /\A[a-zA-Z0-9]{6,}\Z/ # At least 6 hex chars, all hex chars
-        return name.strip
-      end
+    unless sha&.match?(/\A\h{6,}\Z/) # At least 6 hex chars, all hex chars
       raise("Error trying to find SHA for #{dir.inspect} name #{name.inspect} repo #{repo.inspect}!")
     end
 
-    sha = out.split(" ")[0]
-    raise("Output doesn't start with SHA: #{out.inspect}!") unless sha && sha =~ /\A[0-9a-zA-Z]{8}/
     return sha
   end
 end
