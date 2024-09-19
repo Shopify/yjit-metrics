@@ -101,16 +101,23 @@ if [[ $(id -u) = 0 ]]; then
   exit 1
 fi
 
-cmd="setup-$1"
-if type -t "$cmd" >/dev/null; then
-  set -x
-  "$cmd"
-  exit $?
-fi
+usage=false
+while [[ $# -gt 0 ]]; do
+  cmd="setup-$1"
+  shift
+  if type -t "$cmd" >/dev/null; then
+    set -x
+    "$cmd"
+    set +x
+  else
+    usage=true
+  fi
+done
 
-cat <<USAGE >&2
-Usage: $0 action
-Where action is: cpu, packages, ruby, or all
+if $usage; then
+  cat <<USAGE >&2
+  Usage: $0 action...
+  Where actions are: cpu, packages, ruby, or all
 USAGE
-
-exit 1
+  exit 1
+fi
