@@ -4,6 +4,22 @@
 set -e
 
 setup-cpu () {
+  if [[ -d /sys/devices/system/cpu/intel_pstate ]]; then
+    configure-intel
+  elif [[ -d /sys/devices/system/cpu/cpufreq/boost ]]; then
+    configure-amd
+  fi
+
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/processor_state_control.html#baseline-perf
+  # > AWS Graviton processors have built-in power saving modes and operate at a fixed frequency. Therefore, they do not provide the ability for the operating system to control C-states and P-states.
+}
+
+configure-amd () {
+  echo 0 | sudo tee /sys/devices/system/cpu/cpufreq/boost
+  sudo cpupower frequency-set -g performance || echo 'ignoring'
+}
+
+configure-intel () {
   # Keep commands simple so that they can be copied and pasted from this file with ease.
   # TODO: Do we want to limit C-states in grub and rebuild the grub config?
 
