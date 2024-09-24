@@ -57,6 +57,31 @@ setup-packages () {
     zlib1g-dev \
     $(if [[ -r /etc/ec2_version ]]; then echo linux-tools-aws linux-tools-"`uname -r`"; fi) \
   && true
+
+  # As of 2024-09-24 Ubuntu 24 comes with gcc 13 but a ppa can upgrade it to 14.
+  # Ubuntu 20 is capable of upgrading to 13.
+  upgrade-gcc 14
+}
+
+upgrade-gcc () {
+  local version="$1"
+
+  if ! dpkg -s gcc-$version; then
+    if sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && dpkg -S gcc-$version; then
+      sudo apt-get install -y gcc-$version
+    fi
+  fi
+
+  if ! update-alternatives --list gcc; then
+    old=($(dpkg --get-selections | cut -f 1 | grep -E '^gcc-[0-9]+$' | sed 's/gcc-//'))
+    for i in "${old[@]}"; do
+      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$i 50 # --slave /usr/bin/g++ g++ /usr/bin/g++-$i
+    done
+    # g++-14 doesn't want to install currently.
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$version 60 # --slave /usr/bin/g++ g++ /usr/bin/g++-$version
+  fi
+
+  gcc --version
 }
 
 setup-repos () {
