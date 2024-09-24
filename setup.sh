@@ -98,7 +98,7 @@ setup-repos () {
   [[ -d yjit-metrics ]] || git clone https://github.com/Shopify/yjit-metrics
 
   # Clone raw-benchmark-data for pushing results.
-  [[ -d raw-benchmark-data ]] || git clone https://github.com/yjit-raw/benchmark-data raw-benchmark-data
+  [[ -d raw-benchmark-data ]] || git clone --branch main https://github.com/yjit-raw/benchmark-data raw-benchmark-data
 }
 
 setup-ruby-build () {
