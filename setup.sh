@@ -50,6 +50,7 @@ setup-packages () {
     libsqlite3-dev \
     libssl-dev \
     libyaml-dev \
+    pkg-config \
     ruby \
     rustc \
     sqlite3 \
