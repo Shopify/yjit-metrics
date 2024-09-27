@@ -127,7 +127,7 @@ urls:
       </p>
 
       <ul>
-      <% page.test_results.each do |result| %> <li><a href="<%= relative_url result[1] %>"><%= result[0] %></a></li> <% end %>
+      <% page.test_results.each do |result| %> <li><a href="<%= raw_data_url result[1] %>"><%= result[0] %></a></li> <% end %>
       </ul>
 
       <hr/>

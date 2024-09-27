@@ -72,6 +72,11 @@ class RenderContext
     url
   end
 
+  RAW_DATA_PREFIX = ENV.fetch('RAW_DATA_PREFIX', 'https://raw.githubusercontent.com/yjit-raw/benchmark-data/refs/heads/main')
+  def raw_data_url(path)
+    "#{RAW_DATA_PREFIX}/#{path}"
+  end
+
   def include(path)
     raise("Can't include nil or empty string!") if path.nil? || path.empty?
 
@@ -258,7 +263,6 @@ end
 
 def find_files
   glob_with_base('**/*', File.expand_path('..', __dir__)) +
-  glob_with_base('raw_benchmark_data/**/*', find_dir('raw-benchmark-data')) +
   glob_with_base('reports/**/*', BUILT_YJIT_REPORTS)
 end
 
@@ -328,9 +332,14 @@ if ARGV == ["server"] || ARGV == ["serve"]
   require "webrick"
   doc_dir = File.join(__dir__, "../_site")
   puts "Starting server at http://localhost:8000, serving #{doc_dir}..."
-  s = WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => doc_dir)
-  trap('INT') { s.shutdown }
-  s.start
+  servers = [
+    WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => doc_dir),
+    WEBrick::HTTPServer.new(:Port => 8001, :DocumentRoot => find_dir('raw-benchmark-data')),
+  ]
+  trap('INT') {
+    servers.map(&:shutdown)
+  }
+  servers.map { |s| Thread.new { s.start } }.map(&:join)
 elsif ARGV == ["build"]
   build_site
 else

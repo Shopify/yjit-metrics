@@ -9,6 +9,7 @@ def main(action)
   if action == "serve"
     # For local dev default to allowing this but let it be overridden for testing.
     ENV['ALLOW_ARM_ONLY_REPORTS'] ||= '1'
+    ENV['RAW_DATA_PREFIX'] = '//localhost:8001'
 
     system RbConfig.ruby, "continuous_reporting/file_benchmark_data_into_raw.rb", "-d", "data"
     system RbConfig.ruby, "continuous_reporting/generate_and_upload_reports.rb"
