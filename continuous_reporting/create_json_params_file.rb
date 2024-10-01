@@ -102,7 +102,7 @@ OptionParser.new do |opts|
 
   opts.on("-bd PATH", "--benchmark-data-dir PATH") do |dir|
     raise "--benchmark-data-dir must specify a directory" if dir.to_s.empty?
-    benchmark_data_dir = File.expand_path(dir)
+    benchmark_data_dir = dir
   end
 end.parse!
 
