@@ -22,13 +22,13 @@ mv continuous_reporting/data/*.json ../ || echo ok  # If there's anything valuab
 
 # Set our remote to $YJIT_METRICS_REPO and make sure we have the latest version of it
 git remote remove current_repo || echo ok # It's okay if the remove fails, e.g. if it doesn't exist
-git remote add current_repo $YJIT_METRICS_REPO
+git remote add current_repo ${YJIT_METRICS_REPO:-https://github.com/Shopify/yjit-metrics.git}
 git fetch current_repo
 
 # Remove extraneous files - they can get in the way if we check out a branch
 git clean -ffdx
 git restore -SW .
-git checkout current_repo/$YJIT_METRICS_NAME
+git checkout current_repo/${YJIT_METRICS_NAME:-main}
 
 # All this ref switching can leave cruft in the git database.
 # Clean it to keep disk space under control.
