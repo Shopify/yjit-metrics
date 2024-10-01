@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require "open3"
 require "optparse"
 require "json"
 
@@ -41,11 +42,6 @@ require_relative "../lib/yjit_metrics"
 # data will normally be written to a temp directory or thrown away and not recorded
 # anywhere, and so not have a normal data directory. Other builds (e.g. speculative
 # speed-testing of an unmerged branch) may want to record data to a different location.
-#
-
-YJIT_METRICS_DIR = File.expand_path("..", __dir__)
-YJIT_BENCH_DIR = File.expand_path("../yjit-bench", YJIT_METRICS_DIR)
-CRUBY_DIR = File.expand_path("../prod-yjit", YJIT_METRICS_DIR)
 
 full_rebuild = true
 out_file = "bench_params.json"
@@ -58,8 +54,6 @@ yjit_metrics_repo = ""
 yjit_bench_name = "main"
 yjit_bench_repo = "https://github.com/Shopify/yjit-bench.git"
 benchmark_data_dir = nil
-
-# TODO: try looking up the given yjit_metrics and/or yjit_bench and/or CRuby revisions in the local repos to see if they exist?
 
 def non_empty(s)
   s = s.to_s.strip
@@ -115,32 +109,38 @@ end.parse!
 
 raise "--benchmark-data-dir is required!" unless benchmark_data_dir
 
-# Resolve to a commit sha or return nil.
-def git_sha(ref)
-  # This command prints nothing unless it resolves the arg to a commit sha in this repo.
-  non_empty(`git rev-parse --revs-only --verify -q --end-of-options #{ref.inspect}^{commit}`)
+def sha_like?(s)
+  s&.match?(/\A\h{6,}\Z/) # At least 6 hex chars, all hex chars
 end
 
-def sha_for_name_in_dir(name:, dir:, repo:, desc:)
-  Dir.chdir(dir) do
-    system("git remote remove current_repo") # Don't care if this succeeds or not
-    system("git remote add current_repo #{repo}")
-    system("git fetch current_repo") || raise("Error trying to fetch latest revisions for #{desc}!")
+def sha_exists?(repo, name)
+  return false unless repo.start_with?("https://github.com")
 
-    # Look for remote branches.  If that fails check if it's already a (form of a) SHA.
-    sha = git_sha("current_repo/#{name}") || git_sha(name)
+  require "uri"
+  require "net/https"
 
-    unless sha&.match?(/\A\h{6,}\Z/) # At least 6 hex chars, all hex chars
-      raise("Error trying to find SHA for #{dir.inspect} name #{name.inspect} repo #{repo.inspect}!")
-    end
-
-    return sha
+  uri = URI(repo.delete_suffix(".git"))
+  Net::HTTP.start(uri.hostname, use_ssl: true) do |http|
+    http.head("#{uri.path}/commits/#{name}").code.to_i == 200
   end
 end
 
-yjit_metrics_sha = sha_for_name_in_dir name: yjit_metrics_name, dir: YJIT_METRICS_DIR, repo: yjit_metrics_repo, desc: "yjit_metrics"
-yjit_bench_sha = sha_for_name_in_dir name: yjit_bench_name, dir: YJIT_BENCH_DIR, repo: yjit_bench_repo, desc: "yjit_bench"
-cruby_sha = sha_for_name_in_dir name: cruby_name, dir: CRUBY_DIR, repo: cruby_repo, desc: "Ruby"
+def sha_for_repo(name:, repo:)
+  stdout, status = Open3.capture2("git", "ls-remote", repo, name)
+
+  if status.success?
+    sha = stdout.split(/\s/).first.to_s
+    return sha if sha_like?(sha)
+  end
+
+  return name if sha_like?(name) && sha_exists?(repo, name)
+
+  raise("Error trying to find SHA for name #{name.inspect} repo #{repo.inspect}!")
+end
+
+yjit_metrics_sha = sha_for_repo name: yjit_metrics_name, repo: yjit_metrics_repo
+yjit_bench_sha = sha_for_repo name: yjit_bench_name, repo: yjit_bench_repo
+cruby_sha = sha_for_repo name: cruby_name, repo: cruby_repo
 
 output = {
   ts: output_ts,
