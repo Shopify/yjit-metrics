@@ -64,43 +64,43 @@ OptionParser.new do |opts|
     Usage: #{File.basename($0)} [options]
   BANNER
 
-  opts.on("-fr YN", "--full-rebuild YN") do |fr|
+  opts.on("--full-rebuild YN") do |fr|
     full_rebuild = string_to_bool(fr)
   end
 
-  opts.on("-ot TS", "--output-timestamp TS") do |ts|
+  opts.on("--output-timestamp TS") do |ts|
     output_ts = ts
   end
 
-  opts.on("-bt BT", "--bench-type BT") do |bt|
+  opts.on("--bench-type BT") do |bt|
     bench_type = bt
   end
 
-  opts.on("-ym YM", "--yjit-metrics-name YM") do |ym|
+  opts.on("--yjit-metrics-name YM") do |ym|
     non_empty(ym)&.then { yjit_metrics_name = _1 }
   end
 
-  opts.on("-ymr YMR", "--yjit-metrics-repo YMR") do |ymr|
+  opts.on("--yjit-metrics-repo YMR") do |ymr|
     yjit_metrics_repo = ymr
   end
 
-  opts.on("-yb YB", "--yjit-bench-name YB") do |yb|
+  opts.on("--yjit-bench-name YB") do |yb|
     non_empty(yb)&.then { yjit_bench_name = _1 }
   end
 
-  opts.on("-ybr YBR", "--yjit-bench-repo YBR") do |ybr|
+  opts.on("--yjit-bench-repo YBR") do |ybr|
     yjit_bench_repo = ybr
   end
 
-  opts.on("-cn NAME", "--cruby-name NAME") do |name|
+  opts.on("--cruby-name NAME") do |name|
     non_empty(name)&.then { cruby_name = _1 }
   end
 
-  opts.on("-cr NAME", "--cruby-repo NAME") do |repo|
+  opts.on("--cruby-repo NAME") do |repo|
     cruby_repo = repo.strip
   end
 
-  opts.on("-bd PATH", "--benchmark-data-dir PATH") do |dir|
+  opts.on("--benchmark-data-dir PATH") do |dir|
     raise "--benchmark-data-dir must specify a directory" if dir.to_s.empty?
     benchmark_data_dir = dir
   end
