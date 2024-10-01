@@ -6,12 +6,7 @@ require "json"
 
 require_relative "../lib/yjit_metrics"
 
-# A particular run through the benchmarking system has a number of important parameters.
-# Most, though not all, are captured in the JSON file produced here. In general,
-# params should be captured here if the Ruby benchmarking or reporting process
-# needs to know their value, and not captured here if the parameter can be entirely
-# handled via Jenkins (e.g. what Slack user or channel to notify on benchmarking failure.)
-#
+# Determine benchmarking parameters so that the same values can be passed to each server.
 # The relevant JSON file parameters are:
 #
 # Timestamp: this is the timestamp on which the run begins. File output uses this in
