@@ -61,6 +61,11 @@ benchmark_data_dir = nil
 
 # TODO: try looking up the given yjit_metrics and/or yjit_bench and/or CRuby revisions in the local repos to see if they exist?
 
+def non_empty(s)
+  s = s.to_s.strip
+  s unless s.empty?
+end
+
 OptionParser.new do |opts|
   opts.banner = <<~BANNER
     Usage: create_json_params_file.rb [options]
@@ -79,9 +84,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("-ym YM", "--yjit-metrics-name YM") do |ym|
-    # Blank yjit_metrics rev? Use main.
-    ym = "main" if ym.nil? || ym.strip == ""
-    yjit_metrics_name = ym
+    non_empty(ym)&.then { yjit_metrics_name = _1 }
   end
 
   opts.on("-ymr YMR", "--yjit-metrics-repo YMR") do |ymr|
@@ -89,9 +92,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("-yb YB", "--yjit-bench-name YB") do |yb|
-    # Blank yjit_bench rev? Use main.
-    yb = "main" if yb.nil? || yb.strip == ""
-    yjit_bench_name = yb
+    non_empty(yb)&.then { yjit_bench_name = _1 }
   end
 
   opts.on("-ybr YBR", "--yjit-bench-repo YBR") do |ybr|
@@ -99,8 +100,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("-cn NAME", "--cruby-name NAME") do |name|
-    name == "master" if name.nil? || name.strip == ""
-    cruby_name = name.strip
+    non_empty(name)&.then { cruby_name = _1 }
   end
 
   opts.on("-cr NAME", "--cruby-repo NAME") do |repo|
@@ -114,11 +114,6 @@ OptionParser.new do |opts|
 end.parse!
 
 raise "--benchmark-data-dir is required!" unless benchmark_data_dir
-
-def non_empty(s)
-  s = s.strip
-  s unless s.empty?
-end
 
 # Resolve to a commit sha or return nil.
 def git_sha(ref)
