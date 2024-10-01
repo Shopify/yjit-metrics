@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby -w
 # frozen_string_literal: true
 
+require 'bundler/setup'
 require 'slack-ruby-client'
 
 Slack.configure do |config|
@@ -173,6 +174,8 @@ end
 # https://api.slack.com/reference/surfaces/formatting
 def summary(files)
   return if files.empty?
+
+  return STDIN.read if files == ["-"]
 
   results = files.map { |f| JSON.parse(File.read(f)) }
 
