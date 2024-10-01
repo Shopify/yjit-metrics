@@ -68,7 +68,7 @@ end
 
 OptionParser.new do |opts|
   opts.banner = <<~BANNER
-    Usage: create_json_params_file.rb [options]
+    Usage: #{File.basename($0)} [options]
   BANNER
 
   opts.on("-fr YN", "--full-rebuild YN") do |fr|
