@@ -4,8 +4,6 @@ require "open3"
 require "optparse"
 require "json"
 
-require_relative "../lib/yjit_metrics"
-
 # Determine benchmarking parameters so that the same values can be passed to each server.
 # The relevant JSON file parameters are:
 #
@@ -55,13 +53,19 @@ def non_empty(s)
   s unless s.empty?
 end
 
+def string_to_bool(s)
+  return true if s.match?(/^(true|1|yes)$/i)
+  return false if s.match?(/^(false|0|no)$/i)
+  fail "Expected boolean got #{s.inspect}"
+end
+
 OptionParser.new do |opts|
   opts.banner = <<~BANNER
     Usage: #{File.basename($0)} [options]
   BANNER
 
   opts.on("-fr YN", "--full-rebuild YN") do |fr|
-    full_rebuild = YJITMetrics::CLI.human_string_to_boolean(fr)
+    full_rebuild = string_to_bool(fr)
   end
 
   opts.on("-ot TS", "--output-timestamp TS") do |ts|
