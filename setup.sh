@@ -3,6 +3,7 @@
 
 set -e
 
+# This is called from the on_demand scripts as some CPU settings do not persist across reboots.
 setup-cpu () {
   if [[ -d /sys/devices/system/cpu/intel_pstate ]]; then
     configure-intel
