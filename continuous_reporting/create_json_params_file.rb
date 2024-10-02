@@ -1,16 +1,10 @@
 #!/usr/bin/env ruby
 
+require "open3"
 require "optparse"
 require "json"
 
-require_relative "../lib/yjit_metrics"
-
-# A particular run through the benchmarking system has a number of important parameters.
-# Most, though not all, are captured in the JSON file produced here. In general,
-# params should be captured here if the Ruby benchmarking or reporting process
-# needs to know their value, and not captured here if the parameter can be entirely
-# handled via Jenkins (e.g. what Slack user or channel to notify on benchmarking failure.)
-#
+# Determine benchmarking parameters so that the same values can be passed to each server.
 # The relevant JSON file parameters are:
 #
 # Timestamp: this is the timestamp on which the run begins. File output uses this in
@@ -41,11 +35,6 @@ require_relative "../lib/yjit_metrics"
 # data will normally be written to a temp directory or thrown away and not recorded
 # anywhere, and so not have a normal data directory. Other builds (e.g. speculative
 # speed-testing of an unmerged branch) may want to record data to a different location.
-#
-
-YJIT_METRICS_DIR = File.expand_path("..", __dir__)
-YJIT_BENCH_DIR = File.expand_path("../yjit-bench", YJIT_METRICS_DIR)
-CRUBY_DIR = File.expand_path("../prod-yjit", YJIT_METRICS_DIR)
 
 full_rebuild = true
 out_file = "bench_params.json"
@@ -54,93 +43,103 @@ bench_type = "default"
 cruby_name = "master"
 cruby_repo = "https://github.com/ruby/ruby"
 yjit_metrics_name = "main"
-yjit_metrics_repo = ""
+yjit_metrics_repo = "https://github.com/Shopify/yjit-metrics.git"
 yjit_bench_name = "main"
 yjit_bench_repo = "https://github.com/Shopify/yjit-bench.git"
 benchmark_data_dir = nil
 
-# TODO: try looking up the given yjit_metrics and/or yjit_bench and/or CRuby revisions in the local repos to see if they exist?
+def non_empty(s)
+  s = s.to_s.strip
+  s unless s.empty?
+end
+
+def string_to_bool(s)
+  return true if s.match?(/^(true|1|yes)$/i)
+  return false if s.match?(/^(false|0|no)$/i)
+  fail "Expected boolean got #{s.inspect}"
+end
 
 OptionParser.new do |opts|
   opts.banner = <<~BANNER
-    Usage: create_json_params_file.rb [options]
+    Usage: #{File.basename($0)} [options]
   BANNER
 
-  opts.on("-fr YN", "--full-rebuild YN") do |fr|
-    full_rebuild = YJITMetrics::CLI.human_string_to_boolean(fr)
+  opts.on("--full-rebuild YN") do |fr|
+    full_rebuild = string_to_bool(fr)
   end
 
-  opts.on("-ot TS", "--output-timestamp TS") do |ts|
+  opts.on("--output-timestamp TS") do |ts|
     output_ts = ts
   end
 
-  opts.on("-bt BT", "--bench-type BT") do |bt|
+  opts.on("--bench-type BT") do |bt|
     bench_type = bt
   end
 
-  opts.on("-ym YM", "--yjit-metrics-name YM") do |ym|
-    # Blank yjit_metrics rev? Use main.
-    ym = "main" if ym.nil? || ym.strip == ""
-    yjit_metrics_name = ym
+  opts.on("--yjit-metrics-name YM") do |ym|
+    non_empty(ym)&.then { yjit_metrics_name = _1 }
   end
 
-  opts.on("-ymr YMR", "--yjit-metrics-repo YMR") do |ymr|
+  opts.on("--yjit-metrics-repo YMR") do |ymr|
     yjit_metrics_repo = ymr
   end
 
-  opts.on("-yb YB", "--yjit-bench-name YB") do |yb|
-    # Blank yjit_bench rev? Use main.
-    yb = "main" if yb.nil? || yb.strip == ""
-    yjit_bench_name = yb
+  opts.on("--yjit-bench-name YB") do |yb|
+    non_empty(yb)&.then { yjit_bench_name = _1 }
   end
 
-  opts.on("-ybr YBR", "--yjit-bench-repo YBR") do |ybr|
+  opts.on("--yjit-bench-repo YBR") do |ybr|
     yjit_bench_repo = ybr
   end
 
-  opts.on("-cn NAME", "--cruby-name NAME") do |name|
-    name == "master" if name.nil? || name.strip == ""
-    cruby_name = name.strip
+  opts.on("--cruby-name NAME") do |name|
+    non_empty(name)&.then { cruby_name = _1 }
   end
 
-  opts.on("-cr NAME", "--cruby-repo NAME") do |repo|
+  opts.on("--cruby-repo NAME") do |repo|
     cruby_repo = repo.strip
   end
 
-  opts.on("-bd PATH", "--benchmark-data-dir PATH") do |dir|
+  opts.on("--benchmark-data-dir PATH") do |dir|
     raise "--benchmark-data-dir must specify a directory" if dir.to_s.empty?
-    benchmark_data_dir = File.expand_path(dir)
+    benchmark_data_dir = dir
   end
 end.parse!
 
 raise "--benchmark-data-dir is required!" unless benchmark_data_dir
 
-def sha_for_name_in_dir(name:, dir:, repo:, desc:)
-  Dir.chdir(dir) do
-    system("git remote remove current_repo") # Don't care if this succeeds or not
-    system("git remote add current_repo #{repo}")
-    system("git fetch current_repo") || raise("Error trying to fetch latest revisions for #{desc}!")
+def sha_like?(s)
+  s&.match?(/\A\h{6,}\Z/) # At least 6 hex chars, all hex chars
+end
 
-    out = `git log -n 1 --pretty=oneline current_repo/#{name}`
-    unless out && out.strip != ""
-      # The git log above did nothing useful... Is it already a SHA?
-      out = `git log -n 1 --pretty=oneline #{name}`
+def sha_exists?(repo, name)
+  return false unless repo.start_with?("https://github.com")
 
-      if name.strip =~ /\A[a-zA-Z0-9]{6,}\Z/ # At least 6 hex chars, all hex chars
-        return name.strip
-      end
-      raise("Error trying to find SHA for #{dir.inspect} name #{name.inspect} repo #{repo.inspect}!")
-    end
+  require "uri"
+  require "net/https"
 
-    sha = out.split(" ")[0]
-    raise("Output doesn't start with SHA: #{out.inspect}!") unless sha && sha =~ /\A[0-9a-zA-Z]{8}/
-    return sha
+  uri = URI(repo.delete_suffix(".git"))
+  Net::HTTP.start(uri.hostname, use_ssl: true) do |http|
+    http.head("#{uri.path}/commits/#{name}").code.to_i == 200
   end
 end
 
-yjit_metrics_sha = sha_for_name_in_dir name: yjit_metrics_name, dir: YJIT_METRICS_DIR, repo: yjit_metrics_repo, desc: "yjit_metrics"
-yjit_bench_sha = sha_for_name_in_dir name: yjit_bench_name, dir: YJIT_BENCH_DIR, repo: yjit_bench_repo, desc: "yjit_bench"
-cruby_sha = sha_for_name_in_dir name: cruby_name, dir: CRUBY_DIR, repo: cruby_repo, desc: "Ruby"
+def sha_for_repo(name:, repo:)
+  stdout, status = Open3.capture2("git", "ls-remote", repo, name)
+
+  if status.success?
+    sha = stdout.split(/\s/).first.to_s
+    return sha if sha_like?(sha)
+  end
+
+  return name if sha_like?(name) && sha_exists?(repo, name)
+
+  raise("Error trying to find SHA for name #{name.inspect} repo #{repo.inspect}!")
+end
+
+yjit_metrics_sha = sha_for_repo name: yjit_metrics_name, repo: yjit_metrics_repo
+yjit_bench_sha = sha_for_repo name: yjit_bench_name, repo: yjit_bench_repo
+cruby_sha = sha_for_repo name: cruby_name, repo: cruby_repo
 
 output = {
   ts: output_ts,

@@ -169,7 +169,7 @@ ALL_PERF_TRIPWIRES = all_perf_tripwires
 SINGLE_PERF_TRIPWIRE = single_perf_tripwire
 VERBOSE = is_verbose
 BENCH_PARAMS_FILE = bench_params_file
-DATA_DIR = data_dir || bench_params_data["data_directory"] || "continuous_reporting/data"
+DATA_DIR = File.expand_path(data_dir || bench_params_data["data_directory"] || "continuous_reporting/data")
 
 PIDFILE = "/home/ubuntu/benchmark_ci.pid"
 
