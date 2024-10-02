@@ -365,8 +365,6 @@ if File.exist?(".git")
     # Reset the pages branch to the new built site
     YJITMetrics.check_call "git push -f origin #{branch}"
   end
-
-  YJITMetrics.check_call "git gc"
 end
 
 printf "Reporting RSS: %dMB\n", `ps -p #{$$} -o rss=`.to_i / 1024

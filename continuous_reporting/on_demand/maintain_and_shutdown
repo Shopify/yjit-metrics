@@ -38,8 +38,20 @@ apt-upgrade () {
   sudo apt-get update -y && sudo apt-get upgrade -y
 }
 
+git-gc () {
+  for i in ~/ym/*/.git; do
+    GIT_DIR=$i git gc
+  done
+}
+
 # Delete month-old log files.
 find "$log_dir" -type f -not -newerct '30 days ago' -print -delete
 
 # Upgrade packages weekly.
 after-x-days 7 apt-upgrade
+
+# Compact git repos periodically.
+# This always takes a long time to run
+# but if run too frequently it won't produce sufficient gains for the time spent.
+# Run it periodically to get a better ratio of "time spent" to "disk freed".
+after-x-days 14 git-gc

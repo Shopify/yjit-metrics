@@ -29,6 +29,4 @@ git add raw_benchmark_data
 git commit -m "`uname -p` benchmark results" || echo "Commit is empty?"
 git push
 
-git gc
-
 echo "Committed and pushed benchmark data successfully."
