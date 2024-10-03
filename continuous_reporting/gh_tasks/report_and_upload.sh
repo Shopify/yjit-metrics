@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# This script assumes that benchmark_prep_task has been run first to clean, rebuild and reinstall.
-
 set -e
 
 cd ~/ym/yjit-metrics
