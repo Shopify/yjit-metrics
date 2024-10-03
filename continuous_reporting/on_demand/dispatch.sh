@@ -9,12 +9,12 @@
 set -o errtrace
 
 # If a command exits non-zero execute handle_error script.
-trap "${0%/*}/handle_error $*" ERR
+trap "${0%/*}/handle_error.sh $*" ERR
 
 # After any error is handlede it will call the EXIT trap.
 # When we are all done we can just shutdown the instance.
 # If anything went wrong the logs should be preserved on the instance for debugging.
-trap "${0%/*}/maintain_and_shutdown" EXIT
+trap "${0%/*}/maintain_and_shutdown.sh" EXIT
 
 cr_dir="$(realpath "${0%/*}/..")"
 

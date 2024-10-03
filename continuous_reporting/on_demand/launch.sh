@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # Wrapper script to keep job coordinator code simple.
-# Usage: .../launch (benchmark|report)
+# Usage: $0 (benchmark|report)
 
 action="$1"
 case "$action" in
@@ -28,4 +28,4 @@ echo Continuing in the background...
 # Call separate script so that:
 # - we use the latest logic from any files changed by the checkout
 # - we detach from the current shell so that the job continues in the background
-("$cr_dir"/on_demand/dispatch "$@" >> "$LOG_FILE" 2>&1) & disown
+("$cr_dir"/on_demand/dispatch.sh "$@" >> "$LOG_FILE" 2>&1) & disown
