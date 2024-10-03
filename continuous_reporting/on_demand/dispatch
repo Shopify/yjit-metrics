@@ -1,7 +1,9 @@
 #!/bin/bash -ex
 
-# This is run from the ./launch script which sets LOG_FILE
-# and redirects all output from this script to it.
+# This takes an argument of the action to perform (benchmark or report) and executes it.
+# It is a separate executable from the launcher
+# so that changes to this script can be easily tested in a branch.
+# The launcher sets LOG_FILE and redirects all output from this script to it.
 
 # Ensure ERR trap propagates to functions.
 set -o errtrace
