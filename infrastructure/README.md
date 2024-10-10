@@ -1,6 +1,23 @@
 # YJIT Continuous Benchmarking Infrastructure
 
 
+## Commands
+
+The CLI used by GitHub Actions can also be used locally:
+
+Get info about instances:
+
+    ./with-op.sh bin/run info
+                     name     state         address last start time
+    yjit-benchmarking-arm   running    <ip address> 2024-10-15 20:32:15 UTC
+    yjit-benchmarking-x86   running    <ip address> 2024-10-15 20:32:15 UTC
+           yjit-reporting   stopped                 2024-10-15 19:30:56 UTC
+
+Connect (this will start a stopped instance):
+
+    ./with-op.sh bin/run ssh yjit-benchmarking-arm
+
+
 ## Terraform resources
 
 Packer resources need to be built before running any Terraform
