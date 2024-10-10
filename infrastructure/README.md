@@ -1,6 +1,26 @@
 # YJIT Continuous Benchmarking Infrastructure
 
 
+## Terraform resources
+
+Packer resources need to be built before running any Terraform
+but these only need to be built once (or when major upgrades are needed).
+
+After that terraform can be run as often as necessary to update desired state.
+
+To get the necessary secrets from 1password you can use the `with-op.sh` script
+to load the secrets defined in `op.env` and then run any subsequent command:
+
+    ./with-op.sh terraform -chdir=terraform apply
+
+
+If you just want to rebuild the instances
+you can skip some of the other resources with something like:
+
+    ./with-op.sh terraform -chdir=terraform destroy -target=aws_launch_template.yjit-metrics\[\"{x86,arm}\"\]
+    ./with-op.sh terraform -chdir=terraform apply   -target=aws_launch_template.yjit-metrics\[\"{x86,arm}\"\]
+
+
 ## Packer resources
 
 Packer is used to build new AMIs (and our EBS cache volume).
