@@ -37,12 +37,14 @@ configure-intel () {
 }
 
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
+# https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
   sudo apt-get install -y \
     autoconf \
     bison \
     build-essential \
     cargo \
+    gperf \
     libffi-dev \
     libgdbm-dev \
     libgmp-dev \
