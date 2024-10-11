@@ -1,0 +1,23 @@
+name: Run Scheduled Benchmarks
+
+on:
+  schedule:
+    # Run daily shortly before midnight US Eastern Time.
+    # (Use any minute other than "on the hour".)
+    - cron: "40 2 * * *" # UTC
+
+concurrency: 1
+
+permissions: {} # none
+
+jobs:
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run benchmarks
+        uses: .github/workflows/wrapper.yml
+        secrets: inherit
+        with:
+          script: |
+            ../continuous_reporting/create_json_params_file.rb --benchmark-data-dir=continuous_reporting/data
+            ./bin/run benchmark bench_params.json

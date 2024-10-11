@@ -1,6 +1,12 @@
 # YJIT Continuous Benchmarking Infrastructure
 
 
+## Daily jobs
+
+These are executed daily via GitHub Actions
+(see schedules in ../.github/workflow/).
+
+
 ## Commands
 
 The CLI used by GitHub Actions can also be used locally:

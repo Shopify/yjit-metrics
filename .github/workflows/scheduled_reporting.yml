@@ -1,0 +1,23 @@
+name: Run Scheduled Reporting
+
+on:
+  schedule:
+    # Run daily around 6 am US Eastern Time
+    # (after the benchmarks have completed and before the typical North America workday).
+    # (Use any minute other than "on the hour".)
+    - cron: "40 10 * * *" # UTC
+
+concurrency: 1
+
+permissions: {} # none
+
+jobs:
+  reporting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run reports
+        uses: .github/workflows/wrapper.yml
+        secrets: inherit
+        with:
+          script: |
+            ./bin/run report
