@@ -13,7 +13,7 @@ module YJITMetrics
           check_call("git fetch") # Make sure we can see any new branches - "git checkout" can fail with a not-yet-seen branch
           check_call("git checkout #{git_branch}")
           # Only pull if we are on a branch.
-          if system("git symbolic-ref HEAD")
+          if system("git symbolic-ref HEAD 2>&-")
             check_call("git pull")
           end
         else
