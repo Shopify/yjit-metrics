@@ -37,6 +37,13 @@ to load the secrets defined in `op.env` and then run any subsequent command:
     ./with-op.sh terraform -chdir=terraform apply
 
 
+**NOTE** Applying the terraform will leave the instances in a "running" state.
+If you don't intend to do anything with them (and you are sure benchmarks aren't
+running) you should stop the instances:
+
+    ./with-op.sh bin/run stop
+
+
 If you just want to rebuild the instances
 you can skip some of the other resources with something like:
 
