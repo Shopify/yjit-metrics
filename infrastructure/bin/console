@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+  echo "You probably want to run this as: ./with-op.sh $0" >&2
+fi
+
+exec irb -rbundler/setup -I "${0%bin/console}lib" -r "yjit_benchmarking" "$@"
