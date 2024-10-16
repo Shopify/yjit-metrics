@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: &working_directory infrastructure
+        working-directory: infrastructure
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +30,7 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          working-directory: *working_directory
+          working-directory: infrastructure
 
       - name: Setup SSH
         run: |
