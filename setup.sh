@@ -37,12 +37,14 @@ configure-intel () {
 }
 
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
+# https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
   sudo apt-get install -y \
     autoconf \
     bison \
     build-essential \
     cargo \
+    gperf \
     libffi-dev \
     libgdbm-dev \
     libgmp-dev \
@@ -92,8 +94,8 @@ setup-repos () {
 
   # Setup one clone of ruby/ruby for each "ruby-config" we want to build.
   [[ -d prod-yjit ]]  || git clone https://github.com/ruby/ruby prod-yjit
-  [[ -d prev-yjit ]]  || git clone --no-hardlinks prod-yjit prev-yjit
-  [[ -d stats-yjit ]] || git clone --no-hardlinks prod-yjit stats-yjit
+  [[ -d prev-yjit ]]  || git clone --reference prod-yjit --dissociate https://github.com/ruby/ruby prev-yjit
+  [[ -d stats-yjit ]] || git clone --reference prod-yjit --dissociate https://github.com/ruby/ruby stats-yjit
 
   # In case this script isn't being run from the repo.
   [[ -d yjit-metrics ]] || git clone https://github.com/Shopify/yjit-metrics
