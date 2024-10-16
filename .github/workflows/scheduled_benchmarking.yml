@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run benchmarks
-        uses: .github/workflows/wrapper.yml
+        uses: ./.github/workflows/wrapper.yml
         secrets: inherit
         with:
           script: |
