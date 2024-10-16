@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run reports
-        uses: .github/workflows/wrapper.yml
+        uses: ./.github/workflows/wrapper.yml
         secrets: inherit
         with:
           script: |
