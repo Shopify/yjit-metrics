@@ -103,7 +103,7 @@ OptionParser.new do |opts|
   end
 
   opts.on("--cruby-repo NAME") do |repo|
-    cruby_repo = repo.strip
+    non_empty(repo)&.then { cruby_repo = _1 }
   end
 
   opts.on("--benchmark-data-dir PATH") do |dir|
