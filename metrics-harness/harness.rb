@@ -7,8 +7,15 @@ STDOUT.sync = true
 # rather than readpartial stopping midway.
 print "HARNESS PID: #{Process.pid} -\n"
 
+YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
+
 # Warmup iterations
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 15).to_i
+WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 0).to_i.nonzero? || if YJIT_MODULE&.enabled?
+  30
+else
+  # Assume CRuby interpreter which doesn't need much warmup.
+  5
+end
 
 # Minimum number of benchmarking iterations
 MIN_BENCH_ITRS = ENV.fetch('MIN_BENCH_ITRS', 10).to_i
@@ -28,8 +35,6 @@ IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" 
 
 # Ignore unnecessary env vars that match any of the above patterns.
 IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
-
-YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
 
 srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
 

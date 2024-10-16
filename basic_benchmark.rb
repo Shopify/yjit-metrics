@@ -23,7 +23,6 @@ require "etc"
 require_relative "lib/yjit_metrics"
 
 # Default settings for benchmark sampling
-DEFAULT_WARMUP_ITRS = 15       # Number of un-reported warmup iterations to run before "counting" benchmark runs
 DEFAULT_MIN_BENCH_ITRS = 10    # Minimum number of iterations to run each benchmark, regardless of time
 DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, regardless of number of iterations
 
@@ -130,7 +129,6 @@ skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
 harness_params = {
     variable_warmup_config_file: nil,
-    warmup_itrs: DEFAULT_WARMUP_ITRS,
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
@@ -449,7 +447,7 @@ def harness_settings_for_config_and_bench(config, bench)
 
         if @variable_warmup_settings[config] && @variable_warmup_settings[config][bench]
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
-                warmup_itrs: @variable_warmup_settings[config][bench]["warmup_itrs"] || 15,
+                warmup_itrs: @variable_warmup_settings[config][bench]["warmup_itrs"],
                 min_benchmark_itrs: @variable_warmup_settings[config][bench]["min_bench_itrs"] || 15,
                 min_benchmark_time: @variable_warmup_settings[config][bench]["min_bench_time"] || 0,
             })
@@ -457,14 +455,14 @@ def harness_settings_for_config_and_bench(config, bench)
             defaults = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"][config]
             # This benchmark hasn't been run before. Use default settings for this config until we've finished a run.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
-                warmup_itrs: defaults["max_warmup_itrs"] || 15,
+                warmup_itrs: defaults["max_warmup_itrs"],
                 min_benchmark_itrs: defaults["min_bench_itrs"] || 15,
                 min_benchmark_time: 0,
             })
         else
             # This benchmark hasn't been run before and we don't have config-specific defaults. Oof.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
-                warmup_itrs: YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["max_warmup_itrs"],
+                warmup_itrs: nil,
                 min_benchmark_itrs: YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["min_bench_itrs"],
                 min_benchmark_time: 0,
             })

@@ -69,7 +69,7 @@ end
 DEFAULT_CI_COMMAND_LINE = "--on-errors=report --max-retries=2 " +
     (VAR_WARMUP_FILE && File.exist?(VAR_WARMUP_FILE) ?
         "--variable-warmup-config-file=#{VAR_WARMUP_FILE}" :
-        "--warmup-itrs=10 --min-bench-time=30.0 --min-bench-itrs=10") +
+        "--min-bench-time=30.0 --min-bench-itrs=10") +
     " --configs=#{DEFAULT_CI_CONFIGS[YJITMetrics::PLATFORM].join(",")}"
 
 BENCH_TYPES = {
