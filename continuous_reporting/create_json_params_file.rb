@@ -69,7 +69,13 @@ OptionParser.new do |opts|
   end
 
   opts.on("--output-timestamp TS") do |ts|
-    output_ts = ts
+    ts = ts.strip
+    if !ts.empty?
+      if !ts.match?(/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}$/)
+        raise ArgumentError, "Timestamp should match YYYY-mm-dd-HHMMSS"
+      end
+      output_ts = ts
+    end
   end
 
   opts.on("--bench-type BT") do |bt|
