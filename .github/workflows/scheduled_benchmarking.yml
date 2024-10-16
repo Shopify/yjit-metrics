@@ -24,12 +24,9 @@ permissions: {} # none
 
 jobs:
   benchmarks:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run benchmarks
-        uses: ./.github/workflows/wrapper.yml
-        secrets: inherit
-        with:
-          script: |
-            ../continuous_reporting/create_json_params_file.rb --benchmark-data-dir=continuous_reporting/data --cruby-name="${{ github.event.inputs.ruby_commit }}" --output-timestamp="${{ github.event.inputs.timestamp }}"
-            ./bin/run benchmark bench_params.json
+    uses: ./.github/workflows/wrapper.yml
+    secrets: inherit
+    with:
+      script: |
+        ../continuous_reporting/create_json_params_file.rb --benchmark-data-dir=continuous_reporting/data --cruby-name="${{ github.event.inputs.ruby_commit }}" --output-timestamp="${{ github.event.inputs.timestamp }}"
+        ./bin/run benchmark bench_params.json
