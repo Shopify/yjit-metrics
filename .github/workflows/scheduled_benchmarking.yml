@@ -1,10 +1,22 @@
 name: Run Scheduled Benchmarks
 
 on:
+  # Run daily shortly before midnight US Eastern Time.
+  # (Use any minute other than "on the hour".)
   schedule:
-    # Run daily shortly before midnight US Eastern Time.
-    # (Use any minute other than "on the hour".)
     - cron: "40 2 * * *" # UTC
+
+  # Also allow running on demand via the "Run workflow" UI in GitHub Actions.
+  workflow_dispatch:
+    inputs:
+      timestamp:
+        description: 'Timestamp to use as ID for results.  Format is YYYY-mm-dd-HHMMSS'
+        required: false
+        type: string
+      ruby_commit:
+        description: 'Ruby commit to build (sha, branch, ref, etc)'
+        required: false
+        type: string
 
 concurrency: 1
 
@@ -19,5 +31,5 @@ jobs:
         secrets: inherit
         with:
           script: |
-            ../continuous_reporting/create_json_params_file.rb --benchmark-data-dir=continuous_reporting/data
+            ../continuous_reporting/create_json_params_file.rb --benchmark-data-dir=continuous_reporting/data --cruby-name="${{ github.event.inputs.ruby_commit }}" --output-timestamp="${{ github.event.inputs.timestamp }}"
             ./bin/run benchmark bench_params.json

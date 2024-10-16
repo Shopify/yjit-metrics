@@ -1,11 +1,14 @@
 name: Run Scheduled Reporting
 
 on:
+  # Run daily around 6 am US Eastern Time
+  # (after the benchmarks have completed and before the typical North America workday).
+  # (Use any minute other than "on the hour".)
   schedule:
-    # Run daily around 6 am US Eastern Time
-    # (after the benchmarks have completed and before the typical North America workday).
-    # (Use any minute other than "on the hour".)
     - cron: "40 10 * * *" # UTC
+
+  # Also allow running on demand via the "Run workflow" UI in GitHub Actions.
+  workflow_dispatch: {}
 
 concurrency: 1
 
