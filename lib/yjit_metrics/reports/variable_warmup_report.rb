@@ -32,7 +32,6 @@ module YJITMetrics
     def look_up_data_by_ruby
       # Order matters here - we push No-JIT, then MJIT(s), then YJIT. For each one we sort by platform name.
       # It matters because we want the output reports to be stable with no churn in Git.
-      bench_configs = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"]
       configs = @result_set.config_names
       config_order = []
       config_order += configs.select { |c| c["prev_ruby_no_jit"] }.sort # optional
@@ -132,7 +131,7 @@ module YJITMetrics
           ws[:itr_time_ms] = ("%.2f" % [ws[:itr_time_ms], itr_time_ms].compact.max) unless itr_time_ms.nil?
 
           # Warmup is chosen per-config to reduce unneeded warmup for low-warmup configs
-          ws[:warmup_itrs] = config_settings[:max_warmup_itrs]
+          ws[:warmup_itrs] = config_settings[:max_warmup_itrs] || default_settings["max_warmup_itrs"]
           if config_settings[:max_warmup_time] && itr_time_ms
             # itr_time_ms is in milliseconds, while max_warmup_time is in seconds
             max_allowed_warmup = config_settings[:max_warmup_time] * 1000.0 / itr_time_ms
