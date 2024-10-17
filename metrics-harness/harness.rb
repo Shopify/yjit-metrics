@@ -11,7 +11,7 @@ YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : n
 
 # Warmup iterations
 WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 0).to_i.nonzero? || if YJIT_MODULE&.enabled?
-  30
+  50
 else
   # Assume CRuby interpreter which doesn't need much warmup.
   5
