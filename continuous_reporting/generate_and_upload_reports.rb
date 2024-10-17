@@ -350,7 +350,7 @@ if File.exist?(".git")
 
   YJITMetrics.check_call "git checkout #{branch}" # Should already be on this branch (no-op).
   # Get any changes from the remote.
-  YJITMetrics.check_call "git fetch #{remote}/#{branch} && git reset --hard #{remote}/#{branch}"
+  YJITMetrics.check_call "git fetch #{remote} #{branch} && git reset --hard #{remote}/#{branch}"
 
   YJITMetrics.check_call "rsync --exclude=.git -ar --ignore-times --delete #{YM_REPO}/site/_site/ ./"
 
