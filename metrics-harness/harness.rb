@@ -39,9 +39,9 @@ IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
 srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
 
 # Get string metadata about the running server (with "instance-type" returns "cX.metal"; Can fetch tags, etc).
+INSTANCE_INFO = File.expand_path("./instance-info.sh", __dir__)
 def instance_info(key, prefix: "meta-data/")
-  token = `curl -sX PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
-  `curl -H "X-aws-ec2-metadata-token: #{token}" -s http://169.254.169.254/latest/#{prefix}#{key}`
+  `#{INSTANCE_INFO} "#{prefix}#{key}"`
 end
 
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
