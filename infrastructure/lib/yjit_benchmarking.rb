@@ -99,6 +99,9 @@ module YJITBenchmarking
     class Ssh < Command
       def execute(name, *command)
         with_instances(client.find_by_name(name)) do |instance|
+          # Trigger terminal bell as we may have waited a while before it was ready.
+          print "\a"
+
           cmd = ["ssh", *ssh_opts, client.ssh_destination(instance), *command]
           puts cmd.join(" ")
           exec(*cmd)
