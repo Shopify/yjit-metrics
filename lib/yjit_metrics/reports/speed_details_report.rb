@@ -130,7 +130,7 @@ module YJITMetrics
       # Basic info on Ruby configs and benchmarks
       ruby_configs = @configs_with_human_names.map { |name, config| config }
       ruby_human_names = @configs_with_human_names.map(&:first)
-      ruby_config_bar_colour = Hash[ruby_configs.zip(Theme.bar_chart_colors)]
+      ruby_config_bar_colour = Hash[Theme.ruby_bar_chart_color_order.zip(Theme.bar_chart_colors)]
       baseline_colour = ruby_config_bar_colour[@baseline_config]
       baseline_strokewidth = 2
       n_configs = ruby_configs.size
