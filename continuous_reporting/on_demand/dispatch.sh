@@ -27,10 +27,14 @@ do:benchmark () {
   # so preserve the exit status but proceed as if successful.
   "$cr_dir"/gh_tasks/run_benchmarks.sh || result=$?
 
+  # Handle the slack notification explicitly for benchmark failures
+  # and let the ERR trap handle everything else.
+  if [[ $result -ne 0 ]]; then
+    "$cr_dir"/slack_build_notifier.rb --properties STATUS=fail "$cr_dir"/data/*.json
+  fi
+
   # Persist any result data if this was an official run.
   "$cr_dir"/gh_tasks/commit_benchmark_data.sh
-
-  return $result
 }
 
 do:report () {
