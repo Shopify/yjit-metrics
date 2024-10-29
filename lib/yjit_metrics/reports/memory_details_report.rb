@@ -41,7 +41,7 @@ module YJITMetrics
         [ "Inline Code", "Outlined Code", "YJIT Mem overhead" ]
         #@configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : [ "#{name} mem ratio" ] }
       # Col formats are only used when formatting entries for a text table, not for CSV
-      @col_formats = [ "%s" ] +               # Benchmark name
+      @col_formats = [ bench_name_link_formatter ] +
         [ "%d" ] * @configs_with_human_names.size +     # Mem usage per-Ruby
         [ "%d", "%d", "%.1f%%" ]              # YJIT mem breakdown
         #[ "%.2fx" ] * (@configs_with_human_names.size - 1)  # Mem ratio per-Ruby
@@ -62,13 +62,7 @@ module YJITMetrics
     # Listed on the details page
     def details_report_table_data
       @benchmark_names.map.with_index do |bench_name, idx|
-        bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] )  || "(no description available)"
-        if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
-        else
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
-        end
-        [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
+        [ bench_name ] +
           @configs_with_human_names.map { |name, config| @peak_mb_by_config[config][idx] } +
           [ @inline_mem_used[idx], @outline_mem_used[idx], @mem_overhead_factor_by_benchmark[idx] * 100.0 ]
           #[ "#{"%d" % (@peak_mb_by_config[@with_yjit_config][idx] - 256)} + #{@inline_mem_used[idx]}/128 + #{@outline_mem_used[idx]}/128" ]

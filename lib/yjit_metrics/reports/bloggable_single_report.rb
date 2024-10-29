@@ -33,6 +33,20 @@ module YJITMetrics
       return 1
     end
 
+    class BenchNameLinkFormatter
+      def %(bench_name)
+        bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] ) || "(no description available)"
+        suffix = BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file] ? ".rb" : "/benchmark.rb"
+        bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}#{suffix}"
+
+        %Q(<a href="#{bench_url}" title="#{bench_desc.gsub('"', '&quot;')}">#{bench_name}</a>)
+      end
+    end
+
+    def bench_name_link_formatter
+      BenchNameLinkFormatter.new
+    end
+
     def exactly_one_config_with_name(configs, substring, description, none_okay: false)
       matching_configs = configs.select { |name| name.include?(substring) }
 

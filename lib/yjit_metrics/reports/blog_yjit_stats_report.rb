@@ -55,20 +55,12 @@ module YJITMetrics
       }
 
       # Col formats are only used when formatting entries for a text table, not for CSV
-      @col_formats = @headings_with_tooltips.keys.map { "%s" }
+      @col_formats = [bench_name_link_formatter] + @headings_with_tooltips.keys.drop(1).map { "%s" }
     end
 
     # Listed on the details page
     def details_report_table_data
       @benchmark_names.map.with_index do |bench_name, idx|
-        bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] )  || "(no description available)"
-        bench_desc = bench_desc.gsub('"' , "&quot;")
-        if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
-        else
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
-        end
-
         exit_report_url = "/reports/benchmarks/blog_exit_reports_#{@timestamp_str}.#{bench_name}.txt"
 
         bench_stats = @yjit_stats[bench_name][0]
@@ -79,7 +71,7 @@ module YJITMetrics
           fmt_inval_ratio = "%d%%" % (inval_ratio * 100.0).to_i
         end
 
-        [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>",
+        [ bench_name,
           "<a href=\"#{exit_report_url}\">(click)</a>",
           bench_stats["inline_code_size"],
           bench_stats["outlined_code_size"],
