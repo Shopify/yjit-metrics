@@ -2,20 +2,11 @@
     Hover your cursor over the benchmark names for descriptions of each benchmark.
 </p>
 
-<table>
-    <thead> <% @headings_with_tooltips.each { |heading, tooltip| %> <th title=<%= tooltip.inspect %>><%= heading %></th> <% } %> </thead>
-    <tbody style="text-align: right;">
-        <% details_report_table_data.each do |row| %>
-            <tr style="border: 1px solid black;">
-                <% row.each_with_index do |cell, idx|
-                    format = @col_formats[idx]
-                %> <td> <%= format % cell %> </td><% end %>
-            </tr>
-        <% end %>
-    </tbody>
-</table>
+<%= html_table(@headings_with_tooltips.keys,
+               @col_formats,
+               details_report_table_data,
+               tooltips: @headings_with_tooltips.values) %>
 
 <p>
     YJIT stats correspond to the YJIT stats exit report.
 </p>
-

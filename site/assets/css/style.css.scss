@@ -65,3 +65,31 @@ footer ul {
     }
   }
 }
+
+// Make the left-most column in the table sticky so that the table content
+// can scroll horizontally on mobile but still see the row header.
+.table-wrapper {
+  // Limit the container to the size of the page.
+  max-width: 100%;
+  // Place overflow on the container so that the table will scroll.
+  overflow-x: auto;
+
+  table {
+    // Disable border-collapse so that the borders travel better
+    // behind the position:sticky th.
+    border-collapse: separate;
+    td {
+      // Since each cell has it's own border-width
+      // (under border-collapse:separate)
+      // cut the size in half so that the sum looks the way we want it.
+      border-width: 0.5px;
+    }
+
+    tr {
+      th:first-child {
+        left: 0;
+        position: sticky;
+      }
+    }
+  }
+}
