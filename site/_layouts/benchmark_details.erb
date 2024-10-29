@@ -157,12 +157,16 @@ urls:
       <form style="max-width: 40%; float: right;">
         <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
           <legend>Select Platform</legend>
-      
-          <input type="radio" id="platform-radio-${ctr}-x86" name="plat-select-${ctr}" value="x86_64" checked />
-          <label for="platform-radio-${ctr}-x86">Xeon x86_64</label>
-      
-          <input type="radio" id="platform-radio-${ctr}-aarch" name="plat-select-${ctr}" value="aarch64" />
-          <label for="platform-radio-${ctr}-aarch">AWS Graviton ARM64</label>
+
+          <label>
+            <input type="radio" name="plat-select-${ctr}" value="x86_64" checked />
+            Xeon x86_64
+          </label>
+
+          <label>
+            <input type="radio" name="plat-select-${ctr}" value="aarch64" />
+            AWS Graviton ARM64
+          </label>
         </fieldset>
       </form>
       <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none;" />
