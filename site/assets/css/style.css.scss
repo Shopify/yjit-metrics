@@ -69,6 +69,9 @@ footer ul {
 // Make the left-most column in the table sticky so that the table content
 // can scroll horizontally on mobile but still see the row header.
 .table-wrapper {
+  // Put table below the platform selector rather than beside it.
+  clear: both;
+
   // Limit the container to the size of the page.
   max-width: 100%;
   // Place overflow on the container so that the table will scroll.
