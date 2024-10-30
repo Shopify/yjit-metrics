@@ -45,7 +45,7 @@ module YJITMetrics
         [ "% in YJIT" ]
 
       # Col formats are only used when formatting entries for a text table, not for CSV
-      @col_formats = [ "%s" ] +                     # Benchmark name
+      @col_formats = [ bench_name_link_formatter ] +
         [ "%.1f", "%.2f%%" ] * @configs_with_human_names.size +     # Mean and RSD per-Ruby
         [ "%.2fx", "%.2f%%" ] * (@configs_with_human_names.size - 1) +  # Speedups per-Ruby
         [ "%.2f%%" ]                          # YJIT ratio
@@ -68,15 +68,8 @@ module YJITMetrics
     # Listed on the details page
     def details_report_table_data
       @benchmark_names.map.with_index do |bench_name, idx|
-        bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] ) || "(no description available)"
 
-        if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file]
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}.rb"
-        else
-          bench_url = "https://github.com/Shopify/yjit-bench/blob/main/benchmarks/#{bench_name}/benchmark.rb"
-        end
-
-        [ "<a href=\"#{bench_url}\" title=\"#{bench_desc}\">#{bench_name}</a>" ] +
+        [ bench_name ] +
           @configs_with_human_names.flat_map { |name, config| [ @mean_by_config[config][idx], @rsd_pct_by_config[config][idx] ] } +
           @configs_with_human_names.flat_map { |name, config| config == @baseline_config ? [] : @speedup_by_config[config][idx] } +
           [ @yjit_ratio[idx] ]

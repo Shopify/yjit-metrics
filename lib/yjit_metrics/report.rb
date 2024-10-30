@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require "erb"
+
 require_relative "./stats"
 require_relative "./theme"
 
@@ -95,6 +98,35 @@ module YJITMetrics
     rescue
       $stderr.puts "Error when trying to format table: #{headings.inspect} / #{col_formats.inspect} / #{data[0].inspect}"
       raise
+    end
+
+    def html_table(headings, col_formats, data, tooltips: [])
+      ERB.new(<<~'HTML').result(binding)
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <% headings.each_with_index do |heading, idx| %>
+                <th scope="col" <%= "title=#{tooltips[idx].inspect}" if tooltips %>><%= heading %></th>
+              <% end %>
+            </thead>
+            <tbody style="text-align: right;">
+              <% data.each do |row| %>
+                <tr style="border: 1px solid black;">
+                  <%
+                    row.each_with_index do |cell, idx|
+                    format = col_formats[idx]
+                    tag = idx.zero? ? %(th scope="row") : "td"
+                  %>
+                    <<%= tag %>>
+                    <%= cell.nil? ? "" : format % cell %>
+                    </<%= tag.split(' ').first %>>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      HTML
     end
 
     def write_to_csv(filename, data)

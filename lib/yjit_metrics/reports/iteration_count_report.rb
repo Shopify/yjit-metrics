@@ -38,7 +38,7 @@ module YJITMetrics
       @headings = [ "bench" ] +
         @configs_with_human_names.flat_map { |name, config| [ "#{name} warmups", "#{name} iters" ] }
       # Col formats are only used when formatting entries for a text table, not for CSV
-      @col_formats = [ "%s" ] +               # Benchmark name
+      @col_formats = [ bench_name_link_formatter ] +
         [ "%d", "%d" ] * @configs_with_human_names.size   # Iterations per-Ruby-config
     end
 

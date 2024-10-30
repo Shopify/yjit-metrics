@@ -48,42 +48,42 @@ urls:
       
       <h2 id="headline-speed-graph">Performance on Headline Benchmarks</h2>
       
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.head.svg">
             <%= text(:speed_graph) %>
       </div>
 
       <h2 id="headline-memory-graph">Memory Usage on Headline Benchmarks</h2>
 
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.head.svg">
             <%= text(:memory_graph) %>
       </div>
 
       <h2 id="other-speed-graph">Performance on Other Benchmarks</h2>
 
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.back.svg">
             <%= text(:speed_graph) %>
       </div>
 
       <h2 id="other-memory-graph">Memory Usage on Other Benchmarks</h2>
 
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.back.svg">
             <%= text(:memory_graph) %>
       </div>
 
       <h2 id="microbenchmarks-speed-graph">Performance on MicroBenchmarks</h2>
 
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_speed_details_<%= page.timestamp %>.PLATFORM.micro.svg">
             <%= text(:speed_graph) %>
       </div>
 
       <h2 id="microbenchmarks-memory-graph">Memory Usage on MicroBenchmarks</h2>
 
-      <div style="width: 800px;" data-platform-selector="yes"
+      <div data-platform-selector="yes"
         data-graph-url="blog_memory_details_<%= page.timestamp %>.PLATFORM.micro.svg">
             <%= text(:memory_graph) %>
       </div>
@@ -154,15 +154,19 @@ urls:
           } else {
             top_element.innerHTML = `
       <div class="platform_graph_wrapper" id="plat-wrapper-${ctr}" data-plat-counter="${ctr}" data-multi-platform="true" data-url-template="${graphUrl}">
-      <form style="max-width: 40%; float: right;">
-        <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset" style="border: 1px solid black">
+      <form>
+        <fieldset id="plat-select-fieldset-${ctr}" class="plat-select-fieldset">
           <legend>Select Platform</legend>
-      
-          <input type="radio" id="platform-radio-${ctr}-x86" name="plat-select-${ctr}" value="x86_64" checked />
-          <label for="platform-radio-${ctr}-x86">Xeon x86_64</label>
-      
-          <input type="radio" id="platform-radio-${ctr}-aarch" name="plat-select-${ctr}" value="aarch64" />
-          <label for="platform-radio-${ctr}-aarch">AWS Graviton ARM64</label>
+
+          <label>
+            <input type="radio" name="plat-select-${ctr}" value="x86_64" checked />
+            Xeon x86_64
+          </label>
+
+          <label>
+            <input type="radio" name="plat-select-${ctr}" value="aarch64" />
+            AWS Graviton ARM64
+          </label>
         </fieldset>
       </form>
       <img id="graph-loading-${ctr}" class="graph-loading" src="/images/loading.gif" height="32" width="32" style="display: none;" />
