@@ -53,6 +53,13 @@ urls:
         <dd><code class="compiled-with"><%= last_bench.yjit_cc_version %></code></dd>
       <% end %>
 
+      <% last_bench.cpu_info&.each_pair do |platform, info| %>
+        <% if info %>
+          <dt><%= platform %> CPU</dt>
+          <dd><code class="cpu"><%= info %></code></dd>
+        <% end %>
+      <% end %>
+
     </dl>
   </div>
 

@@ -41,7 +41,22 @@ srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
 # Get string metadata about the running server (with "instance-type" returns "cX.metal"; Can fetch tags, etc).
 INSTANCE_INFO = File.expand_path("./instance-info.sh", __dir__)
 def instance_info(key, prefix: "meta-data/")
-  `#{INSTANCE_INFO} "#{prefix}#{key}"`
+  `#{INSTANCE_INFO} "#{prefix}#{key}"`.strip
+end
+
+def cpu_info
+  if RUBY_PLATFORM.include?('linux')
+    json = JSON.parse(`sudo lshw -C CPU -json`.strip)
+    json.detect { |j| !j["disabled"] }.then do |item|
+      if item["version"].include?(item["product"])
+        item["version"]
+      else
+        sprintf "%s: %s", item["product"].delete_suffix(' (N/A)'), item["version"]
+      end
+    end
+  elsif RUBY_PLATFORM.include?('darwin')
+    `sysctl -n machdep.cpu.brand_string`.strip
+  end
 end
 
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
@@ -58,6 +73,7 @@ def ruby_metadata
         "RUBY_REVISION" => RUBY_REVISION,
         "which ruby" => `which ruby`,
         "hostname" => `hostname`,
+        "cpu info" => cpu_info,
         "ec2 instance id" => instance_info("instance-id"),
         "ec2 instance type" => instance_info("instance-type"),
         "arch" => RbConfig::CONFIG["arch"],
@@ -125,6 +141,8 @@ def run_benchmark(num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
+  require 'json'
+
   mem_rollup_file = "/proc/#{Process.pid}/smaps_rollup"
   if File.exist?(mem_rollup_file)
     # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
@@ -171,6 +189,5 @@ def run_benchmark(num_itrs_hint)
   puts "Non-warmup iteration mean time: #{"%.2f ms" % (mean * 1000.0)} +/- #{"%.2f%%" % rel_stddev_pct}"
 
   out_data[:yjit_stats] = YJIT_MODULE&.runtime_stats
-  require 'json'
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
