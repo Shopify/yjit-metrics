@@ -196,12 +196,14 @@ timestamps.each do |ts|
             raise "Fake-missing files (internal error): #{not_really_missing.inspect}!"
         end
 
-        # Do we re-run this report? Yes, if we're re-running all reports or we can't find all the generated files.
+        # We want to re-run reports if:
+        # - configured to re-run all (or this year)
+        # - missing any expected generated files
+        # - the data files have been updated more recently than the generated files
         run_report = regenerate_reports ||
             do_regenerate_year  ||
-            !report_timestamps[ts] ||
-            !report_timestamps[ts][report_name] ||
-            !((required_files - report_timestamps[ts][report_name]).empty?)
+            !((required_files - (report_timestamps.dig(ts, report_name) || [])).empty?) ||
+            File.mtime(File.join(RAW_BENCHMARK_ROOT, json_timestamps[ts].last)) > File.mtime(report_timestamps[ts][report_name].first)
 
         if run_report && die_on_regenerate
             puts "Report: #{report_name.inspect}, ts: #{ts.inspect}"
