@@ -15,6 +15,7 @@ urls:
     <a href="<%= urls[:yjit] %>">YJIT</a>
     metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
     as of <strong><%= last_bench.date_str %></strong>
+    (<a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..9] %></a>)
   </div>
 
   <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
