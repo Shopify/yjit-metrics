@@ -72,6 +72,7 @@ resource "aws_instance" "benchmarking" {
   # instances (but may show up in the terraform plan as changes that never seem
   # to get applied).  If you desire to do so you may need to copy those values here:
   user_data = aws_launch_template.yjit-metrics[each.key].user_data
+  instance_type = aws_launch_template.yjit-metrics[each.key].instance_type
 }
 
 # Create a separate instance for running the report aggregation
