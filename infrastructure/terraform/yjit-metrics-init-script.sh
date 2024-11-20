@@ -29,7 +29,7 @@ process-metadata () {
   local name=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/tags/instance/Name)
 
   echo "Name: $name"
-  hostname "$name"
+  hostname "$name" || echo 'ignoring'
   printf "export INSTANCE_NAME=%q\n" "$name" >> "$profile"
 }
 
