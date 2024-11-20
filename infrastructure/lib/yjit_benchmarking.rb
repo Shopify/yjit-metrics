@@ -98,12 +98,18 @@ module YJITBenchmarking
     end
 
     class Info < Command
+      def format_duration(seconds)
+        hours, minutes = [2, 1].map { 60 ** _1 }.map { |i| (seconds / i).tap { seconds %= i } }
+        sprintf "%02d:%02d:%02d", hours, minutes, seconds
+      end
+
       def execute
-        spec = "%25s %9s %15s %s\n"
-        printf spec, "name", "state", "address", "last start time"
+        spec = "%25s %9s %15s %25s %14s\n"
+        printf spec, "name", "state", "address", "last start time", "running time"
         (benchmarking_instances + [reporting_instance]).each do |instance|
           info = client.info(instance)
-          printf spec, *info.values_at(:name, :state, :address, :start_time)
+          running_time = format_duration(Time.now - info[:start_time]) if info[:state] == "running"
+          printf spec, *info.values_at(:name, :state, :address, :start_time), running_time
         end
       end
     end
