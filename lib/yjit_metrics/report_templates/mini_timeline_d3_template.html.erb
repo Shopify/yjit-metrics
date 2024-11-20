@@ -86,24 +86,30 @@ var svg = realSVG.append("g")
     .attr("transform",
           "translate(" + outerMargin + "," + outerMargin + ")");
 
-var timeParser = d3.timeParse("%Y %m %d %H %M %S"); // This should match the output format in the report
+var timeParser = d3.timeParse("%Y-%m-%d %H:%M:%S");
 var timePrinter = d3.timeFormat("%b %d %I%p"); // This is for tooltips
-var dataSeries = [
-    <% @series.each_with_index do |this_series, color_index| %>
-    {
-        name: <%= this_series[:name].inspect %>,
-        config: <%= this_series[:config].inspect %>,
-        benchmark: <%= this_series[:benchmark].inspect %>,
-        platform: <%= this_series[:platform].inspect %>,
-        data: [ <%= this_series[:data].map { |t, mean, ruby_desc| "{ date: timeParser(#{t.inspect}), value: #{mean}, ruby_desc: #{ruby_desc.inspect} }" }.join(", ") %> ],
-        color: <%= colors[color_index % colors.size].inspect %>,
-        timeRange: [ timeParser(<%= this_series[:data][0][0].inspect %>), timeParser(<%= this_series[:data][-1][0].inspect %>) ],
-        valueRange: [ <%= this_series[:data].map { |pt| pt[1] }.min %>, <%= this_series[:data].map { |pt| pt[1] }.max %> ]
-    },
-    <% end %>
-    {}
-]
-dataSeries.pop();
+var dataSeries = <%= JSON.generate(
+  @series.map.with_index do |this_series, color_index|
+    this_series.merge({
+      color: colors[color_index % colors.size],
+    })
+  end
+) %>;
+
+dataSeries.forEach(function(item) {
+  item.data.forEach(function(d) {
+    d.time = timeParser(d.time);
+  });
+  item.timeRange = [
+    item.data[0].time,
+    item.data[item.data.length-1].time
+  ];
+  var values = item.data.map(x => x.value);
+  item.valueRange = [
+    Math.min.apply(null, values),
+    Math.max.apply(null, values)
+  ];
+});
 
 subGraphs = [
   {
@@ -202,7 +208,7 @@ subGraphs.forEach(function(subGraph) {
       .attr("stroke", thisSeries.color)
       .attr("stroke-width", 2.5)
       .attr("d", d3.line()
-        .x(function (d) { return x(d.date); })
+        .x(function (d) { return x(d.time); })
         .y(function (d) { return y(d.value); })
         )
       ;
@@ -215,9 +221,9 @@ subGraphs.forEach(function(subGraph) {
       .attr("fill", thisSeries.color)
       .attr("fill-opacity", 0.0)
       .attr("r", 5.0)
-      .attr("cx", function(d) { return x(d.date) } )
+      .attr("cx", function(d) { return x(d.time) } )
       .attr("cy", function(d) { return y(d.value) } )
-      .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.date) + ": " + d.value.toFixed(1) + " sec<br/>" + thisSeries.platform + " Ruby " + d.ruby_desc; } )
+      .attr("data-tooltip", function(d) { return thisSeries.benchmark + " at " + timePrinter(d.time) + ": " + d.value.toFixed(1) + " sec<br/>" + thisSeries.platform + " Ruby " + d.ruby_desc; } )
       ;
 
   })
