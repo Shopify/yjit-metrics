@@ -74,7 +74,7 @@ locals {
     "arm" = {
       arch            = "arm64"
       source_ami_arch = "arm64"
-      instance_type   = "c7g.xlarge" # compatible with c7g.metal.
+      instance_type   = "c8g.xlarge" # compatible with c8g.metal-24xl.
     }
   }
 

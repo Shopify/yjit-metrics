@@ -33,7 +33,7 @@ configure-intel () {
     echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost
   fi
 
-  echo performance | sudo tee /sys/devices/system/cpu/cpu"$((`nproc` - 1))"/cpufreq/energy_performance_preference /sys/devices/system/cpu/cpu"$((`nproc` - 1))"/cpufreq/scaling_governor
+  echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 }
 
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
@@ -116,7 +116,7 @@ setup-ruby-build () {
 }
 
 setup-ruby () {
-  local version=3.3.4
+  local version=3.3.6
   local prefix=/usr/local/ruby
   local exe="$prefix/bin/ruby"
 

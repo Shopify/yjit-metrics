@@ -8,7 +8,7 @@ variable "benchmarking_x86_instance_type" {
 }
 
 variable "benchmarking_arm_instance_type" {
-  default = "c7g.metal" # c7g.metal is $2.3123/hour for 64 cpu 128 mem
+  default = "c8g.metal-24xl" # c8g.metal is $3.81504/hour for 96 cpu 192 mem
 }
 
 # The ubuntu source image takes up almost 2GB.

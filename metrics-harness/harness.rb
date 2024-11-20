@@ -44,17 +44,25 @@ def instance_info(key, prefix: "meta-data/")
   `#{INSTANCE_INFO} "#{prefix}#{key}"`.strip
 end
 
+# Get information about the cpu (name, version).
 def cpu_info
   if RUBY_PLATFORM.include?('linux')
+    # Use a command where the output includes the word Graviton.
     json = JSON.parse(`sudo lshw -C CPU -json`.strip)
     json.detect { |j| !j["disabled"] }.then do |item|
+      # Examples vary but may include:
+      # version: "Intel(R) Xeon(R) Platinum 8488C", product: "Xeon"
+      # version: "6.143.8", product: "Intel(R) Xeon(R) Platinum 8488C"
+      # version: "AWS Graviton3" product: "ARMv8 (N/A)"
+      # version: "AWS Graviton4" product: "(N/A)"
       if item["version"].include?(item["product"])
         item["version"]
       else
-        sprintf "%s: %s", item["product"].delete_suffix(' (N/A)'), item["version"]
+        [item["product"].delete_suffix('(N/A)').strip, item["version"]].reject(&:empty?).join(": ")
       end
     end
   elsif RUBY_PLATFORM.include?('darwin')
+    # "Apple M3 Pro"
     `sysctl -n machdep.cpu.brand_string`.strip
   end
 end
