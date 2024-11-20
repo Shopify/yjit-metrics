@@ -116,7 +116,7 @@ setup-ruby-build () {
 }
 
 setup-ruby () {
-  local version=3.3.4
+  local version=3.3.6
   local prefix=/usr/local/ruby
   local exe="$prefix/bin/ruby"
 
