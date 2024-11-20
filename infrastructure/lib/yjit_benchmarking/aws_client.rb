@@ -33,7 +33,7 @@ module YJITBenchmarking
         filters: [
           {name: "tag:Name", values: names},
         ],
-      )
+      ).reject { |i| i.state.name == "terminated" }
 
       if instances&.size != count
         raise "Instance confusion! Expected #{count} received #{instances&.size.inspect}"
