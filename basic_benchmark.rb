@@ -255,7 +255,7 @@ end
 
 YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
 YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
-YJIT_PREV_REF = "v3_3_4"
+YJIT_PREV_REF = "v3_3_6"
 
 def full_clean_yjit_cruby(flavor)
     repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
