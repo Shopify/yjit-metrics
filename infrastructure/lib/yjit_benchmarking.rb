@@ -78,7 +78,19 @@ module YJITBenchmarking
     end
 
     class Report < Command
+      def ensure_stopped!
+        active = benchmarking_instances.map do |instance|
+          client.info(instance)
+        end.select { |i| i[:state] != "stopped" }
+
+        return if active.empty?
+
+        desc = active.map { |i| [i[:name], i[:state]].join(':') }.join(', ')
+        abort "Benchmarking instances still active! #{desc}"
+      end
+
       def execute
+        ensure_stopped!
         with_instances(reporting_instance, state: ["stopped"]) do |instance|
           ssh_exec(instance, "#{LAUNCH_SCRIPT} report")
         end
