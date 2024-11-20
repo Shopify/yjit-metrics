@@ -253,8 +253,12 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
     extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
 end
 
+# Git repo url for CRuby.
 YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
+# Git branch to build for "prod" yjit.
 YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
+# In order to build "prev" ruby the same way we build "prod" ruby
+# we build it from source, so we use a tag that represents a recent release.
 YJIT_PREV_REF = "v3_3_6"
 
 def full_clean_yjit_cruby(flavor)
