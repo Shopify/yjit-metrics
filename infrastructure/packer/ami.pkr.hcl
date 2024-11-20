@@ -19,7 +19,12 @@ locals {
 
   main_script = [
     "set -x",
+    # Upgrade system.
     "sudo apt-get update -y && sudo apt-get upgrade -y",
+
+    # Install a few useful dev tools.
+    "sudo apt-get install ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
+
     "chmod 0755 ${local.ym_setup} && ${local.ym_setup} cpu packages ruby",
     "mkdir -p ~/src && cd ~/src",
     "git clone https://github.com/Shopify/yjit-bench",
@@ -45,6 +50,7 @@ locals {
 
   dev_script = [
     # Clone ruby to ~/src/ruby for manual development.
+    # We already have yjit-bench.
     "git clone https://github.com/ruby/ruby",
   ]
 
