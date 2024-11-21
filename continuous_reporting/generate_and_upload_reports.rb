@@ -205,7 +205,7 @@ timestamps.each do |ts|
         run_report = regenerate_reports ||
             do_regenerate_year  ||
             !((required_files - (report_timestamps.dig(ts, report_name) || [])).empty?) ||
-            (data_timestamp > data_update_window && data_timestamp > File.mtime(report_timestamps[ts][report_name].first))
+            (ts.to_i >= 2024 && data_timestamp > data_update_window && data_timestamp > File.mtime(report_timestamps[ts][report_name].first))
 
         if run_report && die_on_regenerate
             puts "Report: #{report_name.inspect}, ts: #{ts.inspect}"
