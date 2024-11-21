@@ -199,11 +199,13 @@ timestamps.each do |ts|
         # We want to re-run reports if:
         # - configured to re-run all (or this year)
         # - missing any expected generated files
-        # - the data files have been updated more recently than the generated files
+        # - the data files have been updated more recently than the generated files (within a short recent timespan to avoid issues with old file formats)
+        data_timestamp = File.mtime(File.join(RAW_BENCHMARK_ROOT, json_timestamps[ts].last))
+        data_update_window = Time.now - 86400 * 7
         run_report = regenerate_reports ||
             do_regenerate_year  ||
             !((required_files - (report_timestamps.dig(ts, report_name) || [])).empty?) ||
-            File.mtime(File.join(RAW_BENCHMARK_ROOT, json_timestamps[ts].last)) > File.mtime(report_timestamps[ts][report_name].first)
+            (data_timestamp > data_update_window && data_timestamp > File.mtime(report_timestamps[ts][report_name].first))
 
         if run_report && die_on_regenerate
             puts "Report: #{report_name.inspect}, ts: #{ts.inspect}"
