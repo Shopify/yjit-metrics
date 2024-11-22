@@ -5,6 +5,8 @@ var all_series_time_range;
 var svg;
 var checkboxes;
 var timeline = {
+  annotationColor: "#1117",
+  dashSize: 1.5,
   whiskers: false,
   whiskerColor: "#1117",
   whiskerStrokeWidth: 1.0,
@@ -12,6 +14,13 @@ var timeline = {
 };
 
 document.timeline_data = {} // For sharing data w/ handlers
+
+document.timeline_data.events = window.timeline_events.map(e => {
+  return {
+    time: timeParser(e.time),
+    desc: e.description,
+  }
+});
 
 function initSVG(opts) {
   // D3 line graph, based on https://www.d3-graph-gallery.com/graph/line_basic.html
@@ -60,13 +69,16 @@ function initSVG(opts) {
     .call(document.timeline_data.y_axis);
 
   // Define viewport to clip graphs to.
-  svg.append("defs").append("svg:clipPath")
+  var defs = svg.append("defs");
+  defs.append("svg:clipPath")
       .attr("id", "clip")
       .append("svg:rect")
       .attr("width", width)
       .attr("height", height)
       .attr("x", 0)
       .attr("y", 0);
+
+  prepareEventAnnotations(defs);
 
   var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
       .extent( [ [0,0], [width,height] ] ) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
@@ -77,6 +89,40 @@ function initSVG(opts) {
       .append("g")
       .attr("class", "brush")
       .call(brush);
+}
+
+function prepareEventAnnotations(defs) {
+  // Add a pattern mask that we can use to create the appearance of dashed lines
+  // without having the mouse move in and out at each dash of the stroke.
+  var dashed = defs.append("svg:pattern")
+      .attr("id", "dashed")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", timeline.dashSize)
+      .attr("height", timeline.dashSize * 2)
+      .attr("patternUnits", "userSpaceOnUse")
+
+  dashed.append("svg:rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", timeline.dashSize)
+      .attr("height", timeline.dashSize)
+      .attr("fill", "#000");
+  dashed.append("svg:rect")
+      .attr("x", 0)
+      .attr("y", timeline.dashSize)
+      .attr("width", timeline.dashSize)
+      .attr("height", timeline.dashSize)
+      .attr("fill", "#fff");
+
+  defs.append("svg:mask")
+      .attr("id", "dash-mask")
+      .append("svg:rect")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("fill", "url(#dashed)");
 }
 
 function rescaleGraphFromFetchedData() {
@@ -315,6 +361,28 @@ var updateDomainsAndAxesFromData = buildUpdateDomainsAndAxesFromData(function(se
   return series.value_range ||= getMinMax(series.data.map(x => x.value));
 });
 
+// Add svg group with timeline event annotations (vertical lines at time of event).
+function addEventAnnotations({svg, x, y}) {
+  var group = svg.select("g.events")
+  if (!group.node())
+    group = svg.append("g").attr("class", "events")
+
+  // We use a rect with a mask to simulate a dashed line but avoid frustration
+  // when trying to hover the stroke to see the tooltip.
+  group.selectAll("rect.event")
+    .data(document.timeline_data.events, (d) => d.time)
+    .join("rect")
+    .attr("class", "event")
+    .attr("x", function(d) { return x(d.time) } )
+    .attr("y", y.range()[1])
+    .attr("width", timeline.dashSize)
+    .attr("height", y.range()[0])
+    .attr("data-tooltip", function(d) { return timePrinter(d.time) + ": " + d.desc })
+    .attr("fill", timeline.annotationColor)
+    .attr("mask", "url(#dash-mask)")
+    .attr("clip-path", "url(#clip)")
+}
+
 function updateGraphFromData() {
     updateDomainsAndAxesFromData();
     var x = document.timeline_data.x_axis_function;
@@ -327,6 +395,8 @@ function updateGraphFromData() {
             .attr("class", d => "svg_tl_data " + d.name + " benchmark-" + d.benchmark)
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
+
+    addEventAnnotations({svg, x, y});
 
     data_series.forEach(function(item) {
       var group = svg.select("svg g.svg_tl_data." + item.name);

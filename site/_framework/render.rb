@@ -127,6 +127,11 @@ class RenderContext
       arg.match?(%r{^[^-a-zA-Z]|[^[-_a-zA-Z0-9:@\/=]]}) ? "'#{arg}'" : arg
     end.compact
   end
+
+  TIMELINE_EVENTS = YAML.load_file(File.expand_path("../../events.yaml", __dir__))
+  def timeline_events
+    TIMELINE_EVENTS
+  end
 end
 
 def read_front_matter(path)
