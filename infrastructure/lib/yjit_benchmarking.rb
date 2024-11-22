@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
+require "optparse"
 require_relative "yjit_benchmarking/aws_client"
 
 module YJITBenchmarking
   class Command
-    attr_reader :client
+    attr_reader :client, :opts
 
-    def initialize(client = YJITBenchmarking::AwsClient.new)
+    def initialize(opts, client: YJITBenchmarking::AwsClient.new)
+      @opts = opts
       @client = client
     end
 
@@ -64,8 +66,18 @@ module YJITBenchmarking
     # Commands
 
     class Benchmark < Command
+      def allowed_states
+        ["stopped"].concat(opts.fetch(:states) { [] })
+      end
+
+      def instances
+        benchmarking_instances.select do |instance|
+          opts[:only].nil? || client.name(instance).end_with?(opts[:only])
+        end
+      end
+
       def execute(bench_params_file)
-        with_instances(benchmarking_instances, state: ["stopped"]) do |instance|
+        with_instances(instances, state: allowed_states) do |instance|
           Thread.new do
             dest = client.ssh_destination(instance)
             remote_params = "~/ym/bench_params.json"
@@ -140,6 +152,14 @@ module YJITBenchmarking
       [klass.name.split('::').last.downcase, klass]
     end
 
+    opts = {}
+    OptionParser.new do |op|
+      op.on("--only=NAME")
+      op.on("--states=STATE") do |states|
+        opts[:states] = states.split(',')
+      end
+    end.parse!(args, into: opts)
+
     action = args.shift
     cmd = commands[action]
 
@@ -148,6 +168,6 @@ module YJITBenchmarking
       raise "Unknown action #{action.inspect}.  Specify one of #{actions.join(", ")}"
     end
 
-    cmd.new.execute(*args)
+    cmd.new(opts).execute(*args)
   end
 end
