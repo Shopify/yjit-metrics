@@ -63,6 +63,11 @@ module YJITBenchmarking
       end
     end
 
+    def format_duration(seconds)
+      hours, minutes = [2, 1].map { 60 ** _1 }.map { |i| (seconds / i).tap { seconds %= i } }
+      sprintf "%02d:%02d:%02d", hours, minutes, seconds
+    end
+
     # Commands
 
     class Benchmark < Command
@@ -110,11 +115,6 @@ module YJITBenchmarking
     end
 
     class Info < Command
-      def format_duration(seconds)
-        hours, minutes = [2, 1].map { 60 ** _1 }.map { |i| (seconds / i).tap { seconds %= i } }
-        sprintf "%02d:%02d:%02d", hours, minutes, seconds
-      end
-
       def execute
         spec = "%25s %9s %15s %25s %14s\n"
         printf spec, "name", "state", "address", "last start time", "running time"
