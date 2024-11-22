@@ -10,6 +10,9 @@ title: "YJIT Benchmarks"
     <meta name="viewport" content="width=device-width,maximum-scale=2">
     <script src="<%= asset_url('js/clipboard.min.js') %>"></script>
     <script src="<%= asset_url('js/d3.v5.js') %>"></script>
+    <script type="text/javascript">
+      window.timeline_events = <%= JSON.generate(timeline_events) %>;
+    </script>
     <script src="<%= asset_url('js/timeline.js') %>"></script>
     <link rel="stylesheet" type="text/css" media="screen" href="<%= asset_url('css/style.css') %>">
     <title><%= title %></title>

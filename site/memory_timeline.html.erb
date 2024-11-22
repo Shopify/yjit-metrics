@@ -28,6 +28,8 @@ function updateGraphFromData() {
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 
+    addEventAnnotations({svg, x, y});
+
     data_series.forEach(function(item) {
         var group = svg.select("svg g.svg_tl_data." + item.name);
 

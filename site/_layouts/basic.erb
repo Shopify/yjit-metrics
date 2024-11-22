@@ -10,6 +10,12 @@ title: "YJIT Benchmarks"
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
     <script src="assets/js/clipboard.min.js"></script>
+    <%# Include the timeline stuff for the mini timelines at the bottom of the index. %>
+    <script src="<%= asset_url('js/d3.v5.js') %>"></script>
+    <script type="text/javascript">
+      window.timeline_events = <%= JSON.generate(timeline_events) %>;
+    </script>
+    <script src="<%= asset_url('js/timeline.js') %>"></script>
     <link rel="stylesheet" type="text/css" media="screen" href="<%= asset_url('css/style.css') %>">
     <title><%= title %></title>
 

@@ -1,7 +1,5 @@
 <!-- This is the smaller four-up timeline report shown on the front page -->
 
-<script src="/assets/js/d3.v5.js"></script>
-
 <% if @series.size != 4 && @series.size != 8
        raise "The mini_timeline graph assumes a 2x2 grid of benchmarks - either 4 series or 8 for multiplatform, not #{@series.size.inspect}!"
    end %>
@@ -80,6 +78,8 @@ var realSVG = d3.select("#mini_timeline")
     .attr("viewBox", "0 0 " + fullWidth + " " + fullHeight)
     .attr("xmlns", "http://www.w3.org/2000/svg")
     .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+
+prepareEventAnnotations(realSVG.append("defs"));
 
 // This is the non-blank center area of the graph, inside the margins
 var svg = realSVG.append("g")
@@ -200,6 +200,8 @@ subGraphs.forEach(function(subGraph) {
     .attr("class", "subgraphLeftAxis")
     .call(yAxis)
     ;
+
+  addEventAnnotations({svg: subgraph, x, y});
 
   subGraph.series.forEach(function(thisSeries) {
     var graphLine = subgraph.append("path")

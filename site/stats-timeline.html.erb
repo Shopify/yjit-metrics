@@ -41,6 +41,8 @@ function updateGraphFromData() {
             .attr("visibility", d => d.visible ? "visible" : "hidden")
             ;
 
+    addEventAnnotations({svg, x, y});
+
     data_series.forEach(function(item) {
       var current_stat = document.timeline_data.current_stat;
       var data = item.data.filter(x => x[current_stat] != null);
