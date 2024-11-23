@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
+require "optparse"
 require_relative "yjit_benchmarking/aws_client"
 
 module YJITBenchmarking
   class Command
-    attr_reader :client
+    attr_reader :client, :opts
 
-    def initialize(client = YJITBenchmarking::AwsClient.new)
+    def initialize(opts, client: YJITBenchmarking::AwsClient.new)
+      @opts = opts
       @client = client
     end
 
@@ -61,11 +63,26 @@ module YJITBenchmarking
       end
     end
 
+    def format_duration(seconds)
+      hours, minutes = [2, 1].map { 60 ** _1 }.map { |i| (seconds / i).tap { seconds %= i } }
+      sprintf "%02d:%02d:%02d", hours, minutes, seconds
+    end
+
     # Commands
 
     class Benchmark < Command
+      def allowed_states
+        ["stopped"].concat(opts.fetch(:states) { [] })
+      end
+
+      def instances
+        benchmarking_instances.select do |instance|
+          opts[:only].nil? || client.name(instance).end_with?(opts[:only])
+        end
+      end
+
       def execute(bench_params_file)
-        with_instances(benchmarking_instances, state: ["stopped"]) do |instance|
+        with_instances(instances, state: allowed_states) do |instance|
           Thread.new do
             dest = client.ssh_destination(instance)
             remote_params = "~/ym/bench_params.json"
@@ -98,11 +115,6 @@ module YJITBenchmarking
     end
 
     class Info < Command
-      def format_duration(seconds)
-        hours, minutes = [2, 1].map { 60 ** _1 }.map { |i| (seconds / i).tap { seconds %= i } }
-        sprintf "%02d:%02d:%02d", hours, minutes, seconds
-      end
-
       def execute
         spec = "%25s %9s %15s %25s %14s\n"
         printf spec, "name", "state", "address", "last start time", "running time"
@@ -110,6 +122,41 @@ module YJITBenchmarking
           info = client.info(instance)
           running_time = format_duration(Time.now - info[:start_time]) if info[:state] == "running"
           printf spec, *info.values_at(:name, :state, :address, :start_time), running_time
+        end
+      end
+    end
+
+    class Quash < Command
+      # Current running time for benchmarks is under 4 hours.
+      HOURS = 5
+
+      def describe(instance)
+        info = client.info(instance)
+        run_time = format_duration(Time.now - info[:start_time]) if info[:state] != "stopped"
+        [
+          info[:name],
+          info[:state],
+          run_time,
+        ].compact.join(' ')
+      end
+
+      def execute(*names)
+        names = BENCHMARKING_NAMES + [REPORTING_NAME] if names.empty?
+        quash, leave = client.find_by_name(names).partition do |instance|
+          info = client.info(instance)
+          info[:state] != "stopped" && (Time.now - info[:start_time]) > (3600 * HOURS)
+        end
+
+        if !leave.empty?
+          puts "Ignoring instances:", leave.map { "  - #{describe(_1)}" }
+        end
+
+        if !quash.empty?
+          puts "Stopping instances:", quash.map { "  - #{describe(_1)}" }
+          client.stop(quash)
+          # If we had to stop long-running instances we should mark the job as
+          # failed to avoid generating the reports until we check on what happened.
+          exit 1
         end
       end
     end
@@ -140,6 +187,14 @@ module YJITBenchmarking
       [klass.name.split('::').last.downcase, klass]
     end
 
+    opts = {}
+    OptionParser.new do |op|
+      op.on("--only=NAME")
+      op.on("--states=STATE") do |states|
+        opts[:states] = states.split(',')
+      end
+    end.parse!(args, into: opts)
+
     action = args.shift
     cmd = commands[action]
 
@@ -148,6 +203,6 @@ module YJITBenchmarking
       raise "Unknown action #{action.inspect}.  Specify one of #{actions.join(", ")}"
     end
 
-    cmd.new.execute(*args)
+    cmd.new(opts).execute(*args)
   end
 end

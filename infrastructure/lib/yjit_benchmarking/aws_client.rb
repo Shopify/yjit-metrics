@@ -86,9 +86,14 @@ module YJITBenchmarking
       params = { instance_ids: instances.map(&:instance_id) }
 
       ec2.start_instances(params)
+
+      # Sometimes the proc's STDERR will print before previous STDOUT lines have printed...
+      STDOUT.flush
+
       ec2.wait_until(:instance_status_ok, params, before_attempt: proc do
         STDERR.puts "Waiting for instance#{"s" if instances.count != 1} to be ready..."
       end)
+
       ec2.describe_instances(params)&.reservations&.map(&:instances)&.flatten
     end
 
@@ -97,6 +102,10 @@ module YJITBenchmarking
       params = { instance_ids: instances.map(&:instance_id) }
 
       ec2.stop_instances(params)
+
+      # Sometimes the proc's STDERR will print before previous STDOUT lines have printed...
+      STDOUT.flush
+
       ec2.wait_until(:instance_stopped, params, before_attempt: proc do
         STDERR.puts "Waiting for instance#{"s" if instances.count != 1} to stop..."
       end)
