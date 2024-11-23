@@ -126,6 +126,41 @@ module YJITBenchmarking
       end
     end
 
+    class Quash < Command
+      # Current running time for benchmarks is under 4 hours.
+      HOURS = 5
+
+      def describe(instance)
+        info = client.info(instance)
+        run_time = format_duration(Time.now - info[:start_time]) if info[:state] != "stopped"
+        [
+          info[:name],
+          info[:state],
+          run_time,
+        ].compact.join(' ')
+      end
+
+      def execute(*names)
+        names = BENCHMARKING_NAMES + [REPORTING_NAME] if names.empty?
+        quash, leave = client.find_by_name(names).partition do |instance|
+          info = client.info(instance)
+          info[:state] != "stopped" && (Time.now - info[:start_time]) > (3600 * HOURS)
+        end
+
+        if !leave.empty?
+          puts "Ignoring instances:", leave.map { "  - #{describe(_1)}" }
+        end
+
+        if !quash.empty?
+          puts "Stopping instances:", quash.map { "  - #{describe(_1)}" }
+          client.stop(quash)
+          # If we had to stop long-running instances we should mark the job as
+          # failed to avoid generating the reports until we check on what happened.
+          exit 1
+        end
+      end
+    end
+
     class Ssh < Command
       def execute(name, *command)
         with_instances(client.find_by_name(name)) do |instance|
