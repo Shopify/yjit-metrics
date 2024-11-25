@@ -38,39 +38,11 @@ IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
 
 srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
 
-# Get string metadata about the running server (with "instance-type" returns "cX.metal"; Can fetch tags, etc).
-INSTANCE_INFO = File.expand_path("./instance-info.sh", __dir__)
-def instance_info(key, prefix: "meta-data/")
-  `#{INSTANCE_INFO} "#{prefix}#{key}"`.strip
-end
-
-# Get information about the cpu (name, version).
-def cpu_info
-  if RUBY_PLATFORM.include?('linux')
-    # Use a command where the output includes the word Graviton.
-    json = JSON.parse(`sudo lshw -C CPU -json`.strip)
-    json.detect { |j| !j["disabled"] }.then do |item|
-      # Examples vary but may include:
-      # version: "Intel(R) Xeon(R) Platinum 8488C", product: "Xeon"
-      # version: "6.143.8", product: "Intel(R) Xeon(R) Platinum 8488C"
-      # version: "AWS Graviton3" product: "ARMv8 (N/A)"
-      # version: "AWS Graviton4" product: "(N/A)"
-      if item["version"].include?(item["product"])
-        item["version"]
-      else
-        [item["product"].delete_suffix('(N/A)').strip, item["version"]].reject(&:empty?).join(": ")
-      end
-    end
-  elsif RUBY_PLATFORM.include?('darwin')
-    # "Apple M3 Pro"
-    `sysctl -n machdep.cpu.brand_string`.strip
-  end
-end
-
 # Everything in ruby_metadata is supposed to be static for a single Ruby interpreter.
 # It shouldn't include timestamps or other data that changes from run to run.
 def ruby_metadata
     require "rbconfig"
+    require_relative "./helpers"
     {
         "RUBY_VERSION" => RUBY_VERSION,
         "RUBY_DESCRIPTION" => RUBY_DESCRIPTION,
@@ -81,9 +53,9 @@ def ruby_metadata
         "RUBY_REVISION" => RUBY_REVISION,
         "which ruby" => `which ruby`,
         "hostname" => `hostname`,
-        "cpu info" => cpu_info,
-        "ec2 instance id" => instance_info("instance-id"),
-        "ec2 instance type" => instance_info("instance-type"),
+        "cpu info" => MetricsHarnessHelpers.cpu_info,
+        "ec2 instance id" => MetricsHarnessHelpers.instance_id,
+        "ec2 instance type" => MetricsHarnessHelpers.instance_type,
         "arch" => RbConfig::CONFIG["arch"],
         "uname -a" => `uname -a`,
 

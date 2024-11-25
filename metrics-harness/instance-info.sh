@@ -23,6 +23,6 @@ if [[ -f /etc/ec2_version ]]; then
 
   error "Failed to fetch ec2 $key"
 else
-  echo foo
+  echo unknown
   error "Unknown host type"
 fi

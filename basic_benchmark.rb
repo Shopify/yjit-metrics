@@ -534,6 +534,12 @@ end
 
 load_averages_before = load_averages
 
+# Load these values into the env so that we only need to make the calls once
+# (rather than for every benchmark).
+ENV['YM_CPU_INFO'] = MetricsHarnessHelpers.cpu_info
+ENV['YM_INSTANCE_ID'] = MetricsHarnessHelpers.instance_id
+ENV['YM_INSTANCE_TYPE'] = MetricsHarnessHelpers.instance_type
+
 Dir.chdir(YJIT_BENCH_DIR) do
     all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
       Benchmark.realtime do

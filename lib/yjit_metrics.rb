@@ -8,6 +8,7 @@ require 'json'
 require 'csv'
 require 'erb'
 
+require_relative "../metrics-harness/helpers"
 require_relative "./yjit_metrics/cli"
 require_relative "./yjit_metrics/continuous_reporting"
 require_relative "./yjit_metrics/defaults"
