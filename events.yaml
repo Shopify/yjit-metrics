@@ -1,4 +1,5 @@
 # These become annotation lines on the various timeline graphs.
+# Times are in UTC.
 ---
 - time: '2022-01-26 22:00:00'
   description: Drop in performance due to changing AWS instances
@@ -30,8 +31,11 @@
 - time: '2023-03-02 14:50:00'
   description: Changed peak_mem_bytes to use /proc/smaps_rollup on Linux, not ps
 
+- time: '2024-04-30 14:08:45'
+  description: Disabled variable warmup restoring default of 10 warmup iterations per benchmark.
+
 - time: '2024-05-11 19:42:45'
-  description: Change baseline to be previous version of interpreter.
+  description: Changed baseline to be previous version of interpreter.
 
 - time: '2024-05-19 03:08:05'
   description: Changed previous ruby to build as static instead of shared.
@@ -42,14 +46,33 @@
 - time: '2024-08-12 21:40:19'
   description: Upgraded benchmark servers to GCC 13
 
-- time: '2024-09-27 21:13:54'
-  description: Reduce running time of several benchmarks that were simply looping to bring iteration times below 1 second.
+- time: '2024-09-12 17:43:04'
+  description: CRuby switched default parser to Prism
 
+- time: '2024-09-27 21:13:54'
+  description: Reduced running time of several benchmarks that were simply looping to bring iteration times below 1 second.
+
+# 2024-10-15 04:00:07 is the timestamp for the last data on the old servers.
+# We did the same commit on the new servers with a timestamp of 1s later (08).
 - time: '2024-10-15 04:00:08'
   description: Moved benchmarks to new servers to upgrade CPUs and operating systems. (c5.metal -> c7i.metal-24xl and a1.metal -> c7g.metal).
 
-# - time: '2024-10-17 03:45:17'
-#   description: GCC Upgraded to 14.2.0
+# The timestamps for the 16th were run with a newer yjit-metrics so just put
+# this time before either of those.
+- time: '2024-10-16 03:00:00'
+  description: Changed warmup count from 10 iterations to 5 for CRuby and 50 for YJIT
 
-- time: '2024-11-20 04:00:08'
+- time: '2024-10-16 22:00:00'
+  description: Decreased YJIT warmup count from 50 to 30
+
+- time: '2024-10-17 03:45:17'
+  description: GCC upgraded to 14.2.0
+
+- time: '2024-10-18 03:45:00'
+  description: Increased YJIT warmup count from 30 to 50
+
+- time: '2024-11-20 03:45:08'
   description: Upgraded ARM instance from Graviton3 (c7g) to Graviton4 (c8g).  Rebuilt intel instance.
+
+- time: '2024-11-20 19:37:34'
+  description: Upgraded baseline Ruby to 3.3.6
