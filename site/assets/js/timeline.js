@@ -302,6 +302,7 @@ function updateChart() {
     xAxisGroup.transition().duration(timeline.transitionDuration).call(xAxis)
 
     updateChartCallback({svg, x, y});
+    updateEventAnnotations({svg, x, y});
 }
 
 function updateChartCallback({svg, x, y}) {
@@ -382,6 +383,13 @@ function addEventAnnotations({svg, x, y}) {
     .attr("fill", timeline.annotationColor)
     .attr("mask", "url(#dash-mask)")
     .attr("clip-path", "url(#clip)")
+}
+
+function updateEventAnnotations({svg, x, y}) {
+  svg
+      .selectAll("rect.event")
+      .transition().duration(timeline.transitionDuration)
+      .attr("x", function(d) { return x(d.time) } )
 }
 
 function updateGraphFromData() {
