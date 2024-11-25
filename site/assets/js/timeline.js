@@ -7,6 +7,7 @@ var checkboxes;
 var timeline = {
   annotationColor: "#1117",
   dashSize: 1.5,
+  transitionDuration: 1000,
   whiskers: false,
   whiskerColor: "#1117",
   whiskerStrokeWidth: 1.0,
@@ -298,7 +299,7 @@ function updateChart() {
     }
     // Update axis and circle position
     // Note: this doesn't seem to work with the other update function. Why not?
-    xAxisGroup.transition().duration(1000).call(xAxis)
+    xAxisGroup.transition().duration(timeline.transitionDuration).call(xAxis)
 
     updateChartCallback({svg, x, y});
 }
@@ -306,7 +307,7 @@ function updateChart() {
 function updateChartCallback({svg, x, y}) {
     svg
         .selectAll("circle.whiskerdot")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("cx", function(d) { return x(d.time) } )
         .attr("cy", function(d) { return y(d.value) } )
         ;
@@ -314,7 +315,7 @@ function updateChartCallback({svg, x, y}) {
     if (timeline.whiskers) {
       svg
         .selectAll("line.whiskercenter")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("x1", function(d) { return x(d.time) } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("x2", function(d) { return x(d.time) } )
@@ -323,7 +324,7 @@ function updateChartCallback({svg, x, y}) {
 
       svg
         .selectAll("line.whiskertop")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value + 2 * d.stddev) } )
         .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
@@ -332,7 +333,7 @@ function updateChartCallback({svg, x, y}) {
 
       svg
         .selectAll("line.whiskerbottom")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("x1", function(d) { return x(d.time) - timeline.whiskerBarWidth / 2.0 } )
         .attr("y1", function(d) { return y(d.value - 2 * d.stddev) } )
         .attr("x2", function(d) { return x(d.time) + timeline.whiskerBarWidth / 2.0 } )
@@ -342,7 +343,7 @@ function updateChartCallback({svg, x, y}) {
 
     svg
         .selectAll("path.line")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("d", d3.line()
             .x(function(d) { return x(d.time) })
             .y(function(d) { return y(d.value) })

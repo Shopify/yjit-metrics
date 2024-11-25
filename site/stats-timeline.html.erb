@@ -9,13 +9,13 @@ timeline_type: yjit_stats
 function updateChartCallback({svg, x, y}) {
     svg
         .selectAll(".centerdot.circle")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("cx", function(d) { return x(d.time) } )
         .attr("cy", function(d) { return y(d[document.timeline_data.current_stat]) } )
 
     svg
         .selectAll(".line")
-        .transition().duration(1000)
+        .transition().duration(timeline.transitionDuration)
         .attr("d", d3.line()
             .x(function(d) { return x(d.time) })
             .y(function(d) { return y(d[document.timeline_data.current_stat]) })
