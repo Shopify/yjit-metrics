@@ -1,5 +1,9 @@
 @import "slate.scss";
 
+h1#project_title a {
+  color: #fff;
+}
+
 div.headline-box {
   text-align: center;
   border: 1px inset #888;
@@ -20,6 +24,21 @@ h1, h2 {
 
 .nowrap {
   white-space: nowrap;
+}
+
+body[data-page="index"] {
+  h1,
+  h2,
+  h3,
+  .latest-details-box > div,
+  .latest-details-box > p,
+  .history {
+    text-align: center;
+  }
+
+  .latest-details-box > hr {
+    width: 60%;
+  }
 }
 
 h2[id] a.para {

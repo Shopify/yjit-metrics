@@ -56,6 +56,10 @@ class RenderContext
     super
   end
 
+  def page_name
+    url.sub(/\.[^.]+$/, '')
+  end
+
   # This is named for the Jekyll equivalent... The big reason Jekyll
   # needs this is that it may put a site at the root, or at a subdirectory,
   # and so site-'absolute' URLs like the one passed in need to turn into
