@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+gem "listen", require: false
 gem "victor"
 gem "rake"
 gem "kramdown" # used in reporting
