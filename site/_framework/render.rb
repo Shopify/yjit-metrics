@@ -273,8 +273,12 @@ end
 
 def build_site
   # cd to root of builder dir
-  Dir.chdir "#{__dir__}/.."
+  Dir.chdir "#{__dir__}/.." do
+    _build_pwd
+  end
+end
 
+def _build_pwd
   # Remove old _site directory if present, and replace it with an empty one
   FileUtils.rm_rf "_site"
   Dir.mkdir "_site"
@@ -333,6 +337,26 @@ no_build = ARGV.delete("--no-build")
 if ARGV == ["server"] || ARGV == ["serve"]
   puts "Building site..."
   build_site unless no_build
+
+  require "listen"
+  # Listen for files changes in the "site/" dir (css, html, erb, etc).
+  # Ignore ruby files since we aren't reloading them.
+  # Ignore the generated site/_site/ dir since we're going to regenerate into it.
+  Listen.to(File.expand_path('..', __dir__), ignore: [/\.rb$/, %r{^_site/}], relative: true) do |mod|
+    puts "Files changed: #{mod.join(", ")}"
+
+    # Separate css to compile it as quickly as possible.
+    css, other = mod.partition { |m| m.start_with?('site/assets/css/') }
+    css.each do |path|
+      File.write("site/_#{path.delete_suffix(".scss")}", render_scss(File.read(path)))
+      puts "CSS #{path} Ready"
+    end
+
+    if !other.empty?
+      build_site
+      puts "Rebuilt"
+    end
+  end.start
 
   require "webrick"
   doc_dir = File.join(__dir__, "../_site")
