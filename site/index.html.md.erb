@@ -104,35 +104,42 @@ urls:
 
 <h2>YJIT Results Over Time</h2>
 
-  <div style="text-align: center;">
-    <a href="<%= relative_url "timeline-deep.html#activerecord+liquid-render+optcarrot+railsbench" %>"><button>YJIT Results-Over-Time Deep Dive</button></a>
-  </div>
+<dl class="timelines">
+  <dt>
+    <a href="<%= relative_url "stats-timeline.html#yjit_speedup+overall-mean+activerecord+liquid-render+optcarrot+railsbench" %>">YJIT Relative Speedup and Statistics Over Time</a>
+  </dt>
+  <dd>
+    YJIT's relative speedup over CRuby, the metric that is most generally applicable and least subject to changes in hardware or benchmark code.
+  </dd>
 
-  <div class="timeline_report">
-    <%= include "reports/mini_timelines.html" %>
-  </div>
+  <dt>
+    <a href="<%= relative_url "memory_timeline.html#railsbench" %>">YJIT vs CRuby Memory Usage Over Time</a>
+  </dt>
+  <dd>
+    Memory usage overhead of YJIT compared to CRuby (development versions).
+  </dd>
+
+  <dt>
+    <a href="<%= relative_url "benchmark_timeline.html#railsbench" %>">Benchmark Runtime Comparison Over Time</a>
+  </dt>
+  <dd>
+    Comparison of total runtime of each ruby version for any benchmark over time (mostly useful for debugging unexpected changes).
+  </dd>
+
+  <dt>
+    <a href="<%= relative_url "timeline-deep.html#activerecord+liquid-render+optcarrot+railsbench" %>">YJIT Benchmark Runtime Over Time</a>
+  </dt>
+  <dd>
+    Total runtime duration per benchmark for just the development version of YJIT.
+  </dd>
+</dl>
+
+<h3>Preview of headline benchmark timing history</h3>
+<div class="timeline_report">
+  <%= include "reports/mini_timelines.html" %>
 </div>
 
-<!-- Stats Timeline -->
-<div class="stats-timeline-report">
-  <div style="text-align: center; margin-top: 1em;">
-    <a href="<%= relative_url "stats-timeline.html#yjit_speedup+overall-mean+activerecord+liquid-render+optcarrot+railsbench" %>"><button>YJIT Speedup and Statistics Over Time</button></a>
-  </div>
-</div>
-
-<!-- Memory Usage Timeline -->
-<div class="memory-timeline-report">
-  <div style="text-align: center; margin-top: 1em;">
-    <a href="<%= relative_url "memory_timeline.html#railsbench" %>"><button>YJIT vs CRuby Memory Usage Over Time</button></a>
-  </div>
-</div>
-
-<!-- Speed Comparison -->
-<div class="speed-comparison-timeline-report">
-  <div style="text-align: center; margin-top: 1em;">
-    <a href="<%= relative_url "benchmark_timeline.html#railsbench" %>"><button>Speed Comparison Results Over Time</button></a>
-  </div>
-</div>
+<hr/>
 
 <!-- History -->
 <p class="history">

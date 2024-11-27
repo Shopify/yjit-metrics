@@ -129,3 +129,48 @@ footer ul {
     }
   }
 }
+
+dl.timelines {
+  align-items: stretch;
+  border: 0.5px solid #ddd;
+  border-width: 1px 0;
+  display: grid;
+  grid-template-columns: 2.5fr 3fr;
+  justify-items: stretch;
+  margin: 1em;
+
+  dt, dd {
+    min-height: 3em;
+    border: 0.5px solid #ddd;
+    border-width: 1px 0;
+    height: 100%;
+    display: grid;
+    align-items: center;
+  }
+
+  dd {
+    color: #444;
+    font-style: normal;
+    font-size: 0.9em;
+  }
+
+  dt:hover,
+  dt:hover + dd {
+    color: #000;
+    border-color: #777;
+  }
+
+  a {
+    background: #eee;
+    border: 1px solid #777;
+    border-radius: 0.25em;
+    display: block;
+    padding: 0.5rem;
+    color: black;
+    text-align: center;
+    &:hover {
+      background-color: #ddd;
+      text-decoration: none;
+    }
+  }
+}
