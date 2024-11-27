@@ -68,43 +68,41 @@ urls:
 
 <!-- Latest Headlining Results -->
 <div class="latest-details-box">
-  <h2 style="text-align: center;">Latest Headlining Results vs CRuby</h2>
+  <h2>Latest Headlining Results vs CRuby</h2>
 
-  <p style="text-align: center;">
+  <p>
     These "headlining" benchmarks are used for the above measurements.
     There are more benchmarks on the <a href="<%= relative_url last_bench.url %>">Full Details Page</a>.
   </p>
 
-  <hr style="width: 50%"/>
+  <hr/>
 
-  <div style="text-align: center;">
-    <h3 style="text-align: center;">Performance on Headline Benchmarks</h3>
+  <div>
+    <h3>Performance on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
   <%= include(find_best(last_bench.reports, "blog_speed_details_PLATFORM_head_svg")) %>
   </a>
   <%= text(:speed_graph) %>
   </div>
 
-  <hr style="width: 50%"/>
+  <hr/>
 
-  <div style="text-align: center;">
-    <h3 style="text-align: center;">Memory Usage on Headline Benchmarks</h3>
+  <div>
+    <h3>Memory Usage on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
   <%= include(find_best(last_bench.reports, "blog_memory_details_PLATFORM_head_svg")) %>
   </a>
   <%= text(:memory_graph) %>
   </div>
 
-  <hr style="width: 50%"/>
+  <hr/>
 
-  <div style="text-align: center;">
+  <div>
     <a href="<%= relative_url last_bench.url %>"><button>See more benchmarks</button></a>
   </div>
 </div>
 
-<!-- Timeline Graph -->
-<div class="timeline-graph-box">
-  <h2 style="text-align: center;">YJIT Results Over Time</h2>
+<h2>YJIT Results Over Time</h2>
 
   <div style="text-align: center;">
     <a href="<%= relative_url "timeline-deep.html#activerecord+liquid-render+optcarrot+railsbench" %>"><button>YJIT Results-Over-Time Deep Dive</button></a>
@@ -137,7 +135,7 @@ urls:
 </div>
 
 <!-- History -->
-<p style="text-align: center; margin-top: 3em;">
+<p class="history">
   Do you love extensive details? <br/>
   <a href="<%= relative_url "history.html" %>"> <button>See All the Benchmark History</button></a>
 </p>
