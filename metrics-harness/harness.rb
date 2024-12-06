@@ -149,8 +149,6 @@ def run_benchmark(num_itrs_hint)
     total_time += time
   end until num_itrs >= WARMUP_ITRS + MIN_BENCH_ITRS and total_time >= MIN_BENCH_TIME
 
-  require 'json'
-
   mem_rollup_file = "/proc/#{Process.pid}/smaps_rollup"
   if File.exist?(mem_rollup_file)
     # First, grab a line like "62796 kB". Checking the Linux kernel source, Rss will always be in kB.
@@ -178,6 +176,10 @@ def run_benchmark(num_itrs_hint)
   warmup_times = times[0...WARMUP_ITRS]
   warmed_times = times[WARMUP_ITRS..-1]
 
+  # Require additional modules *after* collecting YJIT stats
+  # to avoid irrelevant changes to the stats (invalidation counts, etc).
+  require 'json'
+
   out_data = {
     times: warmed_times,
     warmups: warmup_times,
@@ -196,6 +198,6 @@ def run_benchmark(num_itrs_hint)
   rel_stddev_pct = stddev / mean * 100.0
   puts "Non-warmup iteration mean time: #{"%.2f ms" % (mean * 1000.0)} +/- #{"%.2f%%" % rel_stddev_pct}"
 
-  out_data[:yjit_stats] = YJIT_MODULE&.runtime_stats
+  out_data[:yjit_stats] = yjit_stats
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
