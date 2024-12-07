@@ -58,7 +58,9 @@ module YJITMetrics
 
         if should_configure
           check_call("#{config_env.join(" ")} ./configure #{ config_opts.join(" ") }")
-          check_call("make clean")
+          # make clean is currently removing too much, but we don't need it when
+          # we call `git clean` prior to this.
+          # check_call("make clean")
         end
 
         check_call("make -j16")
