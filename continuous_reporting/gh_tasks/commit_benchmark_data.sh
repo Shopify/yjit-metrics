@@ -10,7 +10,7 @@ cd ~/ym/yjit-metrics
 
 bundle
 
-# NOTE: This data dir is not configurable. If we run a smoke test on jenkins
+# NOTE: This data dir is not configurable. If we run a smoke test
 # into a different data dir we explicitly do not want to include that here.
 # In that case this will run, find no data, and do nothing (which is what we want).
 ruby continuous_reporting/file_benchmark_data_into_raw.rb -d continuous_reporting/data
