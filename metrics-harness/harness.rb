@@ -124,10 +124,13 @@ def setup_cmds(c)
   end
 end
 
-# Takes a block as input
-def run_benchmark(num_itrs_hint)
-  require "benchmark"
+def realtime
+  r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  yield
+  Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
+end
 
+def run_benchmark(num_itrs_hint, &block)
   times = []
   total_time = 0
   num_itrs = 0
@@ -137,7 +140,7 @@ def run_benchmark(num_itrs_hint)
   # case, but would be awful for many other use cases.
   YJIT_MODULE&.reset_stats!
   begin
-    time = Benchmark.realtime { yield }
+    time = realtime(&block)
     num_itrs += 1
 
     time_ms = (1000 * time).to_i
