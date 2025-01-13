@@ -83,16 +83,12 @@ if relevant_results.size == 0
     exit -1
 end
 
-latest_ts = relevant_results.map { |_, _, timestamp, _, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
-filepaths_by_ts = {}
 ruby_desc_by_config_and_ts = {}
 relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
-    filepaths_by_ts[timestamp] ||= []
-    filepaths_by_ts[timestamp].push filepath  # Is this used? I'm not sure this is used.
 
     ruby_desc_by_config_and_ts[config_name] ||= {}
     ruby_desc_by_config_and_ts[config_name][timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
@@ -108,9 +104,6 @@ end
 
 configs = relevant_results.map { |_, config_name, _, _, _| config_name }.uniq.sort
 all_timestamps = result_set_by_ts.keys.sort
-
-# This should match the JS parser in the template files
-TIME_FORMAT = "%Y %m %d %H %M %S"
 
 # Grab a statistical summary of every timestamp, config and benchmark
 summary_by_ts = {}
