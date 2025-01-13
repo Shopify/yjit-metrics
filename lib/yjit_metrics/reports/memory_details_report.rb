@@ -12,7 +12,7 @@ module YJITMetrics
     #end
 
     def self.report_extensions
-      [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
+      [ "html", "svg", "head.svg", "back.svg", "micro.svg", "csv" ]
     end
 
     def initialize(config_names, results, platform:, benchmarks: [])
@@ -81,11 +81,6 @@ module YJITMetrics
 
     def relative_values_by_config_and_benchmark
       @peak_mb_relative_by_config
-    end
-
-    # FIXME: We aren't reporting on the tripwires currently, but it makes sense to implement it and report on it.
-    def tripwires
-      {}
     end
   end
 end
