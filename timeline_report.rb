@@ -41,7 +41,6 @@ end.parse!
 output_dir = File.expand_path(output_dir)
 
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
-DATASET_FILEPATH_RE = /^(.*\/)?(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
 # Return the information from the file path - run_num is nil if the file isn't in multi-run format
 def parse_dataset_filepath(filepath)
     filename = filepath.split("/")[-1]
@@ -75,12 +74,12 @@ end
 
 Dir.chdir(data_dir)
 
-files_in_dir = Dir["**/*"].grep(DATASET_FILEPATH_RE)
+files_in_dir = Dir["**/*_basic_benchmark_*.json"].select { |x| File.basename(x) =~ DATASET_FILENAME_RE }
 relevant_results = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
 
 if relevant_results.size == 0
     puts "No relevant data files found for directory #{data_dir.inspect} and specified arguments!"
-    exit -1
+    exit(-1)
 end
 
 puts "Loading #{relevant_results.size} data files..."
