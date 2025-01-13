@@ -176,7 +176,6 @@ end
 begin
     run_benchmarks
 rescue
-    host = `uname -a`.chomp
     puts $!.full_message
     raise "Exception in CI benchmarks: #{$!.message}!"
 end
