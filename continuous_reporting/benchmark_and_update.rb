@@ -2,7 +2,6 @@
 
 require_relative "../lib/yjit_metrics"
 
-require 'fileutils'
 require 'net/http'
 
 require "yaml"
@@ -150,16 +149,14 @@ def run_benchmarks
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
         Dir["#{DATA_DIR}/*.json"].each do |f|
-            FileUtils.rm f
+            File.unlink f
         end
 
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
         YJITMetrics.check_call "#{RbConfig.ruby} basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
     end
-
 ensure
-    # There's no error if this isn't here, but it's cleaner to remove it.
-    FileUtils.rm PIDFILE
+    File.unlink(PIDFILE) if File.exist?(PIDFILE)
 end
 
 def timestr_from_ts(ts)
