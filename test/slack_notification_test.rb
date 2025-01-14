@@ -80,6 +80,29 @@ class SlackNotificationTest < Minitest::Test
     assert_slack_message(result, title: summary, body: "hello\nthere\n", image: %r{https://\S+\.\w+})
   end
 
+  def test_notify_error
+    notifier = TestNotifier.new
+    error = RuntimeError.new("something bad")
+    error.set_backtrace([
+      "elsewhere",
+      "#{File.expand_path(__FILE__)}:5",
+      "#{__dir__}/oops.rb:4",
+      "#{__FILE__}:3",
+    ])
+
+    result = notifier.error(error).notify!
+
+    summary = "RuntimeError: something bad"
+    expected_body = <<~BODY
+      ```
+      - test/slack_notification_test.rb:5
+      - test/oops.rb:4
+      ```
+    BODY
+
+    assert_slack_message(result, title: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
+  end
+
   private
 
   def assert_slack_message(result, title:, body:, image:)

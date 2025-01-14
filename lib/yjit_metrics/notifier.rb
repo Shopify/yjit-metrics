@@ -20,6 +20,23 @@ module YJITMetrics
       @args = args
     end
 
+    def error(exception)
+      backtrace = exception.backtrace
+        .select { |l| l.start_with?(APP_DIR) }
+        .map { |l| l.delete_prefix(File.join(APP_DIR, "")) }
+        .take(2)
+
+      @title = "#{exception.class}: #{exception.message}"
+      @image = :fail
+      @body = <<~MSG
+        ```
+        #{backtrace.map { |l| "- #{l}" }.join("\n")}
+        ```
+      MSG
+
+      self
+    end
+
     def notify!
       cmd = [
         RbConfig.ruby,
