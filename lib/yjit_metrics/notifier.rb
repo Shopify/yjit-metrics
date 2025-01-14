@@ -9,10 +9,6 @@ module YJITMetrics
     APP_DIR = File.expand_path("../../", __dir__)
     SLACK_SCRIPT = File.expand_path("continuous_reporting/slack_build_notifier.rb", APP_DIR)
 
-    def self.error(error)
-      new.error(error).notify!
-    end
-
     def initialize(body: nil, title: nil, image: nil, args: nil)
       @body = body
       @title = title
@@ -20,6 +16,8 @@ module YJITMetrics
       @args = args
     end
 
+    # Format notification message based on provided error object.
+    # Returns self.
     def error(exception)
       backtrace = exception.backtrace
         .select { |l| l.start_with?(APP_DIR) }
@@ -37,7 +35,10 @@ module YJITMetrics
       self
     end
 
+    # Send message to slack and return whether notification sent successfully.
+    # Afterwards the `success` attribute will be populated if further inspection is desired.
     def notify!
+      # Build command to use the slack script.
       cmd = [
         RbConfig.ruby,
         SLACK_SCRIPT
@@ -49,6 +50,7 @@ module YJITMetrics
       cmd.concat(args) if args
 
       IO.popen(env || {}, cmd, 'w') do |pipe|
+        # Supply any pre-formatted body on STDIN.
         pipe.write(body) if body
       end
 
