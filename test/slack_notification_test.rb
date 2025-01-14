@@ -5,6 +5,7 @@ require "rbconfig"
 require "tempfile"
 
 require_relative "test_helper"
+require_relative "../lib/yjit_metrics/notifier"
 
 # This is a high-level integration test to execute the continuous_reporting/slack_build_notifier.rb entrypoint
 # and verify its behavior based on the calls it makes to the slack api.
@@ -18,36 +19,31 @@ class SlackNotificationTest < Minitest::Test
   DATA_GLOB = "test/data/slack/*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
 
-  def notify(title: nil, args: [], image: nil, stdin: nil)
-    file = Tempfile.new('yjit-metrics-slack').tap(&:close)
-    token_file = Tempfile.new('slack-token').tap { |f| f.puts('test-token'); f.close }
+  class TestNotifier < YJITMetrics::Notifier
+    def notify!
+      file = Tempfile.new('yjit-metrics-slack').tap(&:close)
+      token_file = Tempfile.new('slack-token').tap { |f| f.puts('test-token'); f.close }
 
-    env = {
-      'YJIT_METRICS_SLACK_DUMP' => file.path,
-      # 'SLACK_OAUTH_TOKEN' => 'test-token',
-      'SLACK_TOKEN_FILE' => token_file.path,
-    }
+      @env = {
+        'YJIT_METRICS_SLACK_DUMP' => file.path,
+        # 'SLACK_OAUTH_TOKEN' => 'test-token',
+        'SLACK_TOKEN_FILE' => token_file.path,
+        'RUBYOPT' => "-I#{TEST_LIB} -rslack-ruby-client-report",
+      }
 
-    cmd = [
-      RbConfig.ruby,
-      "-I#{TEST_LIB}",
-      "-rslack-ruby-client-report",
-      SLACK_SCRIPT
-    ]
-    cmd << "--title=#{title}" if title
-    cmd << "--image=#{image}" if image
-    cmd.concat(args)
+      super
 
-    IO.popen(env, cmd, 'w') do |pipe|
-      pipe.write(stdin) if stdin
+      {
+        status:,
+        report: JSON.parse(File.read(file.path), symbolize_names: true),
+      }
+    ensure
+      file&.unlink
     end
+  end
 
-    {
-      status: $?,
-      report: JSON.parse(File.read(file.path), symbolize_names: true),
-    }
-  ensure
-    file&.unlink
+  def notify(...)
+    TestNotifier.new(...).notify!
   end
 
   def test_success
@@ -79,7 +75,7 @@ class SlackNotificationTest < Minitest::Test
 
   def test_stdin
     summary = "Howdy!"
-    result = notify(args: ["-"], stdin: "hello\nthere\n")
+    result = notify(args: ["-"], body: "hello\nthere\n")
 
     assert_slack_message(result, title: summary, body: "hello\nthere\n", image: %r{https://\S+\.\w+})
   end
