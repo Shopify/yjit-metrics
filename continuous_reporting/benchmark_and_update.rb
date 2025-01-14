@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/yjit_metrics"
+require_relative "../lib/yjit_metrics/notifier"
 
-require 'fileutils'
 require 'net/http'
 
 require "yaml"
@@ -133,31 +133,31 @@ def escape_markdown(s)
     s.gsub(/(\*|\_|\`)/) { '\\' + $1 }.gsub("<", "&lt;")
 end
 
-if File.exist?(PIDFILE)
-    pid = File.read(PIDFILE).to_i
+def run_benchmarks
+    pid = File.read(PIDFILE).to_i if File.exist?(PIDFILE)
     if pid && pid > 0
         ps_out = `pgrep -F #{PIDFILE}`
         if ps_out.include?(pid.to_s)
             raise "When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!"
         end
     end
-end
-File.open(PIDFILE, "w") do |f|
-    f.write Process.pid.to_s
-end
+    File.open(PIDFILE, "w") do |f|
+        f.write Process.pid.to_s
+    end
 
-def run_benchmarks
     return if BENCHMARK_ARGS.nil? || BENCHMARK_ARGS == ""
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
     Dir.chdir("#{__dir__}/..") do
         Dir["#{DATA_DIR}/*.json"].each do |f|
-            FileUtils.rm f
+            File.unlink f
         end
 
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
         YJITMetrics.check_call "#{RbConfig.ruby} basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
     end
+ensure
+    File.unlink(PIDFILE) if File.exist?(PIDFILE)
 end
 
 def timestr_from_ts(ts)
@@ -175,10 +175,22 @@ end
 
 begin
     run_benchmarks
-rescue
-    puts $!.full_message
-    raise "Exception in CI benchmarks: #{$!.message}!"
-end
+rescue => exception
+    puts exception.full_message
 
-# There's no error if this isn't here, but it's cleaner to remove it.
-FileUtils.rm PIDFILE
+    notifier = YJITMetrics::Notifier.new
+    notifier.error(exception)
+    # If we wrote any data files we can parse summary info out of them.
+    notifier.args = Dir["#{DATA_DIR}/*.json"]
+
+    puts "\nSending notification..."
+    if notifier.notify!
+      # If we successfully notify about the error
+      # exit zero so that the wrapper scripts don't notify again.
+      puts "Done."
+      exit(0)
+    end
+
+    puts
+    abort "Failed to notify about exception #{exception.message.inspect}"
+end

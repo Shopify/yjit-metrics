@@ -22,6 +22,7 @@ GEM
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
+    logger (1.6.5)
     minitest (5.11.3)
     multipart-post (2.4.1)
     net-http (0.4.1)
@@ -34,7 +35,7 @@ GEM
     sass-embedded (1.77.8)
       google-protobuf (~> 4.26)
       rake (>= 13)
-    slack-ruby-client (2.3.0)
+    slack-ruby-client (2.4.0)
       faraday (>= 2.0)
       faraday-mashify
       faraday-multipart
@@ -50,6 +51,7 @@ PLATFORMS
 DEPENDENCIES
   kramdown
   listen
+  logger
   minitest (~> 5.11.3)
   rake
   sass-embedded
@@ -58,4 +60,4 @@ DEPENDENCIES
   webrick
 
 BUNDLED WITH
-   2.2.30
+   2.6.2

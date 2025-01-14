@@ -111,9 +111,11 @@ end
 # Use Slack "mrkdwn" formatting.
 # https://api.slack.com/reference/surfaces/formatting
 def body(files)
-  return if files.empty?
+  lines = []
 
-  return STDIN.read if files == ["-"]
+  lines << STDIN.read if files.delete("-")
+
+  return lines.join("") if files.empty?
 
   results = files.map { |f| JSON.parse(File.read(f)) }
 
@@ -130,7 +132,7 @@ def body(files)
 
   q = ->(s) { "`#{s}`" }
 
-  lines = []
+  lines << "" if !lines.empty?
 
   # Line for each failed benchmark name with configs.
   lines += by_failure.map do |name, failures|

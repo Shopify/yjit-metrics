@@ -5,6 +5,7 @@ require "rbconfig"
 require "tempfile"
 
 require_relative "test_helper"
+require_relative "../lib/yjit_metrics/notifier"
 
 # This is a high-level integration test to execute the continuous_reporting/slack_build_notifier.rb entrypoint
 # and verify its behavior based on the calls it makes to the slack api.
@@ -18,36 +19,31 @@ class SlackNotificationTest < Minitest::Test
   DATA_GLOB = "test/data/slack/*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
 
-  def notify(title: nil, args: [], image: nil, stdin: nil)
-    file = Tempfile.new('yjit-metrics-slack').tap(&:close)
-    token_file = Tempfile.new('slack-token').tap { |f| f.puts('test-token'); f.close }
+  class TestNotifier < YJITMetrics::Notifier
+    def notify!
+      file = Tempfile.new('yjit-metrics-slack').tap(&:close)
+      token_file = Tempfile.new('slack-token').tap { |f| f.puts('test-token'); f.close }
 
-    env = {
-      'YJIT_METRICS_SLACK_DUMP' => file.path,
-      # 'SLACK_OAUTH_TOKEN' => 'test-token',
-      'SLACK_TOKEN_FILE' => token_file.path,
-    }
+      @env = {
+        'YJIT_METRICS_SLACK_DUMP' => file.path,
+        # 'SLACK_OAUTH_TOKEN' => 'test-token',
+        'SLACK_TOKEN_FILE' => token_file.path,
+        'RUBYOPT' => "-I#{TEST_LIB} -rslack-ruby-client-report",
+      }
 
-    cmd = [
-      RbConfig.ruby,
-      "-I#{TEST_LIB}",
-      "-rslack-ruby-client-report",
-      SLACK_SCRIPT
-    ]
-    cmd << "--title=#{title}" if title
-    cmd << "--image=#{image}" if image
-    cmd.concat(args)
+      super
 
-    IO.popen(env, cmd, 'w') do |pipe|
-      pipe.write(stdin) if stdin
+      {
+        status:,
+        report: JSON.parse(File.read(file.path), symbolize_names: true),
+      }
+    ensure
+      file&.unlink
     end
+  end
 
-    {
-      status: $?,
-      report: JSON.parse(File.read(file.path), symbolize_names: true),
-    }
-  ensure
-    file&.unlink
+  def notify(...)
+    TestNotifier.new(...).notify!
   end
 
   def test_success
@@ -59,9 +55,11 @@ class SlackNotificationTest < Minitest::Test
 
   def test_failure
     summary = "benchmark failure"
-    result = notify(title: summary, image: :fail, args: Dir.glob(DATA_GLOB))
+    result = notify(title: summary, body: "stdin", image: :fail, args: Dir.glob(DATA_GLOB))
 
     assert_slack_message(result, title: summary, image: "#{IMAGE_PREFIX}/build-fail.png", body: <<~MSG)
+      stdin
+
       *`cycle_error`* (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
 
       Details:
@@ -77,9 +75,32 @@ class SlackNotificationTest < Minitest::Test
 
   def test_stdin
     summary = "Howdy!"
-    result = notify(args: ["-"], stdin: "hello\nthere\n")
+    result = notify(args: ["-"], body: "hello\nthere\n")
 
     assert_slack_message(result, title: summary, body: "hello\nthere\n", image: %r{https://\S+\.\w+})
+  end
+
+  def test_notify_error
+    notifier = TestNotifier.new
+    error = RuntimeError.new("something bad")
+    error.set_backtrace([
+      "elsewhere",
+      "#{File.expand_path(__FILE__)}:5",
+      "#{__dir__}/oops.rb:4",
+      "#{__FILE__}:3",
+    ])
+
+    result = notifier.error(error).notify!
+
+    summary = "RuntimeError: something bad"
+    expected_body = <<~BODY
+      ```
+      - test/slack_notification_test.rb:5
+      - test/oops.rb:4
+      ```
+    BODY
+
+    assert_slack_message(result, title: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
   end
 
   private
