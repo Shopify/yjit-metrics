@@ -39,97 +39,47 @@ def slack_notification_targets(spec)
 end
 
 IMAGES = {
-  build_success: {
+  success: {
     url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-success.png",
     alt: "Large green check and the words 'Build Success, Because I am a Good Server'",
   },
-  build_fail: {
+  fail: {
     url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-fail.png",
     alt: "Large red X and the words 'Build Failed, All Your Fault I Assume'",
   },
-  cute_cat: {
+  cat: {
     url: "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
     alt: "Cute cat",
   },
 }
 
-TEMPLATES = {
-  build_status: proc do |properties, opts|
-    if properties["IMAGE"]
-      img = properties["IMAGE"].to_sym
-    elsif properties["STATUS"] == "success"
-      img = :build_success
-    elsif properties["STATUS"] == "fail"
-      img = :build_fail
-    else
-      img = :cute_cat
-    end
-    raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
-    [
-      {
-        "type": "header",
-        "text": {
-          "type": "plain_text",
-          "text": "#{properties["JOB_NAME"]}: #{properties["STATUS"]}",
-        }
-      },
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": "#{properties["BUILD_URL"]}\n\n#{opts[:summary]}"
-        },
-        "accessory": {
-          "type": "image",
-          "image_url": IMAGES[img][:url],
-          "alt_text": IMAGES[img][:alt],
-        },
+def slack_message_blocks(title, body, img)
+  [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": title,
       }
-    ]
-  end,
-
-  smoke_test: proc do |properties, opts|
-    if properties["IMAGE"]
-      img = properties["IMAGE"].to_sym
-    elsif properties["STATUS"] == "success"
-      img = :build_success
-    elsif properties["STATUS"] == "fail"
-      img = :build_fail
-    else
-      img = :cute_cat
-    end
-    raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
-    [
-      {
-        "type": "header",
-        "text": {
-          "type": "plain_text",
-          "text": "#{properties["JOB_NAME"]}: #{properties["STATUS"]}",
-        }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": body.to_s,
       },
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": "*URL:* #{properties["BUILD_URL"]}\n*RUBY:* #{properties["RUBY"]}\n*YJIT-BENCH:* #{properties["YJIT_BENCH"]}\n*YJIT-METRICS:* #{properties["YJIT_METRICS"]}"
-        },
-        "accessory": {
-          "type": "image",
-          "image_url": IMAGES[img][:url],
-          "alt_text": IMAGES[img][:alt],
-        },
-      }
-    ]
-  end,
+      "accessory": {
+        "type": "image",
+        "image_url": IMAGES[img][:url],
+        "alt_text": IMAGES[img][:alt],
+      },
+    }
+  ]
+end
 
-}
-
+img = :cat
 to_notify = ["#yjit-benchmark-ci"]
-properties = {
-  "BUILD_URL" => ENV["BUILD_URL"],
-  "JOB_NAME" => ENV["JOB_NAME"],
-}
-template = :build_status
+title = "Howdy!"
 
 OptionParser.new do |opts|
   opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
@@ -138,41 +88,29 @@ OptionParser.new do |opts|
     to_notify = slack_notification_targets(chan)
   end
 
-  opts.on("--properties PROP", "Set one or more string properties, e.g. '--properties TITLE=Fail,IMAGE=cute_cat'") do |properties_str|
-    properties_str.split(",").each do |prop_assign|
-      prop, val = prop_assign.split("=", 2)
-      properties[prop] = val
-    end
+  opts.on("--image CODE", "Use image by name") do |arg|
+    img = arg.to_sym
+    raise("No such image: #{img.inspect}!") unless IMAGES.has_key?(img)
   end
 
-  opts.on("--template TEMPLATE", "Set the name of the template to use") do |template_name|
-    template = template_name.to_sym
-    raise "No such template: #{template_name.inspect}! Known: #{TEMPLATES.keys.inspect}" unless TEMPLATES[template]
+  opts.on("--title TITLE", "Set message title") do |arg|
+    title = arg
   end
-
 end.parse!
 
 TO_NOTIFY = to_notify
 
-def template_substitute(tmpl_name, prop, opts)
-  tmpl_name = tmpl_name.to_sym
-  unless TEMPLATES.has_key?(tmpl_name)
-    raise "Can't find template #{tmpl_name.inspect}! Known: #{TEMPLATES.keys.inspect}"
-  end
-  TEMPLATES[tmpl_name].call(prop, opts)
-end
-
-def send_message(tmpl_name, prop, opts)
-  block_msg = template_substitute(tmpl_name, prop, opts)
+def send_message(title, body, img)
+  block_msg = slack_message_blocks(title, body, img)
 
   TO_NOTIFY.each do |channel|
-    slack_client.chat_postMessage channel: channel, text: "#{prop["JOB_NAME"]}: #{prop["STATUS"]}", blocks: block_msg
+    slack_client.chat_postMessage channel: channel, text: title, blocks: block_msg
   end
 end
 
 # Use Slack "mrkdwn" formatting.
 # https://api.slack.com/reference/surfaces/formatting
-def summary(files)
+def body(files)
   return if files.empty?
 
   return STDIN.read if files == ["-"]
@@ -215,4 +153,4 @@ rescue StandardError => error
   "Error building slack message: #{error.class}: #{error.message}"
 end
 
-send_message(template, properties, {summary: summary(ARGV)})
+send_message(title, body(ARGV), img)

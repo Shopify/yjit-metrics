@@ -16,4 +16,4 @@ notify="$(realpath "${0%/*}/../slack_build_notifier.rb")"
 
   # Pipe the above output to slack script to send to us.
   # Also record separate log file to make it easy to find.
-} 2>&1 | "$notify" --properties STATUS=fail - 2>&1 | tee "${LOG_FILE%.log}-notification.log"
+} 2>&1 | "$notify" --title "Error" --image=fail - 2>&1 | tee "${LOG_FILE%.log}-notification.log"
