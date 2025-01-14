@@ -30,7 +30,7 @@ do:benchmark () {
   # Handle the slack notification explicitly for benchmark failures
   # and let the ERR trap handle everything else.
   if [[ $result -ne 0 ]]; then
-    "$cr_dir"/slack_build_notifier.rb --properties STATUS=fail "$cr_dir"/data/*.json
+    "$cr_dir"/slack_build_notifier.rb --title="Benchmark Failure" --image=fail "$cr_dir"/data/*.json
   fi
 
   # Persist any result data if this was an official run.
