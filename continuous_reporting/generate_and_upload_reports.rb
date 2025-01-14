@@ -36,11 +36,11 @@ REPORTS_AND_FILES = {
     },
     "blog_speed_details" => {
         report_type: :basic_report,
-        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
+        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "csv" ],
     },
     "blog_memory_details" => {
         report_type: :basic_report,
-        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ],
+        extensions: [ "html", "svg", "head.svg", "back.svg", "micro.svg", "csv" ],
     },
     "blog_yjit_stats" => {
         report_type: :basic_report,
@@ -168,7 +168,6 @@ REPORTS_AND_FILES.each do |report_name, details|
         report_name_in_file = $1
         raise "Non-matching report name with filename, #{report_name.inspect} vs #{report_name_in_file.inspect}!" unless report_name == report_name_in_file
         ts = $2
-        ext = $3
 
         report_timestamps[ts] ||= {}
         report_timestamps[ts][report_name] ||= []
@@ -332,21 +331,6 @@ end
 YJITMetrics.check_call "site/exe build"
 
 puts "Static site seems to build correctly. That means that GHPages should do the right thing on push."
-
-# Benchmark raw data was already committed. Built reports are now locally cached, not pushed.
-#dirs_to_commit = [ "_benchmarks", "_includes", "reports" ]
-### Commit built reports if there is something to commit
-#diffs = (YJITMetrics.check_output "git status --porcelain #{dirs_to_commit.join(" ")}").chomp
-#if diffs == ""
-#    puts "No changes found. Not committing or pushing."
-#elsif no_push
-#    puts "Changes found, but --no-push was specified. Not committing or pushing."
-#else
-#    puts "Changes found. Committing and pushing."
-#    YJITMetrics.check_call "git add #{dirs_to_commit.join(" ")}"
-#    YJITMetrics.check_call 'git commit -m "Update reports via continuous_reporting.rb script"'
-#    YJITMetrics.check_call "git push"
-#end
 
 # Copy built _site directory into raw pages repo as a new single commit, to branch new_pages
 Dir.chdir GHPAGES_REPO

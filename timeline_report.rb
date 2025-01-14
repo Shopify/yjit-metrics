@@ -41,7 +41,6 @@ end.parse!
 output_dir = File.expand_path(output_dir)
 
 DATASET_FILENAME_RE = /^(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
-DATASET_FILEPATH_RE = /^(.*\/)?(\d{4}-\d{2}-\d{2}-\d{6})_basic_benchmark_(\d{4}_)?(.*).json$/
 # Return the information from the file path - run_num is nil if the file isn't in multi-run format
 def parse_dataset_filepath(filepath)
     filename = filepath.split("/")[-1]
@@ -75,24 +74,20 @@ end
 
 Dir.chdir(data_dir)
 
-files_in_dir = Dir["**/*"].grep(DATASET_FILEPATH_RE)
+files_in_dir = Dir["**/*_basic_benchmark_*.json"].select { |x| File.basename(x) =~ DATASET_FILENAME_RE }
 relevant_results = files_in_dir.map { |filepath| parse_dataset_filepath(filepath) }
 
 if relevant_results.size == 0
     puts "No relevant data files found for directory #{data_dir.inspect} and specified arguments!"
-    exit -1
+    exit(-1)
 end
 
-latest_ts = relevant_results.map { |_, _, timestamp, _, _| timestamp }.max
 puts "Loading #{relevant_results.size} data files..."
 
 result_set_by_ts = {}
-filepaths_by_ts = {}
 ruby_desc_by_config_and_ts = {}
 relevant_results.each do |filepath, config_name, timestamp, run_num, platform|
     benchmark_data = JSON.load(File.read(filepath))
-    filepaths_by_ts[timestamp] ||= []
-    filepaths_by_ts[timestamp].push filepath  # Is this used? I'm not sure this is used.
 
     ruby_desc_by_config_and_ts[config_name] ||= {}
     ruby_desc_by_config_and_ts[config_name][timestamp] = ruby_desc_to_sha benchmark_data["ruby_metadata"]["RUBY_DESCRIPTION"]
@@ -108,9 +103,6 @@ end
 
 configs = relevant_results.map { |_, config_name, _, _, _| config_name }.uniq.sort
 all_timestamps = result_set_by_ts.keys.sort
-
-# This should match the JS parser in the template files
-TIME_FORMAT = "%Y %m %d %H %M %S"
 
 # Grab a statistical summary of every timestamp, config and benchmark
 summary_by_ts = {}

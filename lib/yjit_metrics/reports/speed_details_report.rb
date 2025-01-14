@@ -14,7 +14,7 @@ module YJITMetrics
     #end
 
     def self.report_extensions
-      [ "html", "svg", "head.svg", "back.svg", "micro.svg", "tripwires.json", "csv" ]
+      [ "html", "svg", "head.svg", "back.svg", "micro.svg", "csv" ]
     end
 
     def initialize(orig_config_names, results, platform:, benchmarks: [])
@@ -426,19 +426,6 @@ module YJITMetrics
       svg
     end
 
-    def tripwires
-      tripwires = {}
-      micro = micro_benchmarks
-      @benchmark_names.each_with_index do |bench_name, idx|
-        tripwires[bench_name] = {
-          mean: @mean_by_config[@with_yjit_config][idx],
-          rsd_pct: @rsd_pct_by_config[@with_yjit_config][idx],
-          micro: micro.include?(bench_name),
-        }
-      end
-      tripwires
-    end
-
     def html_template_path
       File.expand_path("../report_templates/blog_speed_details.html.erb", __dir__)
     end
@@ -490,10 +477,6 @@ module YJITMetrics
       script_template = ERB.new File.read(html_template_path)
       html_output = script_template.result(binding)
       File.open(filename + ".#{@platform}.html", "w") { |f| f.write(html_output) }
-
-      # The Tripwire report is used to tell when benchmark performance drops suddenly
-      json_data = tripwires
-      File.open(filename + ".#{@platform}.tripwires.json", "w") { |f| f.write JSON.pretty_generate json_data }
 
       write_to_csv(filename + ".#{@platform}.csv", [@headings] + report_table_data)
     end
