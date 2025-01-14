@@ -133,20 +133,18 @@ def escape_markdown(s)
     s.gsub(/(\*|\_|\`)/) { '\\' + $1 }.gsub("<", "&lt;")
 end
 
-if File.exist?(PIDFILE)
-    pid = File.read(PIDFILE).to_i
+def run_benchmarks
+    pid = File.read(PIDFILE).to_i if File.exist?(PIDFILE)
     if pid && pid > 0
         ps_out = `pgrep -F #{PIDFILE}`
         if ps_out.include?(pid.to_s)
             raise "When trying to run benchmark_and_update.rb, the previous process (PID #{pid}) was still running!"
         end
     end
-end
-File.open(PIDFILE, "w") do |f|
-    f.write Process.pid.to_s
-end
+    File.open(PIDFILE, "w") do |f|
+        f.write Process.pid.to_s
+    end
 
-def run_benchmarks
     return if BENCHMARK_ARGS.nil? || BENCHMARK_ARGS == ""
 
     # Run benchmarks from the top-level dir and write them into DATA_DIR
@@ -158,6 +156,10 @@ def run_benchmarks
         args = "#{BENCHMARK_ARGS} --full-rebuild #{FULL_REBUILD ? "yes" : "no"}"
         YJITMetrics.check_call "#{RbConfig.ruby} basic_benchmark.rb #{args} --output=#{DATA_DIR}/ --bench-params=#{BENCH_PARAMS_FILE}"
     end
+
+ensure
+    # There's no error if this isn't here, but it's cleaner to remove it.
+    FileUtils.rm PIDFILE
 end
 
 def timestr_from_ts(ts)
@@ -179,6 +181,3 @@ rescue
     puts $!.full_message
     raise "Exception in CI benchmarks: #{$!.message}!"
 end
-
-# There's no error if this isn't here, but it's cleaner to remove it.
-FileUtils.rm PIDFILE
