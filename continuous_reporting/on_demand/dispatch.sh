@@ -25,13 +25,7 @@ do:benchmark () {
   # This script needs BENCH_PARAMS env var.
   # It may exit non-zero but still produce some benchmarks
   # so preserve the exit status but proceed as if successful.
-  "$cr_dir"/gh_tasks/run_benchmarks.sh || result=$?
-
-  # Handle the slack notification explicitly for benchmark failures
-  # and let the ERR trap handle everything else.
-  if [[ $result -ne 0 ]]; then
-    "$cr_dir"/slack_build_notifier.rb --title="Benchmark Failure" --image=fail "$cr_dir"/data/*.json
-  fi
+  "$cr_dir"/gh_tasks/run_benchmarks.sh
 
   # Persist any result data if this was an official run.
   "$cr_dir"/gh_tasks/commit_benchmark_data.sh

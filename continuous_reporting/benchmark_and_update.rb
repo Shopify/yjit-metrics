@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/yjit_metrics"
+require_relative "../lib/yjit_metrics/notifier"
 
 require 'net/http'
 
@@ -174,7 +175,22 @@ end
 
 begin
     run_benchmarks
-rescue
-    puts $!.full_message
-    raise "Exception in CI benchmarks: #{$!.message}!"
+rescue => exception
+    puts exception.full_message
+
+    notifier = YJITMetrics::Notifier.new
+    notifier.error(exception)
+    # If we wrote any data files we can parse summary info out of them.
+    notifier.args = Dir["#{DATA_DIR}/*.json"]
+
+    puts "\nSending notification..."
+    if notifier.notify!
+      # If we successfully notify about the error
+      # exit zero so that the wrapper scripts don't notify again.
+      puts "Done."
+      exit(0)
+    end
+
+    puts
+    abort "Failed to notify about exception #{exception.message.inspect}"
 end
