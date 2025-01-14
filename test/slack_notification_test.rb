@@ -59,9 +59,11 @@ class SlackNotificationTest < Minitest::Test
 
   def test_failure
     summary = "benchmark failure"
-    result = notify(title: summary, image: :fail, args: Dir.glob(DATA_GLOB))
+    result = notify(title: summary, body: "stdin", image: :fail, args: Dir.glob(DATA_GLOB))
 
     assert_slack_message(result, title: summary, image: "#{IMAGE_PREFIX}/build-fail.png", body: <<~MSG)
+      stdin
+
       *`cycle_error`* (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
 
       Details:
