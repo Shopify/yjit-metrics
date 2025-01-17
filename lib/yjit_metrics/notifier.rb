@@ -8,6 +8,7 @@ module YJITMetrics
 
     APP_DIR = File.expand_path("../../", __dir__)
     SLACK_SCRIPT = File.expand_path("continuous_reporting/slack_build_notifier.rb", APP_DIR)
+    BACKTRACE_ITEMS = 2
 
     def initialize(body: nil, title: nil, image: nil, args: nil)
       @body = body
@@ -22,9 +23,9 @@ module YJITMetrics
       backtrace = exception.backtrace
         .select { |l| l.start_with?(APP_DIR) }
         .map { |l| l.delete_prefix(File.join(APP_DIR, "")) }
-        .take(2)
+        .take(BACKTRACE_ITEMS)
 
-      backtrace = exception.backtrace.take(2) if backtrace.empty?
+      backtrace = exception.backtrace.take(BACKTRACE_ITEMS) if backtrace.empty?
 
       @title = "#{exception.class}: #{exception.message}"
       @image = :fail
