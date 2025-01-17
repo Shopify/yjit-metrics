@@ -166,7 +166,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
             run_script: fake_runner)
 
         refute_predicate result, :success?
-        assert_equal -1, result.exit_status
+        assert_equal(-1, result.exit_status)
     end
 
 end
