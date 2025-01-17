@@ -8,11 +8,7 @@ require 'json'
 require 'csv'
 require 'erb'
 
-require_relative "./yjit_metrics/cli"
-require_relative "./yjit_metrics/continuous_reporting"
 require_relative "./yjit_metrics/defaults"
-require_relative "./yjit_metrics/repo_management"
-require_relative "./yjit_metrics/result_set"
 
 Dir.glob("yjit_metrics/reports/*.rb", base: __dir__).each do |report_type_file|
   require_relative report_type_file
@@ -23,7 +19,13 @@ Dir.glob("yjit_metrics/timeline_reports/*.rb", base: __dir__).each do |report_ty
 end
 
 module YJITMetrics
+  autoload :CLI,                 "#{__dir__}/yjit_metrics/cli"
+  autoload :ContinuousReporting, "#{__dir__}/yjit_metrics/continuous_reporting"
   autoload :Notifier,            "#{__dir__}/yjit_metrics/notifier"
+  autoload :RepoManagement,      "#{__dir__}/yjit_metrics/repo_management"
+  autoload :ResultSet,           "#{__dir__}/yjit_metrics/result_set"
+  autoload :Stats,               "#{__dir__}/yjit_metrics/stats"
+  autoload :Theme,               "#{__dir__}/yjit_metrics/theme"
 
   include RepoManagement
 

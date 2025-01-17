@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # Class for reports that use a longer series of times, each with its own report/data.
 module YJITMetrics
   class TimelineReport

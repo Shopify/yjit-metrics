@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module YJITMetrics
   module CLI
     def self.human_string_to_boolean(str)

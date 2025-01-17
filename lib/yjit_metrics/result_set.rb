@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "./stats"
-require_relative "./theme"
-
 # Encapsulate multiple benchmark runs across multiple Ruby configurations.
 # Do simple calculations, reporting and file I/O.
 #

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # Statistical methods
 module YJITMetrics
   module Stats

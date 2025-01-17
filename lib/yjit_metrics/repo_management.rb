@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module YJITMetrics
   module RepoManagement
     def clone_repo_with(path:, git_url:, git_branch:, do_clean: true)
