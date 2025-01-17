@@ -1,0 +1,33 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: yjit-metrics
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: yjit-metrics
+
+      - name: Checkout yjit-bench
+        uses: actions/checkout@v4
+        with:
+          repository: Shopify/yjit-bench
+          path: yjit-bench
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: yjit-metrics
+
+      - name: Run tests
+        run: bundle exec rake
