@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/yjit_metrics"
-require_relative "../lib/yjit_metrics/notifier"
 
 require 'net/http'
 
