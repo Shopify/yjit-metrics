@@ -61,7 +61,7 @@ module YJITMetrics
     # Take column headings, formats for the percent operator and data, and arrange it
     # into a simple ASCII table returned as a string.
     def format_as_table(headings, col_formats, data, separator_character: "-", column_spacer: "  ")
-      out = ""
+      out = +""
 
       unless data && data[0] && col_formats && col_formats[0] && headings && headings[0]
         $stderr.puts "Error in format_as_table..."
