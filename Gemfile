@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 
+gem "csv"
 gem "logger" # slack-ruby-client needs this
 gem "listen", require: false
 gem "victor"
