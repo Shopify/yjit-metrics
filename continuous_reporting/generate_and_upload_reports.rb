@@ -143,6 +143,7 @@ end
 Dir.chdir(YM_REPO)
 puts "Switched to #{Dir.pwd}"
 
+# Find all the benchmark json file names we have from all time (but don't read the files yet).
 # Turn JSON files into reports where outdated - first, find out what test results we have.
 # json_timestamps maps timestamps to file paths relative to the RAW_BENCHMARK_ROOT
 json_timestamps = {}
@@ -156,6 +157,8 @@ Dir["**/*_basic_benchmark_*.json", base: RAW_BENCHMARK_ROOT].each do |filename|
 end
 
 # Now see what reports we already have, so we can run anything missing.
+# This looks in the report cache dir to see what file names exist
+# so we can compare that to the list of file names we expect to exist.
 report_timestamps = {}
 report_files = Dir["*", base: "#{BUILT_REPORTS_ROOT}/_includes/reports"].to_a
 REPORTS_AND_FILES.each do |report_name, details|
