@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "../report"
 
 # This is intended to be a simple warmup report, showing how long it takes

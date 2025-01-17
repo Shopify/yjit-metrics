@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "victor"
 
 require_relative "./bloggable_single_report"

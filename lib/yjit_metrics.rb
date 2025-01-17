@@ -10,14 +10,6 @@ require 'erb'
 
 require_relative "./yjit_metrics/defaults"
 
-Dir.glob("yjit_metrics/reports/*.rb", base: __dir__).each do |report_type_file|
-  require_relative report_type_file
-end
-
-Dir.glob("yjit_metrics/timeline_reports/*.rb", base: __dir__).each do |report_type_file|
-  require_relative report_type_file
-end
-
 module YJITMetrics
   autoload :CLI,                 "#{__dir__}/yjit_metrics/cli"
   autoload :ContinuousReporting, "#{__dir__}/yjit_metrics/continuous_reporting"
@@ -26,6 +18,10 @@ module YJITMetrics
   autoload :ResultSet,           "#{__dir__}/yjit_metrics/result_set"
   autoload :Stats,               "#{__dir__}/yjit_metrics/stats"
   autoload :Theme,               "#{__dir__}/yjit_metrics/theme"
+
+  Dir.glob("yjit_metrics/{,timeline_}reports/*.rb", base: __dir__).each do |mod|
+    require_relative mod
+  end
 
   include RepoManagement
 
