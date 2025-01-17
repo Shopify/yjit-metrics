@@ -24,6 +24,8 @@ module YJITMetrics
         .map { |l| l.delete_prefix(File.join(APP_DIR, "")) }
         .take(2)
 
+      backtrace = exception.backtrace.take(2) if backtrace.empty?
+
       @title = "#{exception.class}: #{exception.message}"
       @image = :fail
       @body = <<~MSG

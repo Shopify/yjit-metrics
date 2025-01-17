@@ -5,7 +5,6 @@ require "rbconfig"
 require "tempfile"
 
 require_relative "test_helper"
-require_relative "../lib/yjit_metrics/notifier"
 
 # This is a high-level integration test to execute the continuous_reporting/slack_build_notifier.rb entrypoint
 # and verify its behavior based on the calls it makes to the slack api.
@@ -97,6 +96,28 @@ class SlackNotificationTest < Minitest::Test
       ```
       - test/slack_notification_test.rb:5
       - test/oops.rb:4
+      ```
+    BODY
+
+    assert_slack_message(result, title: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
+  end
+
+  def test_notify_error_with_no_app_backtrace
+    notifier = TestNotifier.new
+    error = RuntimeError.new("something bad")
+    error.set_backtrace([
+      "elsewhere:1",
+      "someplace:2",
+      "another:3",
+    ])
+
+    result = notifier.error(error).notify!
+
+    summary = "RuntimeError: something bad"
+    expected_body = <<~BODY
+      ```
+      - elsewhere:1
+      - someplace:2
       ```
     BODY
 

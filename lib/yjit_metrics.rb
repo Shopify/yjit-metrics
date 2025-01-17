@@ -23,6 +23,8 @@ Dir.glob("yjit_metrics/timeline_reports/*.rb", base: __dir__).each do |report_ty
 end
 
 module YJITMetrics
+  autoload :Notifier,            "#{__dir__}/yjit_metrics/notifier"
+
   include RepoManagement
 
   extend self # Make methods callable as YJITMetrics.method_name
