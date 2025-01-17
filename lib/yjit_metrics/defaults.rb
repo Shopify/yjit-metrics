@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module YJITMetrics
   # FIXME: Do we need this?
   # Default settings for Benchmark CI.

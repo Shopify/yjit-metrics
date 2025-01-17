@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "./speed_details_report"
 
 # This report is to compare YJIT's memory usage versus other Rubies for a single run or block of runs,

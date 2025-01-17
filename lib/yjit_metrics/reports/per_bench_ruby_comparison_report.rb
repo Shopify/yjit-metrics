@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "../report"
 
 # We'd like to be able to create a quick columnar report, often for one

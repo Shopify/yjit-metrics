@@ -2,9 +2,6 @@
 
 require "erb"
 
-require_relative "./stats"
-require_relative "./theme"
-
 # Shared utility methods for reports that use a single "blob" of results
 module YJITMetrics
   class Report

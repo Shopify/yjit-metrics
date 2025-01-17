@@ -1,8 +1,10 @@
 # frozen_string_literal: true
+
 require_relative "./bloggable_single_report"
 
 # This report is to compare YJIT's speedup versus other Rubies for a single run or block of runs,
 # with a single YJIT head-of-master.
+
 module YJITMetrics
   class BlogYJITStatsReport < BloggableSingleReport
     def self.report_name

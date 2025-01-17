@@ -10,6 +10,7 @@ require_relative "./yjit_stats_report"
 # the benchmarks change.
 # This is a parent class for other reports and is not directly instantiated itself.
 # As an example, SpeedDetailsMultiplatformReport will instantiate SpeedDetailsReport (a subclass of this class) once per platform.
+
 module YJITMetrics
   class BloggableSingleReport < YJITStatsReport
     REPO_ROOT = File.expand_path("../../../..", __dir__)

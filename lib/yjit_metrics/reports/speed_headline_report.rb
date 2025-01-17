@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "./bloggable_single_report"
 
 # This very small report is to give the quick headlines and summary for a YJIT comparison.

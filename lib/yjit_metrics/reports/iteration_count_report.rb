@@ -1,6 +1,8 @@
 # frozen_string_literal: true
+
 # Count up number of iterations and warmups for each Ruby and benchmark configuration.
 # As we vary these, we need to make sure people can see what settings we're using for each Ruby.
+
 module YJITMetrics
   class IterationCountReport < BloggableSingleReport
     def self.report_name

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative "./memory_details_report"
 require_relative "./speed_details_multi_platform_report"
 
