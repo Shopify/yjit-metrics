@@ -10,7 +10,7 @@ require_relative "../report"
 # The first configuration given is assumed to be the baseline against
 # which the other configs are measured.
 module YJITMetrics
-  class PerBenchRubyComparisonRepor < Report
+  class PerBenchRubyComparisonReport < Report
     def self.report_name
       "per_bench_compare"
     end
