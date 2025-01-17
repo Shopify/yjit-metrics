@@ -411,7 +411,7 @@ module YJITMetrics
       result = ErrorData.new(
         exit_status: script_details[:exit_status],
         error: "Failure in benchmark test harness, exit status: #{script_details[:exit_status].inspect}",
-        summary: script_details[:stderr]&.lines&.detect { |l| l.match?(/\S/) }&.sub("#{Dir.pwd}", ".")&.strip,
+        summary: summarize_failure_output(script_details[:stderr])
       )
 
       STDERR.puts "-----"
@@ -534,5 +534,15 @@ module YJITMetrics
     return nil if bench_data["times"].empty?
 
     return bench_data
+  end
+
+  # Try to find the first relevant error line from a stderr string.
+  def summarize_failure_output(stderr)
+    return unless stderr
+
+    stderr.lines
+      .reject { |l| l.match?(%r{^/.+?\.rb:\d+: warning: }) }
+      .detect { |l| l.match?(/\S/) }&.sub("#{Dir.pwd}", ".")
+      &.strip
   end
 end
