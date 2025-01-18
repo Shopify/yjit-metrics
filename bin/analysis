@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+require "yaml"
+
+require_relative "../lib/yjit_metrics"
+
+options = {}
+args = OptionParser.new do |opts|
+  opts.on("--regression", "Only show benchmarks that have regressed")
+end.parse!(into: options)
+
+first = true
+report = YJITMetrics::Analysis.report_from_dir(args[0])
+report.each_pair do |m, h|
+  h.each_pair do |p, vs|
+    # Put blank line between sections.
+    puts unless first
+    first = false
+
+    puts "#{m} #{p}"
+    len = vs.keys.map(&:size).max
+    vs.sort.each do |b, report|
+      next if report[:streaks].size == 1
+      next if options[:regression] && !report[:regression]
+
+      report.each.with_index do |(k,v), i|
+        prefix = i.zero? ? b : ""
+        printf " %*s %s: %s\n", len, prefix, k, v
+      end
+    end
+  end
+end
