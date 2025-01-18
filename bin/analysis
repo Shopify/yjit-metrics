@@ -8,6 +8,7 @@ require_relative "../lib/yjit_metrics"
 options = {}
 args = OptionParser.new do |opts|
   opts.on("--regression", "Only show benchmarks that have regressed")
+  opts.on("--spacious", "Include more spacing")
 end.parse!(into: options)
 
 first = true
@@ -23,6 +24,8 @@ report.each_pair do |m, h|
     vs.sort.each do |b, report|
       next if report[:streaks].size == 1
       next if options[:regression] && !report[:regression]
+
+      puts if options[:spacious]
 
       report.each.with_index do |(k,v), i|
         prefix = i.zero? ? b : ""

@@ -330,6 +330,8 @@ unless die_on_regenerate
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
 end
 
+YJITMetrics.check_call "bin/analysis --spacious #{RAW_BENCHMARK_ROOT} > #{BUILT_REPORTS_ROOT}/_includes/analysis.txt"
+
 # Make sure it builds locally
 YJITMetrics.check_call "site/exe build"
 

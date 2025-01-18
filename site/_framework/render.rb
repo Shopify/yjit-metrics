@@ -144,7 +144,7 @@ def read_front_matter(path)
   if contents.start_with?("---\n")
     front_matter, erb_template = contents.delete_prefix("---\n").split("\n---\n", 2)
     front_matter_lines = front_matter.count("\n") + 2 # Two additional lines for the "---" we removed
-    return YAML.load(front_matter, symbolize_names: true), front_matter_lines, erb_template
+    return YAML.load(front_matter, symbolize_names: true) || {}, front_matter_lines, erb_template
   else
     return {}, 0, contents
   end
