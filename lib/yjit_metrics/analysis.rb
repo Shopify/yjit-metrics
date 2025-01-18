@@ -7,6 +7,8 @@ require "json"
 
 module YJITMetrics
   module Analysis
+    REPORT_LINK = "[Analysis Report](https://speed.yjit.org/analysis.txt)"
+
     # Build report by reading files from provided dir.
     def self.report_from_dir(dir)
       metrics = self.metrics
@@ -36,6 +38,8 @@ module YJITMetrics
             (h[metric.class.name.gsub(/.+?::/, '')] ||= {})[config_name] = result unless result.empty?
           end
         end
+      end.then do |results|
+        Report.new(results)
       end
     end
 
@@ -43,6 +47,34 @@ module YJITMetrics
       Metric.subclasses.map(&:new)
     end
 
+    class Report
+      attr_reader :results
+
+      def initialize(results)
+        @results = results
+      end
+
+      # Format regression data into a notification message.
+      def regression_notification
+        msg = Hash.new { |h, k| h[k] = [] }
+
+        results.each_pair do |metric, h|
+          h.each_pair do |platform, vs|
+            vs.sort.each do |benchmark, report|
+              next unless regression = report[:regression]
+
+              msg["#{metric} #{platform}"] << "- `#{benchmark}` regression: #{regression}"
+            end
+          end
+        end
+
+        return if msg.empty?
+
+        lines = msg.sort.flatten
+        lines << REPORT_LINK
+        lines.join("\n")
+      end
+    end
 
     class Metric
       include Stats

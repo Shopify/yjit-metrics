@@ -9,11 +9,12 @@ options = {}
 args = OptionParser.new do |opts|
   opts.on("--regression", "Only show benchmarks that have regressed")
   opts.on("--spacious", "Include more spacing")
+  opts.on("--notify", "Send slack notification with regression info")
 end.parse!(into: options)
 
 first = true
 report = YJITMetrics::Analysis.report_from_dir(args[0])
-report.each_pair do |m, h|
+report.results.each_pair do |m, h|
   h.each_pair do |p, vs|
     # Put blank line between sections.
     puts unless first
@@ -32,5 +33,11 @@ report.each_pair do |m, h|
         printf " %*s %s: %s\n", len, prefix, k, v
       end
     end
+  end
+end
+
+if options[:notify]
+  report.regression_notification&.then do |msg|
+    YJITMetrics::Notifier.new(title: "Regressions", body: msg).notify!
   end
 end

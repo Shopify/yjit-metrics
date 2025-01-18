@@ -112,6 +112,46 @@ class AnalysisTest < Minitest::Test
     assert_nil(result[:longest_streak])
   end
 
+  def test_regression_notification
+    data = {
+      :yjit_stats => {
+        "x86_64_yjit_stats" => [
+          {
+            "yjit_stats" => {
+              "none" => [[{"ratio_in_yjit" => 97.123}]],
+              "some" => [[{"ratio_in_yjit" => 89.123}]],
+            },
+          },
+          {
+            "yjit_stats" => {
+              "none" => [[{"ratio_in_yjit" => 98.123}]],
+              "some" => [[{"ratio_in_yjit" => 89.123}]],
+            },
+          },
+          {
+            "yjit_stats" => {
+              "none" => [[{"ratio_in_yjit" => 99.123}]],
+              "some" => [[{"ratio_in_yjit" => 88.123}]],
+            },
+          },
+        ]
+      }
+    }
+    data[:yjit_stats]["aarch64_yjit_stats"] = data[:yjit_stats]["x86_64_yjit_stats"]
+    report = YJITMetrics::Analysis.report_from_data(data)
+
+    assert_equal(
+      <<~MSG.strip,
+        RatioInYJIT aarch64_yjit_stats
+        - `some` regression: dropped from 89.12 to 88.12
+        RatioInYJIT x86_64_yjit_stats
+        - `some` regression: dropped from 89.12 to 88.12
+        #{YJITMetrics::Analysis::REPORT_LINK}
+      MSG
+      report.regression_notification,
+    )
+  end
+
   private
 
   def check_one(name, data)
