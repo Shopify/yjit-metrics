@@ -54,6 +54,9 @@ IMAGES = {
 }
 
 def slack_message_blocks(title, body, img)
+  # Convert actual markdown links of `[text](url)` to slack links `<url|text>`.
+  body = body.gsub(/\[([^\]]+)\]\(([^)]+)\)/, '<\2|\1>')
+
   [
     {
       "type": "header",
