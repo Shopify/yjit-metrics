@@ -14,13 +14,13 @@ end.parse!(into: options)
 
 first = true
 report = YJITMetrics::Analysis.report_from_dir(args[0])
-report.results.each_pair do |m, h|
-  h.each_pair do |p, vs|
+report.results.each_pair do |metric, h|
+  h.sort.each do |platform, vs|
     # Put blank line between sections.
     puts unless first
     first = false
 
-    puts "#{m} #{p}"
+    puts "#{metric} #{platform}"
     len = vs.keys.map(&:size).max
     vs.sort.each do |b, report|
       next if report[:streaks].size == 1
