@@ -78,7 +78,7 @@ def slack_message_blocks(title, body, img)
 end
 
 img = :cat
-to_notify = ["#yjit-benchmark-ci"]
+to_notify = ENV.fetch("SLACK_CHANNEL", "#yjit-benchmark-ci").split(",")
 title = "Howdy!"
 
 OptionParser.new do |opts|
