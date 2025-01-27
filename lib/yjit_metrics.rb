@@ -11,6 +11,7 @@ require 'erb'
 require_relative "./yjit_metrics/defaults"
 
 module YJITMetrics
+  autoload :Analysis,            "#{__dir__}/yjit_metrics/analysis"
   autoload :CLI,                 "#{__dir__}/yjit_metrics/cli"
   autoload :ContinuousReporting, "#{__dir__}/yjit_metrics/continuous_reporting"
   autoload :Notifier,            "#{__dir__}/yjit_metrics/notifier"
