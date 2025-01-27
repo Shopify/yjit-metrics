@@ -138,7 +138,8 @@ module YJITMetrics
             delta = curr - high_streak
 
             regression = if delta < -TOLERANCE
-              sprintf "dropped from %.*f to %.*f", ROUND, high_streak, ROUND, curr
+              diff_pct = 0 - delta / high_streak * 100
+              sprintf "dropped %.*f%% from %.*f to %.*f", ROUND, diff_pct, ROUND, high_streak, ROUND, curr
             end
           end
         end
