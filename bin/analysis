@@ -15,20 +15,31 @@ end.parse!(into: options)
 first = true
 report = YJITMetrics::Analysis.report_from_dir(args[0])
 report.results.each_pair do |metric, h|
-  h.sort.each do |platform, vs|
+  h.sort.each do |platform, values|
+
     # Put blank line between sections.
     puts unless first
     first = false
 
+    # Heading for each metric/platform.
     puts "#{metric} #{platform}"
-    len = vs.keys.map(&:size).max
-    vs.sort.each do |b, report|
+
+    # Determine max width base on benchmark name.
+    len = values.keys.map(&:size).max
+
+    values.sort.each do |b, report|
+      # Skip benchmark if the value is the same every time.
       next if report[:streaks].size == 1
+
+      # Skip if regression-only view was requested and this benchmark doesn't report one.
       next if options[:regression] && !report[:regression]
 
+      # Blank line between benchmarks if requested.
       puts if options[:spacious]
 
+      # Print a line for each item in the analysis (regression, streaks, etc).
       report.each.with_index do |(k,v), i|
+        # Show benchmark name on first line.
         prefix = i.zero? ? b : ""
         printf " %*s %s: %s\n", len, prefix, k, v
       end
