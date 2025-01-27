@@ -142,9 +142,9 @@ class AnalysisTest < Minitest::Test
 
     assert_equal(
       <<~MSG.strip,
-        RatioInYJIT aarch64_yjit_stats
+        ratio_in_yjit aarch64_yjit_stats
         - `some` regression: dropped from 89.12 to 88.12
-        RatioInYJIT x86_64_yjit_stats
+        ratio_in_yjit x86_64_yjit_stats
         - `some` regression: dropped from 89.12 to 88.12
         #{YJITMetrics::Analysis::REPORT_LINK}
       MSG

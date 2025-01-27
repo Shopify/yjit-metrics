@@ -30,12 +30,12 @@ module YJITMetrics
 
     # Build report from hash of data (built by `report_from_dir`).
     def self.report_from_data(data, metrics: self.metrics)
-      # {"RatioInYJIT" => {"x86_64_yjit_stats" => {"benchmark_name" => results_of_check, ...}}
+      # {ratio_in_yjit: {"x86_64_yjit_stats" => {"benchmark_name" => results_of_check, ...}}
       metrics.each_with_object({}) do |metric, h|
         data[metric.config].each_pair do |config_name, run|
           metric.check(run).then do |result|
-            # h["RatioInYJIT"]["x86_64_yjit_stats"] = ...
-            (h[metric.class.name.gsub(/.+?::/, '')] ||= {})[config_name] = result unless result.empty?
+            # h[:ratio_in_yjit]["x86_64_yjit_stats"] = ...
+            (h[metric.name] ||= {})[config_name] = result unless result.empty?
           end
         end
       end.then do |results|
@@ -85,6 +85,10 @@ module YJITMetrics
 
       def count
         self.class::COUNT
+      end
+
+      def name
+        self.class::NAME
       end
     end
 
