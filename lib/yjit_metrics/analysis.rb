@@ -10,7 +10,7 @@ module YJITMetrics
     REPORT_LINK = "[Analysis Report](https://speed.yjit.org/analysis.txt)"
 
     # Build report by reading files from provided dir.
-    def self.report_from_dir(dir)
+    def self.report_from_dir(dir, benchmarks: nil)
       metrics = self.metrics
       # Load results from the last #{count} benchmark runs.
       count = metrics.map(&:count).max
@@ -28,15 +28,15 @@ module YJITMetrics
         end
       end
 
-      report_from_data(data, metrics:)
+      report_from_data(data, metrics:, benchmarks:)
     end
 
     # Build report from hash of data (built by `report_from_dir`).
-    def self.report_from_data(data, metrics: self.metrics)
+    def self.report_from_data(data, metrics: self.metrics, benchmarks: nil)
       # {ratio_in_yjit: {"x86_64_yjit_stats" => {"benchmark_name" => results_of_check, ...}}
       metrics.each_with_object({}) do |metric, h|
         data[metric.config].each_pair do |config_name, run|
-          metric.check(run).then do |result|
+          metric.check(run, benchmarks:).then do |result|
             # h[:ratio_in_yjit]["x86_64_yjit_stats"] = ...
             (h[metric.name] ||= {})[config_name] = result unless result.empty?
           end
