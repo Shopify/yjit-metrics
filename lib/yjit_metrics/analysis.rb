@@ -12,15 +12,18 @@ module YJITMetrics
     # Build report by reading files from provided dir.
     def self.report_from_dir(dir)
       metrics = self.metrics
+      # Load results from the last #{count} benchmark runs.
       count = metrics.map(&:count).max
+      # We only need to load the files for the following configs ("yjit_stats"...).
       configs = metrics.map(&:config).uniq
 
-      # data = {"yjit_stats" => {"x86_64_yjit_stats" => [result_hash, ...], ...}
+      # data = {yjit_stats: {"x86_64_yjit_stats" => [result_hash, ...], ...}
       data = configs.each_with_object({}) do |config, h|
         YJITMetrics::PLATFORMS.each do |platform|
           files = Dir.glob("**/*_basic_benchmark_#{platform}_#{config}.json", base: dir).sort.last(count).map { |f| File.join(dir, f) }
 
           runs = files.map { |f| JSON.parse(File.read(f)) }.group_by { |x| x["ruby_config_name"] }
+          # Append data to h[:yjit_stats]["x86_64_yjit_stats"].
           (h[config] ||= {}).merge!(runs) { |k, oldv, newv| oldv + newv }
         end
       end
@@ -59,8 +62,8 @@ module YJITMetrics
         msg = Hash.new { |h, k| h[k] = [] }
 
         results.each_pair do |metric, h|
-          h.each_pair do |platform, vs|
-            vs.sort.each do |benchmark, report|
+          h.each_pair do |platform, values|
+            values.sort.each do |benchmark, report|
               next unless regression = report[:regression]
 
               msg["#{metric} #{platform}"] << "- `#{benchmark}` regression: #{regression}"
@@ -100,14 +103,21 @@ module YJITMetrics
       TOLERANCE = 0.1
 
       def check(results, benchmarks: nil)
+        # These nested values come from the json files and the keys are strings.
+        config = self.config.to_s
+        name = self.name.to_s
+
+        # Transform [{"yjit_stats" => {"benchmark" => [[stats_hash]]}}]
+        # into {"benchmark" => [stat_value, ...]}.
         values = results.each_with_object({}) do |run, h|
-          run["yjit_stats"].each_pair do |benchmark, data|
-            (h[benchmark] ||= []) << data.dig(0, 0, "ratio_in_yjit")
+          run[config].each_pair do |benchmark, data|
+            (h[benchmark] ||= []) << data.dig(0, 0, name)
           end
         end
 
         regressions = {}
         values.each_pair do |benchmark, vals|
+          # Allow limiting report to specific benchmarks.
           next if benchmarks && !benchmarks.include?(benchmark)
 
           check_one(vals)&.then do |val|
@@ -123,17 +133,22 @@ module YJITMetrics
       def check_one(vals)
         # vals are percentages * 100 (99.6970...).
         vals = vals.map { |f| f.round(ROUND) }
+
         high_streak = nil
         regression = nil
+
+        # Iterate looking for contiguous streaks of values that are within the tolerance.
         (1...vals.size).each do |i|
           prev, curr = vals.values_at(i-1, i)
 
           delta = curr - prev
 
           if delta.abs <= TOLERANCE
+            # Track the highest value that was reported more than once in a row.
             high_streak = curr if !high_streak || high_streak < curr
           end
 
+          # If we have seen any streaks (meaning there has been some consistency)...
           if high_streak
             delta = curr - high_streak
 
