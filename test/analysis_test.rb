@@ -40,10 +40,10 @@ class AnalysisTest < Minitest::Test
 
     assert_nil(ratio_in_yjit(data[0..5])[:regression])
 
-    assert_equal("dropped from 99.81 to 99.70", ratio_in_yjit(data[0..6])[:regression])
+    assert_equal("dropped 0.11% from 99.81 to 99.70", ratio_in_yjit(data[0..6])[:regression])
 
     result = ratio_in_yjit(data)
-    assert_equal("dropped from 99.81 to 99.48", result[:regression])
+    assert_equal("dropped 0.33% from 99.81 to 99.48", result[:regression])
     assert_equal(
       [[99.7, 2], [99.81, 4], [99.7, 6], [99.48, 16]],
       result[:streaks],
@@ -72,12 +72,12 @@ class AnalysisTest < Minitest::Test
 
     assert_nil(ratio_in_yjit(data[0..7])[:regression])
 
-    assert_equal("dropped from 80.28 to 80.09", ratio_in_yjit(data[0..8])[:regression])
-    assert_equal("dropped from 80.28 to 79.91", ratio_in_yjit(data[0..9])[:regression])
-    assert_equal("dropped from 80.28 to 80.09", ratio_in_yjit(data[0..10])[:regression])
+    assert_equal("dropped 0.24% from 80.28 to 80.09", ratio_in_yjit(data[0..8])[:regression])
+    assert_equal("dropped 0.46% from 80.28 to 79.91", ratio_in_yjit(data[0..9])[:regression])
+    assert_equal("dropped 0.24% from 80.28 to 80.09", ratio_in_yjit(data[0..10])[:regression])
 
     result = ratio_in_yjit(data)
-    assert_equal("dropped from 80.28 to 79.52", result[:regression])
+    assert_equal("dropped 0.95% from 80.28 to 79.52", result[:regression])
 
     assert_equal(
       [[80.28, 8], [80.09, 1], [79.91, 1], [80.09, 2], [79.52, 1]],
@@ -143,9 +143,9 @@ class AnalysisTest < Minitest::Test
     assert_equal(
       <<~MSG.strip,
         ratio_in_yjit aarch64_yjit_stats
-        - `some` regression: dropped from 89.12 to 88.12
+        - `some` regression: dropped 1.12% from 89.12 to 88.12
         ratio_in_yjit x86_64_yjit_stats
-        - `some` regression: dropped from 89.12 to 88.12
+        - `some` regression: dropped 1.12% from 89.12 to 88.12
         #{YJITMetrics::Analysis::REPORT_LINK}
       MSG
       report.regression_notification,
