@@ -140,18 +140,22 @@ module YJITMetrics
         # Iterate looking for contiguous streaks of values that are within the tolerance.
         (1...vals.size).each do |i|
           prev, curr = vals.values_at(i-1, i)
-
           delta = curr - prev
 
+          # If this iteration is within the defined tolerance
+          # from the last iteration track it as a streak.
           if delta.abs <= TOLERANCE
-            # Track the highest value that was reported more than once in a row.
-            high_streak = curr if !high_streak || high_streak < curr
+            # Keep track of the highest value that we've seen more than once in a row.
+            max = [prev, curr].max
+            high_streak = max if !high_streak || high_streak < max
           end
 
           # If we have seen any streaks (meaning there has been some consistency)...
           if high_streak
             delta = curr - high_streak
 
+            # If this iteration was lower than the highest streak and
+            # outside the tolerance range record it as a regression.
             regression = if delta < -TOLERANCE
               diff_pct = 0 - delta / high_streak * 100
               sprintf "dropped %.*f%% from %.*f to %.*f", ROUND, diff_pct, ROUND, high_streak, ROUND, curr
