@@ -95,8 +95,7 @@ module YJITMetrics
     end
 
     unless status
-      puts "\e[31mCommand #{command.inspect} failed in directory #{Dir.pwd}\e[00m"
-      raise RuntimeError.new
+      raise "Command #{command.inspect} failed in directory #{Dir.pwd}"
     end
   end
 
@@ -105,8 +104,7 @@ module YJITMetrics
       io_obj.read
     end
     unless $?.success?
-      puts "Command #{command.inspect} failed in directory #{Dir.pwd}"
-      raise RuntimeError.new
+      raise "Command #{command.inspect} failed in directory #{Dir.pwd}"
     end
     output
   end

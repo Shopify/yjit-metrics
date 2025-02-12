@@ -128,7 +128,7 @@ def body(files)
   end
 
   # results could be a list of empty hashes so test by_failure.
-  return "All benchmarks completed successfully." if by_failure.empty?
+  return "No benchmark errors." if by_failure.empty?
 
   q = ->(s) { "`#{s}`" }
 
