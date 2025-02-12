@@ -47,6 +47,9 @@ git-gc () {
 # Delete month-old log files.
 find "$log_dir" -type f -not -newerct '30 days ago' -print -delete
 
+# Trigger some services whose timers have been disabled.
+sudo systemctl start fwupd-refresh.service logrotate.service
+
 # Upgrade packages weekly.
 after-x-days 7 apt-upgrade
 

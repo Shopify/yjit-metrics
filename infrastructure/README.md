@@ -48,7 +48,7 @@ If you just want to rebuild the instances
 you can skip some of the other resources with something like:
 
     ./with-op.sh terraform -chdir=terraform destroy -target=aws_launch_template.yjit-metrics\[\"{x86,arm}\"\]
-    ./with-op.sh terraform -chdir=terraform apply   -target=aws_launch_template.yjit-metrics\[\"{x86,arm}\"\]
+    ./with-op.sh terraform -chdir=terraform apply
 
 
 ## Packer resources

@@ -54,6 +54,22 @@ locals {
     "git clone https://github.com/ruby/ruby",
   ]
 
+  unwanted_packages = [
+    "modemmanager",
+    "unattended-upgrades",
+    "update-notifier-common",
+  ]
+
+  unwanted_services = [
+    "apt-daily.service",
+    "apt-daily.timer",
+    "apt-daily-upgrade.timer",
+    "apt-daily-upgrade.service",
+    "fwupd-refresh.timer",
+    "logrotate.timer",
+    "rsyslog",
+  ]
+
   benchmark_script = [
     # All the yjit-metrics stuff looks for ~/ym.
     "ln -s ~/src ~/ym",
@@ -61,8 +77,8 @@ locals {
     # Setup the ruby clones and extra repos.
     "${local.ym_setup} repos",
 
-    # Disable unnecessary services.
-    "for i in ModemManager rsyslog unattended-upgrades; do sudo systemctl stop $i ||:; sudo systemctl disable $i ||:; done",
+    "sudo apt remove --auto-remove -y ${join(" ", local.unwanted_packages)}",
+    "sudo systemctl disable --now ${join(" ", local.unwanted_services)}",
 
     # Symlink the expected names under ~/ym to the reporting ebs mount.
     # They will only be valid on the reporting instance,
