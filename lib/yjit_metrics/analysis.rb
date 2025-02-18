@@ -10,12 +10,11 @@ module YJITMetrics
     REPORT_LINK = "[Analysis Report](https://speed.yjit.org/analysis.txt)"
 
     # Build report by reading files from provided dir.
-    def self.report_from_dir(dir, benchmarks: nil)
+    # Load results from the last #{count} benchmark runs.
+    def self.report_from_dir(dir, benchmarks: nil, count: 30)
       metrics = self.metrics
       # We only need to load the files for the following configs ("yjit_stats"...).
       configs = metrics.map(&:config).uniq
-      # Load results from the last #{count} benchmark runs.
-      count = 30
 
       # data = {yjit_stats: {"x86_64_yjit_stats" => [result_hash, ...], ...}
       data = configs.each_with_object({}) do |config, h|

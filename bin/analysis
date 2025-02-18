@@ -5,16 +5,19 @@ require "yaml"
 
 require_relative "../lib/yjit_metrics"
 
-options = {}
+options = {
+  count: 30,
+}
 args = OptionParser.new do |opts|
   opts.on("--benchmarks NAMES", "Limit to specified benchmarks (comma separated)")
+  opts.on("--count NUM", "Number of results to load and compare (default 30)")
   opts.on("--regression", "Only show benchmarks that have regressed")
   opts.on("--spacious", "Include more spacing")
   opts.on("--notify", "Send slack notification with regression info")
 end.parse!(into: options)
 
 first = true
-report = YJITMetrics::Analysis.report_from_dir(args[0], benchmarks: options[:benchmarks]&.split(","))
+report = YJITMetrics::Analysis.report_from_dir(args[0], benchmarks: options[:benchmarks]&.split(","), count: options[:count].to_i)
 report.results.each_pair do |metric, h|
   h.sort.each do |platform, values|
 
