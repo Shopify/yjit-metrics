@@ -43,8 +43,19 @@ report.results.each_pair do |metric, h|
 
       # Print a line for each item in the analysis (regression, streaks, etc).
       report.each.with_index do |(k,v), i|
-        # Show benchmark name on first line.
-        prefix = i.zero? ? b : ""
+        prefix = ""
+
+        # If this is the first item for this benchmark...
+        if i.zero?
+          # Show benchmark name on separate line.
+          if options[:spacious]
+            printf " %*s\n", len, b
+          else
+            # Show benchmark at beginning of first line.
+            prefix = b if i.zero?
+          end
+        end
+
         printf " %*s %s: %s\n", len, prefix, k, v
       end
     end
