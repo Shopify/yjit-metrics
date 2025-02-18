@@ -12,10 +12,10 @@ module YJITMetrics
     # Build report by reading files from provided dir.
     def self.report_from_dir(dir, benchmarks: nil)
       metrics = self.metrics
-      # Load results from the last #{count} benchmark runs.
-      count = metrics.map(&:count).max
       # We only need to load the files for the following configs ("yjit_stats"...).
       configs = metrics.map(&:config).uniq
+      # Load results from the last #{count} benchmark runs.
+      count = 30
 
       # data = {yjit_stats: {"x86_64_yjit_stats" => [result_hash, ...], ...}
       data = configs.each_with_object({}) do |config, h|
@@ -36,7 +36,7 @@ module YJITMetrics
       # {ratio_in_yjit: {"x86_64_yjit_stats" => {"benchmark_name" => results_of_check, ...}}
       metrics.each_with_object({}) do |metric, h|
         data[metric.config].each_pair do |config_name, run|
-          metric.check(run, benchmarks:).then do |result|
+          metric.report(run, benchmarks:).then do |result|
             # h[:ratio_in_yjit]["x86_64_yjit_stats"] = ...
             (h[metric.name] ||= {})[config_name] = result unless result.empty?
           end
@@ -86,23 +86,21 @@ module YJITMetrics
         self.class::CONFIG
       end
 
-      def count
-        self.class::COUNT
-      end
-
       def name
         self.class::NAME
       end
     end
 
     class RatioInYJIT < Metric
+      # Subclass configuration.
       CONFIG = :yjit_stats
-      COUNT = 30
       NAME = :ratio_in_yjit
-      ROUND = 2
-      TOLERANCE = 0.1
 
-      def check(results, benchmarks: nil)
+      # Class internal constants.
+      ROUND_DIGITS = 2
+      STREAK_TOLERANCE = 0.1
+
+      def report(results, benchmarks: nil)
         # These nested values come from the json files and the keys are strings.
         config = self.config.to_s
         name = self.name.to_s
@@ -120,7 +118,7 @@ module YJITMetrics
           # Allow limiting report to specific benchmarks.
           next if benchmarks && !benchmarks.include?(benchmark)
 
-          check_one(vals)&.then do |val|
+          check_values(vals)&.then do |val|
             regressions[benchmark] = val
           end
         end
@@ -130,9 +128,9 @@ module YJITMetrics
 
       # Check the list of values for one benchmark.
       # Returns either nil or string description of regression.
-      def check_one(vals)
+      def check_values(vals)
         # vals are percentages * 100 (99.6970...).
-        vals = vals.map { |f| f.round(ROUND) }
+        vals = vals.map { |f| f.round(ROUND_DIGITS) }
 
         high_streak = nil
         regression = nil
@@ -144,7 +142,7 @@ module YJITMetrics
 
           # If this iteration is within the defined tolerance
           # from the last iteration track it as a streak.
-          if delta.abs <= TOLERANCE
+          if delta.abs <= STREAK_TOLERANCE
             # Keep track of the highest value that we've seen more than once in a row.
             max = [prev, curr].max
             high_streak = max if !high_streak || high_streak < max
@@ -156,9 +154,12 @@ module YJITMetrics
 
             # If this iteration was lower than the highest streak and
             # outside the tolerance range record it as a regression.
-            regression = if delta < -TOLERANCE
+            regression = if delta < -STREAK_TOLERANCE
               diff_pct = 0 - delta / high_streak * 100
-              sprintf "dropped %.*f%% from %.*f to %.*f", ROUND, diff_pct, ROUND, high_streak, ROUND, curr
+              sprintf "dropped %.*f%% from %.*f to %.*f",
+                ROUND_DIGITS, diff_pct,
+                ROUND_DIGITS, high_streak,
+                ROUND_DIGITS, curr
             end
           end
         end

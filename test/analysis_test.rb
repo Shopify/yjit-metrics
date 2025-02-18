@@ -154,11 +154,11 @@ class AnalysisTest < Minitest::Test
 
   private
 
-  def check_one(name, data)
-    YJITMetrics::Analysis.const_get(name).new.check_one(data)
+  def check_values(name, data)
+    YJITMetrics::Analysis.const_get(name).new.check_values(data)
   end
 
   def ratio_in_yjit(data)
-    check_one(:RatioInYJIT, data)
+    check_values(:RatioInYJIT, data)
   end
 end
