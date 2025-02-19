@@ -5,6 +5,8 @@ require "json"
 require_relative "test_helper"
 
 class AnalysisTest < Minitest::Test
+  include YJITMetrics::Stats
+
   def test_ratio_in_yjit_double_drop
     # x86 railsbench 2024-09
     data = [
@@ -15,13 +17,13 @@ class AnalysisTest < Minitest::Test
       99.8091196007074 ,
       99.80913165470788,
       99.6968184612434 , # 6
-      99.69688050079795,
+      99.69688050079795, # 7
       99.69680638396541,
       99.69706713598048,
       99.69708500436587,
       99.69703337407694,
       99.48061463450416,
-      99.48046943102433,
+      99.48046943102433, # 13
       99.48042116102302,
       99.4804711422886 ,
       99.48070716367374,
@@ -38,12 +40,19 @@ class AnalysisTest < Minitest::Test
       99.48043501965125,
     ]
 
-    assert_nil(ratio_in_yjit(data[0..5])[:regression])
+    assert_nil(ratio_in_yjit(data[0..5])[:regression], "ends high")
+    assert_nil(ratio_in_yjit(data[0..6])[:regression], "first low value")
+    assert_nil(ratio_in_yjit(data[0..7])[:regression], "second value is low but within stddev")
+    assert_nil(ratio_in_yjit(data[0..12])[:regression], "first low value")
 
-    assert_equal("dropped 0.11% from 99.81 to 99.70", ratio_in_yjit(data[0..6])[:regression])
+    msg = "99.48 is 0.25% below mean 99.73"
+    assert_equal(msg, ratio_in_yjit(data[0..13])[:regression])
+
+    # After that the stddev lowers and we won't notify again.
+    assert_nil(ratio_in_yjit(data[0..14])[:regression])
 
     result = ratio_in_yjit(data)
-    assert_equal("dropped 0.33% from 99.81 to 99.48", result[:regression])
+    assert_nil(result[:regression])
     assert_equal(
       [[99.7, 2], [99.81, 4], [99.7, 6], [99.48, 16]],
       result[:streaks],
@@ -70,14 +79,20 @@ class AnalysisTest < Minitest::Test
       79.52159598537179,
     ]
 
-    assert_nil(ratio_in_yjit(data[0..7])[:regression])
+    # Firs one
+    assert_nil(ratio_in_yjit(data[0..8])[:regression])
 
-    assert_equal("dropped 0.24% from 80.28 to 80.09", ratio_in_yjit(data[0..8])[:regression])
-    assert_equal("dropped 0.46% from 80.28 to 79.91", ratio_in_yjit(data[0..9])[:regression])
-    assert_equal("dropped 0.24% from 80.28 to 80.09", ratio_in_yjit(data[0..10])[:regression])
+    # Notify
+    assert_equal(
+      "79.91 is 0.46% below mean 80.28",
+      ratio_in_yjit(data[0..9])[:regression],
+    )
+
+    # Quiet, stddev lowers
+    assert_nil(ratio_in_yjit(data[0..10])[:regression])
 
     result = ratio_in_yjit(data)
-    assert_equal("dropped 0.95% from 80.28 to 79.52", result[:regression])
+    assert_nil(result[:regression])
 
     assert_equal(
       [[80.28, 8], [80.09, 1], [79.91, 1], [80.09, 2], [79.52, 1]],
@@ -112,6 +127,21 @@ class AnalysisTest < Minitest::Test
     assert_nil(result[:longest_streak])
   end
 
+  def test_ratio_steady_decline
+    data = [
+      98.1,
+      98.0,
+      97.9,
+      97.8,
+    ]
+
+    result = ratio_in_yjit(data)
+    assert_equal(
+      "97.80 is 0.25% below mean 98.05",
+      result[:regression],
+    )
+  end
+
   def test_regression_notification
     data = {
       :yjit_stats => {
@@ -124,14 +154,20 @@ class AnalysisTest < Minitest::Test
           },
           {
             "yjit_stats" => {
+              "none" => [[{"ratio_in_yjit" => 97.123}]],
+              "some" => [[{"ratio_in_yjit" => 88.123}]],
+            },
+          },
+          {
+            "yjit_stats" => {
               "none" => [[{"ratio_in_yjit" => 98.123}]],
-              "some" => [[{"ratio_in_yjit" => 89.123}]],
+              "some" => [[{"ratio_in_yjit" => 87.123}]],
             },
           },
           {
             "yjit_stats" => {
               "none" => [[{"ratio_in_yjit" => 99.123}]],
-              "some" => [[{"ratio_in_yjit" => 88.123}]],
+              "some" => [[{"ratio_in_yjit" => 86.123}]],
             },
           },
         ]
@@ -143,9 +179,9 @@ class AnalysisTest < Minitest::Test
     assert_equal(
       <<~MSG.strip,
         ratio_in_yjit aarch64_yjit_stats
-        - `some` regression: dropped 1.12% from 89.12 to 88.12
+        - `some` regression: 86.12 is 2.82% below mean 88.62
         ratio_in_yjit x86_64_yjit_stats
-        - `some` regression: dropped 1.12% from 89.12 to 88.12
+        - `some` regression: 86.12 is 2.82% below mean 88.62
         #{YJITMetrics::Analysis::REPORT_LINK}
       MSG
       report.regression_notification,

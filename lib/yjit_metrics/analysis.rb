@@ -97,7 +97,8 @@ module YJITMetrics
 
       # Class internal constants.
       ROUND_DIGITS = 2
-      STREAK_TOLERANCE = 0.1
+      # Consider last X vals to identify regressions and reduce false positives.
+      VALS_TO_CONSIDER = 2
 
       def report(results, benchmarks: nil)
         # These nested values come from the json files and the keys are strings.
@@ -127,50 +128,35 @@ module YJITMetrics
 
       # Check the list of values for one benchmark.
       # Returns either nil or string description of regression.
+      # vals are percentages * 100 (99.6970...).
       def check_values(vals)
-        # vals are percentages * 100 (99.6970...).
-        vals = vals.map { |f| f.round(ROUND_DIGITS) }
+        # [1,1,2,2,2,3] => [ [1, 2], [2, 3], [3, 1] ]
+        streaks = vals.map { |f| f.round(ROUND_DIGITS) }.chunk { _1 }.map { |x,xs| [x, xs.size] }
 
-        high_streak = nil
-        regression = nil
+        curr = vals[-1]
+        calculation_vals = vals[0..(-1 - VALS_TO_CONSIDER)]
 
-        # Iterate looking for contiguous streaks of values that are within the tolerance.
-        (1...vals.size).each do |i|
-          prev, curr = vals.values_at(i-1, i)
-          delta = curr - prev
+        if !calculation_vals.empty?
+          min = calculation_vals.min
+          mean = self.mean(calculation_vals)
+          stddev = self.stddev(calculation_vals)
 
-          # If this iteration is within the defined tolerance
-          # from the last iteration track it as a streak.
-          if delta.abs <= STREAK_TOLERANCE
-            # Keep track of the highest value that we've seen more than once in a row.
-            max = [prev, curr].max
-            high_streak = max if !high_streak || high_streak < max
-          end
-
-          # If we have seen any streaks (meaning there has been some consistency)...
-          if high_streak
-            delta = curr - high_streak
-
-            # If this iteration was lower than the highest streak and
-            # outside the tolerance range record it as a regression.
-            regression = if delta < -STREAK_TOLERANCE
-              diff_pct = 0 - delta / high_streak * 100
-              sprintf "dropped %.*f%% from %.*f to %.*f",
-                ROUND_DIGITS, diff_pct,
-                ROUND_DIGITS, high_streak,
-                ROUND_DIGITS, curr
-            end
+          # Notify if the last X vals are below the threshold.
+          threshold = (min - stddev * 0.5)
+          regression = if vals.last(VALS_TO_CONSIDER).all? { _1 < threshold }
+            sprintf "%.*f is %.*f%% below mean %.*f",
+              ROUND_DIGITS, curr,
+              ROUND_DIGITS, (mean - curr) / mean * 100,
+              ROUND_DIGITS, mean
           end
         end
 
-        # [1,1,2,2,2,3] => [ [1, 2], [2, 3], [3, 1] ]
-        streaks = vals.chunk { _1 }.map { |x,xs| [x, xs.size] }
         {
-          #summary: streaks.map { |x,s| s == 1 ? x : "#{x} (x#{s})" }.join(", "),
           streaks:,
           highest_streak_value: streaks.select { _2 > 1 }.map(&:first)&.max,
           longest_streak: streaks.select { _2 > 1 }.max_by { _2 },
-          geomean: geomean(vals),
+          mean:,
+          stddev:,
           regression:,
         }.compact
       end
