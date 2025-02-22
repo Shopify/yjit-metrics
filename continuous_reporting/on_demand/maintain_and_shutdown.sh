@@ -47,6 +47,8 @@ git-gc () {
 # Delete month-old log files.
 find "$log_dir" -type f -not -newerct '30 days ago' -print -delete
 
+# Re-enable rsyslog since logrotate expects it to be running.
+sudo systemctl reenable rsyslog.service
 # Trigger some services whose timers have been disabled.
 sudo systemctl start fwupd-refresh.service logrotate.service
 
