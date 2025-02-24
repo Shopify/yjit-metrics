@@ -11,7 +11,7 @@ module YJITMetrics
 
     # Build report by reading files from provided dir.
     # Load results from the last #{count} benchmark runs.
-    def self.report_from_dir(dir, benchmarks: nil, count: 30)
+    def self.report_from_dir(dir, benchmarks: nil, count: 30, before: nil)
       metrics = self.metrics
       # We only need to load the files for the following configs ("yjit_stats"...).
       configs = metrics.map(&:config).uniq
@@ -19,7 +19,11 @@ module YJITMetrics
       # data = {yjit_stats: {"x86_64_yjit_stats" => [result_hash, ...], ...}
       data = configs.each_with_object({}) do |config, h|
         YJITMetrics::PLATFORMS.each do |platform|
-          files = Dir.glob("**/*_basic_benchmark_#{platform}_#{config}.json", base: dir).sort.last(count).map { |f| File.join(dir, f) }
+          files = Dir.glob("**/*_basic_benchmark_#{platform}_#{config}.json", base: dir).sort
+          if before
+            files = files.reject { |f| f.match(/(\d{4}-\d{2}-\d{2})/)[1] >= before }
+          end
+          files = files.last(count).map { |f| File.join(dir, f) }
 
           runs = files.map { |f| JSON.parse(File.read(f)) }.group_by { |x| x["ruby_config_name"] }
           # Append data to h[:yjit_stats]["x86_64_yjit_stats"].
