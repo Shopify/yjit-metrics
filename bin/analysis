@@ -32,9 +32,6 @@ report.results.each_pair do |metric, h|
     len = values.keys.map(&:size).max
 
     values.sort.each do |b, report|
-      # Skip benchmark if the value is the same every time.
-      next if report[:streaks].size == 1
-
       # Skip if regression-only view was requested and this benchmark doesn't report one.
       next if options[:regression] && !report[:regression]
 
