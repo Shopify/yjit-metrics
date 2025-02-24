@@ -146,7 +146,7 @@ module YJITMetrics
           stddev = self.stddev(calculation_vals)
 
           # Notify if the last X vals are below the threshold.
-          threshold = (min - stddev * 0.5)
+          threshold = (min - stddev * 0.2)
           regression = if vals.last(VALS_TO_CONSIDER).all? { _1 < threshold }
             sprintf "%.*f is %.*f%% below mean %.*f",
               ROUND_DIGITS, curr,
