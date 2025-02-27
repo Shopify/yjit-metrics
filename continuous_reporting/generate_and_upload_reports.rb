@@ -328,11 +328,11 @@ unless die_on_regenerate
     end
 
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
-end
 
-# Analyze recent data and notify if we identify regressions.
-# Store the output in the built reports dir so we can include it when generating the site.
-YJITMetrics.check_call "bin/analysis --notify --spacious #{RAW_BENCHMARK_ROOT} > #{BUILT_REPORTS_ROOT}/_includes/analysis.txt"
+  # Analyze recent data and notify if we identify regressions.
+  # Store the output in the built reports dir so we can include it when generating the site.
+  YJITMetrics.check_call "bin/analysis #{"--notify" unless no_push} --spacious #{RAW_BENCHMARK_ROOT} > #{BUILT_REPORTS_ROOT}/_includes/analysis.txt"
+end
 
 # Make sure it builds locally
 YJITMetrics.check_call "site/exe build"
