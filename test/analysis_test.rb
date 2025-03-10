@@ -59,6 +59,7 @@ class AnalysisTest < Minitest::Test
     )
     assert_equal(99.81, result[:highest_streak_value])
     assert_equal([99.48, 16], result[:longest_streak])
+    assert_operator(result[:stddev], :>, 0.13)
   end
 
   def test_ratio_in_yjit_partial_recovery
@@ -101,6 +102,7 @@ class AnalysisTest < Minitest::Test
 
     assert_equal(80.28, result[:highest_streak_value])
     assert_equal([80.28, 8], result[:longest_streak])
+    assert_operator(result[:stddev], :>, 0.12)
   end
 
   def test_ratio_in_yjit_no_streaks
@@ -125,9 +127,10 @@ class AnalysisTest < Minitest::Test
     assert_nil(result[:regression])
     assert_nil(result[:highest_streak_value])
     assert_nil(result[:longest_streak])
+    assert_operator(result[:stddev], :>, 0.53)
   end
 
-  def test_ratio_steady_decline
+  def test_ratio_in_yjit_steady_decline
     data = [
       98.1,
       98.0,
@@ -140,6 +143,15 @@ class AnalysisTest < Minitest::Test
       "97.80 is 0.25% below mean 98.05",
       result[:regression],
     )
+    assert_operator(result[:stddev], :>, 0.07)
+  end
+
+  def test_ratio_in_yjit_minimum
+    data = [99.99140975127771, 99.99140975127771, 99.99140980033079, 99.99141352869465, 99.99141352869465, 99.99141352869465, 99.99141352869465, 99.99141313646177, 99.9914155400621, 99.99148693489671, 99.9914862481526, 99.99150584631704, 99.99150584631704, 99.99150447282855, 99.99149348552085, 99.99140509814784, 99.99150425371477, 99.99139477520282, 99.99139477520282, 99.99139477520282, 99.99139477520282, 99.99139350968292, 99.99139477520282, 99.99139477520282, 99.99139477520282, 99.99139477520282, 99.99139477520282, 99.99139350968292, 99.9913845767602, 99.99138110311864]
+
+    result = ratio_in_yjit(data)
+    assert_operator(result[:stddev], :<, 0.001)
+    assert_nil(result[:regression])
   end
 
   def test_regression_notification

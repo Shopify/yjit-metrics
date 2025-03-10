@@ -103,6 +103,10 @@ module YJITMetrics
       ROUND_DIGITS = 2
       # Consider last X vals to identify regressions and reduce false positives.
       VALS_TO_CONSIDER = 2
+      # Minimum difference of 0.01.
+      # Regressions we've caught in the wild have been over 0.05
+      # (see examples in test/analysis_test.rb).
+      MINIMUM_DIFFERENCE = 0.01
 
       def report(results, benchmarks: nil)
         # These nested values come from the json files and the keys are strings.
@@ -146,7 +150,7 @@ module YJITMetrics
           stddev = self.stddev(calculation_vals)
 
           # Notify if the last X vals are below the threshold.
-          threshold = (min - stddev * 0.2)
+          threshold = (min - [stddev * 0.2, MINIMUM_DIFFERENCE].max)
           regression = if vals.last(VALS_TO_CONSIDER).all? { _1 < threshold }
             sprintf "%.*f is %.*f%% below mean %.*f",
               ROUND_DIGITS, curr,
