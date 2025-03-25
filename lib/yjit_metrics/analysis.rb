@@ -103,10 +103,9 @@ module YJITMetrics
       ROUND_DIGITS = 2
       # Consider last X vals to identify regressions and reduce false positives.
       VALS_TO_CONSIDER = 2
-      # Minimum difference of 0.01.
       # Regressions we've caught in the wild have been over 0.05
       # (see examples in test/analysis_test.rb).
-      MINIMUM_DIFFERENCE = 0.01
+      MINIMUM_DIFFERENCE = 0.1
 
       def report(results, benchmarks: nil)
         # These nested values come from the json files and the keys are strings.

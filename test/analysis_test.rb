@@ -136,11 +136,12 @@ class AnalysisTest < Minitest::Test
       98.0,
       97.9,
       97.8,
+      97.7,
     ]
 
     result = ratio_in_yjit(data)
     assert_equal(
-      "97.80 is 0.25% below mean 98.05",
+      "97.70 is 0.31% below mean 98.00",
       result[:regression],
     )
     assert_operator(result[:stddev], :>, 0.07)
