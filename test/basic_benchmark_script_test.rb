@@ -69,9 +69,10 @@ class BasicBenchmarkScriptTest < Minitest::Test
       assert_equal [1], data['failures_before_success']['cycle_error']
 
       failures = data['benchmark_failures']
-      assert_equal ['cycle_error'], failures.keys
+      assert_equal ['cycle_error', 'fail'], failures.keys.sort
       assert_equal 1, failures['cycle_error'].size
       assert_equal 1, failures['cycle_error'].first['exit_status']
+
       assert_match(
         %r{cycle_error/benchmark\.rb.+Time to fail},
         failures['cycle_error'].first['summary']
