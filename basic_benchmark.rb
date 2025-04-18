@@ -687,7 +687,8 @@ else
   lines = ["Benchmark failures:\n"]
 
   lines += by_failure.map do |name, failures|
-    "#{decorate[name]} (#{failures.values.sort.join(", ")})"
+    # failures is {[exit, msg] => [config1, config2],}
+    "#{decorate[name]} (#{failures.values.flatten.sort.uniq.join(", ")})"
   end
 
   lines << "\nDetails:\n"
@@ -696,7 +697,7 @@ else
     [
       "#{decorate[name]}\n",
       results.map do |(exit_status, summary), configs|
-        "exit status #{exit_status} (#{configs.sort.join(", ")})\n#{summary}\n"
+        "exit status #{exit_status} (#{configs.sort.uniq.join(", ")})\n#{summary}\n"
       end
     ]
   end
