@@ -139,7 +139,7 @@ def body(files)
 
   # Line for each failed benchmark name with configs.
   lines += by_failure.map do |name, failures|
-    "*#{q[name]}* (#{failures.values.flatten.sort.map(&q).join(", ")})"
+    "*#{q[name]}* (#{failures.values.flatten.sort.uniq.map(&q).join(", ")})"
   end
 
   lines << "\nDetails:\n"
@@ -148,7 +148,7 @@ def body(files)
     [
       "*#{q[name]}*\n",
       results.map do |(exit_status, summary), configs|
-        "exit status #{exit_status} (#{configs.sort.map(&q).join(", ")})\n```\n#{summary}\n```\n"
+        "exit status #{exit_status} (#{configs.sort.uniq.map(&q).join(", ")})\n```\n#{summary}\n```\n"
       end
     ]
   end
