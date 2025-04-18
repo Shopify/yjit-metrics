@@ -1,0 +1,191 @@
+{
+  "version": 2,
+  "times": {
+    "pass": [
+      [
+        252.2140000073705
+      ]
+    ],
+    "cycle_error": [
+      [
+        253.89300000097137
+      ]
+    ]
+  },
+  "warmups": {
+    "pass": [
+      [
+        255.06999999925029,
+        255.0840000039898,
+        255.0980000087293,
+        255.10100000246894,
+        255.08599999011494
+      ]
+    ],
+    "cycle_error": [
+      [
+        255.02500000584405,
+        255.05300000077114,
+        251.08399998862296,
+        255.0630000041565,
+        255.0539999938337
+      ]
+    ]
+  },
+  "yjit_stats": {
+    "pass": [],
+    "cycle_error": []
+  },
+  "peak_mem_bytes": {
+    "pass": [
+      14090240
+    ],
+    "cycle_error": [
+      13975552
+    ]
+  },
+  "failures_before_success": {
+    "pass": [
+      0
+    ],
+    "cycle_error": [
+      1
+    ]
+  },
+  "benchmark_metadata": {
+    "pass": {
+      "warmup_itrs": 5,
+      "min_bench_itrs": 1,
+      "min_bench_time": 0.0,
+      "env": {
+        "RUBY_CONFIGURE_OPTS": "--disable-shared",
+        "__CFBundleIdentifier": "com.mitchellh.ghostty",
+        "RBENV_HOOK_PATH": "/Users/rwstauner/ruby/rbenv/rbenv.d:/usr/etc/rbenv.d:/usr/local/etc/rbenv.d:/etc/rbenv.d:/usr/lib/rbenv/hooks:/Users/rwstauner/ruby/rbenv/plugins/rbenv-default-gems/etc/rbenv.d",
+        "RIPGREP_CONFIG_PATH": "/Users/rwstauner/sync/src/ripgreprc",
+        "RUBY_BUILD_DEFINITIONS": "/Users/rwstauner/src/github.com/Shopify/ruby-definitions/rubies",
+        "FORCE_BUNDLER_VERSION": "2.4.13",
+        "SYSTEM_RUBY": "/usr/bin/ruby",
+        "NO_PATH_HELPER": "1",
+        "PATH": "/Users/rwstauner/.rubies/ruby-yjit-metrics-prod/bin:/Users/rwstauner/ruby/rbenv/versions/3.4.2/bin:/Users/rwstauner/ruby/rbenv/libexec:/Users/rwstauner/ruby/rbenv/plugins/ruby-build/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-whatis/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-use/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-update/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-each/bin:/Users/rwstauner/bin:/Users/rwstauner/usr/bin:/opt/homebrew/opt/ncurses/bin:/Users/rwstauner/.dev/userprofile/bin:/Users/rwstauner/.dev/binaries:/Users/rwstauner/.cargo/bin:/opt/dev/bin/user:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/rwstauner/usr/fzf/bin:/Users/rwstauner/ruby/rbenv/shims:/Users/rwstauner/ruby/rbenv/bin:/Users/rwstauner/gopath/bin:/Users/rwstauner/run_control/bin:/Users/rwstauner/homebrew/opt/ncurses/bin:/Users/rwstauner/homebrew/opt/openjdk/bin:/Users/rwstauner/homebrew/sbin:/Users/rwstauner/homebrew/bin:/Users/rwstauner/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/rwstauner/.pyenv/shims:/Users/rwstauner/perl5/bin:/Applications/Ghostty.app/Contents/MacOS",
+        "RUBYLIB": "/Users/rwstauner/ruby/rbenv/rbenv.d/exec/gem-rehash:"
+      },
+      "loaded_gems": [
+        [
+          "error_highlight",
+          "0.7.0"
+        ],
+        [
+          "did_you_mean",
+          "2.0.0"
+        ],
+        [
+          "syntax_suggest",
+          "2.0.2"
+        ],
+        [
+          "json",
+          "2.10.2"
+        ]
+      ],
+      "benchmark_name": "pass",
+      "benchmark_path": "/Users/rwstauner/src/github.com/Shopify/yjit-metrics/test/fake-yjit-bench/benchmarks/pass.rb",
+      "runs": 1
+    },
+    "cycle_error": {
+      "warmup_itrs": 5,
+      "min_bench_itrs": 1,
+      "min_bench_time": 0.0,
+      "env": {
+        "RUBY_CONFIGURE_OPTS": "--disable-shared",
+        "__CFBundleIdentifier": "com.mitchellh.ghostty",
+        "RBENV_HOOK_PATH": "/Users/rwstauner/ruby/rbenv/rbenv.d:/usr/etc/rbenv.d:/usr/local/etc/rbenv.d:/etc/rbenv.d:/usr/lib/rbenv/hooks:/Users/rwstauner/ruby/rbenv/plugins/rbenv-default-gems/etc/rbenv.d",
+        "RIPGREP_CONFIG_PATH": "/Users/rwstauner/sync/src/ripgreprc",
+        "RUBY_BUILD_DEFINITIONS": "/Users/rwstauner/src/github.com/Shopify/ruby-definitions/rubies",
+        "FORCE_BUNDLER_VERSION": "2.4.13",
+        "SYSTEM_RUBY": "/usr/bin/ruby",
+        "NO_PATH_HELPER": "1",
+        "PATH": "/Users/rwstauner/.rubies/ruby-yjit-metrics-prod/bin:/Users/rwstauner/ruby/rbenv/versions/3.4.2/bin:/Users/rwstauner/ruby/rbenv/libexec:/Users/rwstauner/ruby/rbenv/plugins/ruby-build/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-whatis/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-use/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-update/bin:/Users/rwstauner/ruby/rbenv/plugins/rbenv-each/bin:/Users/rwstauner/bin:/Users/rwstauner/usr/bin:/opt/homebrew/opt/ncurses/bin:/Users/rwstauner/.dev/userprofile/bin:/Users/rwstauner/.dev/binaries:/Users/rwstauner/.cargo/bin:/opt/dev/bin/user:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/rwstauner/usr/fzf/bin:/Users/rwstauner/ruby/rbenv/shims:/Users/rwstauner/ruby/rbenv/bin:/Users/rwstauner/gopath/bin:/Users/rwstauner/run_control/bin:/Users/rwstauner/homebrew/opt/ncurses/bin:/Users/rwstauner/homebrew/opt/openjdk/bin:/Users/rwstauner/homebrew/sbin:/Users/rwstauner/homebrew/bin:/Users/rwstauner/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/Users/rwstauner/.pyenv/shims:/Users/rwstauner/perl5/bin:/Applications/Ghostty.app/Contents/MacOS",
+        "RUBYLIB": "/Users/rwstauner/ruby/rbenv/rbenv.d/exec/gem-rehash:"
+      },
+      "loaded_gems": [
+        [
+          "error_highlight",
+          "0.7.0"
+        ],
+        [
+          "did_you_mean",
+          "2.0.0"
+        ],
+        [
+          "syntax_suggest",
+          "2.0.2"
+        ],
+        [
+          "json",
+          "2.10.2"
+        ]
+      ],
+      "benchmark_name": "cycle_error",
+      "benchmark_path": "/Users/rwstauner/src/github.com/Shopify/yjit-metrics/test/fake-yjit-bench/benchmarks/cycle_error/benchmark.rb",
+      "runs": 1
+    }
+  },
+  "ruby_metadata": {
+    "RUBY_VERSION": "3.4.2",
+    "RUBY_DESCRIPTION": "ruby 3.4.2 (2025-02-15 revision d2930f8e7a) +PRISM [arm64-darwin24]",
+    "RUBY_PATCHLEVEL": 28,
+    "RUBY_ENGINE": "ruby",
+    "RUBY_ENGINE_VERSION": "3.4.2",
+    "RUBY_PLATFORM": "arm64-darwin24",
+    "RUBY_REVISION": "d2930f8e7a5db8a7337fa43370940381b420cc3e",
+    "which ruby": "/Users/rwstauner/ruby/rbenv/versions/3.4.2/bin/ruby\n",
+    "hostname": "shoppear.local\n",
+    "cpu info": "Apple M3 Pro",
+    "ec2 instance id": "foo",
+    "ec2 instance type": "foo",
+    "arch": "arm64-darwin24",
+    "uname -a": "Darwin shoppear.local 24.4.0 Darwin Kernel Version 24.4.0: Fri Apr 11 18:33:47 PDT 2025; root:xnu-11417.101.15~117/RELEASE_ARM64_T6030 arm64\n",
+    "RbConfig configure_args": " '--prefix=/Users/rwstauner/ruby/rbenv/versions/3.4.2' '--with-openssl-dir=/opt/homebrew/opt/openssl@3' '--with-libyaml-dir=/opt/homebrew/opt/libyaml' '--with-gmp-dir=/opt/homebrew/opt/gmp' '--with-ext=openssl,psych,+' '--disable-shared' 'CC=clang'",
+    "RbConfig CC_VERSION_MESSAGE": "Apple clang version 16.0.0 (clang-1600.0.26.6)\nTarget: arm64-apple-darwin24.3.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin"
+  },
+  "ruby_config_name": "aarch64_prod_ruby_no_jit",
+  "benchmark_failures": {
+    "cycle_error": [
+      {
+        "exit_status": 1,
+        "summary": "./benchmarks/cycle_error/benchmark.rb:24:in 'block in <main>': Time to fail (RuntimeError)"
+      }
+    ],
+    "fail": [
+      {
+        "exit_status": 1,
+        "summary": "./benchmarks/fail.rb:8:in 'block in <main>': Nope (RuntimeError)"
+      },
+      {
+        "exit_status": 1,
+        "summary": "./benchmarks/fail.rb:8:in 'block in <main>': Nope (RuntimeError)"
+      }
+    ]
+  },
+  "full_run": {
+    "git_versions": {
+      "yjit_bench": "bfaf8ca5b562c54430470da1812b2c8d399132d7",
+      "yjit_metrics": "bfaf8ca5b562c54430470da1812b2c8d399132d7"
+    },
+    "ruby_config_opts": {
+      "yjit_stats": [
+        "--yjit",
+        "--yjit-stats=quiet"
+      ],
+      "prod_ruby_no_jit": [
+        "--disable-yjit"
+      ]
+    }
+  },
+  "extra": {
+    "total_bench_time": "0 hours, 0 minutes, 42 seconds",
+    "total_bench_seconds": 42,
+    "load_before": "1.66 1.71 2.05",
+    "load_after": "1.55 1.68 2.03"
+  }
+}

@@ -59,15 +59,23 @@ class SlackNotificationTest < Minitest::Test
     assert_slack_message(result, title: summary, image: "#{IMAGE_PREFIX}/build-fail.png", body: <<~MSG)
       stdin
 
-      *`cycle_error`* (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
+      *`cycle_error`* (`aarch64_prod_ruby_no_jit`, `aarch64_yjit_stats`)
+      *`fail`* (`aarch64_prod_ruby_no_jit`, `aarch64_yjit_stats`)
 
       Details:
 
       *`cycle_error`*
 
-      exit status 1 (`arm_prod_ruby_no_jit`, `arm_yjit_stats`)
+      exit status 1 (`aarch64_prod_ruby_no_jit`, `aarch64_yjit_stats`)
       ```
-      ./benchmarks/cycle_error/benchmark.rb:24:in `block in <main>': Time to fail (RuntimeError)
+      ./benchmarks/cycle_error/benchmark.rb:24:in 'block in <main>': Time to fail (RuntimeError)
+      ```
+
+      *`fail`*
+
+      exit status 1 (`aarch64_prod_ruby_no_jit`, `aarch64_yjit_stats`)
+      ```
+      ./benchmarks/fail.rb:8:in 'block in <main>': Nope (RuntimeError)
       ```
     MSG
   end
