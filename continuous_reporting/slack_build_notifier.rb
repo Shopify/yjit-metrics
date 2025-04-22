@@ -108,7 +108,7 @@ def send_message(title, body, img)
 
   TO_NOTIFY.each do |channel|
     slack_client.chat_postMessage channel: channel, text: title, blocks: block_msg
-  rescue Slack::Web::Api::Errors::Error
+  rescue Slack::Web::Api::Errors::SlackError
     # The InvalidBlocks error doesn't explain the problem
     # so print the message we tried to send
     # so we can try to debug it at https://app.slack.com/block-kit-builder
