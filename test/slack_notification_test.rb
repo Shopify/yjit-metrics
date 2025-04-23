@@ -110,9 +110,10 @@ class SlackNotificationTest < Minitest::Test
     assert_slack_message(result, title: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
   end
 
-  def test_notify_error_with_no_app_backtrace
+  def test_notify_error_with_no_app_backtrace_and_long_title
     notifier = TestNotifier.new
-    error = RuntimeError.new("something bad")
+    message = "Command \"/usr/local/ruby/bin/ruby basic_benchmark.rb --on-errors=report --max-retries=2 --min-bench-time=30.0 --min-bench-itrs=10 --configs=aarch64_yjit_stats,aarch64_prod_ruby_no_jit,aarch64_prod_ruby_with_yjit,aarch64_prev_ruby_no_jit,aarch64_prev_ruby_yjit --full-rebuild yes --output=/home/ubuntu/src/yjit-metrics/continuous_reporting/data/ --bench-params=/home/ubuntu/ym/bench_params.json\" failed in directory /home/ubuntu/src/yjit-metrics"
+    error = RuntimeError.new(message)
     error.set_backtrace([
       "elsewhere:1",
       "someplace:2",
@@ -121,20 +122,22 @@ class SlackNotificationTest < Minitest::Test
 
     result = notifier.error(error).notify!
 
-    summary = "RuntimeError: something bad"
+    summary = "RuntimeError: Command \"/usr/local/ruby/bin/ruby basic_benchmark.rb --on-errors=report --max-retries=2 --min-bench-time=30.0 --min-bench-itrs=10 --..."
     expected_body = <<~BODY
+      RuntimeError: #{message}
+
       ```
       - elsewhere:1
       - someplace:2
       ```
     BODY
 
-    assert_slack_message(result, title: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
+    assert_slack_message(result, title: "RuntimeError: #{message}", header: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
   end
 
   private
 
-  def assert_slack_message(result, title:, body:, image:)
+  def assert_slack_message(result, title:, header: title, body:, image:)
     assert_predicate(result[:status], :success?)
 
     assert_equal([:clients], result[:report].keys)
@@ -152,7 +155,8 @@ class SlackNotificationTest < Minitest::Test
 
     blocks = message[:blocks]
     assert_equal(2, blocks.size)
-    assert_equal({type: "header", text: {type: "plain_text", text: title}}, blocks[0])
+    assert_equal({type: "header", text: {type: "plain_text", text: header}}, blocks[0])
+    assert_operator(blocks[0][:text][:text].size, :<=, 150)
     assert_equal("section", blocks[1][:type])
     assert_equal("mrkdwn", blocks[1][:text][:type])
 

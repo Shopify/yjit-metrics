@@ -57,6 +57,12 @@ def slack_message_blocks(title, body, img)
   # Convert actual markdown links of `[text](url)` to slack links `<url|text>`.
   body = body.gsub(/\[([^\]]+)\]\(([^)]+)\)/, '<\2|\1>')
 
+  # Header/title must be less than 151 characters.
+  if title.size > 150
+    body = title + "\n\n" + body
+    title = title[0..145] + "..."
+  end
+
   [
     {
       "type": "header",
