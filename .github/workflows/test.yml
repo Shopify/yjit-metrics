@@ -14,17 +14,17 @@ jobs:
         working-directory: yjit-metrics
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: yjit-metrics
 
       - name: Checkout yjit-bench
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: Shopify/yjit-bench
           path: yjit-bench
 
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1.235.0
         with:
           bundler-cache: true
           working-directory: yjit-metrics
