@@ -242,12 +242,14 @@ elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
 end
 
 # Git repo url for CRuby.
-YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
+CRUBY_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
 # Git branch to build for "prod" yjit.
-YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
+CRUBY_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
 # In order to build "prev" ruby the same way we build "prod" ruby
 # we build it from source, so we use a tag that represents a recent release.
 YJIT_PREV_REF = "v3_3_6"
+
+REPO_ROOT = File.expand_path("#{__dir__}/..")
 
 def full_clean_yjit_cruby(flavor)
     repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
@@ -256,39 +258,37 @@ end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
 # have several different runtime configs (e.g. YJIT vs interp.)
-repo_root = File.expand_path("#{__dir__}/..")
-install_root = "~/.rubies"
 RUBY_BUILDS = {
     "ruby-yjit-metrics-debug" => {
         install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/debug-yjit",
+        git_url: CRUBY_GIT_URL,
+        git_branch: CRUBY_GIT_BRANCH,
+        repo_path: "#{REPO_ROOT}/debug-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
         config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
         full_clean: full_clean_yjit_cruby("debug"),
     },
     "ruby-yjit-metrics-stats" => {
         install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/stats-yjit",
+        git_url: CRUBY_GIT_URL,
+        git_branch: CRUBY_GIT_BRANCH,
+        repo_path: "#{REPO_ROOT}/stats-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("stats"),
     },
     "ruby-yjit-metrics-prod" => {
         install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/prod-yjit",
+        git_url: CRUBY_GIT_URL,
+        git_branch: CRUBY_GIT_BRANCH,
+        repo_path: "#{REPO_ROOT}/prod-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prod"),
     },
     PREV_RUBY_BUILD => {
         install: "repo",
-        git_url: YJIT_GIT_URL,
+        git_url: CRUBY_GIT_URL,
         git_branch: YJIT_PREV_REF,
-        repo_path: "#{repo_root}/prev-yjit",
+        repo_path: "#{REPO_ROOT}/prev-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prev"),
     },
