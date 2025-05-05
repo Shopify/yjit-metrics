@@ -33,6 +33,7 @@ ERROR_BEHAVIOURS = %i(die report ignore)
 YJIT_STATS_OPTS = [ "--yjit-stats=quiet" ]
 
 YJIT_ENABLED_OPTS = [ "--yjit" ]
+ZJIT_ENABLED_OPTS = [ "--zjit" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
 
 SETARCH_OPTS = {
@@ -41,9 +42,11 @@ SETARCH_OPTS = {
 
 CRUBY_PER_OS_OPTS = SETARCH_OPTS
 YJIT_PER_OS_OPTS = SETARCH_OPTS
+ZJIT_PER_OS_OPTS = SETARCH_OPTS
 TRUFFLE_PER_OS_OPTS = {}
 
 PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
+ZJIT_BUILD = "ruby-zjit-metrics-prod"
 
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
@@ -95,6 +98,11 @@ RUBY_CONFIG_ROOTS = {
         build: PREV_RUBY_BUILD,
         opts: YJIT_ENABLED_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
+    },
+    "zjit_prod" => {
+        build: ZJIT_BUILD,
+        opts: ZJIT_ENABLED_OPTS,
+        per_os_prefix: ZJIT_PER_OS_OPTS,
     },
 }
 
@@ -251,9 +259,9 @@ YJIT_PREV_REF = "v3_3_6"
 
 REPO_ROOT = File.expand_path("#{__dir__}/..")
 
-def full_clean_yjit_cruby(flavor)
-    repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
-    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor}"
+def full_clean_yjit_cruby(flavor = nil, build_dir: "#{flavor}-yjit", install_base: "ruby-yjit-metrics-#{flavor}")
+    repo = File.expand_path(build_dir, REPO_ROOT)
+    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/#{install_base}"
 end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
@@ -291,6 +299,14 @@ RUBY_BUILDS = {
         repo_path: "#{REPO_ROOT}/prev-yjit",
         config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
         full_clean: full_clean_yjit_cruby("prev"),
+    },
+    ZJIT_BUILD => {
+        install: "repo",
+        git_url: CRUBY_GIT_URL,
+        git_branch: CRUBY_GIT_BRANCH,
+        repo_path: "#{REPO_ROOT}/prod-zjit",
+        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-zjit" ] + extra_config_options,
+        full_clean: full_clean_yjit_cruby(build_dir: "prod-zjit", install_base: "ruby-zjit-metrics-prod"),
     },
     "truffleruby+graalvm-21.2.0" => {
         install: "ruby-build",

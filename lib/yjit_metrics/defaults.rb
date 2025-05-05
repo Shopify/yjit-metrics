@@ -21,6 +21,8 @@ module YJITMetrics
       },
       "x86_64_prev_ruby_yjit" => {
       },
+      "x86_64_zjit_prod" => {
+      },
       "aarch64_yjit_stats" => {
       },
       "aarch64_prod_ruby_no_jit" => {
@@ -30,6 +32,8 @@ module YJITMetrics
       "aarch64_prev_ruby_no_jit" => {
       },
       "aarch64_prev_ruby_yjit" => {
+      },
+      "aarch64_zjit_prod" => {
       },
     },
     # Non-config-specific settings
