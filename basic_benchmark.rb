@@ -128,7 +128,7 @@ harness_params = {
     min_bench_itrs: DEFAULT_MIN_BENCH_ITRS,
     min_bench_time: DEFAULT_MIN_BENCH_TIME,
 }
-DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit prev_ruby_yjit prev_ruby_no_jit)
+DEFAULT_CONFIGS = %w(yjit_stats prod_ruby_with_yjit prod_ruby_no_jit prev_ruby_yjit prev_ruby_no_jit zjit_prod)
 configs_to_test = DEFAULT_CONFIGS.map { |config| "#{YJITMetrics::PLATFORM}_#{config}"}
 bench_data = nil
 when_error = :report

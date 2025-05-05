@@ -13,6 +13,7 @@ module YJITMetrics
       "prev_ruby_yjit" => "YJIT stable",
       "prod_ruby_no_jit" => "CRUBY dev",
       "prod_ruby_with_yjit" => "YJIT dev",
+      "zjit_prod" => "ZJIT dev",
     }
   end
 end

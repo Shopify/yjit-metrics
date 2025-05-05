@@ -46,6 +46,7 @@ module YJITMetrics
       "prev_ruby_yjit" => "YJIT <version>",
       "prod_ruby_no_jit" => "CRuby <version>",
       "prev_ruby_no_jit" => "CRuby <version>",
+      "zjit_prod" => "ZJIT <version>",
       "truffleruby" => "TruffleRuby",
       "yjit_stats" => "YJIT <version> Stats",
     }

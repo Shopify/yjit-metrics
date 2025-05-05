@@ -68,6 +68,7 @@ module YJITMetrics
       @prev_no_jit_config = exactly_one_config_with_name(config_names, "prev_ruby_no_jit", "prev-CRuby", none_okay: true)
       @prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
       @no_jit_config    = exactly_one_config_with_name(config_names, "prod_ruby_no_jit", "no-JIT")
+      @zjit_config      = exactly_one_config_with_name(config_names, "zjit_prod", "ZJIT")
       @truffle_config   = exactly_one_config_with_name(config_names, "truffleruby", "Truffle", none_okay: true)
 
       # Prefer previous CRuby if present otherwise current CRuby.
