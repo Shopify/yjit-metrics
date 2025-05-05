@@ -47,8 +47,8 @@ BENCH_TYPES = {
     "none"       => "",
     "default"    => DEFAULT_CI_COMMAND_LINE,
     "smoketest"  => "--warmup-itrs=0   --min-bench-time=0.0 --min-bench-itrs=1 --on-errors=die --configs=PLATFORM_prod_ruby_no_jit,PLATFORM_prod_ruby_with_yjit",
-    #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit activerecord lee 30k_methods",
-    #"extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,ruby_30_with_mjit,prod_ruby_with_yjit,truffleruby",
+    #"minimal"    => "--warmup-itrs=1   --min-bench-time=10.0  --min-bench-itrs=5    --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,prod_ruby_with_yjit activerecord lee 30k_methods",
+    #"extended"   => "--warmup-itrs=500 --min-bench-time=120.0 --min-bench-itrs=1000 --runs=3 --on-errors=report --configs=yjit_stats,prod_ruby_no_jit,prod_ruby_with_yjit,truffleruby",
 }
 def args_for_bench_type(bench_type_arg)
     if bench_type_arg.include?("-")

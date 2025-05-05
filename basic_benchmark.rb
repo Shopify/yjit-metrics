@@ -33,7 +33,6 @@ ERROR_BEHAVIOURS = %i(die report ignore)
 YJIT_STATS_OPTS = [ "--yjit-stats=quiet" ]
 
 YJIT_ENABLED_OPTS = [ "--yjit" ]
-MJIT_ENABLED_OPTS = [ "--mjit", "--disable-yjit", "--mjit-max-cache=10000", "--mjit-min-calls=10" ]
 NO_JIT_OPTS = [ "--disable-yjit" ]
 
 SETARCH_OPTS = {
@@ -42,7 +41,6 @@ SETARCH_OPTS = {
 
 CRUBY_PER_OS_OPTS = SETARCH_OPTS
 YJIT_PER_OS_OPTS = SETARCH_OPTS
-MJIT_PER_OS_OPTS = SETARCH_OPTS
 TRUFFLE_PER_OS_OPTS = {}
 
 PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
@@ -87,16 +85,6 @@ RUBY_CONFIG_ROOTS = {
         build: "ruby-yjit-metrics-prod",
         opts: YJIT_ENABLED_OPTS,
         per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-    "prod_ruby_with_mjit" => {
-        build: "ruby-yjit-metrics-prod",
-        opts: MJIT_ENABLED_OPTS,
-        per_os_prefix: MJIT_PER_OS_OPTS,
-    },
-    "prod_ruby_with_mjit_verbose" => {
-        build: "ruby-yjit-metrics-prod",
-        opts: MJIT_ENABLED_OPTS + [ "--mjit-verbose=1" ],
-        per_os_prefix: MJIT_PER_OS_OPTS,
     },
     "prev_ruby_no_jit" => {
         build: PREV_RUBY_BUILD,
@@ -267,7 +255,7 @@ def full_clean_yjit_cruby(flavor)
 end
 
 # The same build of Ruby (e.g. current prerelease Ruby) can
-# have several different runtime configs (e.g. MJIT vs YJIT vs interp.)
+# have several different runtime configs (e.g. YJIT vs interp.)
 repo_root = File.expand_path("#{__dir__}/..")
 install_root = "~/.rubies"
 RUBY_BUILDS = {
@@ -312,10 +300,6 @@ RUBY_BUILDS = {
 }
 
 SKIPPED_COMBOS = [
-    # HexaPDF not working with latest MJIT
-    # https://bugs.ruby-lang.org/issues/18277
-    [ "prod_ruby_with_mjit", "hexapdf" ],
-
     # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
     # Needs an update of dependency libraries.
     # Note: check back to see when/if Discourse runs with head-of-master Ruby again...

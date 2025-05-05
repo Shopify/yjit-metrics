@@ -57,7 +57,6 @@ module YJITMetrics
       matching_configs[0]
     end
 
-    # Include Truffle data only if we can find it, use MJIT 3.0 and/or 3.1 depending on what's available.
     # YJIT and No-JIT are mandatory.
     def look_up_data_by_ruby(only_platforms: YJITMetrics::PLATFORMS, in_runs: false)
       only_platforms = [only_platforms].flatten
@@ -68,20 +67,16 @@ module YJITMetrics
       @with_yjit_config = exactly_one_config_with_name(config_names, "prod_ruby_with_yjit", "with-YJIT")
       @prev_no_jit_config = exactly_one_config_with_name(config_names, "prev_ruby_no_jit", "prev-CRuby", none_okay: true)
       @prev_yjit_config = exactly_one_config_with_name(config_names, "prev_ruby_yjit", "prev-YJIT", none_okay: true)
-      @with_mjit30_config = exactly_one_config_with_name(config_names, "ruby_30_with_mjit", "with-MJIT3.0", none_okay: true)
-      @with_mjit_latest_config = exactly_one_config_with_name(config_names, "prod_ruby_with_mjit", "with-MJIT", none_okay: true)
       @no_jit_config    = exactly_one_config_with_name(config_names, "prod_ruby_no_jit", "no-JIT")
       @truffle_config   = exactly_one_config_with_name(config_names, "truffleruby", "Truffle", none_okay: true)
 
       # Prefer previous CRuby if present otherwise current CRuby.
       @baseline_config = @prev_no_jit_config || @no_jit_config
 
-      # Order matters here - we push No-JIT, then MJIT(s), then YJIT and finally TruffleRuby when present
+      # Order matters here - we push No-JIT, then YJIT and finally TruffleRuby when present
       @configs_with_human_names = [
         ["CRuby <version>", @prev_no_jit_config],
         ["CRuby <version>", @no_jit_config],
-        ["MJIT3.0", @with_mjit30_config],
-        ["MJIT", @with_mjit_latest_config],
         ["YJIT <version>", @prev_yjit_config],
         ["YJIT <version>", @with_yjit_config],
         ["Truffle", @truffle_config],
@@ -119,13 +114,8 @@ module YJITMetrics
 
         no_result_benchmarks = @benchmark_names.select { |bench_name| config_results[bench_name].nil? || config_results[bench_name].empty? }
         unless no_result_benchmarks.empty?
-          # We allow MJIT latest ONLY to have some benchmarks skipped... (empty is also fine)
-          if config_name == @with_mjit_latest_config
-            @mjit_is_incomplete = true
-          else
-            warn("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
-            missing_benchmarks.concat(no_result_benchmarks)
-          end
+          warn("No results in config #{config_name.inspect} for benchmark(s) #{no_result_benchmarks.inspect} in #{self.class}!")
+          missing_benchmarks.concat(no_result_benchmarks)
         end
       end
 

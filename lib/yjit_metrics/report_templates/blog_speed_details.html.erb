@@ -5,7 +5,7 @@
 <p>
 	<strong>RSD</strong> is relative standard deviation - the standard deviation divided by the mean, expressed as a percentage. <br/>
 	<strong>% in YJIT</strong> is the percentage of instructions that complete in YJIT rather than exiting to the non-JITted interpreter. YJIT performs better when this is higher.<br/>
-	<strong>Speedup</strong> is relative to interpreted CRuby. So an "MJIT speedup" of 1.21x means MJIT runs at 1.21 times the iters/second of CRuby with JIT disabled.
+	<strong>Speedup</strong> is relative to interpreted CRuby. So a "speedup" of 1.21x means it ran at 1.21 times the iters/second of CRuby with JIT disabled.
 </p>
 
 <p>
@@ -17,14 +17,5 @@
 	Tested Ruby version for development CRuby and YJIT: <tt><strong><%= @ruby_metadata_by_config[@with_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
 <% if @prev_yjit_config %>
 	Tested Ruby version for stable CRuby and YJIT: <tt><strong><%= @ruby_metadata_by_config[@prev_yjit_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-<% end %>
-<% if @with_mjit_latest_config %>
-	Tested Ruby version for Ruby latest MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit_latest_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-<% end %>
-<% if @with_mjit30_config %>
-	Tested Ruby version for Ruby 3.0 MJIT: <tt><strong><%= @ruby_metadata_by_config[@with_mjit30_config]["RUBY_DESCRIPTION"] %></strong></tt> <br/>
-<% end %>
-<% if @with_mjit30_config && @with_mjit_latest_config %>
-	For many older releases we got much better results with released MJIT 3.0 than latest prerelease, so we compared against both.
 <% end %>
 </p>

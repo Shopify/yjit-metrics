@@ -44,8 +44,6 @@ module YJITMetrics
     CONFIG_NAME_SPECIAL_CASE_FRAGMENTS = {
       "prod_ruby_with_yjit" => "YJIT <version>",
       "prev_ruby_yjit" => "YJIT <version>",
-      "prod_ruby_with_mjit" => "MJIT",
-      "ruby_30_with_mjit" => "MJIT-3.0",
       "prod_ruby_no_jit" => "CRuby <version>",
       "prev_ruby_no_jit" => "CRuby <version>",
       "truffleruby" => "TruffleRuby",
@@ -108,7 +106,7 @@ module YJITMetrics
         return out
       end
 
-      # If all configurations are on the *same* platform, we'll use names like YJIT and MJIT and MJIT(3.0)
+      # If all configurations are on the *same* platform, we'll use shorter names
       if configs_by_platform.size == 1
         # Sort list of configs by what fragments (Ruby version plus runtime config) they contain
         by_fragment = table_of_configs_by_fragment(only_configs)

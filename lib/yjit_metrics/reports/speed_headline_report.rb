@@ -61,15 +61,6 @@ module YJITMetrics
       end
       look_up_data_by_ruby(only_platforms: [platform])
 
-      # Report the headlining speed comparisons versus current prerelease MJIT if available, or fall back to MJIT
-      if @mjit_is_incomplete
-        @with_mjit_config = @with_mjit30_config
-      else
-        @with_mjit_config = @with_mjit_latest_config || @with_mjit30_config
-      end
-      @mjit_name = "MJIT"
-      @mjit_name = "MJIT (3.0)" if @with_mjit_config == @with_mjit30_config
-
       # Sort benchmarks by headline/micro category, then alphabetically
       @benchmark_names.sort_by! { |bench_name|
         [ benchmark_category_index(bench_name),
