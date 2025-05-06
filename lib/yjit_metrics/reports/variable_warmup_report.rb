@@ -31,13 +31,12 @@ module YJITMetrics
     CORRELATION_THRESHOLD = 0.1
 
     def look_up_data_by_ruby
-      # Order matters here - we push No-JIT, then MJIT(s), then YJIT. For each one we sort by platform name.
+      # Order matters here - we push No-JIT, then YJIT. For each one we sort by platform name.
       # It matters because we want the output reports to be stable with no churn in Git.
       configs = @result_set.config_names
       config_order = []
       config_order += configs.select { |c| c["prev_ruby_no_jit"] }.sort # optional
       config_order += configs.select { |c| c["prod_ruby_no_jit"] }.sort
-      config_order += configs.select { |c| c["prod_ruby_with_mjit"] }.sort # MJIT is optional, may be empty
       config_order += configs.select { |c| c["prev_ruby_yjit"] }.sort # optional
       config_order += configs.select { |c| c["prod_ruby_with_yjit"] }.sort
       config_order += configs.select { |c| c["yjit_stats"] }.sort # Stats configs *also* take time to run
