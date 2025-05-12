@@ -6,6 +6,12 @@ set -e
 
 <%= template_settings[:pre_benchmark_code] %>
 
+# ruby-head is currently broken in that installing bundler activates rdoc
+# darkfish which uses erb which requires cgi which has to be installed directly.
+# Installing cgi here would be silly but we do use erb and the gem version of
+# that will install the cgi it needs.
+gem install erb
+
 # Make sure we're installing the version we want the benchmark to use
 gem install bundler:<%= template_settings[:bundler_version] %>
 
