@@ -95,6 +95,10 @@ module YJITBenchmarking
     end
 
     class Report < Command
+      def allowed_states
+        ["stopped"].concat(opts.fetch(:states) { [] })
+      end
+
       def ensure_stopped!
         active = benchmarking_instances.map do |instance|
           client.info(instance)
@@ -108,7 +112,7 @@ module YJITBenchmarking
 
       def execute
         ensure_stopped!
-        with_instances(reporting_instance, state: ["stopped"]) do |instance|
+        with_instances(reporting_instance, state: allowed_states) do |instance|
           ssh_exec(instance, "#{LAUNCH_SCRIPT} report")
         end
       end
