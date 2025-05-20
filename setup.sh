@@ -43,7 +43,6 @@ setup-packages () {
     autoconf \
     bison \
     build-essential \
-    cargo \
     gperf \
     libffi-dev \
     libgdbm-dev \
@@ -55,11 +54,13 @@ setup-packages () {
     libyaml-dev \
     pkg-config \
     ruby \
-    rustc \
+    rustup \
     sqlite3 \
     zlib1g-dev \
     $(if [[ -r /etc/ec2_version ]]; then echo linux-tools-aws linux-tools-"`uname -r`"; fi) \
   && true
+
+  rustup default stable
 
   # As of 2024-09-24 Ubuntu 24 comes with gcc 13 but a ppa can upgrade it to 14.
   # Ubuntu 20 is capable of upgrading to 13.
