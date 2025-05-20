@@ -39,7 +39,7 @@ configure-intel () {
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
 # https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
-  sudo apt-get install -y \
+  sudo apt install -y \
     autoconf \
     bison \
     build-essential \
@@ -72,7 +72,7 @@ upgrade-gcc () {
 
   if ! dpkg -s gcc-$version; then
     if sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && dpkg -S gcc-$version; then
-      sudo apt-get install -y gcc-$version
+      sudo apt install -y gcc-$version
     fi
   fi
 

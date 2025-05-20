@@ -20,7 +20,7 @@ locals {
   main_script = [
     "set -x",
     # Upgrade system.
-    "sudo apt-get update -y && sudo apt-get upgrade -y",
+    "sudo apt update -y && sudo apt upgrade -y",
 
     # Install a few useful dev tools.
     "sudo apt install -y ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
