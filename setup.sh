@@ -39,11 +39,10 @@ configure-intel () {
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
 # https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
-  sudo apt-get install -y \
+  sudo apt install -y \
     autoconf \
     bison \
     build-essential \
-    cargo \
     gperf \
     libffi-dev \
     libgdbm-dev \
@@ -55,11 +54,13 @@ setup-packages () {
     libyaml-dev \
     pkg-config \
     ruby \
-    rustc \
+    rustup \
     sqlite3 \
     zlib1g-dev \
     $(if [[ -r /etc/ec2_version ]]; then echo linux-tools-aws linux-tools-"`uname -r`"; fi) \
   && true
+
+  rustup default stable
 
   # As of 2024-09-24 Ubuntu 24 comes with gcc 13 but a ppa can upgrade it to 14.
   # Ubuntu 20 is capable of upgrading to 13.
@@ -71,7 +72,7 @@ upgrade-gcc () {
 
   if ! dpkg -s gcc-$version; then
     if sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y && dpkg -S gcc-$version; then
-      sudo apt-get install -y gcc-$version
+      sudo apt install -y gcc-$version
     fi
   fi
 
@@ -116,7 +117,7 @@ setup-ruby-build () {
 }
 
 setup-ruby () {
-  local version=3.3.6
+  local version=3.4.4
   local prefix=/usr/local/ruby
   local exe="$prefix/bin/ruby"
 

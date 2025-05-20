@@ -3,7 +3,6 @@ source "amazon-ebs" "yjit-dev" {
   region                  = var.region
   ssh_username            = var.ssh_username
   tags                    = var.tags
-  run_tags                = merge(var.tags, { Name = "YJIT Dev ${local.timestamp}" })
 
   launch_block_device_mappings {
     device_name = "/dev/sda1"
@@ -20,10 +19,10 @@ locals {
   main_script = [
     "set -x",
     # Upgrade system.
-    "sudo apt-get update -y && sudo apt-get upgrade -y",
+    "sudo apt update -y && sudo apt upgrade -y",
 
     # Install a few useful dev tools.
-    "sudo apt-get install ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
+    "sudo apt install -y ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
 
     "chmod 0755 ${local.ym_setup} && ${local.ym_setup} cpu packages ruby",
     "mkdir -p ~/src && cd ~/src",
@@ -106,6 +105,7 @@ build {
       ami_name      = "yjit-benchmarking-${source.value.arch}-${local.timestamp}"
       instance_type = source.value.instance_type
       source_ami    = local.source_ami_ids[source.key]
+      run_tags      = merge(var.tags, { Name = "YJIT Benchmarking ${local.timestamp}" })
     }
   }
 
@@ -130,6 +130,7 @@ build {
       ami_name      = "yjit-dev-${source.value.arch}-${local.timestamp}"
       instance_type = source.value.instance_type
       source_ami    = local.source_ami_ids[source.key]
+      run_tags      = merge(var.tags, { Name = "YJIT Dev ${local.timestamp}" })
     }
   }
 
