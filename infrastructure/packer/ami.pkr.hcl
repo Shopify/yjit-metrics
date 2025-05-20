@@ -23,7 +23,7 @@ locals {
     "sudo apt-get update -y && sudo apt-get upgrade -y",
 
     # Install a few useful dev tools.
-    "sudo apt-get install ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
+    "sudo apt install -y ripgrep zsh && sudo chsh -s /bin/zsh ${var.ssh_username}",
 
     "chmod 0755 ${local.ym_setup} && ${local.ym_setup} cpu packages ruby",
     "mkdir -p ~/src && cd ~/src",
