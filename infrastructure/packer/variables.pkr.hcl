@@ -5,8 +5,11 @@
 # The last build snapshot used 6.1GB.
 # It can require more than 8GB temporarily, and then the yjit-raw data repo can
 # take 7.5GB when switching branches.
+# The farther we get from initial release of the OS the more "apt upgrade" will
+# require.  Moving to rustup probably also takes more space.  Likewise the more
+# time passes the larger our repos will get.
 variable "ami_volume_size_gb" {
-  default = 16
+  default = 24
 }
 
 variable "region" {
