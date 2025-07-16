@@ -15,6 +15,7 @@ locals {
   user_data = base64encode(
     # Use a multipart template to enable the option
     # for running the script at every boot.
+    # The script will be located at something like /var/lib/cloud/instance/user-data.txt on the instance.
     templatefile("user-data-multipart.tmpl", {
       user_data = local.init_script
     })

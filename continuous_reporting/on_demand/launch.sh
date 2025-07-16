@@ -3,6 +3,9 @@
 # Wrapper script to keep job coordinator code simple.
 # Usage: $0 (benchmark|report)
 
+# Load the env that gets created by the instance user script.
+source /run/yjit-init/.profile
+
 action="$1"
 case "$action" in
   benchmark|report)
