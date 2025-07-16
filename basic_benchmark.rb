@@ -421,7 +421,7 @@ if BENCH_DATA["yjit_metrics_sha"] && GIT_VERSIONS["yjit_metrics"] != BENCH_DATA[
 end
 
 # Rails apps in yjit-bench can leave a bad bootsnap cache - delete them
-Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| File.unlink File.join(YJIT_BENCH_DIR, f) }
+Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| FileUtils.rmtree File.join(YJIT_BENCH_DIR, f) }
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
 # It needs to happen *after* yjit-bench is cloned and updated.
