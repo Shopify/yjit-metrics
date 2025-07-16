@@ -18,7 +18,7 @@ secret_cache="$dir/secrets.json"
 warn () { echo "$*" >&2; }
 
 setup-profile () {
-  local file="$(getent passwd $uid | cut -d: -f 6)"/.bashrc
+  local file="$(getent passwd $uid | cut -d: -f 6)"/"$1"
   local line="[[ -r $profile ]] && source $profile # generated"
   head -n 1 "$file" | grep -qFx "$line" && return 0
   printf "1i\n%s\n.\nw\nq\n" "$line" | ed "$file"
@@ -67,7 +67,8 @@ yjit-slack-token () {
   printf "export SLACK_TOKEN_FILE=%q\n" "$secret_file" >> "$profile"
 }
 
-setup-profile
+setup-profile .bashrc
+setup-profile .zshrc
 process-metadata
 load-secrets
 yjit-git-creds
