@@ -39,6 +39,7 @@ configure-intel () {
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
 # https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
+  # nodejs needed for some ruby gems used in yjit-bench benchmarks.
   sudo apt install -y \
     autoconf \
     bison \
@@ -57,6 +58,7 @@ setup-packages () {
     rustup \
     sqlite3 \
     zlib1g-dev \
+    nodejs \
     $(if [[ -r /etc/ec2_version ]]; then echo linux-tools-aws linux-tools-"`uname -r`"; fi) \
   && true
 
