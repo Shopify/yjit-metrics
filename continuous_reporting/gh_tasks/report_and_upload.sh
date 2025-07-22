@@ -4,7 +4,7 @@ set -e
 
 cd ~/ym/yjit-metrics
 
-bundle
+bundle install
 
 # Copy benchmark raw data into destination repo, generate reports, commit changes to Git.
 ruby continuous_reporting/generate_and_upload_reports.rb

@@ -8,7 +8,7 @@ set -e
 # If there is uncommitted data after a benchmark run, get it into (all?) raw_benchmarks where it belongs
 cd ~/ym/yjit-metrics
 
-bundle
+bundle install
 
 # NOTE: This data dir is not configurable. If we run a smoke test
 # into a different data dir we explicitly do not want to include that here.
