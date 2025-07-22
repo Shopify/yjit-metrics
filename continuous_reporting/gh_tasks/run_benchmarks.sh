@@ -4,8 +4,8 @@ set -e
 
 cd ~/ym/yjit-metrics
 
-bundle
+bundle install
 
-ruby continuous_reporting/benchmark_and_update.rb --bench-params=$BENCH_PARAMS
+bundle exec continuous_reporting/benchmark_and_update.rb --bench-params=$BENCH_PARAMS
 
 echo "Completed benchmarking successfully."
