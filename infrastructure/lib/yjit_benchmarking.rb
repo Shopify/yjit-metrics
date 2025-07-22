@@ -113,7 +113,7 @@ module YJITBenchmarking
       def execute
         ensure_stopped!
         with_instances(reporting_instance, state: allowed_states) do |instance|
-          ssh_exec(instance, "#{LAUNCH_SCRIPT} report")
+          ssh_exec(instance, "YJIT_METRICS_NAME=#{(opts[:ref]).dump} #{LAUNCH_SCRIPT} report")
         end
       end
     end
@@ -191,11 +191,15 @@ module YJITBenchmarking
       [klass.name.split('::').last.downcase, klass]
     end
 
-    opts = {}
+    opts = {ref: "main"}
     OptionParser.new do |op|
       op.on("--only=NAME")
       op.on("--states=STATE") do |states|
         opts[:states] = states.split(',')
+      end
+      op.on("--ref=ref_name") do |ref_name|
+        raise("The 'ref' arg should not be empty") if ref_name.empty?
+        opts[:ref] = ref_name
       end
     end.parse!(args, into: opts)
 
