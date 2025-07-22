@@ -6,6 +6,9 @@ cd ~/ym/yjit-metrics
 
 bundle install
 
+# Update repos, etc. but run no benchmarks.
+bundle exec basic_benchmark.rb --runs=0 --configs=
+
 # Copy benchmark raw data into destination repo, generate reports, commit changes to Git.
 bundle exec continuous_reporting/generate_and_upload_reports.rb
 
