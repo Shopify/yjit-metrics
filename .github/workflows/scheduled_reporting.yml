@@ -22,4 +22,4 @@ jobs:
       script: |
         # If any benchmarking instances are running long, stop them, and fail.
         # If they had all finished on time, proceed with the reports.
-        ./bin/run quash && ./bin/run report
+        ./bin/run quash && ./bin/run report --ref="${{ github.ref_name }}"
