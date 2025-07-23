@@ -113,7 +113,7 @@ module YJITBenchmarking
       def execute
         ensure_stopped!
         with_instances(reporting_instance, state: allowed_states) do |instance|
-          ssh_exec(instance, "#{LAUNCH_SCRIPT} report")
+          ssh_exec(instance, "YJIT_METRICS_NAME=#{(opts[:ref] || "main").dump} #{LAUNCH_SCRIPT} report")
         end
       end
     end
@@ -196,6 +196,9 @@ module YJITBenchmarking
       op.on("--only=NAME")
       op.on("--states=STATE") do |states|
         opts[:states] = states.split(',')
+      end
+      op.on("--ref=ref_name") do |ref_name|
+        opts[:ref] = ref_name
       end
     end.parse!(args, into: opts)
 
