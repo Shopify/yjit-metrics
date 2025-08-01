@@ -383,6 +383,8 @@ module YJITMetrics
       MIN_BENCH_ITRS:      harness_settings[:min_benchmark_itrs],
       MIN_BENCH_TIME:      harness_settings[:min_benchmark_time],
       FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
+      RUBYOPT: nil,
+      BUNDLER_SETUP: nil,
     }
 
     with_ruby = shell_settings[:ruby]
@@ -393,7 +395,7 @@ module YJITMetrics
       pre_benchmark_code: (with_ruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_ruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
-      env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
+      env_var_exports: env_vars.map { |key, val| val.nil? ? "unset #{key}" : "export #{key}=#{val.to_s.dump}" }.join("\n"),
       ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
       script_path: benchmark_info[:script_path],
       bundler_version: shell_settings[:bundler_version],
