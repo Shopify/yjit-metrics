@@ -84,13 +84,13 @@ module YJITMetrics
   end
 
   # Checked system - error if the command fails
-  def check_call(command)
+  def check_call(command, env: {})
     # Use prefix to makes it easier to see in the log.
     puts("\e[33m## [#{Time.now}] #{command}\e[00m")
 
     status = nil
     Benchmark.realtime do
-      status = system(command)
+      status = system(env, command)
     end.tap do |time|
       printf "\e[34m## (`#{command}` took %.2fs)\e[00m\n", time
     end
@@ -100,8 +100,8 @@ module YJITMetrics
     end
   end
 
-  def check_output(command)
-    output = IO.popen(command) do |io_obj|
+  def check_output(command, env: {})
+    output = IO.popen(env, command) do |io_obj|
       io_obj.read
     end
     unless $?.success?
