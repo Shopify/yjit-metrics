@@ -88,7 +88,9 @@ module YJITBenchmarking
             remote_params = "~/ym/bench_params.json"
             system("scp", *ssh_opts, bench_params_file, "#{dest}:#{remote_params}")
 
-            ssh_exec(instance, "BENCH_PARAMS=#{remote_params} #{LAUNCH_SCRIPT} benchmark")
+            params = JSON.parse(File.read(bench_params_file))
+            yjit_metrics_name = params["yjit_metrics_name"]
+            ssh_exec(instance, "YJIT_METRICS_NAME=#{yjit_metrics_name.dump} BENCH_PARAMS=#{remote_params} #{LAUNCH_SCRIPT} benchmark")
           end
         end.map(&:join)
       end
@@ -113,7 +115,7 @@ module YJITBenchmarking
       def execute
         ensure_stopped!
         with_instances(reporting_instance, state: allowed_states) do |instance|
-          ssh_exec(instance, "YJIT_METRICS_NAME=#{(opts[:ref]).dump} #{LAUNCH_SCRIPT} report")
+          ssh_exec(instance, "YJIT_METRICS_NAME=#{opts[:ref].dump} #{LAUNCH_SCRIPT} report")
         end
       end
     end
