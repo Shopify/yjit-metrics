@@ -84,13 +84,13 @@ module YJITMetrics
   end
 
   # Checked system - error if the command fails
-  def check_call(command)
+  def check_call(command, env: {})
     # Use prefix to makes it easier to see in the log.
     puts("\e[33m## [#{Time.now}] #{command}\e[00m")
 
     status = nil
     Benchmark.realtime do
-      status = system(command)
+      status = system(env, command)
     end.tap do |time|
       printf "\e[34m## (`#{command}` took %.2fs)\e[00m\n", time
     end
@@ -100,8 +100,8 @@ module YJITMetrics
     end
   end
 
-  def check_output(command)
-    output = IO.popen(command) do |io_obj|
+  def check_output(command, env: {})
+    output = IO.popen(env, command) do |io_obj|
       io_obj.read
     end
     unless $?.success?
@@ -383,6 +383,8 @@ module YJITMetrics
       MIN_BENCH_ITRS:      harness_settings[:min_benchmark_itrs],
       MIN_BENCH_TIME:      harness_settings[:min_benchmark_time],
       FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
+      RUBYOPT: nil,
+      BUNDLER_SETUP: nil,
     }
 
     with_ruby = shell_settings[:ruby]
@@ -393,7 +395,7 @@ module YJITMetrics
       pre_benchmark_code: (with_ruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_ruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
-      env_var_exports: env_vars.map { |key, val| "export #{key}='#{val}'" }.join("\n"),
+      env_var_exports: env_vars.map { |key, val| val.nil? ? "unset #{key}" : "export #{key}=#{val.to_s.dump}" }.join("\n"),
       ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
       script_path: benchmark_info[:script_path],
       bundler_version: shell_settings[:bundler_version],

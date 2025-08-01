@@ -34,11 +34,15 @@ module YJITMetrics
     def clone_ruby_repo_with(path:, git_url:, git_branch:, config_opts:, config_env: [], install_to:)
       clone_repo_with(path: path, git_url: git_url, git_branch: git_branch)
 
+      # We are running under bundler so don't let our setup confuse anything in
+      # the ruby build commands.
+      env = {'RUBYOPT' => '', 'BUNDLER_SETUP' => nil}
+
       chdir(path) do
         config_opts += [ "--prefix=#{install_to}" ]
 
         unless File.exist?("./configure")
-          check_call("./autogen.sh")
+          check_call("./autogen.sh", env:)
         end
 
         if !File.exist?("./config.status")
@@ -47,7 +51,7 @@ module YJITMetrics
           # Right now this config check is brittle - if you give it a config_env containing quotes, for
           # instance, it will tend to believe it needs to reconfigure. We cut out single-quotes
           # because they've caused trouble, but a full fix might need to understand bash quoting.
-          config_status_output = check_output("./config.status --conf").gsub("'", "").split(" ").sort
+          config_status_output = check_output("./config.status --conf", env:).gsub("'", "").split(" ").sort
           desired_config = config_opts.sort.map { |s| s.gsub("'", "") } + config_env
           if config_status_output != desired_config
             puts "Configuration is wrong, reconfiguring..."
@@ -58,14 +62,14 @@ module YJITMetrics
         end
 
         if should_configure
-          check_call("#{config_env.join(" ")} ./configure #{ config_opts.join(" ") }")
+          check_call("#{config_env.join(" ")} ./configure #{ config_opts.join(" ") }", env:)
           # make clean is currently removing too much, but we don't need it when
           # we call `git clean` prior to this.
           # check_call("make clean")
         end
 
-        check_call("make -j16")
-        check_call("make install")
+        check_call("make -j16", env:)
+        check_call("make install", env:)
       end
     end
   end

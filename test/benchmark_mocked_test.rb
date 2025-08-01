@@ -82,11 +82,11 @@ class TestBenchmarkingWithMocking < Minitest::Test
         # and to return the details of that script's success or failure.
         # It's also supposed to write results to temp.json.
         fake_runner = proc do |script_contents|
-            unless script_contents =~ /OUT_JSON_PATH='(.*)'/
+            unless script_contents =~ /export OUT_JSON_PATH=(['"])(.*)\1$/
                 raise "Couldn't find the OUT_JSON_PATH in the script contents!"
             end
 
-            out_json_path = $1
+            out_json_path = $2
 
             FileUtils.cp("#{test_data_dir}/synthetic_data.json", out_json_path)
 
