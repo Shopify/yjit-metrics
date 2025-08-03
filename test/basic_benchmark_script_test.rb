@@ -38,6 +38,7 @@ class BasicBenchmarkScriptTest < Minitest::Test
     system(
       env,
       RbConfig.ruby,
+      "-rbundler/setup",
       @script,
       '--skip-git-updates',
       '--output', @output,
@@ -60,10 +61,10 @@ class BasicBenchmarkScriptTest < Minitest::Test
       assert_equal 2, data['version']
 
       times = data['times']
-      assert_equal 1, times['pass'].size
-      assert times['pass'].first.first > 0
-      assert_equal 1, times['cycle_error'].size
-      assert times['cycle_error'].first.first > 0
+      assert_equal 1, times['pass']&.size
+      assert_operator times.dig('pass', 0, 0).to_i, :>, 0
+      assert_equal 1, times['cycle_error']&.size
+      assert_operator times.dig('cycle_error', 0, 0).to_i, :>, 0
 
       assert_equal [0], data['failures_before_success']['pass']
       assert_equal [1], data['failures_before_success']['cycle_error']
