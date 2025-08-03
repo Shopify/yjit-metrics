@@ -174,6 +174,7 @@ end
 
 begin
     run_benchmarks
+    puts "Completed benchmarking successfully."
 rescue => exception
     puts exception.full_message
 
