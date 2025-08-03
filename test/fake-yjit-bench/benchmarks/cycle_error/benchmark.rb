@@ -4,6 +4,9 @@
 real_yjit_bench = File.expand_path('../../../../../yjit-bench', __dir__)
 require "#{real_yjit_bench}/harness/loader.rb"
 
+Dir.chdir __dir__
+use_gemfile
+
 # Require tempdir so that the tests always start with the same (empty) state.
 file = File.join(ENV.fetch('FAKE_YJIT_BENCH_OUTPUT'), '.cycle_error.tmp')
 
