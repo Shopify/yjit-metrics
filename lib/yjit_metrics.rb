@@ -383,8 +383,10 @@ module YJITMetrics
       MIN_BENCH_ITRS:      harness_settings[:min_benchmark_itrs],
       MIN_BENCH_TIME:      harness_settings[:min_benchmark_time],
       FORCE_BUNDLER_VERSION: shell_settings[:bundler_version],
+      RUBYLIB: nil,
       RUBYOPT: nil,
       BUNDLER_SETUP: nil,
+      BUNDLE_GEMFILE: nil,
     }
 
     with_ruby = shell_settings[:ruby]
