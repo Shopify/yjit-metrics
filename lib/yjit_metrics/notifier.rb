@@ -39,7 +39,7 @@ module YJITMetrics
     end
 
     # Send message to slack and return whether notification sent successfully.
-    # Afterwards the `success` attribute will be populated if further inspection is desired.
+    # Afterwards the `status` attribute will be populated if further inspection is desired.
     def notify!
       # Build command to use the slack script.
       cmd = [

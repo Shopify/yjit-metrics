@@ -36,7 +36,12 @@ module YJITMetrics
 
       # We are running under bundler so don't let our setup confuse anything in
       # the ruby build commands.
-      env = {'RUBYOPT' => '', 'BUNDLER_SETUP' => nil}
+      env = {
+        'RUBYLIB' => nil,
+        'RUBYOPT' => nil,
+        'BUNDLER_SETUP' => nil,
+        'BUNDLE_GEMFILE' => nil,
+      }
 
       chdir(path) do
         config_opts += [ "--prefix=#{install_to}" ]
