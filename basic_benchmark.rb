@@ -374,10 +374,6 @@ unless skip_git_updates
     builds_to_check.each do |ruby_build|
         build_info = RUBY_BUILDS[ruby_build]
         case build_info[:install]
-        when "ruby-install"
-            next if installed_rubies.include?(ruby_build)
-            puts "Installing Ruby #{ruby_build} via ruby-install..."
-            YJITMetrics.check_call("ruby-install #{ruby_build}")
         when "ruby-build"
             next if installed_rubies.include?(ruby_build)
             puts "Installing Ruby #{ruby_build} via ruby-build..."
