@@ -311,11 +311,7 @@ SKIPPED_COMBOS = [
 ]
 
 YJIT_METRICS_DIR = __dir__
-
-# Configuration for ruby-bench
-YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/ruby-bench.git"
-YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
-YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
+YJIT_BENCH_DIR = MetricsApp::Benchmarks::DIR
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -382,8 +378,11 @@ unless skip_git_updates
         end
     end
 
-    ### Ensure an up-to-date local ruby-bench checkout
-    YJITMetrics.clone_repo YJIT_BENCH_GIT_URL,YJIT_BENCH_DIR, branch: YJIT_BENCH_GIT_BRANCH
+  # Ensure an up-to-date local ruby-bench checkout.
+  MetricsApp::Benchmarks.prepare!(
+    BENCH_DATA["yjit_bench_repo"],
+    branch: BENCH_DATA["yjit_bench_sha"],
+  )
 end
 
 # All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.
@@ -403,9 +402,6 @@ GIT_VERSIONS = {
 if BENCH_DATA["yjit_metrics_sha"] && GIT_VERSIONS["yjit_metrics"] != BENCH_DATA["yjit_metrics_sha"]
     raise "YJIT-Metrics SHA in benchmark data disagrees with actual tested version!"
 end
-
-# Rails apps in ruby-bench can leave a bad bootsnap cache - delete them
-Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| FileUtils.rmtree File.join(YJIT_BENCH_DIR, f) }
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in ruby-bench.
 # It needs to happen *after* ruby-bench is cloned and updated.
