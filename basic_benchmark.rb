@@ -382,20 +382,20 @@ unless skip_git_updates
               YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{RUBIES}/#{ruby_build}")
             end
         when "repo"
-            YJITMetrics.clone_ruby_repo_with \
-                path: build_info[:repo_path],
+            MetricsApp.clone_ruby_repo \
                 git_url: build_info[:git_url],
-                git_branch: build_info[:git_branch] || "main",
-                install_to: RUBIES + "/" + ruby_build,
-                config_opts: build_info[:config_opts],
-                config_env: build_info[:config_env] || []
+                path: build_info[:repo_path],
+                branch: build_info[:git_branch] || "main",
+                prefix: RUBIES + "/" + ruby_build,
+                configure_args: build_info[:config_opts],
+                env: build_info[:config_env] || []
         else
             raise "Unrecognized installation method: #{RUBY_BUILDS[ruby_build][:install].inspect}!"
         end
     end
 
     ### Ensure an up-to-date local ruby-bench checkout
-    YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+    YJITMetrics.clone_repo YJIT_BENCH_GIT_URL,YJIT_BENCH_DIR, branch: YJIT_BENCH_GIT_BRANCH
 end
 
 # All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.

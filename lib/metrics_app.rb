@@ -6,7 +6,11 @@ require "pathname"
 module MetricsApp
   ROOT = Pathname.new(__dir__).parent
 
+  autoload :RepoManagement,      "#{__dir__}/metrics_app/repo_management"
+
   extend self
+
+  include RepoManagement
 
   def chdir(dir, &block)
     puts "### cd #{dir}"

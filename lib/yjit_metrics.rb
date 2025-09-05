@@ -15,7 +15,6 @@ module YJITMetrics
   autoload :CLI,                 "#{__dir__}/yjit_metrics/cli"
   autoload :ContinuousReporting, "#{__dir__}/yjit_metrics/continuous_reporting"
   autoload :Notifier,            "#{__dir__}/yjit_metrics/notifier"
-  autoload :RepoManagement,      "#{__dir__}/yjit_metrics/repo_management"
   autoload :ResultSet,           "#{__dir__}/yjit_metrics/result_set"
   autoload :Stats,               "#{__dir__}/yjit_metrics/stats"
   autoload :Theme,               "#{__dir__}/yjit_metrics/theme"
@@ -23,8 +22,6 @@ module YJITMetrics
   Dir.glob("yjit_metrics/{,timeline_}reports/*.rb", base: __dir__).each do |mod|
     require_relative mod
   end
-
-  include RepoManagement
 
   extend self # Make methods callable as YJITMetrics.method_name
 
