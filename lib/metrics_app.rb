@@ -7,6 +7,7 @@ module MetricsApp
   ROOT = Pathname.new(__dir__).parent
 
   autoload :RepoManagement,      "#{__dir__}/metrics_app/repo_management"
+  autoload :RubyBuild,           "#{__dir__}/metrics_app/ruby_build"
 
   extend self
 

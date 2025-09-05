@@ -20,6 +20,7 @@ require "benchmark"
 require "optparse"
 require "fileutils"
 require "etc"
+require_relative "lib/metrics_app"
 require_relative "lib/yjit_metrics"
 
 # Default settings for benchmark sampling
@@ -316,11 +317,6 @@ YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/r
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
 YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
 
-# Configuration for ruby-build
-RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
-RUBY_BUILD_GIT_BRANCH = "master"
-RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
-
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
 
@@ -362,12 +358,7 @@ unless skip_git_updates
     builds_to_check = configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq
 
     need_ruby_build = builds_to_check.any? { |build| RUBY_BUILDS[build][:install] == "ruby-build" }
-    if need_ruby_build
-        if !File.exist?(RUBY_BUILD_DIR)
-            YJITMetrics.clone_repo_with path: RUBY_BUILD_DIR, git_url: RUBY_BUILD_GIT_URL, git_branch: RUBY_BUILD_GIT_BRANCH
-
-        end
-    end
+    MetricsApp::RubyBuild.prepare! if need_ruby_build
 
     installed_rubies = Dir.glob("*", base: RUBIES)
 
@@ -377,10 +368,7 @@ unless skip_git_updates
         when "ruby-build"
             next if installed_rubies.include?(ruby_build)
             puts "Installing Ruby #{ruby_build} via ruby-build..."
-            Dir.chdir(RUBY_BUILD_DIR) do
-              YJITMetrics.check_call("git pull")
-              YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{RUBIES}/#{ruby_build}")
-            end
+            MetricsApp::RubyBuild.install(ruby_build.sub(/^ruby-/, ''), "#{RUBIES}/#{ruby_build}")
         when "repo"
             MetricsApp.clone_ruby_repo \
                 git_url: build_info[:git_url],
