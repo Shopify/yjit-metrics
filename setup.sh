@@ -95,11 +95,6 @@ setup-repos () {
   mkdir -p "$dir"
   cd "$dir"
 
-  # Setup one clone of ruby/ruby for each "ruby-config" we want to build.
-  [[ -d prod-yjit ]]  || git clone https://github.com/ruby/ruby prod-yjit
-  [[ -d prev-yjit ]]  || git clone --reference prod-yjit --dissociate https://github.com/ruby/ruby prev-yjit
-  [[ -d stats-yjit ]] || git clone --reference prod-yjit --dissociate https://github.com/ruby/ruby stats-yjit
-
   # In case this script isn't being run from the repo.
   [[ -d yjit-metrics ]] || git clone https://github.com/Shopify/yjit-metrics
 

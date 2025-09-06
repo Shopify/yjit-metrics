@@ -6,6 +6,7 @@ require 'tempfile'
 require 'json'
 require 'csv'
 require 'erb'
+require 'shellwords'
 
 require_relative "./metrics_app"
 require_relative "./yjit_metrics/defaults"
@@ -27,11 +28,8 @@ module YJITMetrics
 
   HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
-  PLATFORMS = ["x86_64", "aarch64"]
-
-  uname_platform = `uname -m`.chomp.downcase.sub(/^arm(\d+)$/, 'aarch\1')
-  PLATFORM = PLATFORMS.detect { |platform| uname_platform == platform }
-  raise("yjit-metrics only supports running on x86_64 and aarch64!") if !PLATFORM
+  PLATFORMS = MetricsApp::PLATFORMS
+  PLATFORM  = MetricsApp::PLATFORM
 
   # This structure is returned by the benchmarking harness from a run.
   JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
@@ -370,7 +368,7 @@ module YJITMetrics
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
       env_var_exports: env_vars.map { |key, val| val.nil? ? "unset #{key}" : "export #{key}=#{val.to_s.dump}" }.join("\n"),
-      ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
+      ruby_opts: Shellwords.join(["-I#{HARNESS_PATH}"] + shell_settings[:ruby_opts]),
       script_path: benchmark_info[:script_path],
       bundler_version: shell_settings[:bundler_version],
     }
