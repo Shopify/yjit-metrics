@@ -112,7 +112,7 @@ OptionParser.new do |opts|
         output_path = dir
     end
 
-    opts.on("--bundler-version=VERSION", "Require a specific Bundler version (default: 2.2.30)") do |ver|
+    opts.on("--bundler-version=VERSION", "Require a specific Bundler version") do |ver|
         bundler_version = ver
     end
 
