@@ -312,7 +312,7 @@ SKIPPED_COMBOS = [
 YJIT_METRICS_DIR = __dir__
 
 # Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/Shopify/yjit-bench.git"
+YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/yjit-bench.git"
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
 YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
 

@@ -26,7 +26,7 @@ locals {
 
     "chmod 0755 ${local.ym_setup} && ${local.ym_setup} cpu packages ruby",
     "mkdir -p ~/src && cd ~/src",
-    "git clone https://github.com/Shopify/yjit-bench",
+    "git clone https://github.com/ruby/yjit-bench",
 
     # Auto-mount the reporting EBS volume when present.
     "sudo mkdir -p ${local.reporting_ebs_mount_point}",
