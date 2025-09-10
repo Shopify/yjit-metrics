@@ -45,7 +45,7 @@ cruby_repo = "https://github.com/ruby/ruby"
 yjit_metrics_name = "main"
 yjit_metrics_repo = "https://github.com/Shopify/yjit-metrics.git"
 yjit_bench_name = "main"
-yjit_bench_repo = "https://github.com/Shopify/yjit-bench.git"
+yjit_bench_repo = "https://github.com/ruby/yjit-bench.git"
 benchmark_data_dir = nil
 
 def non_empty(s)

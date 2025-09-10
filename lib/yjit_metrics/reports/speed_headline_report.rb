@@ -28,7 +28,7 @@ module YJITMetrics
     end
 
     def yjit_bench_file_url(path)
-      "https://github.com/Shopify/yjit-bench/blob/#{@result_set.full_run_info&.dig("git_versions", "yjit_bench") || "main"}/#{path}"
+      "https://github.com/ruby/yjit-bench/blob/#{@result_set.full_run_info&.dig("git_versions", "yjit_bench") || "main"}/#{path}"
     end
 
     def ruby_version(config)
