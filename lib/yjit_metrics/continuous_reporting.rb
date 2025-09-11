@@ -4,7 +4,7 @@ require "fileutils"
 
 module YJITMetrics
   module ContinuousReporting
-    # Dir in which yjit-metrics, yjit-bench, etc are cloned
+    # Dir in which yjit-metrics, ruby-bench, etc are cloned
     YM_ROOT_DIR = File.expand_path(File.join(__dir__, "../../.."))
 
     # This repo.

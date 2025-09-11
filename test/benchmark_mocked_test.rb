@@ -1,7 +1,7 @@
 require_relative "test_helper"
 
 # For these tests we don't want to run the harness. We want to fake running the harness
-# using a fake popen to avoid interacting with (e.g.) the contents of the yjit-bench repo.
+# using a fake popen to avoid interacting with (e.g.) the contents of the ruby-bench repo.
 class FakePopen
     def initialize(expected_args: nil, readpartial_results:, worker_pid: 12345, harness_script_pid: 54321, stderr: "")
         @expected_args = expected_args
@@ -107,7 +107,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
         })
 
         result = YJITMetrics.run_single_benchmark(
-            # Information about the yjit-bench benchmark
+            # Information about the ruby-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
             harness_settings: hs,
             shell_settings: ss,
@@ -159,7 +159,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
         })
 
         result = YJITMetrics.run_single_benchmark(
-            # Information about the yjit-bench benchmark
+            # Information about the ruby-bench benchmark
             { name: "single_bench", script_path: "/path/to/single_bench.rb" },
             harness_settings: hs,
             shell_settings: ss,

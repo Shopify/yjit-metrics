@@ -6,7 +6,7 @@ the latest YJIT statistics, gathered with yjit-metrics,
 [at speed.yjit.org](https://speed.yjit.org).
 
 YJIT-metrics uses the benchmarks in the
-[yjit-bench repository](https://github.com/ruby/yjit-bench).
+[ruby-bench repository](https://github.com/ruby/ruby-bench).
 
 ## Setup and Installation, Accuracy of Results
 
@@ -29,7 +29,7 @@ For that reason, where we-the-authors provide official numbers they will usually
 
 ### Benchmark data
 
-You can run `./basic_benchmark.rb` to clone appropriate other repositories (yjit, yjit-bench) and run the benchmarks. You can also specify one or more benchmark names on the command line to run only those benchmarks: `./basic_benchmark.rb activerecord`
+You can run `./basic_benchmark.rb` to clone appropriate other repositories (yjit, ruby-bench) and run the benchmarks. You can also specify one or more benchmark names on the command line to run only those benchmarks: `./basic_benchmark.rb activerecord`
 
 `basic_benchmark.rb` also accepts many other parameters, such as a `--skip-git-updates` parameter for runs after the first to not "git pull" its repos and rebuild Ruby.
 
@@ -65,7 +65,7 @@ Our experience has been that the JVM (non-default) version gets better results t
 
 When you first try to run `basic_benchmark.rb` including a TruffleRuby configuration, `basic_benchmark.rb` will clone ruby-build and tell you how to install it. After you do so, run `basic_benchmark.rb` again and it will install TruffleRuby for you.
 
-In general, `basic_benchmark.rb` will try to install or update the appropriate Ruby version(s) when you run it. If you run it with `--skip-git-updates` it will *not* attempt to install or update any Ruby configuration, nor yjit-bench, nor any of its other dependencies. If you want a partial installation or update you'll want to do it manually rather than relying on `basic_benchmark.rb`.
+In general, `basic_benchmark.rb` will try to install or update the appropriate Ruby version(s) when you run it. If you run it with `--skip-git-updates` it will *not* attempt to install or update any Ruby configuration, nor ruby-bench, nor any of its other dependencies. If you want a partial installation or update you'll want to do it manually rather than relying on `basic_benchmark.rb`.
 
 ## Bugs, Questions and Contributions
 

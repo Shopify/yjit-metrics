@@ -39,7 +39,7 @@ configure-intel () {
 # The linux-tools-common package (a dep of linux-tools-`uname -r`) brings in `perf`.
 # https://docs.ruby-lang.org/en/master/contributing/building_ruby_md.html#label-Dependencies
 setup-packages () {
-  # nodejs needed for some ruby gems used in yjit-bench benchmarks.
+  # nodejs needed for some ruby gems used in ruby-bench benchmarks.
   sudo apt install -y \
     autoconf \
     bison \

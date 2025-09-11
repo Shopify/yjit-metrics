@@ -5,7 +5,7 @@ require_relative "../report"
 # We'd like to be able to create a quick columnar report, often for one
 # Ruby config versus another, and load/dump it as JSON or CSV. This isn't a
 # report class that is all things to all people -- it's specifically
-# a comparison of two or more configurations per-benchmark for yjit-bench.
+# a comparison of two or more configurations per-benchmark for ruby-bench.
 #
 # The first configuration given is assumed to be the baseline against
 # which the other configs are measured.
