@@ -36,7 +36,7 @@ IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" 
 # Ignore unnecessary env vars that match any of the above patterns.
 IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
 
-srand(1337) # Matches value in yjit-bench harness. TODO: make configurable?
+srand(1337) # Matches value in ruby-bench harness. TODO: make configurable?
 
 # Get string metadata about the running server (with "instance-type" returns "cX.metal"; Can fetch tags, etc).
 INSTANCE_INFO = File.expand_path("./instance-info.sh", __dir__)
@@ -94,7 +94,7 @@ def ruby_metadata
 end
 
 # Specify a Gemfile and directory to use; install gems; do any extra per-benchmark setup.
-# This varies from the yjit-bench harness method because it specifies one exact Bundler version.
+# This varies from the ruby-bench harness method because it specifies one exact Bundler version.
 def use_gemfile(extra_setup_cmd: nil)
   setup_cmds([ "bundle install --quiet", extra_setup_cmd].compact)
 

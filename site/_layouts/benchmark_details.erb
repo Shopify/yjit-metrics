@@ -1,7 +1,7 @@
 ---
 urls:
   yjit: https://github.com/Shopify/yjit
-  yjit_bench: https://github.com/ruby/yjit-bench
+  yjit_bench: https://github.com/ruby/ruby-bench
   ruby: https://github.com/ruby/ruby
 ---
 <!DOCTYPE html>
@@ -35,7 +35,7 @@ urls:
 
       <p>
         <a href="<%= urls[:yjit] %>">YJIT</a>
-        metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
+        metrics from the <a href="<%= urls[:yjit_bench] %>">ruby-bench suite</a>
         <% if page.yjit_commit %>
           using Ruby
           <a href="<%= urls[:ruby] %>/commit/<%= page.yjit_commit %>"><%= page.yjit_commit[0..9] %></a>.

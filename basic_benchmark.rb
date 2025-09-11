@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# Clone the yjit-bench directory and run benchmarks with various Rubies.
+# Clone the ruby-bench directory and run benchmarks with various Rubies.
 # Usage: specify benchmarks to run as command line arguments.
 #   You can also specify RUBY_CONFIG_OPTS to specify the arguments
 #   that should be passed to Ruby's configuration script.
@@ -8,7 +8,7 @@
 # This benchmark keeps multiple checkouts of YJIT so that we have
 # configurations for production, debug, stats and potentially others
 # over time.
-# It also keeps a yjit-bench repository at ../yjit-bench.
+# It also keeps a ruby-bench repository at ../yjit-bench.
 
 # The intention is that basic_benchmark can be used to collect benchmark
 # results, and then basic_report can be used to show reports for those
@@ -28,7 +28,7 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore)
 
-# Use "quiet" mode since yjit-bench will record the runtime stats in the json file anyway.
+# Use "quiet" mode since ruby-bench will record the runtime stats in the json file anyway.
 # Having the text stats print out makes it harder to report stderr on failures.
 YJIT_STATS_OPTS = [ "--yjit-stats=quiet" ]
 
@@ -311,8 +311,8 @@ SKIPPED_COMBOS = [
 
 YJIT_METRICS_DIR = __dir__
 
-# Configuration for yjit-bench
-YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/yjit-bench.git"
+# Configuration for ruby-bench
+YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/ruby-bench.git"
 YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
 YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
 
@@ -398,7 +398,7 @@ unless skip_git_updates
         end
     end
 
-    ### Ensure an up-to-date local yjit-bench checkout
+    ### Ensure an up-to-date local ruby-bench checkout
     YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
 end
 
@@ -420,11 +420,11 @@ if BENCH_DATA["yjit_metrics_sha"] && GIT_VERSIONS["yjit_metrics"] != BENCH_DATA[
     raise "YJIT-Metrics SHA in benchmark data disagrees with actual tested version!"
 end
 
-# Rails apps in yjit-bench can leave a bad bootsnap cache - delete them
+# Rails apps in ruby-bench can leave a bad bootsnap cache - delete them
 Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| FileUtils.rmtree File.join(YJIT_BENCH_DIR, f) }
 
-# This will match ARGV-supplied benchmark names with canonical names and script paths in yjit-bench.
-# It needs to happen *after* yjit-bench is cloned and updated.
+# This will match ARGV-supplied benchmark names with canonical names and script paths in ruby-bench.
+# It needs to happen *after* ruby-bench is cloned and updated.
 benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: YJIT_BENCH_DIR
 
 def harness_settings_for_config_and_bench(config, bench)
@@ -634,7 +634,7 @@ intermediate_by_config.each do |config, int_files|
     # Items in "full_run" should be the same for any run included in this timestamp group
     # (so nothing specific to this execution since we merge results from multiple machines).
     merged_data["full_run"] = {
-        "git_versions" => GIT_VERSIONS, # yjit-metrics version, yjit-bench version, etc.
+        "git_versions" => GIT_VERSIONS, # yjit-metrics version, ruby-bench version, etc.
         "ruby_config_opts" => ruby_config_opts, # command-line options for each Ruby configuration
     }
 

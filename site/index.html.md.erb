@@ -2,7 +2,7 @@
 layout: basic
 urls:
   yjit: https://github.com/Shopify/yjit
-  yjit_bench: https://github.com/ruby/yjit-bench
+  yjit_bench: https://github.com/ruby/ruby-bench
   ruby: https://github.com/ruby/ruby
 ---
 
@@ -13,7 +13,7 @@ urls:
 
   <div>
     <a href="<%= urls[:yjit] %>">YJIT</a>
-    metrics from the <a href="<%= urls[:yjit_bench] %>">yjit-bench suite</a>
+    metrics from the <a href="<%= urls[:yjit_bench] %>">ruby-bench suite</a>
     as of <strong><%= last_bench.date_str %></strong>
     (<a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..9] %></a>)
   </div>

@@ -25,7 +25,7 @@ require "json"
 # SHA then this SHA should match it. Note that SHA is an output based on name, it's
 # not an input (though the name can be a SHA.)
 #
-# YJIT-Bench Name, Repo and SHA: like with CRuby, a branch or short SHA can be given for
+# Ruby-Bench Name, Repo and SHA: like with CRuby, a branch or short SHA can be given for
 # the name, and the SHA will be recorded too.
 #
 # YJIT-Metrics Name, Repo and SHA: same as CRuby name and SHA, but for yjit-metrics.
@@ -45,7 +45,7 @@ cruby_repo = "https://github.com/ruby/ruby"
 yjit_metrics_name = "main"
 yjit_metrics_repo = "https://github.com/Shopify/yjit-metrics.git"
 yjit_bench_name = "main"
-yjit_bench_repo = "https://github.com/ruby/yjit-bench.git"
+yjit_bench_repo = "https://github.com/ruby/ruby-bench.git"
 benchmark_data_dir = nil
 
 def non_empty(s)

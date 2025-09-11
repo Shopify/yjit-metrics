@@ -38,7 +38,7 @@ module YJITMetrics
       def %(bench_name)
         bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] ) || "(no description available)"
         suffix = BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file] ? ".rb" : "/benchmark.rb"
-        bench_url = "https://github.com/ruby/yjit-bench/blob/main/benchmarks/#{bench_name}#{suffix}"
+        bench_url = "https://github.com/ruby/ruby-bench/blob/main/benchmarks/#{bench_name}#{suffix}"
 
         %Q(<a href="#{bench_url}" title="#{bench_desc.gsub('"', '&quot;')}">#{bench_name}</a>)
       end
