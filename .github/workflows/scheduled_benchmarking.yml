@@ -1,10 +1,11 @@
 name: Run Scheduled Benchmarks
 
 on:
-  # Run daily shortly before midnight US Eastern Time.
+  # Run daily prior to midnight US Eastern Time,
+  # with enough time to finish before the reporting runs.
   # (Use any minute other than "on the hour".)
   schedule:
-    - cron: "40 3 * * *" # UTC
+    - cron: "40 1 * * *" # UTC
 
   # Also allow running on demand via the "Run workflow" UI in GitHub Actions.
   workflow_dispatch:
