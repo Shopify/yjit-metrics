@@ -75,10 +75,13 @@ variable "reporting_ebs_device_label" {
 variable "reporting_instance_type" {
   # The timeline report has an RSS of 6GB (as of 2024-09-17).
   # Let's pass up 8GB and go up to 16GB.
+  # https://calculator.aws/#/createCalculator/ec2-enhancement
+  # r6i.large:       2 CPU 16 GB: 0.126
   # r7i.large:       2 CPU 16 GB: 0.1323
   # r8g.large:       2 CPU 16 GB: 0.11782
+  # r8i-flex.large:  2 CPU 16 GB: 0.13197
   # m7i-flex.xlarge: 4 CPU 16 GB: 0.19152
-  default = "r7i.large"
+  default = "r6i.large"
 }
 
 variable "reporting_ebs_name" {
