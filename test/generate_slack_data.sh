@@ -11,7 +11,7 @@ platform="$(platform)"
 
 dir="$(mktemp -d -t slack-data)"
 
-export YJIT_BENCH_DIR=test/fake-ruby-bench FAKE_YJIT_BENCH_OUTPUT="$dir"
+export RUBY_BENCH_DIR=test/fake-ruby-bench FAKE_RUBY_BENCH_OUTPUT="$dir"
 ./basic_benchmark.rb --skip-git-updates \
   --warmup-itrs=0 --min-bench-time=0.0 --min-bench-itrs=1 \
   --on-errors=report --max-retries=1 \

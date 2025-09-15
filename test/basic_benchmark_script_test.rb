@@ -23,8 +23,8 @@ class BasicBenchmarkScriptTest < Minitest::Test
 
   def env
     {
-      'YJIT_BENCH_DIR' => FAKE_YJIT_BENCH_DIR,
-      'FAKE_YJIT_BENCH_OUTPUT' => @output,
+      'RUBY_BENCH_DIR' => FAKE_RUBY_BENCH_DIR,
+      'FAKE_RUBY_BENCH_OUTPUT' => @output,
     }
   end
 

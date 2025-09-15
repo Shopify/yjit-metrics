@@ -4,7 +4,7 @@ module MetricsApp
   module Benchmarks
     URL = "https://github.com/ruby/ruby-bench.git"
     # Look for it adjacent to this repo's checkout.
-    DIR = ENV["YJIT_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("ruby-bench")
+    DIR = ENV["RUBY_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("ruby-bench")
 
     extend self
 

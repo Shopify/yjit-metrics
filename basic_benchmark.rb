@@ -182,7 +182,7 @@ SKIPPED_COMBOS = [
 ]
 
 YJIT_METRICS_DIR = __dir__
-YJIT_BENCH_DIR = MetricsApp::Benchmarks::DIR
+RUBY_BENCH_DIR = MetricsApp::Benchmarks::DIR
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
@@ -232,7 +232,7 @@ def sha_for_dir(dir)
 end
 
 GIT_VERSIONS = {
-    "yjit_bench" => sha_for_dir(YJIT_BENCH_DIR),
+    "yjit_bench" => sha_for_dir(RUBY_BENCH_DIR),
     "yjit_metrics" => sha_for_dir(YJIT_METRICS_DIR),
 }
 
@@ -242,7 +242,7 @@ end
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in ruby-bench.
 # It needs to happen *after* ruby-bench is cloned and updated.
-benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: YJIT_BENCH_DIR
+benchmark_list = YJITMetrics::BenchmarkList.new name_list: ARGV, yjit_bench_path: RUBY_BENCH_DIR
 
 def harness_settings_for_config_and_bench(config, bench)
     if HARNESS_PARAMS[:variable_warmup_config_file]
@@ -256,8 +256,8 @@ def harness_settings_for_config_and_bench(config, bench)
                 min_benchmark_itrs: @variable_warmup_settings[config][bench]["min_bench_itrs"] || 15,
                 min_benchmark_time: @variable_warmup_settings[config][bench]["min_bench_time"] || 0,
             })
-        elsif YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"][config]
-            defaults = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"][config]
+        elsif YJITMetrics::DEFAULT_RUBY_BENCH_CI_SETTINGS["configs"][config]
+            defaults = YJITMetrics::DEFAULT_RUBY_BENCH_CI_SETTINGS["configs"][config]
             # This benchmark hasn't been run before. Use default settings for this config until we've finished a run.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
                 warmup_itrs: defaults["max_warmup_itrs"],
@@ -268,7 +268,7 @@ def harness_settings_for_config_and_bench(config, bench)
             # This benchmark hasn't been run before and we don't have config-specific defaults. Oof.
             @hs_by_config_and_bench[config][bench] ||= YJITMetrics::HarnessSettings.new({
                 warmup_itrs: nil,
-                min_benchmark_itrs: YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["min_bench_itrs"],
+                min_benchmark_itrs: YJITMetrics::DEFAULT_RUBY_BENCH_CI_SETTINGS["min_bench_itrs"],
                 min_benchmark_time: 0,
             })
         end
@@ -335,7 +335,7 @@ end
 
 load_averages_before = load_averages
 
-Dir.chdir(YJIT_BENCH_DIR) do
+Dir.chdir(RUBY_BENCH_DIR) do
     all_runs.each.with_index do |(run_num, config, bench_info), progress_idx|
       Benchmark.realtime do
         puts "## [#{Time.now}] Next run: config #{config}  benchmark: #{bench_info[:name]}  run idx: #{run_num}  progress: #{progress_idx + 1}/#{all_runs.size}"

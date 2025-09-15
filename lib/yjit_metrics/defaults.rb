@@ -6,7 +6,7 @@ module YJITMetrics
   # This is used by benchmark_and_update.rb for CI reporting directly.
   # It's also used by the VariableWarmupReport when selecting appropriate
   # benchmarking settings. This is only for the default ruby-bench benchmarks.
-  DEFAULT_YJIT_BENCH_CI_SETTINGS = {
+  DEFAULT_RUBY_BENCH_CI_SETTINGS = {
     # Config names and config-specific settings
     "configs" => {
       # Each config controls warmup individually. But the number of real iterations needs
