@@ -342,7 +342,7 @@ Dir.chdir(RUBY_BENCH_DIR) do
 
         ruby = RUBY_CONFIGS[config][:build]
         ruby_opts = RUBY_CONFIGS[config][:opts]
-        prefix_cmd = if this_os == :linux && ruby[:setarch] != false
+        prefix_cmd = if this_os == :linux && RUBY_CONFIGS[config][:setarch] != false
           "setarch #{`uname -m`.strip.dump} -R taskset -c #{Etc.nprocessors - 1}"
         end
 
