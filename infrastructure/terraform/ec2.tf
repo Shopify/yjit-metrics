@@ -16,6 +16,7 @@ locals {
     # Use a multipart template to enable the option
     # for running the script at every boot.
     # The script will be located at something like /var/lib/cloud/instance/user-data.txt on the instance.
+    # You can see the log of the boot script with a command like `journalctl -xeu cloud-final.service`.
     templatefile("user-data-multipart.tmpl", {
       user_data = local.init_script
     })
