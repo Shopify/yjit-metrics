@@ -105,6 +105,8 @@ setup-repos () {
 
   # Clone raw-benchmark-data for pushing results.
   [[ -d raw-benchmark-data ]] || git clone --branch main https://github.com/yjit-raw/benchmark-data raw-benchmark-data
+  # Clone github pages repo for pushing built reports.
+  [[ -d ghpages-yjit-metrics ]] || git clone --branch pages https://github.com/yjit-raw/yjit-reports ghpages-yjit-metrics
 }
 
 setup-ruby-build () {
