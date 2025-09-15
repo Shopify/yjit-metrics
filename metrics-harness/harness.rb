@@ -7,10 +7,14 @@ STDOUT.sync = true
 # rather than readpartial stopping midway.
 print "HARNESS PID: #{Process.pid} -\n"
 
-YJIT_MODULE = defined?(YJIT) ? YJIT : (defined?(RubyVM::YJIT) ? RubyVM::YJIT : nil)
+ENABLED_JIT = if defined?(RubyVM::ZJIT.enabled?) && RubyVM::ZJIT.enabled?
+                :zjit
+              elsif defined?(RubyVM::YJIT.enabled?) && RubyVM::YJIT.enabled?
+                :yjit
+              end
 
 # Warmup iterations
-WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 0).to_i.nonzero? || if YJIT_MODULE&.enabled?
+WARMUP_ITRS = ENV.fetch('WARMUP_ITRS', 0).to_i.nonzero? || if ENABLED_JIT
   50
 else
   # Assume CRuby interpreter which doesn't need much warmup.
@@ -30,8 +34,8 @@ OUT_JSON_PATH = File.expand_path(ENV.fetch('OUT_JSON_PATH', default_path))
 
 # Save the value of any environment variable whose name contains a string in this case-insensitive list.
 # Note: this means you can store extra non-framework metadata about any run by setting an env var
-# starting with YJIT_METRICS before running it.
-IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics" ]
+# starting with METRICS_APP_ before running it.
+IMPORTANT_ENV = [ "ruby", "gem", "bundle", "ld_preload", "path", "yjit_metrics", "metrics_app" ]
 
 # Ignore unnecessary env vars that match any of the above patterns.
 IGNORABLE_ENV = %w[RBENV_ORIG_PATH GOPATH MANPATH INFOPATH]
@@ -136,10 +140,16 @@ def run_benchmark(num_itrs_hint, &block)
   total_time = 0
   num_itrs = 0
 
-  # Note: this harness records *one* set of YJIT stats for all iterations
+  # Note: this harness records *one* set of jit stats for all iterations
   # combined, including warmups. That's a good thing for our specific use
   # case, but would be awful for many other use cases.
-  YJIT_MODULE&.reset_stats!
+  case ENABLED_JIT
+  when :zjit
+    RubyVM::ZJIT.reset_stats!
+  when :yjit
+    RubyVM::YJIT.reset_stats!
+  end
+
   begin
     time = realtime(&block)
     num_itrs += 1
@@ -166,7 +176,12 @@ def run_benchmark(num_itrs_hint, &block)
     peak_mem_bytes = 1024 * mem.to_i
   end
 
-  yjit_stats = YJIT_MODULE&.runtime_stats
+  jit_stats = case ENABLED_JIT
+              when :zjit
+                RubyVM::ZJIT.stats
+              when :yjit
+                RubyVM::YJIT.runtime_stats
+              end
 
   out_env_keys = ENV.keys.select { |k| IMPORTANT_ENV.any? { |s| k.downcase[s] } }
   out_env_keys -= IGNORABLE_ENV
@@ -180,7 +195,7 @@ def run_benchmark(num_itrs_hint, &block)
   warmup_times = times[0...WARMUP_ITRS]
   warmed_times = times[WARMUP_ITRS..-1]
 
-  # Require additional modules *after* collecting YJIT stats
+  # Require additional modules *after* collecting jit stats
   # to avoid irrelevant changes to the stats (invalidation counts, etc).
   require 'json'
 
@@ -202,6 +217,9 @@ def run_benchmark(num_itrs_hint, &block)
   rel_stddev_pct = stddev / mean * 100.0
   puts "Non-warmup iteration mean time: #{"%.2f ms" % (mean * 1000.0)} +/- #{"%.2f%%" % rel_stddev_pct}"
 
-  out_data[:yjit_stats] = yjit_stats
+  if jit = ENABLED_JIT
+    out_data["#{jit}_stats".to_sym] = jit_stats
+  end
+
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
