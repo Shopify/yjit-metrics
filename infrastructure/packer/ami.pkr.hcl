@@ -82,7 +82,6 @@ locals {
     # Symlink the expected names under ~/ym to the reporting ebs mount.
     # They will only be valid on the reporting instance,
     # but that's the only instance that will try to use them.
-    "ln -s ${local.reporting_ebs_mount_point}/ghpages-yjit-metrics ~/ym/",
     "ln -s ${local.reporting_ebs_mount_point}/built-yjit-reports   ~/ym/",
   ]
 

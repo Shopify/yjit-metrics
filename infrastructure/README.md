@@ -79,8 +79,7 @@ To create an AMI for less-specific utilities such as reporting aggregation or ma
 
 ### EBS reporting cache volume
 
-This volume has 2 directories that are not needed by the benchmarking instances:
-- The yjit-raw/yjit-reports repo where the pages are published
+This volume has one directory that is not needed by the benchmarking instances:
 - A cache dir of previous reports so that the report generator knows what it can skip
 
 This only needs to be created once.

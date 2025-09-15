@@ -16,10 +16,10 @@ variable "benchmarking_arm_instance_type" {
 # Each built ruby in ~/.rubies can take 700MB - 1.5GB (minimum of 3, call it 5GB).
 # Each ruby build dir is also 1.5GB (currently 3 another 5GB).
 # yjit-bench and yjit-metrics add up to 1.5GB.
-# The yjit-raw/benchmark-data repo is 7.5GB.
-# That brings us to 24GB, add more to be sure we have plenty of room.
+# The yjit-raw repos can eat 15GB.
+# That brings us to ~26GB; add more to be sure we have plenty of room.
 variable "benchmarking_volume_size_gb" {
-  default = 32
+  default = 40
 }
 
 variable "dev_ami_name_pattern" {
@@ -86,12 +86,10 @@ variable "reporting_ebs_name" {
   default = "YJIT Benchmark Reporting Cache"
 }
 
-# The reporting instance does most of its disk churn on the cache volume
-# (it doesn't need to build rubies) so it can be a bit smaller.
-# The disk starts out at around 16 so let's give it 24
-# so that there's plenty of space for upgrades, etc.
+# The disk starts out at around 16.  24 Fills up quickly with updates,
+# operations, etc.  Some git repos require several GB of space to operate.
 variable "reporting_root_volume_size_gb" {
-  default = 24
+  default = 40
 }
 
 variable "root_device_name" {

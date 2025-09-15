@@ -37,13 +37,8 @@ build {
       "sudo chown $(id -u):$(id -g) '${local.reporting_ebs_mount_point}'",
       "cd '${local.reporting_ebs_mount_point}'",
 
-      # This repo is open source and publicly readable.
-      # A token for pushing to yjit-raw repos will be provided to the reporting instance that uses this volume.
-      "git clone --branch pages https://github.com/yjit-raw/yjit-reports.git",
-      # Symlink to provide the name that yjit-metrics expects.
-      "ln -s yjit-reports ghpages-yjit-metrics",
-
       # This needs to be copied over from the existing instance manually.
+      # An alternative would be to sync this dir with a bucket.
       "mkdir -p built-yjit-reports",
     ]
   }

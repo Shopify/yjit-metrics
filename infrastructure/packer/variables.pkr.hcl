@@ -24,10 +24,8 @@ variable "reporting_ebs_name" {
   default = "YJIT Benchmark Reporting Cache"
 }
 
-# As of 2024-09-17
-# - the built report cache is 1.5GB
-# - yjit-reports repo is 2.5GB
-# 8GB is plenty. If we get low the yjit-reports really doesn't need to be on this volume.
+# As of 2025-09-15 the built report cache is 2.2GB.
+# 8GB should be plenty.
 variable "reporting_ebs_volume_size_gb" {
   default = 8
 }
