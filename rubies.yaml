@@ -5,7 +5,7 @@ runtime_options:
   yjit: &yjit
     - --yjit
   yjit_stats: &yjit_stats
-    # Use "quiet" mode since yjit-bench will record the runtime stats in the json file anyway.
+    # Use "quiet" mode since ruby-bench will record the runtime stats in the json file anyway.
     # Having the text stats print out makes it harder to report stderr on failures.
     - --yjit
     - --yjit-stats=quiet

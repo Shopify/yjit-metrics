@@ -8,7 +8,7 @@
 # This benchmark keeps multiple checkouts of YJIT so that we have
 # configurations for production, debug, stats and potentially others
 # over time.
-# It also keeps a ruby-bench repository at ../yjit-bench.
+# It also keeps a ruby-bench repository at ../ruby-bench.
 
 # The intention is that basic_benchmark can be used to collect benchmark
 # results, and then basic_report can be used to show reports for those
@@ -209,7 +209,7 @@ def this_os
 end
 
 if skip_git_updates
-  puts "Skipping git updates; rubies and yjit-bench must already exist"
+  puts "Skipping git updates; rubies and ruby-bench must already exist"
 else
   MetricsApp::Rubies.install_all!(
     configs_to_test,

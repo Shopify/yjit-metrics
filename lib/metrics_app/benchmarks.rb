@@ -4,7 +4,7 @@ module MetricsApp
   module Benchmarks
     URL = "https://github.com/ruby/ruby-bench.git"
     # Look for it adjacent to this repo's checkout.
-    DIR = ENV["YJIT_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("yjit-bench")
+    DIR = ENV["YJIT_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("ruby-bench")
 
     extend self
 
@@ -18,7 +18,7 @@ module MetricsApp
     end
 
     def clean!
-      # Rails apps in yjit-bench can leave a bad bootsnap cache - delete them
+      # Rails apps in ruby-bench can leave a bad bootsnap cache - delete them
       Dir.glob("**/*tmp/cache/bootsnap", base: DIR) do |f|
         DIR.join(f).rmtree
       end

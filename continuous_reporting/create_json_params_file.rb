@@ -90,11 +90,11 @@ OptionParser.new do |opts|
     yjit_metrics_repo = ymr
   end
 
-  opts.on("--yjit-bench-name YB") do |yb|
+  opts.on("--ruby-bench-name YB") do |yb|
     non_empty(yb)&.then { yjit_bench_name = _1 }
   end
 
-  opts.on("--yjit-bench-repo YBR") do |ybr|
+  opts.on("--ruby-bench-repo YBR") do |ybr|
     yjit_bench_repo = ybr
   end
 
