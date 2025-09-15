@@ -27,7 +27,7 @@ def platform_for_config(config_name)
     p
 end
 
-DEFAULT_CI_CONFIGS_ALL = YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS["configs"].keys
+DEFAULT_CI_CONFIGS_ALL = YJITMetrics::DEFAULT_RUBY_BENCH_CI_SETTINGS["configs"].keys
 DEFAULT_CI_CONFIGS = {}
 DEFAULT_CI_CONFIGS_ALL.each do |config|
     p = platform_for_config(config)

@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 # Use real ruby-bench harness loader.
-real_yjit_bench = File.expand_path('../../../../../yjit-bench', __dir__)
+real_yjit_bench = File.expand_path('../../../../../ruby-bench', __dir__)
 require "#{real_yjit_bench}/harness/loader.rb"
 
 Dir.chdir __dir__
 use_gemfile
 
 # Require tempdir so that the tests always start with the same (empty) state.
-file = File.join(ENV.fetch('FAKE_YJIT_BENCH_OUTPUT'), '.cycle_error.tmp')
+file = File.join(ENV.fetch('FAKE_RUBY_BENCH_OUTPUT'), '.cycle_error.tmp')
 
 # First attempt should fail, then write the file so that the second attempt can succeed.
 should_fail = if File.exist?(file)

@@ -75,7 +75,7 @@ module YJITMetrics
     end
 
     def initialize(config_names, results,
-      default_yjit_bench_settings: ::YJITMetrics::DEFAULT_YJIT_BENCH_CI_SETTINGS, benchmarks: [])
+      default_yjit_bench_settings: ::YJITMetrics::DEFAULT_RUBY_BENCH_CI_SETTINGS, benchmarks: [])
 
       # Set up the parent class, look up relevant data
       super(config_names, results, benchmarks: benchmarks)

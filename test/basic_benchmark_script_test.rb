@@ -10,11 +10,11 @@ require "rbconfig"
 class BasicBenchmarkScriptTest < Minitest::Test
   PLATFORM = YJITMetrics::PLATFORM
   SCRIPT = File.expand_path('../basic_benchmark.rb', __dir__)
-  FAKE_YJIT_BENCH_DIR = File.expand_path('fake-yjit-bench', __dir__)
+  FAKE_RUBY_BENCH_DIR = File.expand_path('fake-ruby-bench', __dir__)
 
   def setup
     @script = SCRIPT
-    @output = Dir.mktmpdir('fake-yjit-bench-ouput')
+    @output = Dir.mktmpdir('fake-ruby-bench-output')
   end
 
   def teardown
@@ -23,8 +23,8 @@ class BasicBenchmarkScriptTest < Minitest::Test
 
   def env
     {
-      'YJIT_BENCH_DIR' => FAKE_YJIT_BENCH_DIR,
-      'FAKE_YJIT_BENCH_OUTPUT' => @output,
+      'RUBY_BENCH_DIR' => FAKE_RUBY_BENCH_DIR,
+      'FAKE_RUBY_BENCH_OUTPUT' => @output,
     }
   end
 

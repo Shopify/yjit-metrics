@@ -15,7 +15,7 @@ variable "benchmarking_arm_instance_type" {
 # ~/.rustup (when present) can eat 2.2GB
 # Each built ruby in ~/.rubies can take 700MB - 1.5GB (minimum of 3, call it 5GB).
 # The ruby repo is 500MB and build files can take up another 1GB.
-# yjit-bench and yjit-metrics add up to 1.5GB.
+# ruby-bench and yjit-metrics add up to 1.5GB.
 # The yjit-raw repos can eat 15GB.
 # That brings us to ~26GB; add more to be sure we have plenty of room.
 variable "benchmarking_volume_size_gb" {
@@ -75,10 +75,13 @@ variable "reporting_ebs_device_label" {
 variable "reporting_instance_type" {
   # The timeline report has an RSS of 6GB (as of 2024-09-17).
   # Let's pass up 8GB and go up to 16GB.
+  # https://calculator.aws/#/createCalculator/ec2-enhancement
+  # r6i.large:       2 CPU 16 GB: 0.126
   # r7i.large:       2 CPU 16 GB: 0.1323
   # r8g.large:       2 CPU 16 GB: 0.11782
+  # r8i-flex.large:  2 CPU 16 GB: 0.13197
   # m7i-flex.xlarge: 4 CPU 16 GB: 0.19152
-  default = "r7i.large"
+  default = "r6i.large"
 }
 
 variable "reporting_ebs_name" {

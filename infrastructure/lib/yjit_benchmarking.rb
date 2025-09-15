@@ -104,7 +104,7 @@ module YJITBenchmarking
       def ensure_stopped!
         active = benchmarking_instances.map do |instance|
           client.info(instance)
-        end.select { |i| i[:state] != "stopped" }
+        end.reject { |i| allowed_states.include?(i[:state]) }
 
         return if active.empty?
 

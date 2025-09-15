@@ -20,8 +20,9 @@ warn () { echo "$*" >&2; }
 setup-profile () {
   local file="$(getent passwd $uid | cut -d: -f 6)"/"$1"
   local line="[[ -r $profile ]] && source $profile # generated"
+  [[ -e "$file" ]] || { touch "$file" && chown $uid:$uid "$file"; }
   head -n 1 "$file" | grep -qFx "$line" && return 0
-  printf "1i\n%s\n.\nw\nq\n" "$line" | ed "$file"
+  printf "0i\n%s\n.\nw\nq\n" "$line" | ed "$file"
 }
 
 process-metadata () {
