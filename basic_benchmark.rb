@@ -16,10 +16,12 @@
 
 START_TIME = Time.now
 
+require "bundler/setup"
 require "benchmark"
 require "optparse"
 require "fileutils"
 require "etc"
+require_relative "lib/metrics_app"
 require_relative "lib/yjit_metrics"
 
 # Default settings for benchmark sampling
@@ -28,75 +30,13 @@ DEFAULT_MIN_BENCH_TIME = 10.0  # Minimum time in seconds to run each benchmark, 
 
 ERROR_BEHAVIOURS = %i(die report ignore)
 
-# Use "quiet" mode since ruby-bench will record the runtime stats in the json file anyway.
-# Having the text stats print out makes it harder to report stderr on failures.
-YJIT_STATS_OPTS = [ "--yjit-stats=quiet" ]
-
-YJIT_ENABLED_OPTS = [ "--yjit" ]
-NO_JIT_OPTS = [ "--disable-yjit" ]
-
-SETARCH_OPTS = {
-    linux: "setarch #{`uname -m`.strip} -R taskset -c #{Etc.nprocessors - 1}",
-}
-
-CRUBY_PER_OS_OPTS = SETARCH_OPTS
-YJIT_PER_OS_OPTS = SETARCH_OPTS
-TRUFFLE_PER_OS_OPTS = {}
-
-PREV_RUBY_BUILD = "ruby-yjit-metrics-prev"
-
 # These are "config roots" because they define a configuration
 # in a non-platform-specific way. They're really several *variables*
 # that partially define a configuration.
 #
 # In this case they define how the Ruby was built, and then what
 # command-line params we run it with.
-#
-# Right now we use the config name itself to communicate this data
-# to the reporting tasks. That's bad and we should stop :-/
-# NOTE: to use "ruby-abc" with --skip-git-updates and no full rebuild just insert: "ruby-abc" => {build: "ruby-abc", opts: SOME_JIT_OPTS, per_os_prefix: CRUBY_PER_OS_OPTS}
-RUBY_CONFIG_ROOTS = {
-    "debug_ruby_no_yjit" => {
-        build: "ruby-yjit-metrics-debug",
-        opts: NO_JIT_OPTS,
-        per_os_prefix: CRUBY_PER_OS_OPTS,
-    },
-    "yjit_stats" => {
-        build: "ruby-yjit-metrics-stats",
-        opts: YJIT_ENABLED_OPTS + YJIT_STATS_OPTS,
-        per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-    "yjit_prod_stats" => {
-        build: "ruby-yjit-metrics-stats",
-        opts: YJIT_ENABLED_OPTS + YJIT_STATS_OPTS,
-        per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-    "yjit_prod_stats_disabled" => {
-        build: "ruby-yjit-metrics-stats",
-        opts: YJIT_ENABLED_OPTS,
-        per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-    "prod_ruby_no_jit" => {
-        build: "ruby-yjit-metrics-prod",
-        opts: NO_JIT_OPTS,
-        per_os_prefix: CRUBY_PER_OS_OPTS,
-    },
-    "prod_ruby_with_yjit" => {
-        build: "ruby-yjit-metrics-prod",
-        opts: YJIT_ENABLED_OPTS,
-        per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-    "prev_ruby_no_jit" => {
-        build: PREV_RUBY_BUILD,
-        opts: NO_JIT_OPTS,
-        per_os_prefix: CRUBY_PER_OS_OPTS,
-    },
-    "prev_ruby_yjit" => {
-        build: PREV_RUBY_BUILD,
-        opts: YJIT_ENABLED_OPTS,
-        per_os_prefix: YJIT_PER_OS_OPTS,
-    },
-}
+RUBY_CONFIG_ROOTS = MetricsApp::Rubies.config[:runtime_configs]
 
 RUBY_CONFIGS = {}
 YJITMetrics::PLATFORMS.each do |platform|
@@ -172,7 +112,7 @@ OptionParser.new do |opts|
         output_path = dir
     end
 
-    opts.on("--bundler-version=VERSION", "Require a specific Bundler version (default: 2.2.30)") do |ver|
+    opts.on("--bundler-version=VERSION", "Require a specific Bundler version") do |ver|
         bundler_version = ver
     end
 
@@ -221,7 +161,6 @@ end.parse!
 
 HARNESS_PARAMS = harness_params
 BENCH_DATA = bench_data || {}
-FULL_REBUILD = full_rebuild
 
 STDERR.puts <<HERE
 basic_benchmark.rb:
@@ -231,73 +170,6 @@ basic_benchmark.rb:
   output_path: #{output_path.inspect}
   benchmarks: #{ARGV.inspect}
 HERE
-
-extra_config_options = []
-if ENV["RUBY_CONFIG_OPTS"]
-    extra_config_options = ENV["RUBY_CONFIG_OPTS"].split(" ")
-elsif RUBY_PLATFORM["darwin"] && !`which brew`.empty?
-    # On Mac with Homebrew, default to Homebrew's OpenSSL 1.1 location if not otherwise specified
-    ossl_prefix = `brew --prefix openssl@1.1`.chomp
-    extra_config_options = [ "--with-openssl-dir=#{ossl_prefix}" ]
-end
-
-# Git repo url for CRuby.
-YJIT_GIT_URL = BENCH_DATA["cruby_repo"] || "https://github.com/ruby/ruby"
-# Git branch to build for "prod" yjit.
-YJIT_GIT_BRANCH = BENCH_DATA["cruby_sha"] || "master"
-# In order to build "prev" ruby the same way we build "prod" ruby
-# we build it from source, so we use a tag that represents a recent release.
-YJIT_PREV_REF = "v3_3_6"
-
-def full_clean_yjit_cruby(flavor)
-    repo = File.expand_path("#{__dir__}/../#{flavor}-yjit")
-    "if test -d #{repo}; then cd #{repo} && git clean -d -x -f; fi && rm -rf ~/.rubies/ruby-yjit-metrics-#{flavor}"
-end
-
-# The same build of Ruby (e.g. current prerelease Ruby) can
-# have several different runtime configs (e.g. YJIT vs interp.)
-repo_root = File.expand_path("#{__dir__}/..")
-install_root = "~/.rubies"
-RUBY_BUILDS = {
-    "ruby-yjit-metrics-debug" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/debug-yjit",
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=dev" ] + extra_config_options,
-        config_env: ["CPPFLAGS=-DRUBY_DEBUG=1"],
-        full_clean: full_clean_yjit_cruby("debug"),
-    },
-    "ruby-yjit-metrics-stats" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/stats-yjit",
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit=stats" ] + extra_config_options,
-        full_clean: full_clean_yjit_cruby("stats"),
-    },
-    "ruby-yjit-metrics-prod" => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_GIT_BRANCH,
-        repo_path: "#{repo_root}/prod-yjit",
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
-        full_clean: full_clean_yjit_cruby("prod"),
-    },
-    PREV_RUBY_BUILD => {
-        install: "repo",
-        git_url: YJIT_GIT_URL,
-        git_branch: YJIT_PREV_REF,
-        repo_path: "#{repo_root}/prev-yjit",
-        config_opts: [ "--disable-install-doc", "--disable-install-rdoc", "--enable-yjit" ] + extra_config_options,
-        full_clean: full_clean_yjit_cruby("prev"),
-    },
-    "truffleruby+graalvm-21.2.0" => {
-        install: "ruby-build",
-        full_clean: "rm -rf ~/.rubies/truffleruby+graalvm-21.2.0",
-    },
-    # can also do "name" => { install: "ruby-build", full_clean: "rm -rf ~/.rubies/name" }
-}
 
 SKIPPED_COMBOS = [
     # Discourse broken by 1e9939dae24db232d6f3693630fa37a382e1a6d7, 16th June
@@ -310,23 +182,12 @@ SKIPPED_COMBOS = [
 ]
 
 YJIT_METRICS_DIR = __dir__
-
-# Configuration for ruby-bench
-YJIT_BENCH_GIT_URL = BENCH_DATA["yjit_bench_repo"] || "https://github.com/ruby/ruby-bench.git"
-YJIT_BENCH_GIT_BRANCH = BENCH_DATA["yjit_bench_sha"] || "main"
-YJIT_BENCH_DIR = ENV["YJIT_BENCH_DIR"] || File.expand_path("../yjit-bench", __dir__)
-
-# Configuration for ruby-build
-RUBY_BUILD_GIT_URL = "https://github.com/rbenv/ruby-build.git"
-RUBY_BUILD_GIT_BRANCH = "master"
-RUBY_BUILD_DIR = File.expand_path("#{__dir__}/../ruby-build")
+YJIT_BENCH_DIR = MetricsApp::Benchmarks::DIR
 
 # These are quick - so we should run them up-front to fail out rapidly if something's wrong.
 YJITMetrics.per_os_checks
 
 OUTPUT_DATA_PATH = output_path[0] == "/" ? output_path : File.expand_path("#{__dir__}/#{output_path}")
-
-RUBIES = "#{ENV['HOME']}/.rubies"
 
 # Check which OS we are running
 def this_os
@@ -347,70 +208,29 @@ def this_os
     )
 end
 
-if FULL_REBUILD && skip_git_updates
-    raise "You won't like what happens with full-rebuild plus skip-git-updates! If using a config where full-rebuild won't matter, then turn it off!"
-end
+if skip_git_updates
+  puts "Skipping git updates; rubies and yjit-bench must already exist"
+else
+  MetricsApp::Rubies.install_all!(
+    configs_to_test,
+    rebuild: full_rebuild,
+    git_url: BENCH_DATA["cruby_repo"],
+    git_branch: BENCH_DATA["cruby_sha"],
+  )
 
-if FULL_REBUILD
-    puts "Remove old Rubies for full rebuild"
-    configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq.each do |build_to_clean|
-        YJITMetrics.check_call RUBY_BUILDS[build_to_clean][:full_clean]
-    end
-end
-
-unless skip_git_updates
-    builds_to_check = configs_to_test.map { |config| RUBY_CONFIGS[config][:build] }.uniq
-
-    need_ruby_build = builds_to_check.any? { |build| RUBY_BUILDS[build][:install] == "ruby-build" }
-    if need_ruby_build
-        if !File.exist?(RUBY_BUILD_DIR)
-            YJITMetrics.clone_repo_with path: RUBY_BUILD_DIR, git_url: RUBY_BUILD_GIT_URL, git_branch: RUBY_BUILD_GIT_BRANCH
-
-        end
-    end
-
-    installed_rubies = Dir.glob("*", base: RUBIES)
-
-    builds_to_check.each do |ruby_build|
-        build_info = RUBY_BUILDS[ruby_build]
-        case build_info[:install]
-        when "ruby-install"
-            next if installed_rubies.include?(ruby_build)
-            puts "Installing Ruby #{ruby_build} via ruby-install..."
-            YJITMetrics.check_call("ruby-install #{ruby_build}")
-        when "ruby-build"
-            next if installed_rubies.include?(ruby_build)
-            puts "Installing Ruby #{ruby_build} via ruby-build..."
-            Dir.chdir(RUBY_BUILD_DIR) do
-              YJITMetrics.check_call("git pull")
-              YJITMetrics.check_call("RUBY_CONFIGURE_OPTS=--disable-shared ./bin/ruby-build #{ruby_build.sub(/^ruby-/, '')} #{RUBIES}/#{ruby_build}")
-            end
-        when "repo"
-            YJITMetrics.clone_ruby_repo_with \
-                path: build_info[:repo_path],
-                git_url: build_info[:git_url],
-                git_branch: build_info[:git_branch] || "main",
-                install_to: RUBIES + "/" + ruby_build,
-                config_opts: build_info[:config_opts],
-                config_env: build_info[:config_env] || []
-        else
-            raise "Unrecognized installation method: #{RUBY_BUILDS[ruby_build][:install].inspect}!"
-        end
-    end
-
-    ### Ensure an up-to-date local ruby-bench checkout
-    YJITMetrics.clone_repo_with path: YJIT_BENCH_DIR, git_url: YJIT_BENCH_GIT_URL, git_branch: YJIT_BENCH_GIT_BRANCH
+  # Ensure an up-to-date local ruby-bench checkout.
+  MetricsApp::Benchmarks.prepare!(
+    BENCH_DATA["yjit_bench_repo"],
+    branch: BENCH_DATA["yjit_bench_sha"],
+  )
 end
 
 # All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.
 
 def sha_for_dir(dir)
-    Dir.chdir(dir) { `git rev-parse HEAD`.chomp }
+  `git -C #{dir.to_s.dump} rev-parse HEAD`.chomp
 end
 
-# TODO: figure out how/whether to handle cases with --skip-git-update where we have a not-committed Git version.
-# Right now that will just reflect the current head revision in Git, not any changes to it.
-# For now if we're testing a specific version, this will say which one.
 GIT_VERSIONS = {
     "yjit_bench" => sha_for_dir(YJIT_BENCH_DIR),
     "yjit_metrics" => sha_for_dir(YJIT_METRICS_DIR),
@@ -419,9 +239,6 @@ GIT_VERSIONS = {
 if BENCH_DATA["yjit_metrics_sha"] && GIT_VERSIONS["yjit_metrics"] != BENCH_DATA["yjit_metrics_sha"]
     raise "YJIT-Metrics SHA in benchmark data disagrees with actual tested version!"
 end
-
-# Rails apps in ruby-bench can leave a bad bootsnap cache - delete them
-Dir.glob("**/*tmp/cache/bootsnap", base: YJIT_BENCH_DIR) { |f| FileUtils.rmtree File.join(YJIT_BENCH_DIR, f) }
 
 # This will match ARGV-supplied benchmark names with canonical names and script paths in ruby-bench.
 # It needs to happen *after* ruby-bench is cloned and updated.
@@ -525,7 +342,9 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
         ruby = RUBY_CONFIGS[config][:build]
         ruby_opts = RUBY_CONFIGS[config][:opts]
-        per_os_prefix = RUBY_CONFIGS[config][:per_os_prefix]
+        prefix_cmd = if this_os == :linux && ruby[:setarch] != false
+          "setarch #{`uname -m`.strip.dump} -R taskset -c #{Etc.nprocessors - 1}"
+        end
 
         # Right now we don't have a great place to put per-benchmark metrics that *change*
         # for each run. "Benchmark" metadata means constant for each type of benchmark.
@@ -558,7 +377,7 @@ Dir.chdir(YJIT_BENCH_DIR) do
 
         shell_settings = YJITMetrics::ShellSettings.new({
             ruby_opts: ruby_opts,
-            prefix: per_os_prefix[this_os],
+            prefix: prefix_cmd,
             ruby: ruby,
             on_error: on_error,
             enable_core_dumps: (when_error == :report ? true : false),

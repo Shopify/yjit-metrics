@@ -1,0 +1,72 @@
+---
+runtime_options:
+  no_jit: &no_jit
+    - --disable-yjit # --disable-zjit
+  yjit: &yjit
+    - --yjit
+  yjit_stats: &yjit_stats
+    # Use "quiet" mode since yjit-bench will record the runtime stats in the json file anyway.
+    # Having the text stats print out makes it harder to report stderr on failures.
+    - --yjit
+    - --yjit-stats=quiet
+
+builds:
+  _base: &build_base
+    install: repo
+    git_url: "https://github.com/ruby/ruby"
+    git_branch: master
+
+  ruby-yjit-metrics-debug:
+    <<: *build_base
+    env:
+      CPPFLAGS: "-DRUBY_DEBUG=1"
+    configure_args:
+      --enable-yjit=dev
+
+  ruby-yjit-metrics-stats:
+    <<: *build_base
+    configure_args:
+      --enable-yjit=stats
+
+  ruby-yjit-metrics-prod: &build_yjit
+    <<: *build_base
+    configure_args:
+      --enable-yjit
+
+  ruby-yjit-metrics-prev:
+    <<: *build_yjit
+    # In order to build "prev" ruby the same way we build "prod" ruby
+    # we build it from source, so we use a tag that represents a recent release.
+    git_branch: "v3_3_6"
+
+  truffleruby-dev:
+    install: ruby-build
+
+runtime_configs:
+  debug_ruby_no_yjit:
+    build: ruby-yjit-metrics-debug
+    opts: *no_jit
+
+  yjit_stats:
+    build: ruby-yjit-metrics-stats
+    opts: *yjit_stats
+
+  prod_ruby_no_jit:
+    build: &prod_yjit ruby-yjit-metrics-prod
+    opts: *no_jit
+
+  prod_ruby_with_yjit:
+    build: *prod_yjit
+    opts: *yjit
+
+  prev_ruby_no_jit:
+    build: &prev_ruby ruby-yjit-metrics-prev
+    opts: *no_jit
+
+  prev_ruby_yjit:
+    build: *prev_ruby
+    opts: *yjit
+
+  truffleruby-dev:
+    build: truffleruby-dev
+    setarch: false

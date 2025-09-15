@@ -105,8 +105,9 @@ end
 def setup_cmds(c)
   env_bundler = ENV['FORCE_BUNDLER_VERSION']
   bundler_cmd = "bundle"
-  if env_bundler # Should always be true in yjit-metrics
-    gem "bundler", env_bundler # Make sure requiring bundler/setup gets the right one
+  if env_bundler
+    # Make sure requiring bundler/setup gets the right one.
+    gem "bundler", env_bundler
     bundler_cmd = "bundle _#{env_bundler}_"
   end
 

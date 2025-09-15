@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 # General-purpose benchmark management routines
 
-require 'benchmark'
 require 'fileutils'
 require 'tempfile'
 require 'json'
 require 'csv'
 require 'erb'
+require 'shellwords'
 
+require_relative "./metrics_app"
 require_relative "./yjit_metrics/defaults"
 
 module YJITMetrics
@@ -15,7 +16,6 @@ module YJITMetrics
   autoload :CLI,                 "#{__dir__}/yjit_metrics/cli"
   autoload :ContinuousReporting, "#{__dir__}/yjit_metrics/continuous_reporting"
   autoload :Notifier,            "#{__dir__}/yjit_metrics/notifier"
-  autoload :RepoManagement,      "#{__dir__}/yjit_metrics/repo_management"
   autoload :ResultSet,           "#{__dir__}/yjit_metrics/result_set"
   autoload :Stats,               "#{__dir__}/yjit_metrics/stats"
   autoload :Theme,               "#{__dir__}/yjit_metrics/theme"
@@ -24,17 +24,12 @@ module YJITMetrics
     require_relative mod
   end
 
-  include RepoManagement
-
   extend self # Make methods callable as YJITMetrics.method_name
 
   HARNESS_PATH = File.expand_path(__dir__ + "/../metrics-harness")
 
-  PLATFORMS = ["x86_64", "aarch64"]
-
-  uname_platform = `uname -m`.chomp.downcase.sub(/^arm(\d+)$/, 'aarch\1')
-  PLATFORM = PLATFORMS.detect { |platform| uname_platform == platform }
-  raise("yjit-metrics only supports running on x86_64 and aarch64!") if !PLATFORM
+  PLATFORMS = MetricsApp::PLATFORMS
+  PLATFORM  = MetricsApp::PLATFORM
 
   # This structure is returned by the benchmarking harness from a run.
   JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
@@ -77,37 +72,12 @@ module YJITMetrics
   end
 
   def chdir(dir, &block)
-    puts "### cd #{dir}"
-    Dir.chdir(dir, &block).tap do
-    puts "### cd #{Dir.pwd}" if block
-    end
+    MetricsApp.chdir(dir, &block)
   end
 
   # Checked system - error if the command fails
-  def check_call(command, env: {})
-    # Use prefix to makes it easier to see in the log.
-    puts("\e[33m## [#{Time.now}] #{command}\e[00m")
-
-    status = nil
-    Benchmark.realtime do
-      status = system(env, command)
-    end.tap do |time|
-      printf "\e[34m## (`#{command}` took %.2fs)\e[00m\n", time
-    end
-
-    unless status
-      raise "Command #{command.inspect} failed in directory #{Dir.pwd}"
-    end
-  end
-
-  def check_output(command, env: {})
-    output = IO.popen(env, command) do |io_obj|
-      io_obj.read
-    end
-    unless $?.success?
-      raise "Command #{command.inspect} failed in directory #{Dir.pwd}"
-    end
-    output
+  def check_call(*command, env: {})
+    MetricsApp.check_call(*command, env:)
   end
 
   def config_without_platform(config_name)
@@ -398,7 +368,7 @@ module YJITMetrics
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
       env_var_exports: env_vars.map { |key, val| val.nil? ? "unset #{key}" : "export #{key}=#{val.to_s.dump}" }.join("\n"),
-      ruby_opts: "-I#{HARNESS_PATH} " + shell_settings[:ruby_opts].map { |s| '"' + s + '"' }.join(" "),
+      ruby_opts: Shellwords.join(["-I#{HARNESS_PATH}"] + shell_settings[:ruby_opts]),
       script_path: benchmark_info[:script_path],
       bundler_version: shell_settings[:bundler_version],
     }
