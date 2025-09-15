@@ -2,7 +2,7 @@
 
 module MetricsApp
   module Benchmarks
-    URL = "https://github.com/Shopify/yjit-bench.git"
+    URL = "https://github.com/ruby/ruby-bench.git"
     # Look for it adjacent to this repo's checkout.
     DIR = ENV["YJIT_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("yjit-bench")
 
