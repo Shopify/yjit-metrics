@@ -13,9 +13,13 @@ module YJITMetrics
       # to match across all configs, so it's not set per-config.
       "x86_64_yjit_stats" => {
       },
+      "x86_64_zjit_stats" => {
+      },
       "x86_64_prod_ruby_no_jit" => {
       },
       "x86_64_prod_ruby_with_yjit" => {
+      },
+      "x86_64_prod_ruby_with_zjit" => {
       },
       "x86_64_prev_ruby_no_jit" => {
       },
@@ -23,9 +27,13 @@ module YJITMetrics
       },
       "aarch64_yjit_stats" => {
       },
+      "aarch64_zjit_stats" => {
+      },
       "aarch64_prod_ruby_no_jit" => {
       },
       "aarch64_prod_ruby_with_yjit" => {
+      },
+      "aarch64_prod_ruby_with_zjit" => {
       },
       "aarch64_prev_ruby_no_jit" => {
       },
