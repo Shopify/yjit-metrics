@@ -51,7 +51,7 @@ yjit-git-creds () {
   get-secret "git-token" > "$secret_file"
 
   local config_file="$dir/git-config"
-  local repo_prefix=https://github.com/yjit-raw/
+  local repo_prefix=https://github.com/rubybench/
 
   git config --file "$config_file" "user.name" "$(get-secret git-name)"
   git config --file "$config_file" "user.email" "$(get-secret git-email)"

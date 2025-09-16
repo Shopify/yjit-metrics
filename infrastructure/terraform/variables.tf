@@ -16,7 +16,7 @@ variable "benchmarking_arm_instance_type" {
 # Each built ruby in ~/.rubies can take 700MB - 1.5GB (minimum of 3, call it 5GB).
 # The ruby repo is 500MB and build files can take up another 1GB.
 # ruby-bench and yjit-metrics add up to 1.5GB.
-# The yjit-raw repos can eat 15GB.
+# The rubybench repos can eat 15GB.
 # That brings us to ~26GB; add more to be sure we have plenty of room.
 variable "benchmarking_volume_size_gb" {
   default = 40

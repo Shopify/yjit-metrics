@@ -40,11 +40,11 @@ end
 
 IMAGES = {
   success: {
-    url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-success.png",
+    url: "https://raw.githubusercontent.com/rubybench/yjit-reports/main/images/build-success.png",
     alt: "Large green check and the words 'Build Success, Because I am a Good Server'",
   },
   fail: {
-    url: "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images/build-fail.png",
+    url: "https://raw.githubusercontent.com/rubybench/yjit-reports/main/images/build-fail.png",
     alt: "Large red X and the words 'Build Failed, All Your Fault I Assume'",
   },
   cat: {

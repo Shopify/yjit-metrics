@@ -16,7 +16,7 @@ class SlackNotificationTest < Minitest::Test
   SLACK_CHANNEL = "#yjit-benchmark-ci"
   SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
   DATA_GLOB = "test/data/slack/*.json"
-  IMAGE_PREFIX = "https://raw.githubusercontent.com/yjit-raw/yjit-reports/main/images"
+  IMAGE_PREFIX = "https://raw.githubusercontent.com/rubybench/yjit-reports/main/images"
 
   class TestNotifier < YJITMetrics::Notifier
     def notify!
