@@ -76,7 +76,7 @@ class RenderContext
     url
   end
 
-  RAW_DATA_PREFIX = ENV.fetch('RAW_DATA_PREFIX', 'https://raw.githubusercontent.com/yjit-raw/benchmark-data/refs/heads/main')
+  RAW_DATA_PREFIX = ENV.fetch('RAW_DATA_PREFIX', 'https://raw.githubusercontent.com/rubybench/benchmark-data/refs/heads/main')
   def raw_data_url(path)
     "#{RAW_DATA_PREFIX}/#{path}"
   end
