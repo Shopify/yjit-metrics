@@ -214,8 +214,12 @@ else
   MetricsApp::Rubies.install_all!(
     configs_to_test,
     rebuild: full_rebuild,
-    git_url: BENCH_DATA["cruby_repo"],
-    git_branch: BENCH_DATA["cruby_sha"],
+    overrides: {
+      cruby: {
+        git_url: BENCH_DATA["cruby_repo"],
+        git_branch: BENCH_DATA["cruby_sha"],
+      }
+    },
   )
 
   # Ensure an up-to-date local ruby-bench checkout.

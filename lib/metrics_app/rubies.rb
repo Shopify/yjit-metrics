@@ -35,7 +35,7 @@ module MetricsApp
       end
     end
 
-    def install_all!(config_names, rebuild: true, git_url: nil, git_branch: nil)
+    def install_all!(config_names, rebuild: true, overrides: nil)
       clean_all!(config_names) if rebuild
 
       BUILD_DIR.mkpath
@@ -53,8 +53,9 @@ module MetricsApp
           puts "Installing Ruby #{build_name} via ruby-build"
           MetricsApp::RubyBuild.install(build_name.sub(/^ruby-/, ''), prefix)
         when "repo"
-          url = git_url || build[:git_url]
-          branch = git_branch || build[:git_branch]
+          build_config = build.merge((overrides&.dig(build[:override_name].to_sym) || {}))
+          url = build[:git_url]
+          branch = build[:git_branch]
           puts "Installing Ruby #{build_name} from #{url}##{branch}"
 
           # The ruby clone path cannot contain certain characters

@@ -15,6 +15,7 @@ builds:
     install: repo
     git_url: "https://github.com/ruby/ruby"
     git_branch: master
+    override_name: cruby
 
   ruby-metrics-app-debug:
     <<: *build_base
@@ -38,6 +39,7 @@ builds:
     # In order to build "prev" ruby the same way we build "prod" ruby
     # we build it from source, so we use a tag that represents a recent release.
     git_branch: "v3_3_6"
+    override_name: prev
 
   truffleruby-dev:
     install: ruby-build
