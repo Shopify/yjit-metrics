@@ -64,7 +64,7 @@ class RenderContext
   # needs this is that it may put a site at the root, or at a subdirectory,
   # and so site-'absolute' URLs like the one passed in need to turn into
   # relative URLs that can work when the whole site is in a dir like
-  # "/blog" rather than at the root. We're at the root and don't care.
+  # "/blog" rather than at the root.
   def relative_url(url)
     raise "URL should not be nil!" if url.nil?
 
@@ -72,7 +72,6 @@ class RenderContext
       raise "NO URL IN METADATA: #{url.inspect}"
     end
 
-    url = "/" + url unless url[0] == "/"
     url
   end
 
@@ -120,7 +119,7 @@ class RenderContext
     path = "assets/#{asset}"
     path += ".scss" if asset.end_with?(".css")
     hash = Digest::MD5.file(File.expand_path(path, File.dirname(__dir__))).hexdigest[0..8]
-    "/assets/#{asset}?#{hash}"
+    "assets/#{asset}?#{hash}"
   end
 
   def configure_args(args)
@@ -257,7 +256,7 @@ def parse_collections
     glob_with_base("_#{coll}/*.md", COLLECTION_BASES[coll]).each do |file_w_frontmatter, base|
       item_data, _line, content = read_front_matter(File.join(base, file_w_frontmatter))
       item_data[:name] = file_w_frontmatter.split("/")[-1].gsub("_", "-") # Ah, Jekyll. There's probably some deep annoying meaning to why this is needed.
-      item_data[:url] = "/#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
+      item_data[:url] = "#{coll}/#{File.basename(file_w_frontmatter.gsub("_", "-"), ".*")}"
       item_data[:url] += '.html' unless item_data[:url].end_with?('.html')
       item_data[:content] = content
       out[coll] << OpenStruct.new(item_data)
@@ -325,7 +324,7 @@ def _build_pwd
 
   # Now build entries for the collections
   COLLECTIONS.each do |collection|
-    # Output URL is /:collection_name:/:item_name:
+    # Output URL is ":collection_name:/:item_name:"
     out_dir = "_site/#{collection}"
     Dir.mkdir out_dir
     coll_data[collection].each do |item|

@@ -509,7 +509,7 @@ function setupTimeline(opts) {
 
   // Default to x86_64 recent-only data
   setRequestPending();
-  fetch("/reports/timeline/"+opts.timelineType+"_timeline.data.x86_64.recent.json")
+  fetch("../reports/timeline/"+opts.timelineType+"_timeline.data.x86_64.recent.json")
     .then(function (response) {
       if(!response.ok) {
         throw(new Error('Response failed: ' + response.statusText));

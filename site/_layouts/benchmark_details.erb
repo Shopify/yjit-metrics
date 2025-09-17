@@ -3,6 +3,7 @@ urls:
   yjit: https://github.com/Shopify/yjit
   yjit_bench: https://github.com/ruby/ruby-bench
   ruby: https://github.com/ruby/ruby
+asset_prefix: "../" # This page is under /benchmarks/ folder.
 ---
 <!DOCTYPE html>
 <!-- Copied from Slate default and modified -->
@@ -12,8 +13,8 @@ urls:
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
-    <script src="/assets/js/clipboard.min.js"></script>
-    <link rel="stylesheet" type="text/css" media="screen" href="<%= asset_url('css/style.css') %>">
+    <script src="<%= asset_prefix %><%= asset_url('js/clipboard.min.js') %>"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="<%= asset_prefix %><%= asset_url('css/style.css') %>">
     <title>Ruby Benchmarks from <%= page.date_str %> <%= page.time_str %> for <%= page.yjit_commit %></title>
   </head>
 
@@ -358,6 +359,6 @@ urls:
     <div id="svg_tooltip"></div>
     <div id="svg_tooltip_sha_copied"></div>
 
-    <script type="text/javascript" src="<%= asset_url('js/footer.js') %>"></script>
+    <script type="text/javascript" src="<%= asset_prefix %><%= asset_url('js/footer.js') %>"></script>
   </body>
 </html>
