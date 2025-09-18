@@ -124,7 +124,7 @@ class BenchmarkDetails
     def yjit_permalink
         local_path = yjit_test_result
         relative_path = local_path.split("raw_benchmark_data", 2)[1]
-        "https://speed.yjit.org/raw_benchmark_data/#{relative_path}"
+        "https://speed.ruby-lang.org/raw_benchmark_data/#{relative_path}"
     end
 end
 

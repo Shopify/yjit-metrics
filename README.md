@@ -3,7 +3,7 @@
 YJIT-metrics monitors speedups and internal statistics for Ruby JIT,
 and especially for YJIT, an included JIT in CRuby. You can see
 the latest YJIT statistics, gathered with yjit-metrics,
-[at speed.yjit.org](https://speed.yjit.org).
+[at speed.ruby-lang.org](https://speed.ruby-lang.org).
 
 YJIT-metrics uses the benchmarks in the
 [ruby-bench repository](https://github.com/ruby/ruby-bench).
@@ -42,10 +42,10 @@ Use `basic_report.rb --help` to get started. There are several different reports
 You can find older examples of data-gathering scripts using `git log -- runners` (to see files that used to be in the "runners" directory) and `git log -- formatters` for post-processing scripts in the old "formatters" directory.
 
 
-### speed.yjit.org site
+### speed.ruby-lang.org site
 
 After collecting some data with `basic_benchmark.rb` you can generate the html
-site (hosted at speed.yjit.org) with a simple command:
+site (hosted at speed.ruby-lang.org) with a simple command:
 
 `site/exe serve`
 

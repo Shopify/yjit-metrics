@@ -7,7 +7,7 @@ require "json"
 
 module YJITMetrics
   module Analysis
-    REPORT_LINK = "[Analysis Report](https://speed.yjit.org/analysis.txt)"
+    REPORT_LINK = "[Analysis Report](https://speed.ruby-lang.org/analysis.txt)"
 
     # Build report by reading files from provided dir.
     # Load results from the last #{count} benchmark runs.
