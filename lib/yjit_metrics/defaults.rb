@@ -19,7 +19,7 @@ module YJITMetrics
       },
       "x86_64_prod_ruby_with_yjit" => {
       },
-      "x86_64_prod_ruby_with_zjit" => {
+      "x86_64_prod_ruby_zjit" => {
       },
       "x86_64_prev_ruby_no_jit" => {
       },
@@ -33,7 +33,7 @@ module YJITMetrics
       },
       "aarch64_prod_ruby_with_yjit" => {
       },
-      "aarch64_prod_ruby_with_zjit" => {
+      "aarch64_prod_ruby_zjit" => {
       },
       "aarch64_prev_ruby_no_jit" => {
       },
