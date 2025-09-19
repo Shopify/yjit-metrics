@@ -59,7 +59,7 @@ def slack_message_blocks(title, body, img)
 
   # Header/title must be less than 151 characters.
   if title.size > 150
-    body = title + "\n\n" + body
+    body = "```#{title}```\n\n#{body}"
     title = title[0..145] + "..."
   end
 
@@ -69,6 +69,7 @@ def slack_message_blocks(title, body, img)
       "text": {
         "type": "plain_text",
         "text": title,
+        "emoji": false,
       }
     },
     {
@@ -76,6 +77,7 @@ def slack_message_blocks(title, body, img)
       "text": {
         "type": "mrkdwn",
         "text": body.to_s,
+        "verbatim": true,
       },
       "accessory": {
         "type": "image",

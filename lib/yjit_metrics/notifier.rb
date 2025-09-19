@@ -20,20 +20,21 @@ module YJITMetrics
     # Format notification message based on provided error object.
     # Returns self.
     def error(exception)
-      backtrace = exception.backtrace
-        .select { |l| l.start_with?(APP_DIR) }
-        .map { |l| l.delete_prefix(File.join(APP_DIR, "")) }
-        .take(BACKTRACE_ITEMS)
+      body = if exception.is_a?(MetricsApp::CommandExitedNonZero)
+        exception.stderr
+      else
+        backtrace = exception.backtrace
+          .select { |l| l.start_with?(APP_DIR) }
+          .map { |l| l.delete_prefix(File.join(APP_DIR, "")) }
+          .take(BACKTRACE_ITEMS)
 
-      backtrace = exception.backtrace.take(BACKTRACE_ITEMS) if backtrace.empty?
+        backtrace = exception.backtrace.take(BACKTRACE_ITEMS) if backtrace.empty?
+        backtrace.map! { |l| "- #{l}" }.join("\n")
+      end
 
       @title = "#{exception.class}: #{exception.message}"
       @image = :fail
-      @body = <<~MSG
-        ```
-        #{backtrace.map { |l| "- #{l}" }.join("\n")}
-        ```
-      MSG
+      @body = "```\n#{body}\n```\n"
 
       self
     end

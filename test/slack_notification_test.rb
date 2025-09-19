@@ -124,7 +124,7 @@ class SlackNotificationTest < Minitest::Test
 
     summary = "RuntimeError: Command \"/usr/local/ruby/bin/ruby basic_benchmark.rb --on-errors=report --max-retries=2 --min-bench-time=30.0 --min-bench-itrs=10 --..."
     expected_body = <<~BODY
-      RuntimeError: #{message}
+      ```RuntimeError: #{message}```
 
       ```
       - elsewhere:1
@@ -155,10 +155,11 @@ class SlackNotificationTest < Minitest::Test
 
     blocks = message[:blocks]
     assert_equal(2, blocks.size)
-    assert_equal({type: "header", text: {type: "plain_text", text: header}}, blocks[0])
+    assert_equal({type: "header", text: {type: "plain_text", text: header, emoji: false}}, blocks[0])
     assert_operator(blocks[0][:text][:text].size, :<=, 150)
     assert_equal("section", blocks[1][:type])
     assert_equal("mrkdwn", blocks[1][:text][:type])
+    assert(blocks[1][:text][:verbatim])
 
     assert_equal(body, blocks[1][:text][:text])
 

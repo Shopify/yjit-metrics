@@ -162,7 +162,7 @@ end.parse!
 HARNESS_PARAMS = harness_params
 BENCH_DATA = bench_data || {}
 
-STDERR.puts <<HERE
+puts <<HERE
 basic_benchmark.rb:
   harness_params = #{harness_params.inspect}
   bench_data: #{bench_data.inspect}

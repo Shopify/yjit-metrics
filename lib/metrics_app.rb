@@ -29,19 +29,58 @@ module MetricsApp
     end
   end
 
-  def check_call(*command, env: {})
+  CommandExitedNonZero = Class.new(RuntimeError) do
+    attr_reader :stderr
+    def initialize(command, pwd, err)
+      @stderr = err
+      super("Command #{command.inspect} failed in directory #{pwd}")
+    end
+  end
+
+  def check_call(*command, env: {}, **kw)
     # Use prefix to makes it easier to see in the log.
     puts("\e[33m## [#{Time.now}] #{command}\e[00m")
 
     status = nil
+    err_capture = +""
     Benchmark.realtime do
-      status = system(env, *command)
+      stderr_r, stderr_w = IO.pipe
+
+      opts = {
+        err: stderr_w,
+      }.merge(kw)
+
+      pid = Process.spawn(env, *command, opts)
+      wait_thread = Process.detach(pid)
+      stderr_w.close
+
+      read_loop(stderr_r) do |text|
+        # Stream to parent process
+        STDERR.write(text)
+        # Capture for error notifications
+        err_capture << text
+      end
+
+      stderr_r.close
+      status = wait_thread.value
     end.tap do |time|
       printf "\e[34m## (`%s` took %.2fs)\e[00m\n", command, time
     end
 
-    unless status
-      raise "Command #{command.inspect} failed in directory #{Dir.pwd}"
+    unless status.success?
+      raise CommandExitedNonZero.new(command, Dir.pwd, err_capture)
+    end
+
+    status
+  end
+
+  def read_loop(io)
+    loop do
+      begin
+        yield(io.readpartial(4096))
+      rescue EOFError
+        break
+      end
     end
   end
 
