@@ -32,7 +32,7 @@ module YJITMetrics
   PLATFORM  = MetricsApp::PLATFORM
 
   # This structure is returned by the benchmarking harness from a run.
-  JSON_RUN_FIELDS = %i(times warmups yjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
+  JSON_RUN_FIELDS = %i(times warmups yjit_stats zjit_stats peak_mem_bytes failures_before_success benchmark_metadata ruby_metadata)
   RunData = Struct.new(*JSON_RUN_FIELDS) do
     def exit_status
       0
@@ -419,6 +419,7 @@ module YJITMetrics
     single_bench_data = JSON.load(json_string_data)
     obj = RunData.new(*JSON_RUN_FIELDS.map { |field| single_bench_data[field.to_s] })
     obj.yjit_stats = nil if obj.yjit_stats.nil? || obj.yjit_stats.empty?
+    obj.zjit_stats = nil if obj.zjit_stats.nil? || obj.zjit_stats.empty?
 
     # Add per-benchmark metadata from this script to the data returned from the harness.
     obj.benchmark_metadata.merge!({
@@ -469,6 +470,7 @@ module YJITMetrics
       bench_data["times"][bench_name] ||= []
       bench_data["warmups"][bench_name] ||= []
       bench_data["yjit_stats"][bench_name] ||= []
+      bench_data["zjit_stats"][bench_name] ||= []
       bench_data["peak_mem_bytes"][bench_name] ||= []
       bench_data["failures_before_success"][bench_name] ||= []
 
@@ -477,6 +479,7 @@ module YJITMetrics
       bench_data["warmups"][bench_name].push run_data.warmups_ms
 
       bench_data["yjit_stats"][bench_name].push [run_data.yjit_stats] if run_data.yjit_stats
+      bench_data["zjit_stats"][bench_name].push [run_data.zjit_stats] if run_data.zjit_stats
       bench_data["peak_mem_bytes"][bench_name].push run_data.peak_mem_bytes
       bench_data["failures_before_success"][bench_name].push run_data.failures_before_success
 

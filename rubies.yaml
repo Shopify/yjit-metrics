@@ -9,6 +9,12 @@ runtime_options:
     # Having the text stats print out makes it harder to report stderr on failures.
     - --yjit
     - --yjit-stats=quiet
+  zjit: &zjit
+    - --zjit
+  zjit_stats: &zjit_stats
+    # Use "quiet" mode since yjit-bench will record the runtime stats in the json file anyway.
+    # Having the text stats print out makes it harder to report stderr on failures.
+    - --zjit-stats=quiet
 
 builds:
   _base: &build_base
@@ -22,17 +28,20 @@ builds:
     env:
       CPPFLAGS: "-DRUBY_DEBUG=1"
     configure_args:
-      --enable-yjit=dev
+      - --enable-yjit=dev
+      - --enable-zjit=dev
 
   ruby-metrics-app-jit-stats:
     <<: *build_base
     configure_args:
-      --enable-yjit=stats
+      - --enable-yjit=stats
+      - --enable-zjit=stats
 
   ruby-metrics-app-jit-prod: &build_jit
     <<: *build_base
     configure_args:
-      --enable-yjit
+      - --enable-yjit
+      - --enable-zjit
 
   ruby-metrics-app-prev:
     <<: *build_jit
@@ -40,6 +49,9 @@ builds:
     # we build it from source, so we use a tag that represents a recent release.
     git_branch: "v3_3_6"
     override_name: prev
+    configure_args:
+      # Ruby 3.3 only supports yjit.
+      - --enable-yjit
 
   truffleruby-dev:
     install: ruby-build
@@ -53,6 +65,10 @@ runtime_configs:
     build: ruby-metrics-app-jit-stats
     opts: *yjit_stats
 
+  zjit_stats:
+    build: ruby-metrics-app-jit-stats
+    opts: *zjit_stats
+
   prod_ruby_no_jit:
     build: &prod_jit ruby-metrics-app-jit-prod
     opts: *no_jit
@@ -60,6 +76,10 @@ runtime_configs:
   prod_ruby_with_yjit:
     build: *prod_jit
     opts: *yjit
+
+  prod_ruby_zjit:
+    build: *prod_jit
+    opts: *zjit
 
   prev_ruby_no_jit:
     build: &prev_ruby ruby-metrics-app-prev
