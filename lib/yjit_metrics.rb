@@ -86,6 +86,8 @@ module YJITMetrics
 
   def run_harness_script_from_string(script,
       local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
+      timeout: 60 * 10, # Script time in seconds before SIGTERM.
+      term_timeout: 10, # Seconds between SIGTERM and SIGKILL.
       crash_file_check: true,
       do_echo: true)
     run_info = {}
@@ -115,12 +117,15 @@ module YJITMetrics
     $stdout.sync = true
 
     err_r, err_w = IO.pipe
-    local_popen.call(["bash", tf.path], err: err_w) do |script_out_io|
-      harness_script_pid = script_out_io.pid
+    start_time = get_time
+    signaled_time = nil
+    local_popen.call(["bash", tf.path], err: err_w, pgroup: true) do |pipe|
+      harness_script_pid = pipe.pid
+      process_group_id = harness_script_pid
       script_output = ""
       loop do
         begin
-          chunk = script_out_io.readpartial(1024)
+          chunk = pipe.read_nonblock(1024)
 
           # The harness will print the worker PID before doing anything else.
           if (worker_pid.nil? && chunk.include?("HARNESS PID"))
@@ -133,12 +138,35 @@ module YJITMetrics
 
           print chunk if do_echo
           script_output += chunk
+        rescue IO::WaitReadable
+          IO.select([pipe], nil, nil, 1)
+          retry
         rescue EOFError
           # Cool, all done.
           break
         end
+
+        now = get_time
+        if (now - start_time) > timeout
+          kill_pid = -process_group_id
+          if signaled_time.nil?
+            signaled_time = get_time
+            puts "Timeout reached, killing #{kill_pid}"
+            Process.kill("TERM", kill_pid)
+          else
+            begin
+              if (now - signaled_time) > term_timeout
+                puts "Process still alive, killing #{kill_pid} harder"
+                Process.kill("KILL", kill_pid)
+              end
+            rescue Errno::ECHILD, Errno::ESRCH
+              break
+            end
+          end
+        end
       end
     end
+    duration = (get_time - start_time)
 
     err_w.close
     script_err = err_r.read
@@ -150,6 +178,7 @@ module YJITMetrics
     # passed back from the framework, more or less intact.
     run_info.merge!({
       failed: !$?.success?,
+      duration:,
       crash_files: [],
       exit_status: $?.exitstatus,
       harness_script_pid: harness_script_pid,
@@ -179,6 +208,10 @@ module YJITMetrics
         run_info[:crash_files] = (ruby_crash_files - ruby_crash_files_before).sort
       end
     end
+  end
+
+  def get_time
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
   end
 
   def os_type

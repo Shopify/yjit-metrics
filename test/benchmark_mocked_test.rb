@@ -11,7 +11,7 @@ class FakePopen
         @stderr = stderr
     end
 
-    def call(args, err:)
+    def call(args, err:, pgroup: nil)
         assert_equal(@expected_args, args) if @expected_args
 
         err.write(@stderr)
@@ -40,6 +40,7 @@ class FakePopen
         assert(false, "Not enough readpartial_results in FakePopen!") if val.nil?
         val
     end
+    alias read_nonblock readpartial
 end
 
 class TestBenchmarkingWithMocking < Minitest::Test
