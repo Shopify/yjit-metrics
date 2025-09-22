@@ -69,7 +69,6 @@ yjit-slack-token () {
 }
 
 setup-profile .bashrc
-setup-profile .zshrc
 process-metadata
 load-secrets
 yjit-git-creds
