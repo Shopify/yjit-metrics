@@ -11,8 +11,10 @@ notify="$(realpath "${0%/*}/../slack_build_notifier.rb")"
   echo
   echo "_tail of ${LOG_FILE}_"
   echo
+  echo '```'
   # Skip bash trace lines.
   grep -vE '^\++ ' "$LOG_FILE" | tail
+  echo '```'
 
   # Pipe the above output to slack script to send to us.
   # Also record separate log file to make it easy to find.
