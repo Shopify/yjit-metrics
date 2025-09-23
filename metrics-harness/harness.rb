@@ -106,6 +106,12 @@ def use_gemfile(extra_setup_cmd: nil)
   require "bundler/setup"
 end
 
+def realtime
+  r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  yield
+  Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
+end
+
 def setup_cmds(c)
   env_bundler = ENV['FORCE_BUNDLER_VERSION']
   bundler_cmd = "bundle"
@@ -124,15 +130,13 @@ def setup_cmds(c)
   end
 
   c.each do |cmd|
-    puts "Running: #{cmd}"
-    system(cmd) || raise("Error running setup_cmds! Failing!")
+    puts "Running: #{cmd.inspect}"
+    realtime do
+      system(cmd) || raise("Error running setup_cmds! Failing!")
+    end.tap do |time|
+      puts "# #{cmd.inspect} took #{time}s"
+    end
   end
-end
-
-def realtime
-  r0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-  yield
-  Process.clock_gettime(Process::CLOCK_MONOTONIC) - r0
 end
 
 def run_benchmark(num_itrs_hint, &block)
