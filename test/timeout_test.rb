@@ -13,7 +13,12 @@ class TimeoutTest < Minitest::Test
     assert_operator(result[:duration], :<, 5)
     assert_equal(result[:exit_status], 0)
     assert_equal("ok\n", result[:output])
-    refute_match(/Timeout/, result[:main_output])
+    [
+      result[:stderr],
+      result[:main_stderr],
+    ].each do |stderr|
+      refute_match(/Timeout/, stderr)
+    end
   end
 
   def test_timeout_term
@@ -36,8 +41,13 @@ class TimeoutTest < Minitest::Test
     assert_match(/sleeping/, out)
     assert_match(/1/, out)
     assert_match(/signaled/, result[:stderr])
-    assert_match(/Timeout reached, killing/, result[:main_output])
-    refute_match(/Process still alive, killing/, result[:main_output])
+    [
+      result[:stderr],
+      result[:main_stderr],
+    ].each do |stderr|
+      assert_match(/Timeout reached, killing/, stderr)
+      refute_match(/Process still alive, killing/, stderr)
+    end
   end
 
   def test_timeout_kill
@@ -61,20 +71,31 @@ class TimeoutTest < Minitest::Test
     assert_match(/\d+ s:false/, out)
     assert_match(/\d+ s:true/, out)
     assert_match(/signaled/, result[:stderr])
-    assert_match(/Timeout reached, killing/, result[:main_output])
-    assert_match(/Process still alive, killing/, result[:main_output])
+    [
+      result[:stderr],
+      result[:main_stderr],
+    ].each do |stderr|
+      assert_match(/Timeout reached, killing/, stderr)
+      assert_match(/Process still alive, killing/, stderr)
+    end
   end
 
   def run_script(script)
+    stderr_r, stderr_w = IO.pipe
     # Fork to capture all stdout in addition to the method result.
     IO.popen('-', 'r') do |pipe|
       if pipe
+        # parent
         out, result = pipe.read.split(/\n---\n/)
         # This is the return value.
         JSON.parse(result, symbolize_names: true).tap do |result|
-          result[:main_output] = out
+          result[:main_stdout] = out
+          stderr_w.close
+          result[:main_stderr] = stderr_r.read
         end
       else
+        # child
+        STDERR.reopen(stderr_w)
         # All stdout goes to the pipe.
         result = YJITMetrics.run_harness_script_from_string(
           script,

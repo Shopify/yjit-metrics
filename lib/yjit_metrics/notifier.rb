@@ -21,7 +21,12 @@ module YJITMetrics
     # Returns self.
     def error(exception)
       body = if exception.is_a?(MetricsApp::CommandExitedNonZero)
-        exception.stderr
+        lines = exception.stderr.lines
+        if lines.size > 10
+          lines = lines.last(10)
+          lines.unshift("…\n")
+        end
+        lines.map { |l| truncate_line(l, 200) }.join.strip
       else
         backtrace = exception.backtrace
           .select { |l| l.start_with?(APP_DIR) }
@@ -61,6 +66,10 @@ module YJITMetrics
       @status = $?
 
       return @status.success?
+    end
+
+    def truncate_line(line, size)
+      line.size > size ? line[0..size] + "…\n" : line
     end
   end
 end
