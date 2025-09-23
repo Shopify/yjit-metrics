@@ -134,7 +134,7 @@ module YJITBenchmarking
 
     class Quash < Command
       # Current running time for benchmarks is a little less than 1 hour per ruby build config.
-      HOURS = 7
+      HOURS = 8
 
       def describe(instance)
         info = client.info(instance)
