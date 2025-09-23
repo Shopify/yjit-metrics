@@ -135,6 +135,49 @@ class SlackNotificationTest < Minitest::Test
     assert_slack_message(result, title: "RuntimeError: #{message}", header: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
   end
 
+  def test_notify_error_with_command_exited_nonzero
+    notifier = TestNotifier.new
+    command = "/usr/local/ruby/bin/ruby basic_benchmark.rb --on-errors=report --max-retries=2 --min-bench-time=30.0 --min-bench-itrs=10 --configs=aarch64_yjit_stats,aarch64_prod_ruby_no_jit,aarch64_prod_ruby_with_yjit,aarch64_prev_ruby_no_jit,aarch64_prev_ruby_yjit --full-rebuild yes --output=/home/ubuntu/src/yjit-metrics/continuous_reporting/data/ --bench-params=/home/ubuntu/ym/bench_params.json"
+    error = MetricsApp::CommandExitedNonZero.new(command, "/tmp", <<~ERR)
+      1
+      2
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10 #{"x" * 300}
+      11
+      12
+    ERR
+
+    result = notifier.error(error).notify!
+
+    summary = "MetricsApp::CommandExitedNonZero: Command \"/usr/local/ruby/bin/ruby basic_benchmark.rb --on-errors=report --max-retries=2 --min-bench-time=30.0 --..."
+    message = "MetricsApp::CommandExitedNonZero: Command \"#{command}\" failed in directory /tmp"
+    expected_body = <<~BODY
+      ```#{message}```
+
+      ```
+      …
+      3
+      4
+      5
+      6
+      7
+      8
+      9
+      10 #{"x" * 198}…
+      11
+      12
+      ```
+    BODY
+
+    assert_slack_message(result, title: "#{message}", header: summary, body: expected_body, image:  "#{IMAGE_PREFIX}/build-fail.png")
+  end
+
   private
 
   def assert_slack_message(result, title:, header: title, body:, image:)
