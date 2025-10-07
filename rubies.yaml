@@ -47,7 +47,7 @@ builds:
     <<: *build_jit
     # In order to build "prev" ruby the same way we build "prod" ruby
     # we build it from source, so we use a tag that represents a recent release.
-    git_branch: "v3_3_6"
+    git_branch: "v3_4_7"
     override_name: prev
     configure_args:
       # Ruby 3.3 only supports yjit.
