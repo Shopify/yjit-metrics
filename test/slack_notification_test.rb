@@ -17,6 +17,16 @@ class SlackNotificationTest < Minitest::Test
   SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
   DATA_GLOB = "test/data/slack/*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/rubybench/yjit-reports/main/images"
+  BENCH_PARAMS = {
+    "ts" => "2025-09-23-004212",
+    "full_rebuild" => true,
+    "bench_type" => "default",
+    "cruby_name" => "master",
+    "cruby_sha" => "cdb9c2543415588c485282e460cdaba09452ab6a",
+    "yjit_bench_sha" => "dc085d33251c260298bff4114043daddc9544a90",
+    "yjit_metrics_sha" => "8ff162bddc5d42e8dcf10dcf56f56b0731397c24",
+    # ...
+  }
 
   class TestNotifier < YJITMetrics::Notifier
     def notify!
@@ -88,7 +98,7 @@ class SlackNotificationTest < Minitest::Test
   end
 
   def test_notify_error
-    notifier = TestNotifier.new
+    notifier = TestNotifier.new(bench_params: BENCH_PARAMS)
     error = RuntimeError.new("something bad")
     error.set_backtrace([
       "elsewhere",
@@ -104,6 +114,13 @@ class SlackNotificationTest < Minitest::Test
       ```
       - test/slack_notification_test.rb:5
       - test/oops.rb:4
+      ```
+      bench params:
+      ```---
+      cruby_sha: cdb9c2543415588c485282e460cdaba09452ab6a
+      ts: 2025-09-23-004212
+      yjit_bench_sha: dc085d33251c260298bff4114043daddc9544a90
+      yjit_metrics_sha: 8ff162bddc5d42e8dcf10dcf56f56b0731397c24
       ```
     BODY
 
