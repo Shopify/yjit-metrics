@@ -178,7 +178,7 @@ begin
 rescue => exception
     puts exception.full_message
 
-    notifier = YJITMetrics::Notifier.new
+    notifier = YJITMetrics::Notifier.new(bench_params: bench_params_data)
     notifier.error(exception)
     # If we wrote any data files we can parse summary info out of them.
     notifier.args = Dir["#{DATA_DIR}/*.json"]

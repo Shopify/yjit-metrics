@@ -4,17 +4,19 @@
 
 module YJITMetrics
   class Notifier
-    attr_accessor :body, :title, :image, :args, :env, :status
+    attr_accessor :bench_params, :body, :title, :image, :args, :env, :status
 
     APP_DIR = File.expand_path("../../", __dir__)
     SLACK_SCRIPT = File.expand_path("continuous_reporting/slack_build_notifier.rb", APP_DIR)
     BACKTRACE_ITEMS = 2
+    BENCH_PARAMS_TO_SHOW = ["cruby_sha", "ts", "yjit_bench_sha", "yjit_metrics_sha"]
 
-    def initialize(body: nil, title: nil, image: nil, args: nil)
+    def initialize(body: nil, title: nil, image: nil, args: nil, bench_params: nil)
       @body = body
       @title = title
       @image = image
       @args = args
+      @bench_params = bench_params
     end
 
     # Format notification message based on provided error object.
@@ -40,6 +42,7 @@ module YJITMetrics
       @title = "#{exception.class}: #{exception.message}"
       @image = :fail
       @body = "```\n#{body}\n```\n"
+      @body += "bench params:\n```#{bench_params.slice(*BENCH_PARAMS_TO_SHOW).to_yaml}```\n" if bench_params
 
       self
     end
