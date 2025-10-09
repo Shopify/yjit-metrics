@@ -3,15 +3,14 @@
 module MetricsApp
   module Benchmarks
     URL = "https://github.com/ruby/ruby-bench.git"
-    # Look for it adjacent to this repo's checkout.
-    DIR = ENV["RUBY_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.parent.join("ruby-bench")
+    DIR = MetricsApp::ROOT.join("build", "ruby-bench")
 
     extend self
 
     def prepare!(url, branch:)
       MetricsApp.clone_repo(
         url || URL,
-        DIR,
+        DIR.to_s,
         branch: branch || "main",
       )
       clean!

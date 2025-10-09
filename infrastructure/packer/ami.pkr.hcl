@@ -76,6 +76,9 @@ locals {
     # Setup the ruby clones and extra repos.
     "${local.ym_setup} repos",
 
+    # We already have this repo and don't need a second clone.
+    "mkdir -p ~/ym/yjit-metrics/build && ln -s ~/src/ruby-bench ~/ym/yjit-metrics/build/",
+
     "sudo apt remove --auto-remove -y ${join(" ", local.unwanted_packages)}",
     "sudo systemctl disable --now ${join(" ", local.unwanted_services)}",
 
