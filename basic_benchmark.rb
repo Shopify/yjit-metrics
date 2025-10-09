@@ -141,7 +141,7 @@ OptionParser.new do |opts|
         timestamp = ts
     end
 
-    opts.on("-fr=YN", "--full-rebuild=YN", "Whether to fully rebuild all rubies") do |fr|
+    opts.on("--full-rebuild=YN", "Whether to fully rebuild all rubies") do |fr|
         if fr.nil? || fr.strip == ""
             full_rebuild = true
         else

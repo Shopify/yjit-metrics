@@ -76,7 +76,7 @@ OptionParser.new do |opts|
       benchmark_args = args_for_bench_type(btype)
     end
 
-    opts.on("-fr YN", "--full-rebuild YN") do |fr|
+    opts.on("--full-rebuild YN") do |fr|
         if fr.nil? || fr.strip == ""
             full_rebuild = true
         else
@@ -84,12 +84,12 @@ OptionParser.new do |opts|
         end
     end
 
-    opts.on("-bp PARAMS_FILE.json", "--bench-params PARAMS_FILE.json", "Benchmark parameters JSON file") do |bp_file|
+    opts.on("--bench-params PARAMS_FILE.json", "Benchmark parameters JSON file") do |bp_file|
         raise "No such benchmark params file: #{bp_file.inspect}!" unless File.exist?(bp_file)
         bench_params_file = bp_file
     end
 
-    opts.on("-dd DATA_DIR", "--data-dir DATA_DIR", "Location to write benchmark results, default: continuous_reporting/data") do |ddir|
+    opts.on("--data-dir DATA_DIR", "Location to write benchmark results, default: continuous_reporting/data") do |ddir|
         raise("No such directory: #{ddir.inspect}!") unless File.directory?(ddir)
         data_dir = ddir
     end
