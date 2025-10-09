@@ -4,21 +4,9 @@
 require 'bundler/setup'
 require 'slack-ruby-client'
 
-Slack.configure do |config|
-  config.token = ENV.fetch("SLACK_OAUTH_TOKEN") do
-    file = ENV.fetch("SLACK_TOKEN_FILE") do
-      raise "Can't run slack_build_notifier.rb without SLACK_OAUTH_TOKEN or SLACK_TOKEN_FILE!"
-    end
-    File.read(file).strip
-  end
-end
-
 def slack_client
   @slack_client ||= Slack::Web::Client.new
 end
-
-# Die if we can't connect to Slack
-slack_client.auth_test
 
 require "optparse"
 
@@ -108,6 +96,18 @@ OptionParser.new do |opts|
     title = arg
   end
 end.parse!
+
+Slack.configure do |config|
+  config.token = ENV.fetch("SLACK_OAUTH_TOKEN") do
+    file = ENV.fetch("SLACK_TOKEN_FILE") do
+      raise "Can't run slack_build_notifier.rb without SLACK_OAUTH_TOKEN or SLACK_TOKEN_FILE!"
+    end
+    File.read(file).strip
+  end
+end
+
+# Die if we can't connect to Slack
+slack_client.auth_test
 
 TO_NOTIFY = to_notify
 
