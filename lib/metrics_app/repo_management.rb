@@ -4,6 +4,7 @@ module MetricsApp
   module RepoManagement
     def clone_repo(url, path, branch: nil)
       unless File.exist?(path)
+        # Git clone will make any necessary parent dirs.
         check_call("git", "clone", url, path)
         return unless branch
       end
