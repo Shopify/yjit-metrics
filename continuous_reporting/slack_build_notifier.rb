@@ -81,7 +81,7 @@ to_notify = ENV.fetch("SLACK_CHANNEL", "#ruby-bench-ci").split(",")
 title = "Howdy!"
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
+  opts.banner = "Usage: #{$0} [options]"
 
   opts.on("--channels CHAN", "Channels to notify, including channel names, email addresses, Slack Member IDs") do |chan|
     to_notify = slack_notification_targets(chan)
