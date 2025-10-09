@@ -1,0 +1,46 @@
+name: 'Workflow wrapper'
+description: 'Reusable workflow for preparing the environment and running commands'
+
+on:
+  workflow_call:
+    inputs:
+      script:
+        required: true
+        type: string
+    secrets:
+      BENCHMARK_BOT_AWS_REGION:
+        required: true
+      BENCHMARK_BOT_AWS_ACCESS_KEY_ID:
+        required: true
+      BENCHMARK_BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+      BENCHMARK_BOT_SSH_PRIVATE_KEY:
+        required: true
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: ruby/setup-ruby@0481980f17b760ef6bca5e8c55809102a0af1e5a # v1.263.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          working-directory: infrastructure
+
+      - name: Setup SSH
+        run: |
+          echo "${{ secrets.BENCHMARK_BOT_SSH_PRIVATE_KEY }}" > ssh.key
+          chmod 0400 ssh.key
+
+      - name: Run
+        env:
+          AWS_REGION: ${{ secrets.BENCHMARK_BOT_AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.BENCHMARK_BOT_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BENCHMARK_BOT_AWS_SECRET_ACCESS_KEY }}
+          SSH_KEY_FILE: ssh.key
+        run: ${{ inputs.script }}

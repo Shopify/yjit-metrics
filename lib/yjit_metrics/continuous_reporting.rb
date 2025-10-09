@@ -5,10 +5,10 @@ require "fileutils"
 module YJITMetrics
   module ContinuousReporting
     # Dir in which yjit-metrics, ruby-bench, etc are cloned
-    YM_ROOT_DIR = File.expand_path("../../..", __dir__)
+    YM_ROOT_DIR = File.expand_path(File.join(__dir__, "../../.."))
 
     # This repo.
-    YM_REPO = File.expand_path("../..", __dir__)
+    YM_REPO = File.join(YM_ROOT_DIR, "yjit-metrics")
 
     def self.find_dir(base)
       above = File.join(YM_ROOT_DIR, base)

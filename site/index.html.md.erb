@@ -6,8 +6,7 @@ urls:
   ruby: https://github.com/ruby/ruby
 ---
 
-<%# last_bench = site.benchmarks[-1] %>
-<% last_bench = Struct.new(:date_str, :yjit_commit, :reports, :platforms, :yjit_ruby_version, :yjit_ruby_description, :yjit_configure_args, :yjit_cc_version, :cpu_info, :url).new(yjit_commit: "", platforms: [], url: "/") %>
+<% last_bench = site.benchmarks[-1] %>
 
 <!-- Headline Box -->
 <div class="headline-box">
@@ -19,7 +18,7 @@ urls:
     (<a href="<%= urls[:ruby] %>/commit/<%= last_bench.yjit_commit %>"><%= last_bench.yjit_commit[0..9] %></a>)
   </div>
 
-  <div><%#= include last_bench.reports[:blog_speed_headline_html] %></div>
+  <div><%= include last_bench.reports[:blog_speed_headline_html] %></div>
 
   Latest Full Details:
   <% for platform in last_bench.platforms %>
@@ -81,7 +80,7 @@ urls:
   <div>
     <h3>Performance on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
-  <%#= include(find_best(last_bench.reports, "blog_speed_details_PLATFORM_head_svg")) %>
+  <%= include(find_best(last_bench.reports, "blog_speed_details_PLATFORM_head_svg")) %>
   </a>
   <%= text(:speed_graph) %>
   </div>
@@ -91,7 +90,7 @@ urls:
   <div>
     <h3>Memory Usage on Headline Benchmarks</h3>
   <a href="<%= relative_url last_bench.url %>">
-  <%#= include(find_best(last_bench.reports, "blog_memory_details_PLATFORM_head_svg")) %>
+  <%= include(find_best(last_bench.reports, "blog_memory_details_PLATFORM_head_svg")) %>
   </a>
   <%= text(:memory_graph) %>
   </div>
@@ -137,7 +136,7 @@ urls:
 
 <h3>Preview of headline benchmark timing history</h3>
 <div class="timeline_report">
-  <%#= include "reports/mini_timelines.html" %>
+  <%= include "reports/mini_timelines.html" %>
 </div>
 
 <hr/>
