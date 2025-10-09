@@ -324,7 +324,7 @@ unless die_on_regenerate
 
     # It's possible to run only specific non-timeline reports -- then this would be empty.
     unless timeline_reports.empty?
-        #YJITMetrics.check_call("#{RbConfig.ruby} #{YM_REPO}/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
+        YJITMetrics.check_call("#{RbConfig.ruby} #{YM_REPO}/timeline_report.rb -d #{RAW_BENCHMARK_ROOT} --report='#{timeline_reports.keys.join(",")}' -o #{BUILT_REPORTS_ROOT}")
     end
 
     # TODO: figure out a new way to verify that appropriate files were written. With various subdirs, the old way won't cut it.
