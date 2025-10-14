@@ -53,9 +53,9 @@ module MetricsApp
           puts "Installing Ruby #{build_name} via ruby-build"
           MetricsApp::RubyBuild.install(build_name.sub(/^ruby-/, ''), prefix)
         when "repo"
-          build_config = build.merge((overrides&.dig(build[:override_name].to_sym) || {}))
-          url = build[:git_url]
-          branch = build[:git_branch]
+          build_config = build.merge((overrides&.dig(build[:override_name].to_sym)&.compact || {}))
+          url = build_config[:git_url]
+          branch = build_config[:git_branch]
           puts "Installing Ruby #{build_name} from #{url}##{branch}"
 
           # The ruby clone path cannot contain certain characters
