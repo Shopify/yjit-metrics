@@ -56,6 +56,7 @@ class BasicBenchmarkScriptTest < Minitest::Test
     )
 
     refute_predicate result, :success?
+    assert_operator(output_data.size, :>, 1)
 
     output_data.each do |data|
       assert_equal 2, data['version']
