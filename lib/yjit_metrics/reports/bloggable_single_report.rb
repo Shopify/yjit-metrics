@@ -2,6 +2,7 @@
 
 require "yaml"
 
+require_relative "../../metrics_app/benchmarks"
 require_relative "./yjit_stats_report"
 
 # For details-at-a-specific-time reports, we'll want to find individual configs and make sure everything is
@@ -13,10 +14,8 @@ require_relative "./yjit_stats_report"
 
 module YJITMetrics
   class BloggableSingleReport < YJITStatsReport
-    REPO_ROOT = File.expand_path("../../../..", __dir__)
-
     # Benchmarks sometimes go into multiple categories, based on the category field
-    BENCHMARK_METADATA = YAML.load_file(File.join(REPO_ROOT, "ruby-bench/benchmarks.yml")).map do |name, metadata|
+    BENCHMARK_METADATA = YAML.load_file(MetricsApp::Benchmarks::DIR.join("benchmarks.yml")).map do |name, metadata|
       [name, metadata.transform_keys(&:to_sym)]
     end.to_h
 
