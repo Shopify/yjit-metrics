@@ -3,7 +3,8 @@
 module MetricsApp
   module Benchmarks
     URL = "https://github.com/ruby/ruby-bench.git"
-    DIR = MetricsApp::ROOT.join("build", "ruby-bench")
+    # Env var is used by tests.
+    DIR = ENV["RUBY_BENCH_DIR"]&.then { |x| Pathname.new(x) } || MetricsApp::ROOT.join("build", "ruby-bench")
 
     extend self
 
