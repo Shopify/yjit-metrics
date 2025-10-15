@@ -15,34 +15,45 @@ require_relative "./yjit_stats_report"
 module YJITMetrics
   class BloggableSingleReport < YJITStatsReport
     # Benchmarks sometimes go into multiple categories, based on the category field
-    BENCHMARK_METADATA = YAML.load_file(MetricsApp::Benchmarks::DIR.join("benchmarks.yml")).map do |name, metadata|
-      [name, metadata.transform_keys(&:to_sym)]
-    end.to_h
+    def self.benchmark_metadata
+      @benchmark_metadata ||= YAML.load_file(MetricsApp::Benchmarks::DIR.join("benchmarks.yml")).map do |name, metadata|
+        [name, metadata.transform_keys(&:to_sym)]
+      end.to_h
+    end
+
+    def benchmark_metadata
+      BloggableSingleReport.benchmark_metadata
+    end
 
     def headline_benchmarks
-      @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == "headline" }
+      @benchmark_names.select { |bench| benchmark_metadata[bench] && benchmark_metadata[bench][:category] == "headline" }
     end
 
     def micro_benchmarks
-      @benchmark_names.select { |bench| BENCHMARK_METADATA[bench] && BENCHMARK_METADATA[bench][:category] == "micro" }
+      @benchmark_names.select { |bench| benchmark_metadata[bench] && benchmark_metadata[bench][:category] == "micro" }
     end
 
     def benchmark_category_index(bench_name)
-      return 0 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == "headline"
-      return 2 if BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:category] == "micro"
+      return 0 if benchmark_metadata[bench_name] && benchmark_metadata[bench_name][:category] == "headline"
+      return 2 if benchmark_metadata[bench_name] && benchmark_metadata[bench_name][:category] == "micro"
       return 1
     end
 
     class BenchNameLinkFormatter
+      def benchmark_metadata
+        BloggableSingleReport.benchmark_metadata
+      end
+
       def %(bench_name)
-        bench_desc = ( BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:desc] ) || "(no description available)"
-        suffix = BENCHMARK_METADATA[bench_name] && BENCHMARK_METADATA[bench_name][:single_file] ? ".rb" : "/benchmark.rb"
+        bench_desc = ( benchmark_metadata[bench_name] && benchmark_metadata[bench_name][:desc] ) || "(no description available)"
+        suffix = benchmark_metadata[bench_name] && benchmark_metadata[bench_name][:single_file] ? ".rb" : "/benchmark.rb"
         bench_url = "https://github.com/ruby/ruby-bench/blob/main/benchmarks/#{bench_name}#{suffix}"
 
         %Q(<a href="#{bench_url}" title="#{bench_desc.gsub('"', '&quot;')}">#{bench_name}</a>)
       end
     end
 
+    # Used by subclasses.
     def bench_name_link_formatter
       BenchNameLinkFormatter.new
     end
