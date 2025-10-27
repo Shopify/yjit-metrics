@@ -139,7 +139,7 @@ def setup_cmds(c)
   end
 end
 
-def run_benchmark(num_itrs_hint, &block)
+def run_benchmark(num_itrs_hint, **, &block)
   times = []
   total_time = 0
   num_itrs = 0
