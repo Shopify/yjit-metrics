@@ -9,6 +9,4 @@ set -e
 <%# Make sure we're installing the version we want the benchmark to use %>
 <%= template_settings[:bundler_version]&.then { |v| "gem install bundler:#{v}" } %>
 
-<%= template_settings[:env_var_exports] %>
-
 <%= template_settings[:pre_cmd] %> ruby <%= template_settings[:ruby_opts] %> <%= template_settings[:script_path] %>
