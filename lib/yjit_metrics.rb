@@ -411,6 +411,7 @@ module YJITMetrics
       bundler_version: shell_settings[:bundler_version],
     }
     bench_script = script_template.result(binding) # Evaluate an Erb template with template_settings
+    bench_script.gsub!(/\n+/, "\n")
 
     # Do the benchmarking
     script_details = run_script.call(bench_script, env: env)
