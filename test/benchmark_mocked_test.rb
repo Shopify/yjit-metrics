@@ -11,7 +11,7 @@ class FakePopen
         @stderr = stderr
     end
 
-    def call(args, err:, pgroup: nil)
+    def call(*args, err:, pgroup: nil)
         assert_equal(@expected_args, args) if @expected_args
 
         err.write(@stderr)
@@ -82,12 +82,8 @@ class TestBenchmarkingWithMocking < Minitest::Test
         # A script-runner expects to receive a bash script as a parameter,
         # and to return the details of that script's success or failure.
         # It's also supposed to write results to temp.json.
-        fake_runner = proc do |script_contents|
-            unless script_contents =~ /export OUT_JSON_PATH=(['"])(.*)\1$/
-                raise "Couldn't find the OUT_JSON_PATH in the script contents!"
-            end
-
-            out_json_path = $2
+        fake_runner = proc do |script_contents, env:|
+            out_json_path = env.fetch("OUT_JSON_PATH")
 
             FileUtils.cp("#{test_data_dir}/synthetic_data.json", out_json_path)
 
@@ -132,7 +128,7 @@ class TestBenchmarkingWithMocking < Minitest::Test
         # A script-runner expects to receive a bash script as a parameter,
         # and to return the details of that script's success or failure.
         # It's also supposed to write results to temp.json.
-        fake_runner = proc { |script_contents| fake_runner_details }
+        fake_runner = proc { |script_contents, env:| fake_runner_details }
 
         on_err_proc = proc do |err_info|
             fake_runner_details.each do |key, val|

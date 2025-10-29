@@ -87,6 +87,7 @@ module YJITMetrics
   BENCHMARK_TIMEOUT = 60 * 30 # The stats build on rubyboy can take well over 20 min.
   def run_harness_script_from_string(script,
       local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
+      env: nil,
       timeout: BENCHMARK_TIMEOUT, # Script time in seconds before SIGTERM.
       term_timeout: 10, # Seconds between SIGTERM and SIGKILL.
       crash_file_check: true,
@@ -120,7 +121,7 @@ module YJITMetrics
     err_r, err_w = IO.pipe
     start_time = get_time
     signaled_time = nil
-    local_popen.call(["bash", tf.path], err: err_w, pgroup: true) do |pipe|
+    local_popen.call(env || {}, ["bash", tf.path], err: err_w, pgroup: true) do |pipe|
       harness_script_pid = pipe.pid
       process_group_id = harness_script_pid
       script_output = ""
@@ -381,11 +382,11 @@ module YJITMetrics
   # stop. If no exception is raised, this method will collect no samples and
   # will return nil.
   def run_single_benchmark(benchmark_info, harness_settings:, shell_settings:,
-    run_script: proc { |s| run_harness_script_from_string(s) })
+    run_script: proc { |s, env:| run_harness_script_from_string(s, env:) })
 
     out_tempfile = Tempfile.new("yjit-metrics-single-run")
 
-    env_vars = {
+    env = {
       OUT_JSON_PATH:       out_tempfile.path,
       WARMUP_ITRS:       harness_settings[:warmup_itrs],
       MIN_BENCH_ITRS:      harness_settings[:min_benchmark_itrs],
@@ -395,7 +396,7 @@ module YJITMetrics
       RUBYOPT: nil,
       BUNDLER_SETUP: nil,
       BUNDLE_GEMFILE: nil,
-    }
+    }.map { |k, v| [k.to_s, v&.to_s] }.to_h
 
     with_ruby = shell_settings[:ruby]
 
@@ -405,15 +406,15 @@ module YJITMetrics
       pre_benchmark_code: (with_ruby ? "unset GEM_{HOME,PATH,ROOT}; PATH=${RUBIES_DIR:-$HOME/.rubies}/#{with_ruby}/bin:$PATH" : "") + "\n" +
         (shell_settings[:enable_core_dumps] ? "ulimit -c unlimited" : ""),
       pre_cmd: shell_settings[:prefix],
-      env_var_exports: env_vars.map { |key, val| val.nil? ? "unset #{key}" : "export #{key}=#{val.to_s.dump}" }.join("\n"),
       ruby_opts: Shellwords.join(["-I#{HARNESS_PATH}"] + shell_settings[:ruby_opts]),
       script_path: benchmark_info[:script_path],
       bundler_version: shell_settings[:bundler_version],
     }
     bench_script = script_template.result(binding) # Evaluate an Erb template with template_settings
+    bench_script.gsub!(/\n+/, "\n")
 
     # Do the benchmarking
-    script_details = run_script.call(bench_script)
+    script_details = run_script.call(bench_script, env: env)
 
     if script_details[:failed]
       # We shouldn't normally get a Ruby exception in the parent process. Instead the harness
