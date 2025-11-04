@@ -176,6 +176,10 @@ module YJITBenchmarking
 
           cmd = ["ssh", *ssh_opts, client.ssh_destination(instance), *command]
           puts cmd.join(" ")
+
+          # Flush stdout to see the lines we just printed before we exec.
+          STDOUT.flush
+
           exec(*cmd)
         end
       end
