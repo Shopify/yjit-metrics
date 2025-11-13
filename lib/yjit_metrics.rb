@@ -142,7 +142,7 @@ module YJITMetrics
           script_output += chunk
         rescue IO::WaitReadable
           IO.select([pipe], nil, nil, 1)
-          retry
+          # fall through to the timeout check
         rescue EOFError
           # Cool, all done.
           break
