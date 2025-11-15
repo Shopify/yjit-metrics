@@ -153,16 +153,18 @@ module YJITMetrics
           kill_pid = -process_group_id
           if signaled_time.nil?
             signaled_time = get_time
-            [err_w, STDERR].each do |w|
-              w.puts "Timeout reached, killing #{kill_pid}"
-            end
+            message = "Timeout reached, killing #{kill_pid}"
+            STDERR.puts(message)
+            # Don't stall trying to copy the message to the pipe.
+            err_w.write_nonblock(message, exception: false)
             Process.kill("TERM", kill_pid)
           else
             begin
               if (now - signaled_time) > term_timeout
-                [err_w, STDERR].each do |w|
-                  w.puts "Process still alive, killing #{kill_pid} harder"
-                end
+                message = "Process still alive, killing #{kill_pid} harder"
+                STDERR.puts(message)
+                # Don't stall trying to copy the message to the pipe.
+                err_w.write_nonblock(message, exception: false)
                 Process.kill("KILL", kill_pid)
               end
             rescue Errno::ECHILD, Errno::ESRCH
