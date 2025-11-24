@@ -227,3 +227,13 @@ def run_benchmark(num_itrs_hint, **, &block)
 
   File.open(OUT_JSON_PATH, "w") { |f| f.write(JSON.generate(out_data)) }
 end
+
+if defined?(Ractor.make_shareable)
+  def make_shareable(obj, copy: false)
+    Ractor.make_shareable(obj, copy: copy)
+  end
+else
+  def make_shareable(obj, copy: false)
+    obj # noop
+  end
+end
