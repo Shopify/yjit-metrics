@@ -126,7 +126,7 @@ class BenchmarkListTest < Minitest::Test
 
     benchmark_names = benchmarks.map { |b| b[:name] }.sort
     assert_equal 3, benchmark_names.size
-    assert_equal ['cycle_error', 'fail.rb', 'pass.rb'], benchmark_names
+    assert_equal ['cycle_error', 'fail', 'pass'], benchmark_names
   end
 
   def test_script_path_points_to_existing_file
