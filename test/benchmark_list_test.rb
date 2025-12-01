@@ -25,7 +25,7 @@ class BenchmarkListTest < Minitest::Test
     )
 
     names = benchmark_list.map { |info| info[:name] }
-    assert_equal ['pass', 'fail'], names
+    assert_equal ['fail', 'pass'], names
   end
 
   def test_initialization_with_unknown_benchmarks
@@ -96,7 +96,7 @@ class BenchmarkListTest < Minitest::Test
     )
 
     names = benchmark_list.map { |info| info[:name] }
-    assert_equal ['pass', 'fail'], names
+    assert_equal ['fail', 'pass'], names
 
     benchmark_list.map do |info|
       assert_kind_of Hash, info
@@ -125,8 +125,8 @@ class BenchmarkListTest < Minitest::Test
     benchmarks = benchmark_list.to_a
 
     benchmark_names = benchmarks.map { |b| b[:name] }.sort
-    assert_equal 3, benchmark_names.size
-    assert_equal ['cycle_error', 'fail', 'pass'], benchmark_names
+    assert_equal 5, benchmark_names.size
+    assert_equal ['addressable-equal', 'addressable-new', 'cycle_error', 'fail', 'pass'], benchmark_names
   end
 
   def test_script_path_points_to_existing_file
