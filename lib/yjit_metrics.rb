@@ -277,7 +277,7 @@ module YJITMetrics
       @name_list = name_list
       @yjit_bench_path = File.expand_path(yjit_bench_path)
 
-      bench_names = YAML.load_file("#{@yjit_bench_path}/benchmarks.yml").keys
+      bench_names = YAML.load_file("#{@yjit_bench_path}/benchmarks.yml").filter_map { |k, _v| k.to_s unless k.start_with?("ractor/") }
       legal_bench_names = (bench_names + bench_names.map { |name| name.delete_suffix(".rb") }).uniq
       @name_list.map! { |name| name.delete_suffix(".rb") }
 
