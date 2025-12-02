@@ -1,8 +1,6 @@
 cycle_error:
   desc: Errors every other time
   category: headline
-timeout:
-  desc: Can be configured to take too long
 fail:
   desc: Fails every time
   category: micro
@@ -10,4 +8,13 @@ fail:
 pass:
   desc: Passes fairly quickly and prints to stdout and stderr
   category: micro
+  single_file: true
+addressable-new:
+  desc: Addressable::URI benchmark
+adressable-equality:
+  desc: Addressable::URI equality benchmark
+
+ractor/ractor_fib.rb:
+  desc: Ractor Fibonacci
+  category: ractor
   single_file: true

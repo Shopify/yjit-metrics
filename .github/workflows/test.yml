@@ -29,6 +29,9 @@ jobs:
           bundler-cache: true
           working-directory: yjit-metrics
 
+      - name: Setup CPU
+        run: ./setup.sh cpu
+
       - name: Run tests
         run: bundle exec rake
         env:

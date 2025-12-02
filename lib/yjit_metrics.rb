@@ -277,24 +277,16 @@ module YJITMetrics
       @name_list = name_list
       @yjit_bench_path = File.expand_path(yjit_bench_path)
 
-      bench_names = Dir.glob("*", base: "#{@yjit_bench_path}/benchmarks")
-      legal_bench_names = (bench_names + bench_names.map { |name| name.delete_suffix(".rb") }).uniq
+      discover_benchmarks
+      bench_names = @benchmark_script_by_name.keys
       @name_list.map! { |name| name.delete_suffix(".rb") }
 
-      unknown_benchmarks = name_list - legal_bench_names
+      unknown_benchmarks = name_list - bench_names
       raise(RuntimeError.new("Unknown benchmarks: #{unknown_benchmarks.inspect}!")) if unknown_benchmarks.size > 0
-      bench_names = @name_list if @name_list.size > 0
-      raise "No testable benchmarks found!" if bench_names.empty? # This should presumably not happen after the "unknown" check
-
-      @benchmark_script_by_name = {}
-      bench_names.each do |bench_name|
-        script_path = "#{@yjit_bench_path}/benchmarks/#{bench_name}"
-
-        # Choose the first of these that exists
-        real_script_path = [script_path, script_path + ".rb", script_path + "/benchmark.rb"].detect { |path| File.exist?(path) && !File.directory?(path) }
-        raise "Could not find benchmark file starting from script path #{script_path.inspect}!" unless real_script_path
-        @benchmark_script_by_name[bench_name] = real_script_path
+      if @name_list.size > 0
+        @benchmark_script_by_name.select! { |name, _| @name_list.include?(name) }
       end
+      raise "No testable benchmarks found!" if @benchmark_script_by_name.empty? # This should presumably not happen after the "unknown" check
     end
 
     # For now, benchmark_info returns a Hash. At some point it may want to get fancier.
@@ -314,6 +306,37 @@ module YJITMetrics
     def map
       @benchmark_script_by_name.keys.map do |name|
         yield benchmark_info(name)
+      end
+    end
+
+    private
+
+    def discover_benchmarks
+      @benchmark_script_by_name = {}
+      bench_dir = "#{@yjit_bench_path}/benchmarks"
+
+      Dir.children(bench_dir).each do |entry|
+        entry_path = File.join(bench_dir, entry)
+
+        if File.file?(entry_path) && entry.end_with?('.rb')
+          # Pattern 1: Standalone .rb file
+          name = entry.delete_suffix('.rb')
+          @benchmark_script_by_name[name] = entry_path
+        elsif File.directory?(entry_path)
+          all_rb_files = Dir.children(entry_path).select { |file| file.end_with?('.rb') }
+
+          # If benchmark.rb exists, only use that (Pattern 2)
+          if all_rb_files.include?('benchmark.rb')
+            @benchmark_script_by_name[entry] = File.join(entry_path, "benchmark.rb")
+          else
+            # Otherwise, use all .rb files (Pattern 3)
+            all_rb_files.each do |file|
+              suffix = file.delete_suffix('.rb')
+              name = "#{entry}-#{suffix}"
+              @benchmark_script_by_name[name] = File.join(entry_path, file)
+            end
+          end
+        end
       end
     end
   end
