@@ -7,6 +7,26 @@ These are executed daily via GitHub Actions
 (see schedules in ../.github/workflow/).
 
 
+## Setting up 1Password access
+
+There is a helper script `with-op.sh` that uses secrets defined in `op.env` in
+order to provide a wrapper around the tools that manipulate the underlying EC2
+instances. In order for this to be used, the 1Password CLI must be configured,
+and have access to a Vault that contains matching credentials.
+
+1Password CLI can be enabled via the [method in the 1Password
+documentation](https://developer.1password.com/docs/cli/get-started/) and the
+SSH Agent will need to be configured with access to ssh keys in the Ruby and
+Rails Infrastructure Vault.
+
+This can be done by placing the following toml snipped inside
+`~/.config/1Password/ssh/agent.toml`
+
+```
+[[ssh-keys]]
+vault = "Vault Name Here"
+```
+
 ## Commands
 
 The CLI used by GitHub Actions can also be used locally:
@@ -30,9 +50,6 @@ Packer resources need to be built before running any Terraform
 but these only need to be built once (or when major upgrades are needed).
 
 After that terraform can be run as often as necessary to update desired state.
-
-To get the necessary secrets from 1password you can use the `with-op.sh` script
-to load the secrets defined in `op.env` and then run any subsequent command:
 
     ./with-op.sh terraform -chdir=terraform apply
 
