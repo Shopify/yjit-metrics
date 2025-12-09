@@ -22,6 +22,9 @@ do:benchmark () {
   # Some of the cpu settings do not persist across reboots and need to be set again.
   "$cr_dir"/../setup.sh cpu
 
+  # Clone and run the scripts using the rubybench/rubybench runner.
+  "$cr_dir"/gh_tasks/run_rubybench.sh
+
   # This script needs BENCH_PARAMS env var.
   # It may exit non-zero but still produce some benchmarks
   # so preserve the exit status but proceed as if successful.
