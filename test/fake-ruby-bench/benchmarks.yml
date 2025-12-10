@@ -11,10 +11,8 @@ pass:
   single_file: true
 addressable-new:
   desc: Addressable::URI benchmark
-adressable-equality:
+addressable-equal:
   desc: Addressable::URI equality benchmark
-
-ractor/ractor_fib.rb:
-  desc: Ractor Fibonacci
-  category: ractor
-  single_file: true
+ractor_bench:
+  desc: Ractor-only benchmark for testing
+  ractor_only: true
