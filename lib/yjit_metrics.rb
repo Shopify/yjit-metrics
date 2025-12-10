@@ -7,6 +7,7 @@ require 'json'
 require 'csv'
 require 'erb'
 require 'shellwords'
+require 'yaml'
 
 require_relative "./metrics_app"
 require_relative "./yjit_metrics/defaults"
@@ -314,30 +315,36 @@ module YJITMetrics
     def discover_benchmarks
       @benchmark_script_by_name = {}
       bench_dir = "#{@yjit_bench_path}/benchmarks"
+      ractor_only_benchmarks = load_ractor_only_benchmarks
 
       Dir.children(bench_dir).each do |entry|
         entry_path = File.join(bench_dir, entry)
 
         if File.file?(entry_path) && entry.end_with?('.rb')
-          # Pattern 1: Standalone .rb file
           name = entry.delete_suffix('.rb')
-          @benchmark_script_by_name[name] = entry_path
+          @benchmark_script_by_name[name] = entry_path unless ractor_only_benchmarks.include?(name)
         elsif File.directory?(entry_path)
           all_rb_files = Dir.children(entry_path).select { |file| file.end_with?('.rb') }
 
-          # If benchmark.rb exists, only use that (Pattern 2)
           if all_rb_files.include?('benchmark.rb')
-            @benchmark_script_by_name[entry] = File.join(entry_path, "benchmark.rb")
+            @benchmark_script_by_name[entry] = File.join(entry_path, "benchmark.rb") unless ractor_only_benchmarks.include?(entry)
           else
-            # Otherwise, use all .rb files (Pattern 3)
             all_rb_files.each do |file|
               suffix = file.delete_suffix('.rb')
               name = "#{entry}-#{suffix}"
-              @benchmark_script_by_name[name] = File.join(entry_path, file)
+              @benchmark_script_by_name[name] = File.join(entry_path, file) unless ractor_only_benchmarks.include?(name)
             end
           end
         end
       end
+    end
+
+    def load_ractor_only_benchmarks
+      yml_path = "#{@yjit_bench_path}/benchmarks.yml"
+      return [] unless File.exist?(yml_path)
+
+      metadata = YAML.load_file(yml_path, permitted_classes: [Symbol])
+      metadata.select { |_, data| data["ractor_only"] }.keys
     end
   end
 

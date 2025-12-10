@@ -140,4 +140,26 @@ class BenchmarkListTest < Minitest::Test
       refute File.directory?(info[:script_path]), "Script path #{info[:script_path]} should not be a directory"
     end
   end
+
+  def test_excludes_ractor_only_benchmarks
+    benchmark_list = YJITMetrics::BenchmarkList.new(
+      name_list: [],
+      yjit_bench_path: @yjit_bench_path
+    )
+
+    benchmark_names = benchmark_list.to_a.map { |b| b[:name] }
+    refute_includes benchmark_names, 'ractor_bench'
+  end
+
+  def test_requesting_ractor_only_benchmark_raises_error
+    error = assert_raises(RuntimeError) do
+      YJITMetrics::BenchmarkList.new(
+        name_list: ['ractor_bench'],
+        yjit_bench_path: @yjit_bench_path
+      )
+    end
+
+    assert_match(/Unknown benchmarks:/, error.message)
+    assert_match(/ractor_bench/, error.message)
+  end
 end
