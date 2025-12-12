@@ -51,8 +51,26 @@ but these only need to be built once (or when major upgrades are needed).
 
 After that terraform can be run as often as necessary to update desired state.
 
+To get the necessary secrets from 1password you can use the `with-op.sh` script
+to load the secrets defined in `op.env` and then run any subsequent command:
+
+Before terraform can be run, each user must initialize their terraform backends
+locally. This can be done as follows:
+
+    ./with-op.sh terraform -chdir=terraform init
+
+This only needs done once, and will establish a connection to S3 and sync any
+modules at the correct version specified by the projects lockfiles.
+
+After that terraform can be run as often as necessary to update desired state.
+
     ./with-op.sh terraform -chdir=terraform apply
 
+If you want to see what changes terraform is planning to make, you can use the
+`plan` command to output a full breakdown of the changes terraform will make
+when you `apply`.
+
+    ./with-op.sh terraform -chdir=terraform plan
 
 **NOTE** Applying the terraform will leave the instances in a "running" state.
 If you don't intend to do anything with them (and you are sure benchmarks aren't

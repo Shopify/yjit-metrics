@@ -75,6 +75,10 @@ resource "aws_instance" "benchmarking" {
   # to get applied).  If you desire to do so you may need to copy those values here:
   user_data = aws_launch_template.yjit-metrics[each.key].user_data
   instance_type = aws_launch_template.yjit-metrics[each.key].instance_type
+
+  timeouts {
+    update = "20m"
+  }
 }
 
 # Create a separate instance for running the report aggregation
