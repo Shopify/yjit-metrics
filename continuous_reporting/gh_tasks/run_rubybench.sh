@@ -8,7 +8,7 @@ RUBYBENCH_BRANCH="mvh-configure-results-dir"
 RUBYBENCH_GIT="git -C $RUBYBENCH_DIR"
 
 if [[ ! -d "$RUBYBENCH_DIR/.git" ]]; then
-    git --branch "$RUBYBENCH_BRANCH" "$REPO" "$RUBYBENCH_DIR"
+    git clone --branch "$RUBYBENCH_BRANCH" "$RUBYBENCH_REPO" "$RUBYBENCH_DIR"
 fi
 
 pushd "$RUBYBENCH_DIR"
