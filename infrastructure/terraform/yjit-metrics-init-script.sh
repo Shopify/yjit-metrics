@@ -68,8 +68,34 @@ yjit-slack-token () {
   printf "export SLACK_TOKEN_FILE=%q\n" "$secret_file" >> "$profile"
 }
 
+rubybench-data-deploy-key () {
+  local ssh_dir="$(getent passwd $uid | cut -d: -f 6)/.ssh"
+  local key_file="$ssh_dir/rubybench_data_deploy_key"
+  mkdir -p "$ssh_dir"
+  get-secret rubybench-data-deploy-key > "$key_file"
+  chmod 600 "$key_file"
+  chown -R $uid:$uid "$ssh_dir"
+}
+
+rubybench-data-ssh-config () {
+  local ssh_dir="$(getent passwd $uid | cut -d: -f 6)/.ssh"
+  local config_file="$ssh_dir/config"
+  local key_file="$ssh_dir/rubybench_data_deploy_key"
+  cat <<-EOF >> "$config_file"
+	Host github-rubybench-data
+	  HostName github.com
+	  User git
+	  IdentityFile $key_file
+	  IdentitiesOnly yes
+	EOF
+  chmod 600 "$config_file"
+  chown $uid:$uid "$config_file"
+}
+
 setup-profile .bashrc
 process-metadata
 load-secrets
 yjit-git-creds
 yjit-slack-token
+rubybench-data-deploy-key
+rubybench-data-ssh-config
