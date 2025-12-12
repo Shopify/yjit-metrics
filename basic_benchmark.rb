@@ -53,7 +53,6 @@ THIS_PLATFORM_CONFIGS = RUBY_CONFIGS.keys.select do |config|
 end
 
 # Defaults
-skip_git_updates = false
 num_runs = 1   # For every run, execute the specified number of warmups and iterations in a new process
 harness_params = {
     variable_warmup_config_file: nil,
@@ -68,16 +67,11 @@ output_path = "data"
 bundler_version = nil
 # For CI-style metrics collection we'll want timestamped results over time, not just the most recent.
 timestamp = START_TIME.getgm.strftime('%F-%H%M%S')
-full_rebuild = false
 max_attempts = 3
 failed_benchmarks = {}
 
 OptionParser.new do |opts|
     opts.banner = "Usage: basic_benchmark.rb [options] [<benchmark names>]"
-
-    opts.on("--skip-git-updates", "Skip updating Git repositories and rebuilding Ruby (only works if Rubies are built already)") do
-        skip_git_updates = true
-    end
 
     opts.on("--variable-warmup-config-file=FILENAME", "JSON file with per-Ruby, per-benchmark configuration for warmup, iterations, etc.") do |filename|
         raise "Variable warmup config file #{filename.inspect} does not exist!" unless File.exist?(filename)
@@ -137,16 +131,7 @@ OptionParser.new do |opts|
         unless ts =~ /\A\d{4}-\d{2}-\d{2}-\d{6}\Z/
             raise "Bad format for given timestamp: #{ts.inspect}!"
         end
-        full_rebuild = bench_data["full_rebuild"]
         timestamp = ts
-    end
-
-    opts.on("--full-rebuild=YN", "Whether to fully rebuild all rubies") do |fr|
-        if fr.nil? || fr.strip == ""
-            full_rebuild = true
-        else
-            full_rebuild = YJITMetrics::CLI.human_string_to_boolean(fr)
-        end
     end
 
     config_desc = "Comma-separated list of Ruby configurations to test" + "\n\t\t\tfrom: #{CONFIG_NAMES.join(", ")}\n\t\t\tdefault: #{DEFAULT_CONFIGS.join(",")}"
@@ -166,7 +151,6 @@ puts <<HERE
 basic_benchmark.rb:
   harness_params = #{harness_params.inspect}
   bench_data: #{bench_data.inspect}
-  full_rebuild: #{full_rebuild.inspect}
   output_path: #{output_path.inspect}
   benchmarks: #{ARGV.inspect}
 HERE
@@ -208,26 +192,12 @@ def this_os
     )
 end
 
-if skip_git_updates
-  puts "Skipping git updates; rubies and ruby-bench must already exist"
-else
-  MetricsApp::Rubies.install_all!(
-    configs_to_test,
-    rebuild: full_rebuild,
-    overrides: {
-      cruby: {
-        git_url: BENCH_DATA["cruby_repo"],
-        git_branch: BENCH_DATA["cruby_sha"],
-      }
-    },
-  )
-
-  # Ensure an up-to-date local ruby-bench checkout.
-  MetricsApp::Benchmarks.prepare!(
-    BENCH_DATA["yjit_bench_repo"],
-    branch: BENCH_DATA["yjit_bench_sha"],
-  )
-end
+# Ruby installation is now handled by install_rubies.rb before this script runs.
+# Ensure an up-to-date local ruby-bench checkout.
+MetricsApp::Benchmarks.prepare!(
+  BENCH_DATA["yjit_bench_repo"],
+  branch: BENCH_DATA["yjit_bench_sha"],
+)
 
 # All appropriate repos have been cloned, correct branch/SHA checked out, etc. Now log the SHAs.
 

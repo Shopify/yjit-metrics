@@ -22,6 +22,10 @@ do:benchmark () {
   # Some of the cpu settings do not persist across reboots and need to be set again.
   "$cr_dir"/../setup.sh cpu
 
+  # Install all required Ruby builds before running any benchmarks.
+  # This exports BENCHMARK_RUBY_PATH and BENCHMARK_DATE for rubybench.
+  source "$cr_dir"/gh_tasks/install_rubies.sh
+
   # Clone and run the scripts using the rubybench/rubybench runner.
   "$cr_dir"/gh_tasks/run_rubybench.sh
 
