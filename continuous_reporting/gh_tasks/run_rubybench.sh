@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# If BENCHMARK_RUBY_PATH not set, source install_rubies.sh to set it
+if [[ -z "$BENCHMARK_RUBY_PATH" ]]; then
+    echo "BENCHMARK_RUBY_PATH not set, running install_rubies.sh..."
+    source "$SCRIPT_DIR/install_rubies.sh"
+fi
+
 RUBYBENCH_DIR="$HOME/ym/rubybench"
 RUBYBENCH_REPO="https://github.com/rubybench/rubybench"
 RUBYBENCH_BRANCH="mvh-configure-results-dir"
