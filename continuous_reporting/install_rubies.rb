@@ -85,7 +85,9 @@ if configs_to_install.include?(prod_yjit_config)
   puts "BENCHMARK_RUBY_PATH=#{ruby_path}"
 end
 
-if timestamp
-  date = timestamp.split("-")[0..2].join
-  puts "BENCHMARK_DATE=#{date}"
+date = if timestamp
+  timestamp.split("-")[0..2].join
+else
+  Time.now.strftime("%Y%m%d")
 end
+puts "BENCHMARK_DATE=#{date}"
