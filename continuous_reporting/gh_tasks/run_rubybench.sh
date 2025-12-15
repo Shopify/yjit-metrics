@@ -19,6 +19,12 @@ git reset --hard "origin/$RUBYBENCH_BRANCH"
 git submodule init
 git submodule update
 
+echo "Running rubybench with:"
+echo "  BENCHMARK_RUBY_PATH=$BENCHMARK_RUBY_PATH"
+echo "  BENCHMARK_DATE=$BENCHMARK_DATE"
+
+BENCHMARK_RUBY_PATH="$BENCHMARK_RUBY_PATH" \
+BENCHMARK_DATE="$BENCHMARK_DATE" \
 ./bin/ec2.sh
 
 popd
