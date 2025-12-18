@@ -9,6 +9,9 @@ module MetricsApp
         return unless branch
       end
 
+      # Skip git operations if the directory isn't a git repo (e.g., test fixtures).
+      return unless File.directory?(File.join(path, ".git"))
+
       chdir(path) do
         check_call("git clean -d -f -x")
         check_call("git checkout . 2>&1") # There's a tendency to have local mods to Gemfile.lock -- get rid of those changes

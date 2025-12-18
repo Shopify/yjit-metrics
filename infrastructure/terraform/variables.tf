@@ -119,6 +119,11 @@ variable "slack_token" {
   sensitive = true
 }
 
+variable "rubybench_data_deploy_private_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "tags" {
   default = {
     "Project" = "YJIT"

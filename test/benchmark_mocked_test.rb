@@ -155,12 +155,14 @@ class TestBenchmarkingWithMocking < Minitest::Test
             # Missing: additional non-Ruby command-line params
         })
 
-        result = YJITMetrics.run_single_benchmark(
-            # Information about the ruby-bench benchmark
-            { name: "single_bench", script_path: "/path/to/single_bench.rb" },
-            harness_settings: hs,
-            shell_settings: ss,
-            run_script: fake_runner)
+        result = nil
+        capture_io do
+          result = YJITMetrics.run_single_benchmark(
+              { name: "single_bench", script_path: "/path/to/single_bench.rb" },
+              harness_settings: hs,
+              shell_settings: ss,
+              run_script: fake_runner)
+        end
 
         refute_predicate result, :success?
         assert_equal(-1, result.exit_status)
