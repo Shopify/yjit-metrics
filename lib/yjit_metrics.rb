@@ -168,7 +168,7 @@ module YJITMetrics
                 err_w.write_nonblock(message, exception: false)
                 Process.kill("KILL", kill_pid)
               end
-            rescue Errno::ECHILD, Errno::ESRCH
+            rescue Errno::ECHILD, Errno::ESRCH, Errno::EPERM
               break
             end
           end
@@ -458,9 +458,9 @@ module YJITMetrics
         summary: summarize_failure_output(script_details[:stderr])
       )
 
-      STDERR.puts "-----"
-      STDERR.print bench_script
-      STDERR.puts "-----"
+      $stderr.puts "-----"
+      $stderr.print bench_script
+      $stderr.puts "-----"
 
       if shell_settings[:on_error]
         begin

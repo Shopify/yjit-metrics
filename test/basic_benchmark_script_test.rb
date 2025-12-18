@@ -40,10 +40,11 @@ class BasicBenchmarkScriptTest < Minitest::Test
       RbConfig.ruby,
       "-rbundler/setup",
       @script,
-      '--skip-git-updates',
       '--output', @output,
       '--configs', configs.map { |x| "#{PLATFORM}_#{x}" }.join(','),
       *args,
+      out: File::NULL,
+      err: File::NULL,
     )
 
     $?
