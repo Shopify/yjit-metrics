@@ -8,6 +8,7 @@ module YJITMetrics
 
     APP_DIR = File.expand_path("../../", __dir__)
     SLACK_SCRIPT = File.expand_path("continuous_reporting/slack_build_notifier.rb", APP_DIR)
+    UPLOAD_LOG_SCRIPT = File.expand_path("continuous_reporting/on_demand/upload_log.sh", APP_DIR)
     BACKTRACE_ITEMS = 2
     BENCH_PARAMS_TO_SHOW = ["cruby_sha", "ts", "yjit_bench_sha", "yjit_metrics_sha"]
 
@@ -43,8 +44,21 @@ module YJITMetrics
       @image = :fail
       @body = "```\n#{body}\n```\n"
       @body += "bench params:\n```#{bench_params.slice(*BENCH_PARAMS_TO_SHOW).to_yaml}```\n" if bench_params
+      if (url = log_url)
+        @body += "\n<#{url}|View full log>"
+      end
 
       self
+    end
+
+    def log_url
+      return unless ENV["S3_LOGS_BUCKET"] && ENV["LOG_FILE"]
+
+      url_file = ENV["LOG_FILE"].sub(/\.log$/, "-s3-url.txt")
+      system(UPLOAD_LOG_SCRIPT, ENV["LOG_FILE"], url_file)
+      File.read(url_file).strip if File.exist?(url_file)
+    rescue
+      nil
     end
 
     # Send message to slack and return whether notification sent successfully.

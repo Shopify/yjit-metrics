@@ -3,7 +3,14 @@
 # Do any periodic maintenance for machines that will live on
 # then power down the instance when finished.
 
-trap 'sudo shutdown' EXIT
+cleanup () {
+  # Upload current log to S3 for remote access.
+  if [[ -n "$S3_LOGS_BUCKET" ]] && [[ -f "$LOG_FILE" ]]; then
+    "${0%/*}/upload_log.sh" "$LOG_FILE" "${LOG_FILE%.log}-s3-url.txt" || true
+  fi
+  sudo shutdown
+}
+trap cleanup EXIT
 
 
 log_dir="${LOG_FILE%/*}"
