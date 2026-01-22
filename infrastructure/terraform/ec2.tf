@@ -9,6 +9,7 @@ locals {
     join("\n", [
       "region='${var.region}'",
       "secret_name='${var.secret_name}'",
+      "s3_logs_bucket='${aws_s3_bucket.logs.bucket}'",
     ])
   )
 

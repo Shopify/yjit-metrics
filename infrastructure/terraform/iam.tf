@@ -31,6 +31,16 @@ resource "aws_iam_role" "yjit-benchmarking-instance-profile" {
             resource.aws_secretsmanager_secret.yjit-benchmarking.arn,
           ]
         },
+        {
+          Action = [
+            "s3:PutObject",
+            "s3:GetObject"
+          ]
+          Effect = "Allow"
+          Resource = [
+            "${aws_s3_bucket.logs.arn}/*"
+          ]
+        },
       ]
     })
   }

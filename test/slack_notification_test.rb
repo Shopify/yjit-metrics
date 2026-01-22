@@ -14,7 +14,6 @@ require_relative "test_helper"
 class SlackNotificationTest < Minitest::Test
   TEST_LIB = File.expand_path('lib', __dir__)
   SLACK_CHANNEL = "#ruby-bench-ci"
-  SLACK_SCRIPT = "continuous_reporting/slack_build_notifier.rb"
   DATA_GLOB = "test/data/slack/*.json"
   IMAGE_PREFIX = "https://raw.githubusercontent.com/rubybench/yjit-reports/main/images"
   BENCH_PARAMS = {

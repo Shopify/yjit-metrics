@@ -68,8 +68,13 @@ yjit-slack-token () {
   printf "export SLACK_TOKEN_FILE=%q\n" "$secret_file" >> "$profile"
 }
 
+yjit-s3-logs-bucket () {
+  printf "export S3_LOGS_BUCKET=%q\n" "$s3_logs_bucket" >> "$profile"
+}
+
 setup-profile .bashrc
 process-metadata
 load-secrets
 yjit-git-creds
 yjit-slack-token
+yjit-s3-logs-bucket
