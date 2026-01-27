@@ -16,5 +16,7 @@ resource "aws_secretsmanager_secret_version" "yjit-benchmarking" {
     "git-user"    = var.git_user,
     "git-name"    = var.git_name,
     "slack-token" = var.slack_token,
+    "s3-presign-access-key-id"     = aws_iam_access_key.log-presigner.id,
+    "s3-presign-secret-access-key" = aws_iam_access_key.log-presigner.secret,
   })
 }

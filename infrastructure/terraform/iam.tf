@@ -90,3 +90,30 @@ resource "aws_iam_user_policy_attachment" "job-bot" {
   user       = var.job_bot_user_name
   policy_arn = aws_iam_policy.job-bot.arn
 }
+
+# IAM user for generating long-lived presigned S3 URLs.
+# Instance profile credentials are temporary and limit presigned URL expiration.
+# This user's permanent credentials allow presigned URLs to last the full 7 days.
+resource "aws_iam_user" "log-presigner" {
+  name = "yjit-benchmark-log-presigner"
+}
+
+resource "aws_iam_user_policy" "log-presigner" {
+  name = "s3-logs-read"
+  user = aws_iam_user.log-presigner.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["s3:GetObject"]
+        Effect   = "Allow"
+        Resource = ["${aws_s3_bucket.logs.arn}/*"]
+      },
+    ]
+  })
+}
+
+resource "aws_iam_access_key" "log-presigner" {
+  user = aws_iam_user.log-presigner.name
+}
