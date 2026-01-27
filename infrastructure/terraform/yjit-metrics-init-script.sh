@@ -72,9 +72,16 @@ yjit-s3-logs-bucket () {
   printf "export S3_LOGS_BUCKET=%q\n" "$s3_logs_bucket" >> "$profile"
 }
 
+yjit-s3-presign-creds () {
+  local creds_file="$dir/s3-presign-creds"
+  printf '%s\n%s\n' "$(get-secret s3-presign-access-key-id)" "$(get-secret s3-presign-secret-access-key)" > "$creds_file"
+  printf "export S3_PRESIGN_CREDS_FILE=%q\n" "$creds_file" >> "$profile"
+}
+
 setup-profile .bashrc
 process-metadata
 load-secrets
 yjit-git-creds
 yjit-slack-token
 yjit-s3-logs-bucket
+yjit-s3-presign-creds
