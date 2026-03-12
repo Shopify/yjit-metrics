@@ -85,7 +85,10 @@ module YJITMetrics
     config_name.sub(/^#{Regexp.union(PLATFORMS)}_/, '')
   end
 
-  BENCHMARK_TIMEOUT = 60 * 30 # The stats build on rubyboy can take well over 20 min.
+  # The stats build on rubyboy can take well over 20 min.
+  # The zjit stats build on optcarrot is taking 35 right now.
+  BENCHMARK_TIMEOUT = 60 * 40
+
   def run_harness_script_from_string(script,
       local_popen: proc { |*args, **kwargs, &block| IO.popen(*args, **kwargs, &block) },
       env: nil,
