@@ -16,10 +16,10 @@ variable "benchmarking_arm_instance_type" {
 # Each built ruby in ~/.rubies can take 700MB - 1.5GB (minimum of 3, call it 5GB).
 # The ruby repo is 500MB and build files can take up another 1GB.
 # ruby-bench and yjit-metrics add up to 1.5GB.
-# The rubybench repos can eat 15GB.
-# That brings us to ~26GB; add more to be sure we have plenty of room.
+# The rubybench repos can eat 20GB.
+# That brings us over 30GB; add more to be sure we have plenty of room to operate.
 variable "benchmarking_volume_size_gb" {
-  default = 40
+  default = 48
 }
 
 variable "dev_ami_name_pattern" {
@@ -92,7 +92,7 @@ variable "reporting_ebs_name" {
 # The disk starts out at around 16.  24 Fills up quickly with updates,
 # operations, etc.  Some git repos require several GB of space to operate.
 variable "reporting_root_volume_size_gb" {
-  default = 40
+  default = 48
 }
 
 variable "root_device_name" {
