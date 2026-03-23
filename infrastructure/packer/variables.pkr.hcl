@@ -3,13 +3,12 @@
 # The ubuntu source AMI is 8GB with less than 2GB being occupied.
 # We install updates, some new packages, and >3GB in repos.
 # The last build snapshot used 6.1GB.
-# It can require more than 8GB temporarily, and then the rubybench data repo can
-# take 7.5GB when switching branches.
+# It can require more than 8GB temporarily, and then the rubybench data repos have climbed to over 20GB.
 # The farther we get from initial release of the OS the more "apt upgrade" will
 # require.  Moving to rustup probably also takes more space.  Likewise the more
 # time passes the larger our repos will get.
 variable "ami_volume_size_gb" {
-  default = 24
+  default = 48
 }
 
 variable "region" {
