@@ -320,7 +320,7 @@ module YJITMetrics
       bench_dir = "#{@yjit_bench_path}/benchmarks"
       ractor_only_benchmarks = load_ractor_only_benchmarks
 
-      Dir.children(bench_dir).each do |entry|
+      Dir.children(bench_dir).sort.each do |entry|
         entry_path = File.join(bench_dir, entry)
 
         if File.file?(entry_path) && entry.end_with?('.rb')
