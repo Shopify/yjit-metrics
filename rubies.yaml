@@ -43,7 +43,13 @@ builds:
       - --enable-yjit
       - --enable-zjit
 
-  ruby-metrics-app-prev:
+  ruby-metrics-dev-no-jit:
+    <<: *build_base
+    configure_args:
+      - --disable-yjit
+      - --disable-zjit
+
+  ruby-metrics-app-prev: &prev_build
     <<: *build_jit
     # In order to build "prev" ruby the same way we build "prod" ruby
     # we build it from source, so we use a tag that represents a recent release.
@@ -52,6 +58,12 @@ builds:
     configure_args:
       # Ruby 3.3 only supports yjit.
       - --enable-yjit
+
+  ruby-metrics-prev-no-jit:
+    <<: *prev_build
+    configure_args:
+      - --disable-yjit
+      - --disable-zjit
 
   truffleruby-dev:
     install: ruby-build
@@ -70,11 +82,11 @@ runtime_configs:
     opts: *zjit_stats
 
   prod_ruby_no_jit:
-    build: &prod_jit ruby-metrics-app-jit-prod
+    build: ruby-metrics-dev-no-jit
     opts: *no_jit
 
   prod_ruby_with_yjit:
-    build: *prod_jit
+    build: &prod_jit ruby-metrics-app-jit-prod
     opts: *yjit
 
   prod_ruby_zjit:
@@ -82,11 +94,11 @@ runtime_configs:
     opts: *zjit
 
   prev_ruby_no_jit:
-    build: &prev_ruby ruby-metrics-app-prev
+    build: ruby-metrics-prev-no-jit
     opts: *no_jit
 
   prev_ruby_yjit:
-    build: *prev_ruby
+    build: ruby-metrics-app-prev
     opts: *yjit
 
   truffleruby-dev:
